@@ -1,4 +1,4 @@
-# Superlinked Alpha
+# Superlinked Alpha (v0.0.8.post17+git.fc7078ad.dirty)
 
 Notebook examples to show the common use-cases of the Superlinked framework. We have created notebooks for you to be able to run the experiments right in your ennvironment with direct access to your data.
 
