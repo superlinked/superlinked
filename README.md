@@ -3,7 +3,7 @@
 ## Install
 
 1. Create a [new access token](https://github.com/settings/personal-access-tokens/new) on GitHub, with read access to the superlinked-alpha repository.
-1. Replace `YOUR_GITHUB_TOKEN` at the end of the script of `%pip install "https://us-central1-data-359211.cloudfunctions.net/github-proxy/superlinked-0.0.8-py3-none-any.whl?token=YOUR_GITHUB_TOKEN"`.
+1. Replace `YOUR_GITHUB_TOKEN` at the end of the command of `%pip install "https://us-central1-data-359211.cloudfunctions.net/github-proxy/superlinked-0.0.8-py3-none-any.whl?token=YOUR_GITHUB_TOKEN"`.
 1. Save this line as your `INSTALL_COMMAND`.`
 
 ## Usage
