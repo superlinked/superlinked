@@ -1,4 +1,4 @@
-# Superlinked Alpha (v0.1.1)
+# Superlinked Alpha (v0.1.3)
 
 Notebook examples to show the common use-cases of the Superlinked framework. We have created notebooks for you to be able to run the experiments right in your ennvironment with direct access to your data.
 
@@ -21,7 +21,10 @@ Notebook examples to show the common use-cases of the Superlinked framework. We 
 1. Replace `YOUR_GITHUB_TOKEN` at the beginning of the notebook with your token to install the Superlinked framework.
 1. Start experimenting.
 
+> Tip: Make sure to keep your install script up-to-date with the latest version, if you are iterating on the notebooks.
 
-## Issue tracking
 
-If you encounter any challanges during your experiment feel free to create an issue [here](https://github.com/superlinked/superlinked/issues/new).
+## Contributing
+
+If you encounter any challanges during your experiment, feel free to create an [issue](https://github.com/superlinked/superlinked-alpha/issues/new?assignees=&labels=linear&projects=&template=bug_report.md), request a [feature](https://github.com/superlinked/superlinked-alpha/issues/new?assignees=&labels=linear&projects=&template=feature_request.md) or to [start a discussion](https://github.com/superlinked/superlinked-alpha/discussions/new/choose).
+Make sure to group your feedback in separate issues and discussions by topic. We are grateful for every and any feedback we can gather.
