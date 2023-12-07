@@ -1,4 +1,4 @@
-# Superlinked Alpha (v0.8.0)
+# Superlinked Alpha (v0.9.0)
 
 Notebook examples to show the common use-cases of the Superlinked framework. We have created notebooks for you to be able to run the experiments right in your ennvironment with direct access to your data.
 
