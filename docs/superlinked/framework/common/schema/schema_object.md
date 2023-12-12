@@ -13,6 +13,8 @@ Classes
 
     ### Ancestors (in MRO)
 
+    * superlinked.framework.common.interface.comparison_operand.ComparisonOperand
+    * abc.ABC
     * typing.Generic
 
     ### Descendants
@@ -38,6 +40,8 @@ Classes
     ### Ancestors (in MRO)
 
     * superlinked.framework.common.schema.schema_object.SchemaField
+    * superlinked.framework.common.interface.comparison_operand.ComparisonOperand
+    * abc.ABC
     * typing.Generic
 
     ### Descendants
@@ -52,4 +56,6 @@ Classes
     ### Ancestors (in MRO)
 
     * superlinked.framework.common.schema.schema_object.SchemaField
+    * superlinked.framework.common.interface.comparison_operand.ComparisonOperand
+    * abc.ABC
     * typing.Generic

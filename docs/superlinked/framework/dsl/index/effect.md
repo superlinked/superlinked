@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.index.effect
 Classes
 -------
 
-`Effect(space: superlinked.framework.dsl.space.space.Space, affected_schema_reference: superlinked.framework.common.schema.schema_reference.SchemaReference[~ADST], affecting_schema_reference: superlinked.framework.common.schema.schema_reference.SchemaReference[~AGST], filter_: superlinked.framework.common.schema.schema_object.SchemaFieldBinaryOp)`
+`Effect(space: superlinked.framework.dsl.space.space.Space, affected_schema_reference: superlinked.framework.common.schema.schema_reference.SchemaReference[~ADST], affecting_schema_reference: superlinked.framework.common.schema.schema_reference.SchemaReference[~AGST], filter_: superlinked.framework.common.interface.comparison_operand.ComparisonOperand[superlinked.framework.common.schema.schema_object.SchemaField])`
 :   An effect represents a conditional interaction within a `Space` where the
     `affecting_schema_reference` intercated with the `affected_schema_reference`.
     
@@ -23,7 +23,7 @@ Classes
     `affecting_schema_reference: superlinked.framework.common.schema.schema_reference.SchemaReference[~AGST]`
     :
 
-    `filter_: superlinked.framework.common.schema.schema_object.SchemaFieldBinaryOp`
+    `filter_: superlinked.framework.common.interface.comparison_operand.ComparisonOperand[superlinked.framework.common.schema.schema_object.SchemaField]`
     :
 
     `space: superlinked.framework.dsl.space.space.Space`

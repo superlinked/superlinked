@@ -10,6 +10,8 @@ Classes
     ### Ancestors (in MRO)
 
     * superlinked.framework.common.schema.schema_object.SchemaField
+    * superlinked.framework.common.interface.comparison_operand.ComparisonOperand
+    * abc.ABC
     * typing.Generic
 
 `IdSchemaObject(base_cls: type, schema_name: str, id_field_name: str)`
