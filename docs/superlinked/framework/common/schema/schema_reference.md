@@ -20,6 +20,7 @@ Classes
 
     * superlinked.framework.common.schema.schema_object.String
     * superlinked.framework.common.schema.schema_object.SchemaField
-    * typing.Generic
+    * superlinked.framework.common.interface.comparison_operand.ComparisonOperand
     * superlinked.framework.common.interface.has_multiplier.HasMultiplier
     * abc.ABC
+    * typing.Generic
