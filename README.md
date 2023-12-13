@@ -1,6 +1,30 @@
-# Superlinked Alpha (v1.4.0.post8+git.22d99719)
+# Superlinked Alpha (v1.5.0)
 
 Notebook examples to show the common use-cases of the Superlinked framework. We have created notebooks for you to be able to run the experiments right in your ennvironment with direct access to your data.
+
+## Usage
+
+1. Create a token. ([see below](#create-a-token))
+2. Import the [notebooks](./notebook/) in your preferred notebook environment.
+3. Replace `YOUR_GITHUB_TOKEN` at the beginning of the notebook with your token to install the Superlinked framework.
+4. Start experimenting.
+
+> Tip: Make sure to keep your `pip install ...` script up-to-date with the latest version, if you are iterating on the notebooks.
+
+## Reference
+
+You can find a reference of the building blocks in the [docs](./docs/superlinked/framework) folder categorized by modules.
+
+Some of the key components are:
+1. [@schema](./docs/superlinked/framework/common/schema/schema.md): Define your schema classes.
+2. [Space](./docs/superlinked/framework/dsl/space/index.md): Define embeddings on top of fields of one or more [schema](./docs/superlinked/framework/common/schema/schema_object.md) objects.
+3. [Index](./docs/superlinked/framework/dsl/index/index.m.md): Organize your spaces into queriable indicies.
+4. [Query](./docs/superlinked/framework/dsl/query/query.md): Define queries with parameters and weights.
+5. [Source](./docs/superlinked/framework/dsl/source/index.md): Connect data sources to your schema.
+6. [Parser](./docs/superlinked/framework/common/parser): Convenience tools to transform your data to schemas.  (e.g.: from [`pd.DataFrame`](./docs/superlinked/framework/common/parser/dataframe_parser.md))
+7. [Executor](./docs/superlinked/framework/dsl/executor/in_memory/in_memory_executor.md): Run your configuration.
+
+To learn more about the components and the use-cases we suggest to setup and check the examples in the [notebooks](./notebook/).
 
 ## Create a token
 
@@ -14,15 +38,6 @@ Notebook examples to show the common use-cases of the Superlinked framework. We 
 1. Generate token.
 
 ![Create new access token](./asset/new_token.png)
-
-## Usage
-
-1. Import the [notebooks](./notebook/) in your preferred notebook environment.
-1. Replace `YOUR_GITHUB_TOKEN` at the beginning of the notebook with your token to install the Superlinked framework.
-1. Start experimenting.
-
-> Tip: Make sure to keep your install script up-to-date with the latest version, if you are iterating on the notebooks.
-
 
 ## Contributing
 
