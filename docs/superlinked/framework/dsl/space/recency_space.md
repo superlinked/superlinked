@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.space.recency_space
 Classes
 -------
 
-`RecencySpace(timestamp: superlinked.framework.common.schema.schema_object.Timestamp | list[superlinked.framework.common.schema.schema_object.Timestamp], period_time_param_list: list[superlinked.framework.common.dag.period_time_param.PeriodTimeParam] | None = None, negative_filter: float = 0.0)`
+`RecencySpace(timestamp: superlinked.framework.common.schema.schema_object.Timestamp | list[superlinked.framework.common.schema.schema_object.Timestamp], period_time_param_list: list[superlinked.framework.common.dag.period_time_param.PeriodTimeParam] | superlinked.framework.common.dag.period_time_param.PeriodTimeParam | None = None, negative_filter: float = 0.0)`
 :   Recency space is utilised to encode how recent items are. Use period_time_param_list
     to mark the time periods of interest.
     Items older than the largest period_time are going to have uniform recency score. (0 or negative_filter if set)
@@ -31,7 +31,7 @@ Classes
         timestamp (Timestamp | list[Timestamp]): A timestamp or a list of timestamps.
         period_time_param_list (list[PeriodTimeParam] | None, optional): A list of period time parameters.
         Defaults to None.
-        negative_filter (float): The recency score attributed to items older then the largest period_time value.
+        negative_filter (float): The recency score attributed to items older than the largest period_time value.
         Defaults to 0.0.
 
     ### Ancestors (in MRO)
