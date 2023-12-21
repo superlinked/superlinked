@@ -11,45 +11,6 @@ Notebook examples to show the common use-cases of the Superlinked framework. We 
 
 > Tip: Make sure to keep your `pip install ...` script up-to-date with the latest version, if you are iterating on the notebooks.
 
-## Welcome to Superlinked Alpha 
-
-Our main objective is to make vector search more accessible to developers and easier to control to improve the output quality for use cases from Recommender Systems to Retrieval Augmented Generation.
-
-With the ability to make the vector search smarter, we aim to remove the need for custom ranking models and simplify the whole stack to enable broader adoption of this powerful technology.
-
-## What is Superlinked
-1. Superlinked is a declarative Python SDK to describe your data ([Schema](https://github.com/superlinked/superlinked-alpha/tree/main/docs/superlinked/framework/common/schema)) and how you want to vectorize and query it.
-2. The vectorization of data is abstracted away with [Spaces](https://github.com/superlinked/superlinked-alpha/blob/main/docs/superlinked/framework/dsl/space/space.md). These Spaces will include pre-trained language models, vision models like [CLIP](https://openai.com/research/clip), unsupervised models trained on your data like graph embeddings, and encoders for other structured data like timestamps. See the list of current and upcoming Spaces below.
-3. You build out your vectors ([indexes](https://github.com/superlinked/superlinked-alpha/tree/main/docs/superlinked/framework/dsl/index)) from a composition of Spaces to vectorize your entities and any relevant metadata.
-4. Then, on top of the index, we give you a query language to tap into these vector composites and define the weights of each contributing Space.
-
-The list of currently available Spaces:
-- Text Similarity
-- Recency
-
-Upcoming Spaces we are working on:
-- Scalar Maximizer & Minimizer
-- Categorical Similarity
-- Scalar Similarity
-- Semantic Image Similarity
-- Structural (Graph) Similarity
-- Time Series Similarity
-
-Do you have a Space you would like to use? Tell us in [discussions](https://github.com/superlinked/superlinked-alpha/discussions)!
-## How to use Superlinked
-We are rolling out Superlinked in 3 milestones of increasing production readiness:
-
-### 1. In-process with In-memory Executor Q4’23
-The current version in this repository is meant to run in-process - you can experiment with it in a Python notebook or bundle it with your application.
-
-### 2. Mini-production with Real-time Executor Q1’24
-Run the same Superlinked SDK code as a service in your own cloud or on-prem environment using our built-in Docker image bundler:
-Interact with the service using auto-generated APIs based on your Source and Query definitions.
-Use more advanced Spaces like Graph embeddings which require an unsupervised training loop running over your data.
-Ingest 1M objects per hour (including the execution of all the transformations and embedding model inference) and a query performance of the order of 10s of milliseconds for 100s of QPS.
-Includes everything you need - a vector database (starting with Redis but expanding to other options soon) and a key value store that supports the real-time execution. Superlinked fully manages the index creation and state-management for all attached stores - we work closely with these teams and know how to get the maximal performance out of their systems.
-Supports basic production capabilities, like rebuilding its own state from a journal file in cloud storage in the case of an unplanned restart.
-
 ## Reference
 
 You can find a reference of the building blocks in the [docs](./docs/superlinked/framework) folder categorized by modules.
