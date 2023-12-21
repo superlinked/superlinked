@@ -23,7 +23,7 @@ With the ability to make the vector search smarter, we aim to remove the need fo
 3. You build out your vectors ([indexes](https://github.com/superlinked/superlinked-alpha/tree/main/docs/superlinked/framework/dsl/index)) from a composition of Spaces to vectorize your entities and any relevant metadata.
 4. Then, on top of the index, we give you a query language to tap into these vector composites and define the weights of each contributing Space.
 
-![Superlinked Alpha](asset/sl_alpha.png)
+<img src="asset/sl_alpha.png" width="600" height="600">
 
 The list of currently available Spaces:
 - Text Similarity
@@ -50,7 +50,8 @@ Run the same Superlinked SDK code as a service in your own cloud or on-prem envi
 - Includes everything you need - a vector database (starting with Redis but expanding to other options soon) and a key-value store that supports real-time execution. Superlinked fully manages the index creation and state management for all attached stores - we work closely with these teams and know how to maximise their systems' performance.
 - Supports basic production capabilities, like rebuilding its own state from a journal file in cloud storage in the case of an unplanned restart.
 
-![Superlinked Mini-Prod](asset/sl_miniprod.png)
+<img src="asset/sl_miniprod.png" width="600" height="600">
+
 ### 3. Production with Apache Spark & Real-time Executors Q2’24
 The large scale deployment will be controlled using the same declarative SDK and it will give you, out of the box:
 - Ingest data from your core data infrastructure, using Trino or similar distributed SQL-controlled data extraction technology. We will enable you to run this continuously or based on triggers or a set schedule.
@@ -58,7 +59,7 @@ The large scale deployment will be controlled using the same declarative SDK and
 - Process TBs of data and process high QPS data streams in a distributed fashion.
 - Manage the downstream vector and storage solutions in a way that reconciles batch and streaming updates.
 
-![Superlinked Prod](asset/sl_prod.png)
+<img src="asset/sl_prod.png" width="600" height="600">
 
 
 ## Reference
