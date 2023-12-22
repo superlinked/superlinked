@@ -69,7 +69,7 @@ You can find a reference of the building blocks in the [docs](./docs/superlinked
 Some of the key components are:
 1. [@schema](./docs/superlinked/framework/common/schema/schema.md): Define your schema classes.
 2. [Space](./docs/superlinked/framework/dsl/space/index.md): Define embeddings on top of fields of one or more [schema](./docs/superlinked/framework/common/schema/schema_object.md) objects.
-3. [Index](./docs/superlinked/framework/dsl/index/index.m.md): Organize your spaces into queriable indicies.
+3. [Index](./docs/superlinked/framework/dsl/index/index.m.md): Organize your spaces into queriable indices.
 4. [Query](./docs/superlinked/framework/dsl/query/query.md): Define queries with parameters and weights.
 5. [Source](./docs/superlinked/framework/dsl/source/index.md): Connect data sources to your schema.
 6. [Parser](./docs/superlinked/framework/common/parser): Convenience tools to transform your data to schemas.  (e.g.: from [`pd.DataFrame`](./docs/superlinked/framework/common/parser/dataframe_parser.md))
