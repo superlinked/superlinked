@@ -7,3 +7,4 @@ Sub-modules
 -----------
 * superlinked.framework.dsl.index.effect
 * superlinked.framework.dsl.index.index
+* superlinked.framework.dsl.index.util
