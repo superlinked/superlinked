@@ -4,13 +4,15 @@ Module superlinked.framework.dsl.index.index
 Classes
 -------
 
-`Index(spaces: superlinked.framework.dsl.space.space.Space | list[superlinked.framework.dsl.space.space.Space])`
+`Index(spaces: superlinked.framework.dsl.space.space.Space | list[superlinked.framework.dsl.space.space.Space], effects: list[superlinked.framework.dsl.index.effect.Effect] | None = None)`
 :   An index is an abstraction which represents a collection of spaces that will enable us to query our data.
     
     Initialize the Index.
     
     Args:
         spaces (Space | list[Space]): The space or list of spaces.
+        effects (list[Effect]): A list of conditional interactions within a `Space`.
+        Defaults to None.
     
     Raises:
         InitializationException: If no spaces are provided.
