@@ -25,17 +25,23 @@ Classes
 
     ### Instance variables
 
+    `entity_store_manager: superlinked.framework.storage.entity_store_manager.EntityStoreManager`
+    :   Get the entity store manager.
+        
+        Returns:
+            EntityStoreManager: The entity store manager instance.
+
     `executor: ~ExecutorT`
     :   Get the executor.
         
         Returns:
             ExecutorT: The executor instance.
 
-    `store_manager: superlinked.framework.storage.entity_store_manager.EntityStoreManager`
-    :   Get the store manager.
+    `object_store_manager: superlinked.framework.storage.object_store_manager.ObjectStoreManager`
+    :   Get the object store manager.
         
         Returns:
-            EntityStoreManager: The store manager instance.
+            ObjectStoreManager: The object store manager instance.
 
 `Executor(sources: list[SourceT], indices: list[Index], context: ExecutionContext)`
 :   Abstract base class for an executor.
