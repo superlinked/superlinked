@@ -45,9 +45,8 @@ Classes
         schema (SchemaObject): The schema object.
         index (Index): The index.
         filters (list[QueryPredicate]): The list of query predicates.
-        _limit (int | None): The limit for the query. If None, no limit is applied.
-            The default is 100, to disable it, add the .limit(None) to the query.
-        _radius (float | None): The radius for the query. If None, no radius is applied.
+        limit_ (int | None): The limit for the query. If None, no limit is applied.
+        radius_ (float | None): The radius for the query. If None, no radius is applied.
             The float can be between 0 and 1. Otherwise ValueError is thrown
             The lower the number the closer the vectors are.
     
