@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.query.query
 Classes
 -------
 
-`Query(index: Index, weights: Mapping[Space, FloatParamType] | None = None)`
+`Query(index: Index, weights: dict[Space, FloatParamType] | None = None)`
 :   A class representing a query. Build queries using Params as placeholders for weights or query text,
     and supply their value later on when executing a query.
     

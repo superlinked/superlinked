@@ -14,11 +14,6 @@ Classes
         query_obj: An instance of the QueryObj class representing the query to be executed.
         evaluator: An instance of the QueryDagEvaluator class used to evaluate the query.
 
-    ### Class variables
-
-    `K`
-    :
-
     ### Methods
 
     `query(self, **params) ‑> superlinked.framework.dsl.query.result.Result`
@@ -32,6 +27,3 @@ Classes
         
         Raises:
             QueryException: If the query index is not amongst the executor's indices.
-
-    `update_space_weights(self, space_weight_map: Mapping[~K, float], update_weights: Mapping[~K, float]) ‑> dict[~K, float]`
-    :

@@ -5,7 +5,7 @@ Queries can have parameters and weights that you can provide at query time to co
 
 Sub-modules
 -----------
-* superlinked.framework.dsl.query.functions
 * superlinked.framework.dsl.query.param
+* superlinked.framework.dsl.query.predicate
 * superlinked.framework.dsl.query.query
 * superlinked.framework.dsl.query.result
