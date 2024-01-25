@@ -15,5 +15,6 @@ Classes
 
     ### Descendants
 
+    * superlinked.framework.dsl.space.number_space.NumberSpace
     * superlinked.framework.dsl.space.recency_space.RecencySpace
     * superlinked.framework.dsl.space.text_similarity_space.TextSimilaritySpace
