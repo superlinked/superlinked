@@ -8,4 +8,5 @@ Sub-modules
 * superlinked.framework.dsl.space.exception
 * superlinked.framework.dsl.space.recency_space
 * superlinked.framework.dsl.space.space
+* superlinked.framework.dsl.space.space_field_set
 * superlinked.framework.dsl.space.text_similarity_space
