@@ -11,6 +11,14 @@ Classes
         schema (IdSchemaObject): The schema of the result.
         entries (list[ResultEntry]): A list of result entries.
 
+    ### Class variables
+
+    `entries: list[superlinked.framework.dsl.query.result.ResultEntry]`
+    :
+
+    `schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject`
+    :
+
 `ResultEntry(entity: superlinked.framework.storage.entity.Entity, stored_object: dict[str, typing.Any])`
 :   Represents a single entry in a Result, encapsulating the entity and its associated data.
     
@@ -20,3 +28,11 @@ Classes
             It contains information such as the entity's ID and type.
         stored_object (dict[str, Any]): The stored object of the result entry.
             This is essentially the raw data that was input into the system.
+
+    ### Class variables
+
+    `entity: superlinked.framework.storage.entity.Entity`
+    :
+
+    `stored_object: dict[str, typing.Any]`
+    :

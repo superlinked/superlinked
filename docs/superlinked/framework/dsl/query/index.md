@@ -7,7 +7,6 @@ Sub-modules
 -----------
 * superlinked.framework.dsl.query.param
 * superlinked.framework.dsl.query.param_evaluator
-* superlinked.framework.dsl.query.param_evaluator_old
 * superlinked.framework.dsl.query.predicate
 * superlinked.framework.dsl.query.query
 * superlinked.framework.dsl.query.query_filters

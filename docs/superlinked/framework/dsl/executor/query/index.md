@@ -5,5 +5,4 @@ Query module contains components that helo you build queries that you can use to
 
 Sub-modules
 -----------
-* superlinked.framework.dsl.executor.query.filter_info
 * superlinked.framework.dsl.executor.query.query_executor
