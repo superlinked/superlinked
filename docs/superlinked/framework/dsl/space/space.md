@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.space.space
 Classes
 -------
 
-`Space()`
+`Space(fields: SIT | list[SIT], type_: type)`
 :   Abstract base class for a space.
     
     This class defines the interface for a space in the context of the application.
