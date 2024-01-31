@@ -43,7 +43,6 @@ Classes
     Attributes:
         builder (Query): The query builder.
         schema (SchemaObject): The schema object.
-        index (Index): The index.
         filters (list[QueryPredicate]): The list of query predicates.
         limit_ (int | None): The limit for the query. If None, no limit is applied.
         radius_ (float | None): The radius for the query. If None, no radius is applied.
@@ -55,6 +54,11 @@ Classes
     Args:
         builder (Query): The query builder.
         schema (SchemaObject | T): The schema object.
+
+    ### Instance variables
+
+    `index: superlinked.framework.dsl.index.index.Index`
+    :   The index the query is executed on.
 
     ### Methods
 

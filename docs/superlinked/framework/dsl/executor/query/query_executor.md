@@ -4,8 +4,8 @@ Module superlinked.framework.dsl.executor.query.query_executor
 Classes
 -------
 
-`QueryExecutor(app: superlinked.framework.dsl.executor.executor.App, query_obj: superlinked.framework.dsl.query.query.QueryObj, evaluator: superlinked.framework.evaluator.query_dag_evaluator.QueryDagEvaluator)`
-:   QueryExecutor provides an interface to execute predefined queries with query time parameters
+`QueryExecutor(app: superlinked.framework.dsl.executor.executor.App, query_obj: superlinked.framework.dsl.query.query.QueryObj, query_vector_factory: superlinked.framework.dsl.query.query_vector_factory.QueryVectorFactory)`
+:   QueryExecutor provides an interface to execute predefined queries with query time parameters.
     
     Initializes the QueryExecutor.
     
