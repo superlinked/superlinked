@@ -36,14 +36,20 @@ Classes
 
     ### Methods
 
-    `marshal(self, parsed_schemas: ParsedSchema | list[ParsedSchema]) ‑> ~SourceTypeT`
+    `marshal(self, parsed_schemas: ParsedSchema | list[ParsedSchema]) ‑> list[~SourceTypeT]`
     :   Get a previously parsed data and return it to it's input format.
         
         Args:
             parsed_schemas: Previously parsed data that follows the schema of the `DataParser`.
+        
+        Returns:
+            list[SourceTypeT]: A list of the original source data format after marshalling the parsed data.
 
     `unmarshal(self, data: SourceTypeT) ‑> list[superlinked.framework.common.parser.parsed_schema.ParsedSchema]`
     :   Get the source data and parse it to the desired Schema with the defined mapping.
         
         Args:
             data (TSourceType): Source data that corresponds to the DataParser's type.
+        
+        Returns:
+            list[ParsedSchema]: A list of ParsedSchema objects.

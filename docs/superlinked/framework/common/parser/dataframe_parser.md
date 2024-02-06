@@ -29,18 +29,6 @@ Classes
 
     ### Methods
 
-    `marshal(self, parsed_schemas: ParsedSchema | list[ParsedSchema]) ‑> pandas.core.frame.DataFrame`
-    :   Converts a list of ParsedSchema objects into a pandas DataFrame.
-        You can use this functionality to check, if your mapping was defined properly.
-        
-        Args:
-            parsed_schemas (ParsedSchema | list[ParsedSchema]): A single ParsedSchema object
-                or a list of ParsedSchema objects that you get
-                after unmarshaling your `DataFrame`.
-        
-        Returns:
-            pd.DataFrame: A DataFrame representation of the parsed schemas.
-
     `unmarshal(self, data: pd.DataFrame) ‑> list[superlinked.framework.common.parser.parsed_schema.ParsedSchema]`
     :   Parses the given DataFrame into a list of ParsedSchema objects according to the defined schema and mapping.
         
