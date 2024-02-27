@@ -11,7 +11,7 @@ Classes
         mapping (Mapping[SchemaField, str], optional): Source to SchemaField mapping rules
             as `SchemaField`-`str` pairs such as `{movie_schema.title: "movie_title"}`.
     
-    Initizalize DataParser
+    Initialize DataParser
     
     Get the desired output schema and initialize a default mapping
     that can be extended by DataParser realizations.

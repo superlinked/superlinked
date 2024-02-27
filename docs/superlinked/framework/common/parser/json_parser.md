@@ -5,10 +5,10 @@ Classes
 -------
 
 `JsonParser(schema: IdSchemaObjectT, mapping: Mapping[SchemaField, str] | None = None)`
-:   JsonParser gets a `Json` object and using `str` based json path mapping
+:   JsonParser gets a `Json` object and using `str` based dot separated path mapping
     it transforms the `Json` to a desired schema.
     
-    Initizalize DataParser
+    Initialize DataParser
     
     Get the desired output schema and initialize a default mapping
     that can be extended by DataParser realizations.
