@@ -8,7 +8,7 @@ Classes
 :   DataFrameParser gets a `pd.DataFrame` and using column-string mapping
     it transforms the `DataFrame` to a desired schema.
     
-    Initizalize DataParser
+    Initialize DataParser
     
     Get the desired output schema and initialize a default mapping
     that can be extended by DataParser realizations.
