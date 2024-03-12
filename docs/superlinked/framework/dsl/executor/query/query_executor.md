@@ -16,7 +16,7 @@ Classes
 
     ### Methods
 
-    `query(self, **params) ‑> superlinked.framework.dsl.query.result.Result`
+    `query(self, **params: Any) ‑> superlinked.framework.dsl.query.result.Result`
     :   Execute a query with keyword parameters.
         
         Args:

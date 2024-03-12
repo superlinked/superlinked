@@ -20,5 +20,5 @@ Classes
 
     ### Methods
 
-    `get_field_for_schema(self, schema_: superlinked.framework.common.schema.id_schema_object.IdSchemaObject) ‑> superlinked.framework.common.schema.schema_object.SchemaField | None`
+    `get_field_for_schema(self, schema_: Any) ‑> superlinked.framework.common.schema.schema_object.SchemaField | None`
     :

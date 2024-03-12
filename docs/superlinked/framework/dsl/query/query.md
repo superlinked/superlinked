@@ -34,7 +34,7 @@ Classes
             InvalidSchemaException: If the schema is invalid.
             QueryException: If the index does not have the queried schema.
 
-`QueryObj(builder: Query, schema: IdSchemaObject | T)`
+`QueryObj(builder: Query, schema: IdSchemaObject | T, internal_property: QueryObjInternalProperty | None = None)`
 :   A class representing a query object. Use .with_vector to run queries using a stored
     vector, or use .similar for queries where you supply the query at query-time. Or combine
     them, or even combine multiple .similar to supply different queries for each space in the
@@ -43,11 +43,6 @@ Classes
     Attributes:
         builder (Query): The query builder.
         schema (SchemaObject): The schema object.
-        filters (list[QueryPredicate]): The list of query predicates.
-        limit_ (int | None): The limit for the query. If None, no limit is applied.
-        radius_ (float | None): The radius for the query. If None, no radius is applied.
-            The float can be between 0 and 1. Otherwise ValueError is thrown
-            The lower the number the closer the vectors are.
     
     Initialize the QueryObj.
     
@@ -62,7 +57,7 @@ Classes
 
     ### Methods
 
-    `limit(self, limit: int | None) ‑> typing_extensions.Self`
+    `limit(self, limit: int | None) ‑> superlinked.framework.dsl.query.query.QueryObj`
     :   Set a limit to the number of results returned by the query.
         If the limit is None, a result set based on all elements in the index will be returned.
         
@@ -72,10 +67,10 @@ Classes
         Returns:
             Self: The query object itself.
 
-    `override_now(self, now: int) ‑> typing_extensions.Self`
+    `override_now(self, now: int) ‑> superlinked.framework.dsl.query.query.QueryObj`
     :
 
-    `radius(self, radius: float) ‑> typing_extensions.Self`
+    `radius(self, radius: float) ‑> superlinked.framework.dsl.query.query.QueryObj`
     :   Set a radius for the search in the query. The radius is a float value that
         determines the maximum distance to the input vector in the search.
         A lower radius value means that the enforced maximum distance is lower,
@@ -92,7 +87,7 @@ Classes
         Raises:
             ValueError: If the radius is not between 0 and 1.
 
-    `similar(self, field_set: SpaceFieldSet, param: ParamType, weight: FloatParamType = 1.0) ‑> typing_extensions.Self`
+    `similar(self, field_set: SpaceFieldSet, param: ParamType, weight: FloatParamType = 1.0) ‑> superlinked.framework.dsl.query.query.QueryObj`
     :   Add a 'similar' clause to the query. Similar queries compile query inputs (like query text) into vectors
         using a space and then use the query_vector (weighted with weight param) to search
         in the referenced space of the index.
@@ -110,7 +105,7 @@ Classes
             QueryException: If the space is already bound in the query.
             InvalidSchemaException: If the schema is not in the similarity field's schema types.
 
-    `with_vector(self, schema_obj: IdSchemaObject | T, id_param: ParamType) ‑> typing_extensions.Self`
+    `with_vector(self, schema_obj: IdSchemaObject | T, id_param: ParamType) ‑> superlinked.framework.dsl.query.query.QueryObj`
     :   Add a 'with_vector' clause to the query. This fetches an object with id_param
         from the db and uses the vector of that item for search purposes. Weighting
         happens at the space level (and if there is also a .similar query present,
