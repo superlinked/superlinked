@@ -12,9 +12,9 @@ Visit [Superlinked](https://superlinked.com/) for more information about the com
 
 ## Use-cases
 
-- [E-commerce Recommendation System](https://github.com/superlinked/superlinked-alpha/blob/main/notebook/e_commerce_recsys.ipynb)
-- [Movie Recommendations](https://github.com/superlinked/superlinked-alpha/blob/main/notebook/netflix_titles.ipynb)
-- [Semantic Search](https://github.com/superlinked/superlinked-alpha/blob/main/notebook/news_semantic_search.ipynb)
+- [E-commerce Recommendation System](https://github.com/superlinked/superlinked-alpha/blob/main/notebook/recommendations_e_commerce.ipynb)
+- [Movie Recommendations](https://github.com/superlinked/superlinked-alpha/blob/main/notebook/semantic_search_netflix_titles.ipynb)
+- [Semantic Search](https://github.com/superlinked/superlinked-alpha/blob/main/notebook/semantic_search_news.ipynb)
 
 ## Reference
 
