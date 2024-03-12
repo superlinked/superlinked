@@ -22,6 +22,7 @@ Classes
     ### Descendants
 
     * superlinked.framework.dsl.executor.in_memory.in_memory_executor.InMemoryApp
+    * superlinked.framework.dsl.executor.rest.rest_executor.RestApp
 
     ### Instance variables
 
@@ -43,7 +44,7 @@ Classes
         Returns:
             ObjectStoreManager: The object store manager instance.
 
-`Executor(sources: list[SourceT], indices: list[Index], context: ExecutionContext)`
+`Executor(sources: Sequence[SourceT], indices: Sequence[Index], context: ExecutionContext)`
 :   Abstract base class for an executor.
     
     Initialize the Executor.
@@ -61,10 +62,11 @@ Classes
     ### Descendants
 
     * superlinked.framework.dsl.executor.in_memory.in_memory_executor.InMemoryExecutor
+    * superlinked.framework.dsl.executor.rest.rest_executor.RestExecutor
 
     ### Instance variables
 
-    `context`
+    `context: superlinked.framework.common.dag.context.ExecutionContext`
     :   Get the context.
         
         Returns:

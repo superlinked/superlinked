@@ -7,4 +7,5 @@ e.g.: `InMemorySource` that allows you to `put` data continously while running w
 Sub-modules
 -----------
 * superlinked.framework.dsl.source.in_memory_source
+* superlinked.framework.dsl.source.rest_source
 * superlinked.framework.dsl.source.source

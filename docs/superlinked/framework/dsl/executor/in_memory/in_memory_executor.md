@@ -23,7 +23,7 @@ Classes
 
     ### Methods
 
-    `query(self, query_obj: QueryObj, **params) ‑> superlinked.framework.dsl.query.result.Result`
+    `query(self, query_obj: QueryObj, **params: Any) ‑> superlinked.framework.dsl.query.result.Result`
     :   Execute a query. Example:
         ```
         query = (
@@ -48,7 +48,7 @@ Classes
         Raises:
             QueryException: If the query index is not amongst the executor's indices.
 
-`InMemoryExecutor(sources: list[InMemorySource], indices: list[Index], context_data: Mapping[str, Mapping[str, ContextValue]] | None = None)`
+`InMemoryExecutor(sources: Sequence[InMemorySource], indices: Sequence[Index], context_data: Mapping[str, Mapping[str, ContextValue]] | None = None)`
 :   In-memory implementation of the Executor class. Supply it with the sources through which
     your data is received, and the indices indicating the desired vector spaces, and the executor will
     create the spaces optimised for search.
