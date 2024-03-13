@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.query.query
 Classes
 -------
 
-`Query(index: Index, weights: dict[Space, FloatParamType] | None = None)`
+`Query(index: superlinked.framework.dsl.index.index.Index, weights: Optional[typing.Annotated[dict[superlinked.framework.dsl.space.space.Space, float | superlinked.framework.dsl.query.param.Param], Is[TypeValidator.dict_validator.validator]]] = None)`
 :   A class representing a query. Build queries using Params as placeholders for weights or query text,
     and supply their value later on when executing a query.
     
@@ -34,7 +34,7 @@ Classes
             InvalidSchemaException: If the schema is invalid.
             QueryException: If the index does not have the queried schema.
 
-`QueryObj(builder: Query, schema: IdSchemaObject | T, internal_property: QueryObjInternalProperty | None = None)`
+`QueryObj(builder: superlinked.framework.dsl.query.query.Query, schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject, internal_property: superlinked.framework.dsl.query.query.QueryObjInternalProperty | None = None)`
 :   A class representing a query object. Use .with_vector to run queries using a stored
     vector, or use .similar for queries where you supply the query at query-time. Or combine
     them, or even combine multiple .similar to supply different queries for each space in the
@@ -48,7 +48,7 @@ Classes
     
     Args:
         builder (Query): The query builder.
-        schema (SchemaObject | T): The schema object.
+        schema (IdSchemaObject): The schema object.
 
     ### Instance variables
 
@@ -87,7 +87,7 @@ Classes
         Raises:
             ValueError: If the radius is not between 0 and 1.
 
-    `similar(self, field_set: SpaceFieldSet, param: ParamType, weight: FloatParamType = 1.0) ‑> superlinked.framework.dsl.query.query.QueryObj`
+    `similar(self, field_set: superlinked.framework.dsl.space.space_field_set.SpaceFieldSet, param: str | int | float | bool | None | superlinked.framework.dsl.query.param.Param, weight: float | superlinked.framework.dsl.query.param.Param = 1.0) ‑> superlinked.framework.dsl.query.query.QueryObj`
     :   Add a 'similar' clause to the query. Similar queries compile query inputs (like query text) into vectors
         using a space and then use the query_vector (weighted with weight param) to search
         in the referenced space of the index.
@@ -105,7 +105,7 @@ Classes
             QueryException: If the space is already bound in the query.
             InvalidSchemaException: If the schema is not in the similarity field's schema types.
 
-    `with_vector(self, schema_obj: IdSchemaObject | T, id_param: ParamType) ‑> superlinked.framework.dsl.query.query.QueryObj`
+    `with_vector(self, schema_obj: Union[superlinked.framework.common.schema.id_schema_object.IdSchemaObject, ~T], id_param: str | int | float | bool | None | superlinked.framework.dsl.query.param.Param) ‑> superlinked.framework.dsl.query.query.QueryObj`
     :   Add a 'with_vector' clause to the query. This fetches an object with id_param
         from the db and uses the vector of that item for search purposes. Weighting
         happens at the space level (and if there is also a .similar query present,

@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.executor.in_memory.in_memory_executor
 Classes
 -------
 
-`InMemoryApp(executor: InMemoryExecutor)`
+`InMemoryApp(executor: superlinked.framework.dsl.executor.in_memory.in_memory_executor.InMemoryExecutor)`
 :   In-memory implementation of the App class.
     
     Attributes:
@@ -23,7 +23,7 @@ Classes
 
     ### Methods
 
-    `query(self, query_obj: QueryObj, **params: Any) ‑> superlinked.framework.dsl.query.result.Result`
+    `query(self, query_obj: superlinked.framework.dsl.query.query.QueryObj, **params: Any) ‑> superlinked.framework.dsl.query.result.Result`
     :   Execute a query. Example:
         ```
         query = (

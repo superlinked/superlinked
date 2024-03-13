@@ -44,7 +44,7 @@ Classes
         Returns:
             ObjectStoreManager: The object store manager instance.
 
-`Executor(sources: Sequence[SourceT], indices: Sequence[Index], context: ExecutionContext)`
+`Executor(sources: Sequence[~SourceT], indices: Annotated[Sequence[superlinked.framework.dsl.index.index.Index], Is[TypeValidator.list_validator.validator]], context: superlinked.framework.common.dag.context.ExecutionContext)`
 :   Abstract base class for an executor.
     
     Initialize the Executor.
