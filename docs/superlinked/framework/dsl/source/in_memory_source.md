@@ -4,14 +4,14 @@ Module superlinked.framework.dsl.source.in_memory_source
 Classes
 -------
 
-`InMemorySource(schema: SchemaObjectT, parser: DataParser | None = None)`
+`InMemorySource(schema: ~SchemaObjectT, parser: superlinked.framework.common.parser.data_parser.DataParser | None = None)`
 :   InMemorySource represents a source of data, where you can put your data. This will supply
     the index with the data it needs to index and search in.
     
     Initialize the InMemorySource.
     
     Args:
-        schema (SchemaObjectT): The schema object.
+        schema (IdSchemaObject): The schema object.
         parser (DataParser | None, optional): The data parser. Defaults to JsonParser if None is supplied.
     
     Raises:
