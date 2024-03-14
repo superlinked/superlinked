@@ -41,6 +41,7 @@ class QueryFilters:
         evaluated_filters = param_evaluator.evaluate_filters(
             self._validate_filters(filters)
         )
+        self._check_all_filter_weight_is_not_zero(evaluated_filters)
         self.grouped_evaluated_filters: dict[
             BinaryOp, list[EvaluatedBinaryPredicate]
         ] = self.__group_filters(evaluated_filters)
@@ -62,6 +63,14 @@ class QueryFilters:
     @property
     def filter_count(self) -> int:
         return self.__filter_count
+
+    def _get_weight_abs_sum(self) -> float:
+        """Absolute value is needed for the case when the sum of weights would be zero."""
+        weights = [abs(filter_.weight) for filter_ in self.similar_filters]
+        if looks_like_filter := self.looks_like_filter:
+            weights.append(looks_like_filter.weight)
+        weight_sum = sum(weights)
+        return weight_sum
 
     def _validate_filters(self, filters: list[QueryPredicate]) -> list[BinaryPredicate]:
         self._check_operations_are_supported(filters)
@@ -134,6 +143,12 @@ class QueryFilters:
             raise QueryException(
                 f"One query cannot have more than one looks like filter, got {looks_like_filter_count}"
             )
+
+    def _check_all_filter_weight_is_not_zero(
+        self, filters: list[EvaluatedBinaryPredicate]
+    ) -> None:
+        if len(filters) and all(filter_.weight == 0 for filter_ in filters):
+            raise QueryException("At least one filter needs to have a non-zero weight.")
 
     @staticmethod
     def _get_operation_type(binary_predicate: EvaluatedBinaryPredicate) -> BinaryOp:

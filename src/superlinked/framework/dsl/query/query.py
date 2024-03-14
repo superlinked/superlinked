@@ -182,7 +182,10 @@ class QueryObj:
         return self.__alter({"radius": radius})
 
     def with_vector(
-        self, schema_obj: IdSchemaObject | T, id_param: ParamType
+        self,
+        schema_obj: IdSchemaObject | T,
+        id_param: ParamType,
+        weight: FloatParamType = DEFAULT_WEIGHT,
     ) -> QueryObj:
         """
         Add a 'with_vector' clause to the query. This fetches an object with id_param
@@ -205,9 +208,10 @@ class QueryObj:
         filters = self.filters.copy()
         filters.append(
             BinaryPredicate(
-                BinaryOp.LOOKS_LIKE,
-                schema_obj.id,
-                id_param,
+                op=BinaryOp.LOOKS_LIKE,
+                left_param=schema_obj.id,
+                right_param=id_param,
+                weight=weight,
             )
         )
         return self.__alter({"filters": filters})

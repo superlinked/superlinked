@@ -74,7 +74,7 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
             ],
             Vector([]),
         )
-        return vector.normalize()
+        return vector if context.is_query_context() else vector.normalize()
 
     def re_weight_vector(
         self,
