@@ -23,15 +23,11 @@ Classes
 
     ### Instance variables
 
-    `rest_app: fastapi.applications.FastAPI`
-    :   Property that returns the REST application instance.
-        
-        This property is used to get the instance of the REST application that has been created
-        with the defined sources and queries. The application instance is of type FastAPI and
-        it is used to handle the REST API requests.
+    `handler: superlinked.framework.dsl.executor.rest.rest_handler.RestHandler`
+    :   Property that returns the RestHandler instance associated with the RestApp.
         
         Returns:
-            FastAPI: The instance of the REST application.
+            RestHandler: An instance of RestHandler.
 
 `RestExecutor(sources: list[RestSource], indices: list[Index], queries: list[RestQuery], endpoint_configuration: RestEndpointConfiguration | None = None, context_data: Mapping[str, Mapping[str, ContextValue]] | None = None)`
 :   The RestExecutor is a subclass of the Executor base class. It encapsulates all the parameters required for
