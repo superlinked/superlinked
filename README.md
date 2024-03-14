@@ -12,19 +12,19 @@ Visit [Superlinked](https://superlinked.com/) for more information about the com
 
 ## Use-cases
 
-- [E-commerce Recommendation System](https://github.com/superlinked/superlinked-alpha/blob/main/notebook/recommendations_e_commerce.ipynb)
-- [Movie Recommendations](https://github.com/superlinked/superlinked-alpha/blob/main/notebook/semantic_search_netflix_titles.ipynb)
-- [Semantic Search](https://github.com/superlinked/superlinked-alpha/blob/main/notebook/semantic_search_news.ipynb)
+- [E-commerce Recommendation System](https://github.com/superlinked/superlinked/blob/main/notebook/recommendations_e_commerce.ipynb)
+- [Movie Recommendations](https://github.com/superlinked/superlinked/blob/main/notebook/semantic_search_netflix_titles.ipynb)
+- [Semantic Search](https://github.com/superlinked/superlinked/blob/main/notebook/semantic_search_news.ipynb)
 
 ## Reference
 
-1. Describe your data using Python classes with the [@schema](https://github.com/superlinked/superlinked-alpha/blob/main/docs/superlinked/framework/common/schema/schema.md) decorator.
-2. Describe your vector embeddings from building blocks with [Spaces](https://github.com/superlinked/superlinked-alpha/blob/main/docs/superlinked/framework/dsl/space/index.md).
-3. Combine your embeddings into a queryable [Index](https://github.com/superlinked/superlinked-alpha/blob/main/docs/superlinked/framework/dsl/index/index.m.md).
-4. Define your search with dynamic parameters and weights as a [Query](https://github.com/superlinked/superlinked-alpha/blob/main/docs/superlinked/framework/dsl/query/query.md).
-5. Load your data using a [Source](https://github.com/superlinked/superlinked-alpha/blob/main/docs/superlinked/framework/dsl/source/index.md).
-6. Define your transformations with a [Parser](https://github.com/superlinked/superlinked-alpha/blob/main/docs/superlinked/framework/common/parser) (e.g.: from [`pd.DataFrame`](https://github.com/superlinked/superlinked-alpha/blob/main/docs/superlinked/framework/common/parser/dataframe_parser.md)). 
-7. Run your configuration with an [Executor](https://github.com/superlinked/superlinked-alpha/blob/main/docs/superlinked/framework/dsl/executor/in_memory/in_memory_executor.md).
+1. Describe your data using Python classes with the [@schema](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/common/schema/schema.md) decorator.
+2. Describe your vector embeddings from building blocks with [Spaces](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/dsl/space/index.md).
+3. Combine your embeddings into a queryable [Index](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/dsl/index/index.m.md).
+4. Define your search with dynamic parameters and weights as a [Query](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/dsl/query/query.md).
+5. Load your data using a [Source](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/dsl/source/index.md).
+6. Define your transformations with a [Parser](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/common/parser) (e.g.: from [`pd.DataFrame`](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/common/parser/dataframe_parser.md)). 
+7. Run your configuration with an [Executor](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/dsl/executor/in_memory/in_memory_executor.md).
   
 ## Example code
 
@@ -67,7 +67,7 @@ source.put([{"id": "sunny_day", "body": "Today is a sunny day"}])
 print(app.query(query, query_text="Who is a positive friend?")) # Run your query.
 ```
 
-Ready to go to production? We are launching our first Vector DB connectors soon! [Tell us which Vector DB we should support!](https://github.com/superlinked/superlinked-alpha/discussions/41)
+Ready to go to production? We are launching our first Vector DB connectors soon! [Tell us which Vector DB we should support!](https://github.com/superlinked/superlinked/discussions/41)
 
 ## Articles
 
@@ -76,5 +76,5 @@ Ready to go to production? We are launching our first Vector DB connectors soon!
 
 ## Support
 
-If you encounter any challanges during your experiments, feel free to create an [issue](https://github.com/superlinked/superlinked-alpha/issues/new?assignees=ClaireSuperlinked&labels=bug&projects=&template=bug_report.md&title=), request a [feature](https://github.com/superlinked/superlinked-alpha/issues/new?assignees=ClaireSuperlinked&labels=enhancement&projects=&template=feature_request.md&title=) or to [start a discussion](https://github.com/superlinked/superlinked-alpha/discussions/new/choose).
+If you encounter any challanges during your experiments, feel free to create an [issue](https://github.com/superlinked/superlinked/issues/new?assignees=ClaireSuperlinked&labels=bug&projects=&template=bug_report.md&title=), request a [feature](https://github.com/superlinked/superlinked/issues/new?assignees=ClaireSuperlinked&labels=enhancement&projects=&template=feature_request.md&title=) or to [start a discussion](https://github.com/superlinked/superlinked/discussions/new/choose).
 Make sure to group your feedback in separate issues and discussions by topic. Thank you for your feedback!
