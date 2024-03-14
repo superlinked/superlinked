@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from superlinked.framework.common.const import DEFAULT_WEIGHT
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.dsl.query.param import FloatParamType, Param
@@ -30,7 +29,7 @@ class BinaryPredicate(QueryPredicate[BinaryOp]):
         op: BinaryOp,
         left_param: SchemaField,
         right_param: Param | str | int | float | None,
-        weight: FloatParamType = DEFAULT_WEIGHT,
+        weight: FloatParamType,
         left_param_node: Node | None = None,
     ) -> None:
         super().__init__(op=op, params=[left_param, right_param], weight_param=weight)

@@ -105,7 +105,7 @@ Classes
             QueryException: If the space is already bound in the query.
             InvalidSchemaException: If the schema is not in the similarity field's schema types.
 
-    `with_vector(self, schema_obj: Union[superlinked.framework.common.schema.id_schema_object.IdSchemaObject, ~T], id_param: str | int | float | bool | None | superlinked.framework.dsl.query.param.Param) ‑> superlinked.framework.dsl.query.query.QueryObj`
+    `with_vector(self, schema_obj: Union[superlinked.framework.common.schema.id_schema_object.IdSchemaObject, ~T], id_param: str | int | float | bool | None | superlinked.framework.dsl.query.param.Param, weight: float | superlinked.framework.dsl.query.param.Param = 1.0) ‑> superlinked.framework.dsl.query.query.QueryObj`
     :   Add a 'with_vector' clause to the query. This fetches an object with id_param
         from the db and uses the vector of that item for search purposes. Weighting
         happens at the space level (and if there is also a .similar query present,
