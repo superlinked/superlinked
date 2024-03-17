@@ -28,14 +28,39 @@ Visit [Superlinked](https://superlinked.com/) for more information about the com
   
 ## Example code
 
-Example on how to use Superlinked in a notebook to experiment with the semantic search use-case.
+Example on how to use Superlinked to experiment with the semantic search use-case. 
+
+### In a notebook
+
+Install the superlinked library: 
+```
+%pip install superlinked
+```
+
+### As a script 
+Ensure your python version is 3.10.0 or newer
+
+```commandline
+$> python -V
+Python 3.10.9
+```
+
+If your python version is lower you might use [pyenv](https://github.com/pyenv/pyenv) to install it. 
+
+Upgrade pip and install the superlinked library
+
+```commandline
+$> python -m pip install --upgrade pip
+$> python -m pip install superlinked
+```
+
+Then run the example code. First run will take slightly longer as it has to download the embedding model.  
 
 ```python
 from superlinked.framework.common.schema.schema import schema
-from superlinked.framework.common.schema.schema_object import String, Timestamp
+from superlinked.framework.common.schema.schema_object import String
 from superlinked.framework.common.schema.id_schema_object import IdField
 from superlinked.framework.dsl.space.text_similarity_space import TextSimilaritySpace
-from superlinked.framework.dsl.space.recency_space import RecencySpace
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.query.param import Param
 from superlinked.framework.dsl.query.query import Query
