@@ -12,9 +12,12 @@ Visit [Superlinked](https://superlinked.com/) for more information about the com
 
 ## Use-cases
 
-- [E-commerce Recommendation System](https://github.com/superlinked/superlinked/blob/main/notebook/recommendations_e_commerce.ipynb)
-- [Movie Recommendations](https://github.com/superlinked/superlinked/blob/main/notebook/semantic_search_netflix_titles.ipynb)
-- [Semantic Search](https://github.com/superlinked/superlinked/blob/main/notebook/semantic_search_news.ipynb)
+- **RAG**: [HR Knowledgebase](https://github.com/superlinked/superlinked/blob/main/notebook/rag_hr_knowledgebase.ipynb)
+- **Semantic Search**: [Movie Recommendations](https://github.com/superlinked/superlinked/blob/main/notebook/semantic_search_netflix_titles.ipynb), [Business News](https://github.com/superlinked/superlinked/blob/main/notebook/semantic_search_news.ipynb)
+- **Recommendation Systems**: [E-commerce](https://github.com/superlinked/superlinked/blob/main/notebook/recommendations_e_commerce.ipynb)
+- **Analytics**: [User Acquisition](https://github.com/superlinked/superlinked/blob/main/notebook/analytics_user_acquisition.ipynb)
+
+You can check a full list of examples [here](https://github.com/superlinked/superlinked/tree/main/notebook).
 
 ## Reference
 
@@ -25,27 +28,31 @@ Visit [Superlinked](https://superlinked.com/) for more information about the com
 5. Load your data using a [Source](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/dsl/source/index.md).
 6. Define your transformations with a [Parser](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/common/parser) (e.g.: from [`pd.DataFrame`](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/common/parser/dataframe_parser.md)). 
 7. Run your configuration with an [Executor](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/dsl/executor/in_memory/in_memory_executor.md).
+
+You can check a list of our [features](https://github.com/superlinked/superlinked/tree/main/notebook/feature) or head to our [documentation](https://github.com/superlinked/superlinked/tree/main/docs).
   
-## Example code
+## Try it out
 
 Example on how to use Superlinked to experiment with the semantic search use-case. 
 
-### In a notebook
+### Pre-requisities
+
+#### In a notebook
 
 Install the superlinked library: 
 ```
 %pip install superlinked
 ```
 
-### As a script 
-Ensure your python version is 3.10.0 or newer
+#### As a script 
+Ensure your python version is 3.10.x.
 
 ```commandline
 $> python -V
 Python 3.10.9
 ```
 
-If your python version is lower you might use [pyenv](https://github.com/pyenv/pyenv) to install it. 
+If your python version is not `3.10.x` you might use [pyenv](https://github.com/pyenv/pyenv) to install it. 
 
 Upgrade pip and install the superlinked library
 
@@ -54,7 +61,9 @@ $> python -m pip install --upgrade pip
 $> python -m pip install superlinked
 ```
 
-Then run the example code. First run will take slightly longer as it has to download the embedding model.  
+### Run the example
+
+>First run will take slightly longer as it has to download the embedding model.  
 
 ```python
 from superlinked.framework.common.schema.schema import schema
