@@ -5,7 +5,7 @@ Classes
 -------
 
 `RestEndpointConfiguration(**data: Any)`
-:   Usage docs: https://docs.pydantic.dev/2.5/concepts/models/
+:   Usage docs: https://docs.pydantic.dev/2.6/concepts/models/
     
     A base class for creating Pydantic models.
     
@@ -37,8 +37,7 @@ Classes
     Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
     validated to form a valid model.
     
-    `__init__` uses `__pydantic_self__` instead of the more common `self` for the first arg to
-    allow `self` as a field name.
+    `self` is explicitly positional-only to allow `self` as a field name.
 
     ### Ancestors (in MRO)
 
@@ -51,6 +50,9 @@ Classes
     :
 
     `ingest_path_prefix: str`
+    :
+
+    `model_computed_fields`
     :
 
     `model_config`
