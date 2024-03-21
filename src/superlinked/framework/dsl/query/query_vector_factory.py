@@ -19,6 +19,7 @@ from typing import cast
 from superlinked.framework.common.dag.context import (
     ExecutionContext,
     ExecutionEnvironment,
+    NowStrategy,
 )
 from superlinked.framework.common.dag.dag import Dag
 from superlinked.framework.common.data_types import Vector
@@ -167,7 +168,9 @@ class QueryVectorFactory:
         node_id_weight_map: dict[str, float],
     ) -> ExecutionContext:
         eval_context = ExecutionContext(
-            environment=ExecutionEnvironment.QUERY, data=context_base.data
+            environment=ExecutionEnvironment.QUERY,
+            data=context_base.data,
+            now_strategy=NowStrategy.CONTEXT_TIME,
         )
         eval_context.update_data(
             self._query_weighting.get_node_weights(node_id_weight_map)

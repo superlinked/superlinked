@@ -19,6 +19,7 @@ from superlinked.framework.common.dag.context import (
     CONTEXT_COMMON_NOW,
     ExecutionContext,
     ExecutionEnvironment,
+    NowStrategy,
 )
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import QueryException
@@ -94,7 +95,9 @@ class QueryExecutor:
 
     def _create_query_context_base(self) -> ExecutionContext:
         eval_context = ExecutionContext(
-            environment=ExecutionEnvironment.QUERY, data=self.app.executor.context.data
+            environment=ExecutionEnvironment.QUERY,
+            data=self.app.executor.context.data,
+            now_strategy=NowStrategy.CONTEXT_TIME,
         )
         eval_context.update_data(
             {CONTEXT_COMMON: {CONTEXT_COMMON_NOW: self.__query_now()}}

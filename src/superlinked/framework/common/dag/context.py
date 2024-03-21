@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from enum import Enum
+from enum import Enum, auto
 from typing import Mapping, TypeVar, cast
 
 from typing_extensions import Self, TypeAlias
@@ -39,13 +39,21 @@ class ExecutionEnvironment(Enum):
     QUERY = 2
 
 
+class NowStrategy(Enum):
+    SYSTEM_TIME = auto()
+    CONTEXT_TIME = auto()
+    CONTEXT_OR_SYSTEM_TIME = auto()
+
+
 class ExecutionContext:
     def __init__(
         self,
         environment: ExecutionEnvironment,
+        now_strategy: NowStrategy = NowStrategy.CONTEXT_OR_SYSTEM_TIME,
         data: Mapping[str, Mapping[str, ContextValue]] | None = None,
     ) -> None:
         self.__environment = environment
+        self.__now_strategy = now_strategy
         self.__data: dict[str, dict[str, ContextValue]] = defaultdict(dict)
         if data:
             self.update_data(data)
@@ -56,12 +64,12 @@ class ExecutionContext:
         return self
 
     def now(self) -> int:
-        match self.__environment:
-            case ExecutionEnvironment.IN_MEMORY:
+        match self.__now_strategy:
+            case NowStrategy.CONTEXT_OR_SYSTEM_TIME:
                 return (
                     self.__data_now() or time_util.now()
                 )  # ingestion uses system time for in_memory executor if it is not overridden
-            case ExecutionEnvironment.QUERY:
+            case NowStrategy.CONTEXT_TIME:
                 now = self.__data_now()
                 if now is None:
                     raise QueryException(
@@ -70,11 +78,12 @@ class ExecutionContext:
                             "property should always be initialized for query contexts",
                         )
                     )
-
                 return now
+            case NowStrategy.SYSTEM_TIME:
+                return time_util.now()
             case _:
                 raise NotImplementedException(
-                    f"Now is not defined for environment type: {self.__environment}"
+                    f"Unknown now strategy: {self.__now_strategy}"
                 )
 
     @property
@@ -129,9 +138,10 @@ class ExecutionContext:
         cls,
         context_data: Mapping[str, Mapping[str, ContextValue]] | None,
         environment: ExecutionEnvironment,
+        now_strategy: NowStrategy = NowStrategy.CONTEXT_OR_SYSTEM_TIME,
     ) -> ExecutionContext:
         return (
-            cls(environment)
+            cls(environment, now_strategy)
             if context_data is None
-            else cls(environment).update_data(context_data)
+            else cls(environment, now_strategy).update_data(context_data)
         )
