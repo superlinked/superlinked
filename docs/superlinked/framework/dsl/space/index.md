@@ -5,6 +5,7 @@ It encapsulated the vector creation logic to be reused at ingestion and at query
 
 Sub-modules
 -----------
+* superlinked.framework.dsl.space.categorical_similarity_space
 * superlinked.framework.dsl.space.exception
 * superlinked.framework.dsl.space.number_space
 * superlinked.framework.dsl.space.recency_space
