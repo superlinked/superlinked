@@ -42,7 +42,7 @@ class CategoricalSimilaritySpace(Space):
 
     def __init__(
         self,
-        category: String | list[String],
+        category_input: String | list[String],
         categories: list[str],
         negative_filter: float = 0.0,
     ) -> None:
@@ -50,13 +50,13 @@ class CategoricalSimilaritySpace(Space):
         Initialize the CategoricalSimilaritySpace.
 
         Args:
-            category (string): The category input
+            category_input (String | list[String]): The category input
             categories (list[str]): This controls the set of categories represented in the one-hot vector,
                 else it falls into the other category. It is needed to control dimensionality.
             negative_filter (float): Not matched category vector elements are not initialized as 0,
                 but as negative_filter
         """
-        super().__init__(category, String)
+        super().__init__(category_input, String)
         unchecked_category_node_map = {
             single_category: CategoricalSimilarityNode(
                 parent=SchemaFieldNode(single_category),
