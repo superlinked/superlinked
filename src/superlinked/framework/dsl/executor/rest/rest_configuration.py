@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from attr import dataclass
+from dataclasses import dataclass
+
 from pydantic import model_validator
 
 from superlinked.framework.common.util.immutable_model import ImmutableBaseModel
