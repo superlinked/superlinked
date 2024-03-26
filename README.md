@@ -1,19 +1,17 @@
 # Superlinked 
 
-Superlinked is a declarative Python SDK that enables you to turn complex data into vectors, in a way that fits the modern data stack and works with your favorite Vector Databases.
+Superlinked is a compute framework for your information retrieval and feature engineering systems, focused on turning complex data into vector embeddings within your RAG, Search, RecSys and Analytics stack.
 
-3 key areas of focus:
-
-1. Custom embedding model creation that fits your complex data entities.
-1. ETL for your vector index for both streaming and batch use-cases.
-1. Vector-native query language that helps you convert hybrid search queries to pure vector queries.
+Our current release allows you to explore our computational model in simple scripts and python notebooks, our next major release will focus on helping you run Superlinked in production, with built-in data infra and vector database integrations.
 
 Visit [Superlinked](https://superlinked.com/) for more information about the company behind this product and our other initiatives.
+
+If you like what we do, give us a star! ⭐
 
 ## Use-cases
 
 - **RAG**: [HR Knowledgebase](https://github.com/superlinked/superlinked/blob/main/notebook/rag_hr_knowledgebase.ipynb)
-- **Semantic Search**: [Movie Recommendations](https://github.com/superlinked/superlinked/blob/main/notebook/semantic_search_netflix_titles.ipynb), [Business News](https://github.com/superlinked/superlinked/blob/main/notebook/semantic_search_news.ipynb)
+- **Semantic Search**: [Movies](https://github.com/superlinked/superlinked/blob/main/notebook/semantic_search_netflix_titles.ipynb), [Business News](https://github.com/superlinked/superlinked/blob/main/notebook/semantic_search_news.ipynb)
 - **Recommendation Systems**: [E-commerce](https://github.com/superlinked/superlinked/blob/main/notebook/recommendations_e_commerce.ipynb)
 - **Analytics**: [User Acquisition](https://github.com/superlinked/superlinked/blob/main/notebook/analytics_user_acquisition.ipynb)
 
