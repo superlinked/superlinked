@@ -88,7 +88,11 @@ class TextSimilaritySpace(Space):
 
 @TypeValidator.wrap
 def chunk(
-    text: String, chunk_size: int | None = None, chunk_overlap: int | None = None
+    text: String,
+    chunk_size: int | None = None,
+    chunk_overlap: int | None = None,
+    split_chars_keep: list[str] | None = None,
+    split_chars_remove: list[str] | None = None,
 ) -> ChunkingNode:
     """
     Create smaller chunks from the given text, a String SchemaFieldObject. It is helpful when you search
@@ -96,11 +100,23 @@ def chunk(
     find what fits best your use-case. Chunking respects word boundaries.
 
     Args:
-        text (String): The text to chunk.
-        chunk_size (int | None, optional): The maximum size of each chunk in characters. Defaults to None.
-        chunk_overlap (int | None, optional): The maximum overlap between chunks in characters. Defaults to None.
+        text (String): The String field the text of which is to be chunked.
+        chunk_size (int | None, optional): The maximum size of each chunk in characters. Defaults to None, which means
+        effectively using 250.
+        chunk_overlap (int | None, optional): The maximum overlap between chunks in characters. Defaults to None, which
+        means effectively using {}.
+        split_chars_keep: Characters to split at, but also keep in the text. Should be characters that can signal
+        meaningful breakpoints in the text. Effectively defaults to ["!", "?", "."].
+        split_chars_remove: Characters to split at and remove from the text. Should be characters that can signal
+        meaningful breakpoints in the text. Effectively defaults to ["\n"].
 
     Returns:
         ChunkingNode: The chunking node.
     """
-    return ChunkingNode(SchemaFieldNode(text), chunk_size, chunk_overlap)
+    return ChunkingNode(
+        SchemaFieldNode(text),
+        chunk_size,
+        chunk_overlap,
+        split_chars_keep,
+        split_chars_remove,
+    )

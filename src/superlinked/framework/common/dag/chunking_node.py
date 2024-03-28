@@ -21,7 +21,11 @@ class ChunkingNode(Node[str]):
         parent: Node[str],
         chunk_size: int | None = None,
         chunk_overlap: int | None = None,
+        split_chars_keep: list[str] | None = None,
+        split_chars_remove: list[str] | None = None,
     ) -> None:
         super().__init__([parent])
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
+        self.split_chars_keep = split_chars_keep
+        self.split_chars_remove = split_chars_remove

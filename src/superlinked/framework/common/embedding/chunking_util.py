@@ -14,8 +14,10 @@
 
 from typing import Callable
 
-DEFAULT_CHUNK_SIZE = 250
-DEFAULT_CHUNK_OVERLAP = 20
+DEFAULT_CHUNK_SIZE: int = 250
+DEFAULT_CHUNK_OVERLAP: int = 20
+DEFAULT_REMOVE_SPLIT_CHARS: list[str] = ["\n"]
+DEFAULT_ADDITIONAL_SPLIT_CHARS: list[str] = [".", "!", "?"]
 
 
 class Chunker:
@@ -45,13 +47,16 @@ class Chunker:
         remove_splitter_chars: list[str] | None = None,
         additional_splitter_chars: list[str] | None = None,
     ) -> list[str]:
-        """Break text into logical splits that are smaller than chunk size.
-        NOTE: the splits contain the separators.
+        """
+        Break text into logical splits that are smaller than chunk size.
+        NOTE: the splits
+            - do not contain the separators if separator in remove_splitter_chars
+            - contain the separators if separator in additional_splitter_chars.
         """
         if remove_splitter_chars is None:
-            remove_splitter_chars = ["\n"]
+            remove_splitter_chars = DEFAULT_REMOVE_SPLIT_CHARS
         if additional_splitter_chars is None:
-            additional_splitter_chars = [".", "!", "?"]
+            additional_splitter_chars = DEFAULT_ADDITIONAL_SPLIT_CHARS
         splits_to_process: list[str] = [text]
         new_splits: list[str] = []
         split_fns: list[Callable[[str], list[str]]] = [
@@ -129,7 +134,12 @@ class Chunker:
         return [" ".join(chunk.split()) for chunk in chunks]
 
     def chunk_text(
-        self, text: str, chunk_size: int | None = None, chunk_overlap: int | None = None
+        self,
+        text: str,
+        chunk_size: int | None = None,
+        chunk_overlap: int | None = None,
+        split_chars_keep: list[str] | None = None,
+        split_chars_remove: list[str] | None = None,
     ) -> list[str]:
         if not text:
             return []
@@ -137,7 +147,12 @@ class Chunker:
         chunk_overlap = (
             DEFAULT_CHUNK_OVERLAP if chunk_overlap is None else chunk_overlap
         )
-        splits = self._split(text=text, chunk_size=chunk_size)
+        splits = self._split(
+            text=text,
+            chunk_size=chunk_size,
+            remove_splitter_chars=split_chars_keep,
+            additional_splitter_chars=split_chars_remove,
+        )
         return self._merge(
             splits=splits, chunk_size=chunk_size, chunk_overlap=chunk_overlap
         )

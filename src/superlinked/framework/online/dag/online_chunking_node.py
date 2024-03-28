@@ -60,10 +60,17 @@ class OnlineChunkingNode(OnlineNode[ChunkingNode, str]):
         return ChunkingNode
 
     def __chunk(
-        self, text: str, chunk_size: int | None, chunk_overlap: int | None
+        self,
+        text: str,
+        chunk_size: int | None,
+        chunk_overlap: int | None,
+        split_chars_keep: list[str] | None = None,
+        split_chars_remove: list[str] | None = None,
     ) -> list[str]:
         chunker = Chunker()
-        return chunker.chunk_text(text, chunk_size, chunk_overlap)
+        return chunker.chunk_text(
+            text, chunk_size, chunk_overlap, split_chars_keep, split_chars_remove
+        )
 
     @override
     def evaluate_self(
@@ -95,7 +102,11 @@ class OnlineChunkingNode(OnlineNode[ChunkingNode, str]):
             raise ChunkException(f"{self.class_name} cannot have a chunked input.")
         input_value = input_.main.value
         chunk_inputs = self.__chunk(
-            input_value, self.node.chunk_size, self.node.chunk_overlap
+            input_value,
+            self.node.chunk_size,
+            self.node.chunk_overlap,
+            self.node.split_chars_keep,
+            self.node.split_chars_remove,
         )
         main = self._get_single_evaluation_result(input_value)
         chunks = [
