@@ -27,9 +27,10 @@ class InMemoryObjectWriter(Subscriber[ParsedSchema]):
         super().__init__()
         self.__object_store_manager = object_store_manager
 
-    def update(self, message: ParsedSchema) -> None:
-        parser = JsonParser(message.schema)
-        data = parser.marshal(message)
-        data_id = DataId(message.schema._schema_name, message.id_)
-        for data_element in data:
-            self.__object_store_manager.save(data_id, data_element)
+    def update(self, messages: list[ParsedSchema]) -> None:
+        for message in messages:
+            parser = JsonParser(message.schema)
+            data = parser.marshal(message)
+            data_id = DataId(message.schema._schema_name, message.id_)
+            for data_element in data:
+                self.__object_store_manager.save(data_id, data_element)

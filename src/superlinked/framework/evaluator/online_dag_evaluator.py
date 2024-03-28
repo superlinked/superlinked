@@ -21,6 +21,7 @@ from superlinked.framework.common.exception import (
     InvalidSchemaException,
 )
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.compiler.online_schema_dag_compiler import (
     OnlineSchemaDagCompiler,
@@ -58,19 +59,28 @@ class OnlineDagEvaluator(DagEvaluator[EvaluationResult[Vector]]):
             )
         )
 
+    def __get_single_schema(self, parsed_schemas: list[ParsedSchema]) -> IdSchemaObject:
+        unique_schemas: set[IdSchemaObject] = {
+            parsed_schema.schema for parsed_schema in parsed_schemas
+        }
+        if len(unique_schemas) != 1:
+            raise InvalidSchemaException(
+                f"Multiple schemas ({[s._schema_name for s in unique_schemas]}) present in the index."
+            )
+        return next(iter(unique_schemas))
+
     def evaluate(
         self,
-        parsed_schema: ParsedSchema,
+        parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
-    ) -> EvaluationResult[Vector]:
+    ) -> list[EvaluationResult[Vector]]:
+        index_schema = self.__get_single_schema(parsed_schemas)
         if (
-            online_schema_dag := self._schema_online_schema_dag_mapper.get(
-                parsed_schema.schema
-            )
+            online_schema_dag := self._schema_online_schema_dag_mapper.get(index_schema)
         ) is not None:
-            return online_schema_dag.evaluate(parsed_schema, context)
+            return online_schema_dag.evaluate(parsed_schemas, context)
         raise InvalidSchemaException(
-            f"Schema ({parsed_schema.schema._schema_name}) isn't present in the index."
+            f"Schema ({index_schema._schema_name}) isn't present in the index."
         )
 
     def evaluate_by_dag_effect(
@@ -84,7 +94,7 @@ class OnlineDagEvaluator(DagEvaluator[EvaluationResult[Vector]]):
                 dag_effect
             )
         ) is not None:
-            return online_schema_dag.evaluate(parsed_schema, context)
+            return online_schema_dag.evaluate([parsed_schema], context)[0]
         raise InvalidDagEffectException(
             f"DagEffect ({dag_effect}) isn't present in the index."
         )

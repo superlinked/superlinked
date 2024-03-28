@@ -58,10 +58,10 @@ class OnlineSchemaDag:
 
     def evaluate(
         self,
-        parsed_schema: ParsedSchema,
+        parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
-    ) -> EvaluationResult[Vector]:
-        return self.leaf_node.evaluate_next(parsed_schema, context)
+    ) -> list[EvaluationResult[Vector]]:
+        return self.leaf_node.evaluate_next(parsed_schemas, context)
 
     def __validate(self, schema: SchemaObject, nodes: list[OnlineNode]) -> None:
         class_name = self.__class__.__name__

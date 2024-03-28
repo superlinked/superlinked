@@ -12,19 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from typing import Iterator, TypeVar
 
-from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.parser.parsed_schema import ParsedSchema
-
-# Dag evaluation result type
-DERT = TypeVar("DERT")
+T = TypeVar("T")
 
 
-class DagEvaluator(ABC, Generic[DERT]):
-    @abstractmethod
-    def evaluate(
-        self, parsed_schemas: list[ParsedSchema], context: ExecutionContext
-    ) -> list[DERT]:
-        pass
+def chunk_list(data: list[T], chunk_size: int) -> Iterator[list[T]]:
+    return (data[i : i + chunk_size] for i in range(0, len(data), chunk_size))

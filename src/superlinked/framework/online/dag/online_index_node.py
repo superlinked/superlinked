@@ -74,23 +74,39 @@ class OnlineIndexNode(OnlineNode[IndexNode, Vector], HasLength):
             )
         return active_parents[0]
 
+    def __get_parent_for_parsed_schemas(
+        self, parsed_schemas: list[ParsedSchema]
+    ) -> OnlineNode:
+        active_parents = set(
+            self.get_parent_for_schema(parsed_schema.schema)
+            for parsed_schema in parsed_schemas
+        )
+        if len(active_parents) != 1:
+            raise ParentCountException(
+                f"{self.class_name} must have exactly 1 parent per schema, got {len(active_parents)}"
+            )
+        return cast(OnlineNode[Node[Vector], Vector], next(iter(active_parents)))
+
     @override
     def evaluate_self(
         self,
-        parsed_schema: ParsedSchema,
+        parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
-    ) -> EvaluationResult[Vector]:
-        active_parent = self.get_parent_for_schema(parsed_schema.schema)
-        parent = cast(OnlineNode[Node[Vector], Vector], active_parent)
-        parent_result: EvaluationResult[Vector] = parent.evaluate_next(
-            parsed_schema, context
+    ) -> list[EvaluationResult[Vector]]:
+        parent: OnlineNode = self.__get_parent_for_parsed_schemas(parsed_schemas)
+        parent_results: list[EvaluationResult[Vector]] = parent.evaluate_next(
+            parsed_schemas, context
         )
-        main = self._get_single_evaluation_result(parent_result.main.value)
-        chunks = [
-            self._get_single_evaluation_result(chunk_result.value)
-            for chunk_result in parent_result.chunks
+        return [
+            EvaluationResult(
+                self._get_single_evaluation_result(parent_result.main.value),
+                [
+                    self._get_single_evaluation_result(chunk_result.value)
+                    for chunk_result in parent_result.chunks
+                ],
+            )
+            for parent_result in parent_results
         ]
-        return EvaluationResult(main, chunks)
 
     def _re_weight_vector(
         self,

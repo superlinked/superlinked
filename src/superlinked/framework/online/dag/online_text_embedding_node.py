@@ -14,6 +14,8 @@
 
 from __future__ import annotations
 
+from typing_extensions import override
+
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.text_embedding_node import TextEmbeddingNode
 from superlinked.framework.common.data_types import Vector
@@ -52,15 +54,17 @@ class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasL
     def get_node_type(cls) -> type[TextEmbeddingNode]:
         return TextEmbeddingNode
 
-    def _evaluate_single(
+    @override
+    def _evaluate_singles(
         self,
-        parent_results: dict[OnlineNode, SingleEvaluationResult],
+        parent_results: dict[OnlineNode, list[SingleEvaluationResult]],
         context: ExecutionContext,
-    ) -> Vector | None:
+    ) -> list[Vector] | None:
         if len(parent_results.items()) != 1:
             return None
         input_ = list(parent_results.values())[0]
-        return self.__embed_text(input_.value).normalize()
+        values = [result.value for result in input_]
+        return [vector.normalize() for vector in self.__embed_texts(values)]
 
-    def __embed_text(self, text: str) -> Vector:
-        return self.node.embedding.transform(text)
+    def __embed_texts(self, texts: list[str]) -> list[Vector]:
+        return self.node.embedding.transform(texts)

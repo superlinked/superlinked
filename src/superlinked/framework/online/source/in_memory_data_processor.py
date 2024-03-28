@@ -34,11 +34,15 @@ class InMemoryDataProcessor(Subscriber[ParsedSchema]):
         self._schema_type_schema_mapper = index._schema_type_schema_mapper
         self._dag_effects = index._dag_effects
 
-    def update(self, message: ParsedSchema) -> None:
-        if message.schema in self.effect_schemas:
-            self._process_event(message)
-        else:
-            self.evaluator.evaluate(message, self.context)
+    def update(self, messages: list[ParsedSchema]) -> None:
+        regular_msgs: list[ParsedSchema] = []
+        for message in messages:
+            if message.schema in self.effect_schemas:
+                self._process_event(message)
+            else:
+                regular_msgs.append(message)
+        if regular_msgs:
+            self.evaluator.evaluate(regular_msgs, self.context)
 
     def _process_event(
         self,

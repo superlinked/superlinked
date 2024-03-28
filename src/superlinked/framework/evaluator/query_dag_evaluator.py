@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
@@ -27,13 +26,12 @@ from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 
 
 class QueryDagEvaluator(OnlineDagEvaluator):
-    @override
-    def evaluate(
+    def evaluate_single(
         self,
         parsed_schema: ParsedSchema,
         context: ExecutionContext,
     ) -> EvaluationResult[Vector]:
-        result = super().evaluate(parsed_schema, context)
+        result = super().evaluate([parsed_schema], context)[0]
         QueryDagEvaluator.__check_evaluation(result)
         return result
 

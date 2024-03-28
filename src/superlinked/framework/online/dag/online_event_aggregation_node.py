@@ -106,6 +106,13 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
     @override
     def evaluate_self(
         self,
+        parsed_schemas: list[ParsedSchema],
+        context: ExecutionContext,
+    ) -> list[EvaluationResult[Vector]]:
+        return [self.evaluate_self_single(schema, context) for schema in parsed_schemas]
+
+    def evaluate_self_single(
+        self,
         parsed_schema: ParsedSchema,
         context: ExecutionContext,
     ) -> EvaluationResult[Vector]:
@@ -165,7 +172,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         affecting_parsed_schema = self._map_event_schema_to_affecting_schema(
             event_parsed_schema
         )
-        parent_result = self.input_to_aggregate.evaluate_next(
+        parent_result = self.input_to_aggregate.evaluate_next_single(
             affecting_parsed_schema, context
         ).main.value
         if not isinstance(parent_result, Vector):
@@ -188,7 +195,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         effect_count = 0
         if not affecting_vector.is_empty:
             for filter_parent, weight in self.weighted_filter_parents.items():
-                filter_result = filter_parent.evaluate_next(
+                filter_result = filter_parent.evaluate_next_single(
                     event_parsed_schema,
                     context,
                 )

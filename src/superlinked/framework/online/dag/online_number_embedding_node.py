@@ -66,6 +66,13 @@ class OnlineNumberEmbeddingNode(OnlineNode[NumberEmbeddingNode, Vector], HasLeng
     @override
     def evaluate_self(
         self,
+        parsed_schemas: list[ParsedSchema],
+        context: ExecutionContext,
+    ) -> list[EvaluationResult[Vector]]:
+        return [self.evaluate_self_single(schema, context) for schema in parsed_schemas]
+
+    def evaluate_self_single(
+        self,
         parsed_schema: ParsedSchema,
         context: ExecutionContext,
     ) -> EvaluationResult[Vector]:
@@ -90,7 +97,7 @@ class OnlineNumberEmbeddingNode(OnlineNode[NumberEmbeddingNode, Vector], HasLeng
 
         input_: EvaluationResult[float | int] = cast(
             OnlineNode[Node[float | int], float | int], self.parents[0]
-        ).evaluate_next(parsed_schema, context)
+        ).evaluate_next_single(parsed_schema, context)
         transformed_input_value = self.node.embedding.transform(input_.main.value)
         main = self._get_single_evaluation_result(transformed_input_value)
         return EvaluationResult(main)

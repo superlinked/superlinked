@@ -60,6 +60,13 @@ class OnlineSchemaFieldNode(Generic[SFT], OnlineNode[SchemaFieldNode, SFT]):
     @override
     def evaluate_self(
         self,
+        parsed_schemas: list[ParsedSchema],
+        context: ExecutionContext,
+    ) -> list[EvaluationResult[SFT]]:
+        return [self.evaluate_self_single(schema, context) for schema in parsed_schemas]
+
+    def evaluate_self_single(
+        self,
         parsed_schema: ParsedSchema,
         context: ExecutionContext,
     ) -> EvaluationResult[SFT]:

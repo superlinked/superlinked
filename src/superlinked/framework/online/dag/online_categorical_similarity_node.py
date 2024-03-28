@@ -66,6 +66,13 @@ class OnlineCategoricalSimilarityNode(
     @override
     def evaluate_self(
         self,
+        parsed_schemas: list[ParsedSchema],
+        context: ExecutionContext,
+    ) -> list[EvaluationResult[Vector]]:
+        return [self.evaluate_self_single(schema, context) for schema in parsed_schemas]
+
+    def evaluate_self_single(
+        self,
         parsed_schema: ParsedSchema,
         context: ExecutionContext,
     ) -> EvaluationResult[Vector]:
@@ -86,7 +93,7 @@ class OnlineCategoricalSimilarityNode(
 
         input_: EvaluationResult[str] = cast(
             OnlineNode[Node[str], str], self.parents[0]
-        ).evaluate_next(parsed_schema, context)
+        ).evaluate_next_single(parsed_schema, context)
         transformed_input_value = self.node.embedding.transform(input_.main.value)
         main = self._get_single_evaluation_result(transformed_input_value)
         return EvaluationResult(main)

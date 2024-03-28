@@ -16,12 +16,14 @@ from __future__ import annotations
 
 from typing import Generic
 
+from superlinked.framework.common.const import DEFAULT_INMEMORY_PUT_BATCH_SIZE
 from superlinked.framework.common.observable import Publisher
 from superlinked.framework.common.parser.data_parser import DataParser
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObjectT
 from superlinked.framework.common.source.source import Source
 from superlinked.framework.common.source.types import SourceTypeT
+from superlinked.framework.common.util.collection_util import chunk_list
 
 
 class InMemorySource(
@@ -35,5 +37,7 @@ class InMemorySource(
 
     def put(self, data: SourceTypeT) -> None:
         parsed_schemas: list[ParsedSchema] = self.parser.unmarshal(data)
-        for parsed_schema in parsed_schemas:
-            self._dispatch(parsed_schema)
+        for batch in chunk_list(
+            data=parsed_schemas, chunk_size=DEFAULT_INMEMORY_PUT_BATCH_SIZE
+        ):
+            self._dispatch(batch)

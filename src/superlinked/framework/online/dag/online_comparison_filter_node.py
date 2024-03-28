@@ -14,6 +14,8 @@
 
 from __future__ import annotations
 
+from typing_extensions import override
+
 from superlinked.framework.common.dag.comparison_filter_node import ComparisonFilterNode
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
@@ -49,11 +51,22 @@ class OnlineComparisonFilterNode(DefaultOnlineNode[ComparisonFilterNode, bool]):
     def get_node_type(cls) -> type[ComparisonFilterNode]:
         return ComparisonFilterNode
 
+    @override
+    def _evaluate_singles(
+        self,
+        parent_results: dict[OnlineNode, list[SingleEvaluationResult]],
+        context: ExecutionContext,
+    ) -> list[bool] | None:
+        return [
+            self._evaluate_single({parent: result})
+            for parent, results in parent_results.items()
+            for result in results
+        ]
+
     def _evaluate_single(
         self,
         parent_results: dict[OnlineNode, SingleEvaluationResult],
-        context: ExecutionContext,
-    ) -> bool | None:
+    ) -> bool:
         if len(parent_results) != 1:
             raise ParentCountException(f"{self.class_name} must have exactly 1 parent.")
         parent_result: SingleEvaluationResult = list(parent_results.values())[0]

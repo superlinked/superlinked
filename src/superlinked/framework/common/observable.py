@@ -24,7 +24,7 @@ class Subscriber(ABC, Generic[PM]):
         pass
 
     @abstractmethod
-    def update(self, message: PM) -> None:
+    def update(self, messages: list[PM]) -> None:
         pass
 
 
@@ -38,6 +38,6 @@ class Publisher(Generic[PM]):
     def unregister(self, subscriber: Subscriber[PM]) -> None:
         self.subscribers.remove(subscriber)
 
-    def _dispatch(self, message: PM) -> None:
+    def _dispatch(self, messages: list[PM]) -> None:
         for subscriber in self.subscribers:
-            subscriber.update(message)
+            subscriber.update(messages)

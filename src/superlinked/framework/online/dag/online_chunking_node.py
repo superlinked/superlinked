@@ -68,6 +68,13 @@ class OnlineChunkingNode(OnlineNode[ChunkingNode, str]):
     @override
     def evaluate_self(
         self,
+        parsed_schemas: list[ParsedSchema],
+        context: ExecutionContext,
+    ) -> list[EvaluationResult[str]]:
+        return [self.evaluate_self_single(schema, context) for schema in parsed_schemas]
+
+    def evaluate_self_single(
+        self,
         parsed_schema: ParsedSchema,
         context: ExecutionContext,
     ) -> EvaluationResult[str]:
@@ -82,7 +89,7 @@ class OnlineChunkingNode(OnlineNode[ChunkingNode, str]):
             return EvaluationResult(self._get_single_evaluation_result(stored_result))
         input_: EvaluationResult[str] = cast(
             OnlineNode[Node[str], str], self.parents[0]
-        ).evaluate_next(parsed_schema, context)
+        ).evaluate_next_single(parsed_schema, context)
         if len(input_.chunks) > 0:
             # We can just log a warning and proceed with input_.main.
             raise ChunkException(f"{self.class_name} cannot have a chunked input.")
