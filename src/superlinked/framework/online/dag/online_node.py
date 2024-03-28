@@ -76,30 +76,35 @@ class OnlineNode(ABC, Generic[NT, NDT], metaclass=ABCMeta):
 
     def evaluate_next(
         self,
-        parsed_schema: ParsedSchema,
+        parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
-    ) -> EvaluationResult[NDT]:
-        result = self.evaluate_self(parsed_schema, context)
-        if self.node.persist_evaluation_result:
-            self.persist(result, parsed_schema, context)
-        return result
+    ) -> list[EvaluationResult[NDT]]:
+        results = self.evaluate_self(parsed_schemas, context)
+        if self.node.persist_evaluation_result and not context.is_query_context():
+            for i, result in enumerate(results):
+                self.persist(result, parsed_schemas[i])
+        return results
 
-    @abstractmethod
-    def evaluate_self(
+    def evaluate_next_single(
         self,
         parsed_schema: ParsedSchema,
         context: ExecutionContext,
     ) -> EvaluationResult[NDT]:
+        return self.evaluate_next([parsed_schema], context)[0]
+
+    @abstractmethod
+    def evaluate_self(
+        self,
+        parsed_schemas: list[ParsedSchema],
+        context: ExecutionContext,
+    ) -> list[EvaluationResult[NDT]]:
         pass
 
     def persist(
         self,
         result: EvaluationResult[NDT],
         parsed_schema: ParsedSchema,
-        context: ExecutionContext,
     ) -> None:
-        if context.is_query_context():
-            return
         self.evaluation_result_store_manager.save_result(
             result,
             parsed_schema.id_,
@@ -110,14 +115,9 @@ class OnlineNode(ABC, Generic[NT, NDT], metaclass=ABCMeta):
     def load_stored_result(
         self, main_object_id: str, schema: SchemaObject
     ) -> NDT | None:
-        stored_value: SingleEvaluationResult | None = (
-            self.evaluation_result_store_manager.load_single_result(
-                main_object_id,
-                self.node_id,
-                schema._schema_name,
-                self.node.persistence_type,
-            )
+        return self.evaluation_result_store_manager.load_stored_result(
+            main_object_id,
+            self.node_id,
+            schema._schema_name,
+            self.node.persistence_type,
         )
-        if stored_value:
-            return stored_value.value
-        return None

@@ -16,22 +16,24 @@ from __future__ import annotations
 
 from typing import cast
 
+from typing_extensions import override
+
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.named_function_node import NamedFunctionNode
 from superlinked.framework.common.dag.node import NDT
 from superlinked.framework.common.exception import InitializationException
+from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.util.named_function_evaluator import (
     NamedFunctionEvaluator,
 )
-from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
-from superlinked.framework.online.dag.evaluation_result import SingleEvaluationResult
+from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.store_manager.evaluation_result_store_manager import (
     EvaluationResultStoreManager,
 )
 
 
-class OnlineNamedFunctionNode(DefaultOnlineNode[NamedFunctionNode[NDT], NDT]):
+class OnlineNamedFunctionNode(OnlineNode[NamedFunctionNode[NDT], NDT]):
     def __init__(
         self,
         node: NamedFunctionNode,
@@ -54,11 +56,21 @@ class OnlineNamedFunctionNode(DefaultOnlineNode[NamedFunctionNode[NDT], NDT]):
     def get_node_type(cls) -> type[NamedFunctionNode]:
         return NamedFunctionNode
 
+    @override
+    def evaluate_self(
+        self,
+        parsed_schemas: list[ParsedSchema],
+        context: ExecutionContext,
+    ) -> list[EvaluationResult[NDT]]:
+        result = EvaluationResult(
+            self._get_single_evaluation_result(self._evaluate_single(context))
+        )
+        return [result for _ in parsed_schemas]
+
     def _evaluate_single(
         self,
-        parent_results: dict[OnlineNode, SingleEvaluationResult],
         context: ExecutionContext,
-    ) -> NDT | None:
+    ) -> NDT:
         result = cast(
             NDT,
             NamedFunctionEvaluator().evaluate(self.node.named_function, context),

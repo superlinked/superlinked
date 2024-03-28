@@ -17,6 +17,8 @@ from __future__ import annotations
 from functools import reduce
 from typing import cast
 
+from typing_extensions import override
+
 from superlinked.framework.common.dag.aggregation_node import AggregationNode
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import Node
@@ -74,10 +76,23 @@ class OnlineAggregationNode(DefaultOnlineNode[AggregationNode, Vector], HasLengt
                 f"{cls.__name__} must have parents with the same length."
             )
 
+    @override
+    def _evaluate_singles(
+        self,
+        parent_results: dict[OnlineNode, list[SingleEvaluationResult]],
+        context: ExecutionContext,
+    ) -> list[Vector]:
+        number_of_results = len(list(parent_results.values())[0])
+        return [
+            self._evaluate_single(
+                {parent: results[i] for parent, results in parent_results.items()}
+            )
+            for i in range(number_of_results)
+        ]
+
     def _evaluate_single(
         self,
         parent_results: dict[OnlineNode, SingleEvaluationResult],
-        context: ExecutionContext,
     ) -> Vector:
         self._check_evaluation_inputs(parent_results)
         weighted_vectors = self._get_weighted_vectors(parent_results)

@@ -14,19 +14,21 @@
 
 from __future__ import annotations
 
+from typing_extensions import override
+
 from superlinked.framework.common.dag.constant_node import ConstantNode
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import NDT
 from superlinked.framework.common.exception import InitializationException
-from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
-from superlinked.framework.online.dag.evaluation_result import SingleEvaluationResult
+from superlinked.framework.common.parser.parsed_schema import ParsedSchema
+from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.store_manager.evaluation_result_store_manager import (
     EvaluationResultStoreManager,
 )
 
 
-class OnlineConstantNode(DefaultOnlineNode[ConstantNode[NDT], NDT]):
+class OnlineConstantNode(OnlineNode[ConstantNode[NDT], NDT]):
     def __init__(
         self,
         node: ConstantNode,
@@ -49,9 +51,18 @@ class OnlineConstantNode(DefaultOnlineNode[ConstantNode[NDT], NDT]):
     def get_node_type(cls) -> type[ConstantNode]:
         return ConstantNode
 
+    @override
+    def evaluate_self(
+        self,
+        parsed_schemas: list[ParsedSchema],
+        context: ExecutionContext,
+    ) -> list[EvaluationResult[NDT]]:
+        result = EvaluationResult(
+            self._get_single_evaluation_result(self._evaluate_single())
+        )
+        return [result for _ in parsed_schemas]
+
     def _evaluate_single(
         self,
-        parent_results: dict[OnlineNode, SingleEvaluationResult],
-        context: ExecutionContext,
-    ) -> NDT | None:
+    ) -> NDT:
         return self.node.value

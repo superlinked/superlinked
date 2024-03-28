@@ -14,6 +14,8 @@
 
 from __future__ import annotations
 
+from typing_extensions import override
+
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.recency_node import RecencyNode
 from superlinked.framework.common.data_types import Vector
@@ -56,6 +58,22 @@ class OnlineRecencyNode(DefaultOnlineNode[RecencyNode, Vector], HasLength):
     @property
     def length(self) -> int:
         return self.node.embedding.length
+
+    @override
+    def _evaluate_singles(
+        self,
+        parent_results: dict[OnlineNode, list[SingleEvaluationResult]],
+        context: ExecutionContext,
+    ) -> list[Vector]:
+        return [
+            result
+            for result in [
+                self._evaluate_single({parent: result}, context)
+                for parent, results in parent_results.items()
+                for result in results
+            ]
+            if result is not None
+        ]
 
     def _evaluate_single(
         self,

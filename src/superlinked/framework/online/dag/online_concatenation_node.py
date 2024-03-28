@@ -16,13 +16,18 @@ from __future__ import annotations
 
 from typing import cast
 
+from typing_extensions import override
+
 from superlinked.framework.common.dag.concatenation_node import ConcatenationNode
 from superlinked.framework.common.dag.context import (
     SPACE_WEIGHT_PARAM_NAME,
     ExecutionContext,
 )
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.exception import ValidationException
+from superlinked.framework.common.exception import (
+    DagEvaluationException,
+    ValidationException,
+)
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
 from superlinked.framework.online.dag.evaluation_result import SingleEvaluationResult
@@ -61,20 +66,32 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
     def length(self) -> int:
         return self.node.length
 
-    def _evaluate_single(
+    @override
+    def _evaluate_singles(
         self,
-        parent_results: dict[OnlineNode, SingleEvaluationResult],
+        parent_results: dict[OnlineNode, list[SingleEvaluationResult]],
         context: ExecutionContext,
-    ) -> Vector:
+    ) -> list[Vector] | None:
         self.__check_evaluation_inputs(parent_results)
-        vector = sum(
-            [
-                self.__apply_vector_weight(result.value, parent.node_id, context)
-                for parent, result in parent_results.items()
-            ],
-            Vector([]),
-        )
-        return vector if context.is_query_context() else vector.normalize()
+        len_results = self.len_parent_results(parent_results)
+
+        vectors = [
+            sum(
+                (
+                    self.__apply_vector_weight(
+                        results[i].value, parent.node_id, context
+                    )
+                    for parent, results in parent_results.items()
+                    if len(results)
+                ),
+                Vector([]),
+            )
+            for i in range(len_results)
+        ]
+        return [
+            vector if context.is_query_context() else vector.normalize()
+            for vector in vectors
+        ]
 
     def re_weight_vector(
         self,
@@ -95,9 +112,23 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
         )
         return vector.normalize()
 
+    def len_parent_results(
+        self,
+        parent_results: dict[OnlineNode, list[SingleEvaluationResult]],
+    ) -> int:
+        lens = set()
+        for results in parent_results.values():
+            if len(results) != 0:
+                lens.add(len(results))
+        if len(lens) != 1:
+            raise DagEvaluationException(
+                "Data should be the same length for each columns"
+            )
+        return next(iter(lens))
+
     def __check_evaluation_inputs(
         self,
-        parent_results: dict[OnlineNode, SingleEvaluationResult],
+        parent_results: dict[OnlineNode, list[SingleEvaluationResult]],
     ) -> None:
         if len(parent_results.items()) == 0:
             raise ParentCountException(
@@ -105,7 +136,8 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
             )
         invalid_results = [
             result
-            for _, result in parent_results.items()
+            for results in parent_results.values()
+            for result in results
             if not isinstance(result.value, Vector)
         ]
         if len(invalid_results) != 0:

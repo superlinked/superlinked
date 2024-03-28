@@ -147,7 +147,7 @@ class QueryVectorFactory:
                 else []
             )
             parsed_schema = ParsedSchema(schema, "", parsed_schema_fields)
-            evaluation = self._evaluator.evaluate(parsed_schema, query_context)
+            evaluation = self._evaluator.evaluate_single(parsed_schema, query_context)
             return evaluation.main.value
         return None
 

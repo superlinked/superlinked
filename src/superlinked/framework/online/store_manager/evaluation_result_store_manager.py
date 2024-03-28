@@ -120,13 +120,13 @@ class EvaluationResultStoreManager:
             args.metadata,
         )
 
-    def load_single_result(
+    def load_stored_result(
         self,
         main_object_id: str,
         node_id: str,
         schema_name: str,
         persistence_type: PersistenceType,
-    ) -> SingleEvaluationResult | None:
+    ) -> Any | None:
         entity_id = EvaluationResultStoreManager._create_entity_id(
             main_object_id, node_id, schema_name
         )
@@ -138,9 +138,7 @@ class EvaluationResultStoreManager:
                 stored_result = self.store_manager.get_property(
                     entity_id, EvaluationResultStoreManager.RESULT_KEY
                 )
-        if not stored_result:
-            return None
-        return SingleEvaluationResult(node_id, stored_result)
+        return stored_result
 
     def load_result_meta(
         self,

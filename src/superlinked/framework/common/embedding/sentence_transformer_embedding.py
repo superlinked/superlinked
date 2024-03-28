@@ -16,6 +16,7 @@ from typing import cast
 
 import numpy as np
 from sentence_transformers import SentenceTransformer
+from torch import Tensor
 
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.interface.has_length import HasLength
@@ -26,11 +27,13 @@ class SentenceTransformerEmbedding(HasLength):
         self.model = SentenceTransformer(model_name)
         self.__length = self.model.get_sentence_embedding_dimension()
 
-    def transform(self, text: str) -> Vector:
-        return Vector(
-            list(cast(np.ndarray, self.model.encode(text)).astype(np.float32).tolist())
-        )
+    def transform(self, texts: list[str]) -> list[Vector]:
+        embeddings = self.model.encode(texts)
+        return [self.__to_vector(embedding) for embedding in embeddings]
 
     @property
     def length(self) -> int:
         return self.__length
+
+    def __to_vector(self, embedding: list[Tensor] | np.ndarray | Tensor) -> Vector:
+        return Vector(list(cast(np.ndarray, embedding).astype(np.float32).tolist()))
