@@ -4,6 +4,16 @@ Module superlinked.framework.common.schema.schema_object
 Classes
 -------
 
+`Array(name: str, schema_obj: SchemaObjectT)`
+:   Field of a schema that represents a vector.
+
+    ### Ancestors (in MRO)
+
+    * superlinked.framework.common.schema.schema_object.SchemaField
+    * superlinked.framework.common.interface.comparison_operand.ComparisonOperand
+    * abc.ABC
+    * typing.Generic
+
 `Float(name: str, schema_obj: SchemaObjectT)`
 :   Field of a schema that represents a float.
 
@@ -59,6 +69,7 @@ Classes
     ### Descendants
 
     * superlinked.framework.common.schema.id_schema_object.IdField
+    * superlinked.framework.common.schema.schema_object.Array
     * superlinked.framework.common.schema.schema_object.Number
     * superlinked.framework.common.schema.schema_object.String
     * superlinked.framework.common.schema.schema_object.Timestamp

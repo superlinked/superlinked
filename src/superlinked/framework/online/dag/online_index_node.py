@@ -19,6 +19,7 @@ from typing import cast
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
+from superlinked.framework.common.dag.exception import ParentCountException
 from superlinked.framework.common.dag.index_node import IndexNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
@@ -26,7 +27,6 @@ from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
-from superlinked.framework.online.dag.exception import ParentCountException
 from superlinked.framework.online.dag.online_concatenation_node import (
     OnlineConcatenationNode,
 )
@@ -48,19 +48,6 @@ class OnlineIndexNode(OnlineNode[IndexNode, Vector], HasLength):
     @property
     def length(self) -> int:
         return self.node.length
-
-    @classmethod
-    def from_node(
-        cls,
-        node: IndexNode,
-        parents: list[OnlineNode[Node[Vector], Vector]],
-        evaluation_result_store_manager: EvaluationResultStoreManager,
-    ) -> OnlineIndexNode:
-        return cls(node, parents, evaluation_result_store_manager)
-
-    @classmethod
-    def get_node_type(cls) -> type[IndexNode]:
-        return IndexNode
 
     def get_parent_for_schema(self, schema: SchemaObject) -> OnlineNode:
         active_parents = [

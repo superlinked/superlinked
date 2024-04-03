@@ -22,14 +22,11 @@ from superlinked.framework.common.dag.chunking_node import ChunkingNode
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.embedding.chunking_util import Chunker
-from superlinked.framework.common.exception import (
-    DagEvaluationException,
-    InitializationException,
-)
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.exception import ChunkException
 from superlinked.framework.online.dag.online_node import OnlineNode
+from superlinked.framework.online.dag.parent_validator import ParentValidationType
 from superlinked.framework.online.store_manager.evaluation_result_store_manager import (
     EvaluationResultStoreManager,
 )
@@ -39,25 +36,15 @@ class OnlineChunkingNode(OnlineNode[ChunkingNode, str]):
     def __init__(
         self,
         node: ChunkingNode,
-        parent: OnlineNode[Node[str], str],
+        parents: list[OnlineNode[Node[str], str]],
         evaluation_result_store_manager: EvaluationResultStoreManager,
     ) -> None:
-        super().__init__(node, [parent], evaluation_result_store_manager)
-
-    @classmethod
-    def from_node(
-        cls,
-        node: ChunkingNode,
-        parents: list[OnlineNode],
-        evaluation_result_store_manager: EvaluationResultStoreManager,
-    ) -> OnlineChunkingNode:
-        if len(parents) != 1:
-            raise InitializationException(f"{cls.__name__} must have exactly 1 parent.")
-        return cls(node, parents[0], evaluation_result_store_manager)
-
-    @classmethod
-    def get_node_type(cls) -> type[ChunkingNode]:
-        return ChunkingNode
+        super().__init__(
+            node,
+            parents,
+            evaluation_result_store_manager,
+            ParentValidationType.EXACTLY_ONE_PARENT,
+        )
 
     def __chunk(
         self,
@@ -85,15 +72,6 @@ class OnlineChunkingNode(OnlineNode[ChunkingNode, str]):
         parsed_schema: ParsedSchema,
         context: ExecutionContext,
     ) -> EvaluationResult[str]:
-        if len(self.parents) != 1:
-            stored_result = self.load_stored_result(
-                parsed_schema.id_, parsed_schema.schema
-            )
-            if stored_result is None:
-                raise DagEvaluationException(
-                    f"{self.class_name} doesn't have a stored result."
-                )
-            return EvaluationResult(self._get_single_evaluation_result(stored_result))
         input_: EvaluationResult[str] = cast(
             OnlineNode[Node[str], str], self.parents[0]
         ).evaluate_next_single(parsed_schema, context)

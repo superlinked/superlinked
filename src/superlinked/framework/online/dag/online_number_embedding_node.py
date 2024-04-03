@@ -22,12 +22,11 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.number_embedding_node import NumberEmbeddingNode
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.exception import DagEvaluationException
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
-from superlinked.framework.online.dag.exception import ParentCountException
 from superlinked.framework.online.dag.online_node import OnlineNode
+from superlinked.framework.online.dag.parent_validator import ParentValidationType
 from superlinked.framework.online.store_manager.evaluation_result_store_manager import (
     EvaluationResultStoreManager,
 )
@@ -40,24 +39,12 @@ class OnlineNumberEmbeddingNode(OnlineNode[NumberEmbeddingNode, Vector], HasLeng
         parents: list[OnlineNode],
         evaluation_result_store_manager: EvaluationResultStoreManager,
     ) -> None:
-        super().__init__(node, parents, evaluation_result_store_manager)
-
-    @classmethod
-    def from_node(
-        cls,
-        node: NumberEmbeddingNode,
-        parents: list[OnlineNode],
-        evaluation_result_store_manager: EvaluationResultStoreManager,
-    ) -> OnlineNumberEmbeddingNode:
-        if len(parents) > 1:
-            raise ParentCountException(
-                f"{cls.__name__} cannot have more than one parents, got {len(parents)}."
-            )
-        return cls(node, parents, evaluation_result_store_manager)
-
-    @classmethod
-    def get_node_type(cls) -> type[NumberEmbeddingNode]:
-        return NumberEmbeddingNode
+        super().__init__(
+            node,
+            parents,
+            evaluation_result_store_manager,
+            ParentValidationType.LESS_THAN_TWO_PARENTS,
+        )
 
     @property
     def length(self) -> int:
@@ -80,19 +67,8 @@ class OnlineNumberEmbeddingNode(OnlineNode[NumberEmbeddingNode, Vector], HasLeng
             vector = Vector([1.0] * self.node.length)
             return EvaluationResult(self._get_single_evaluation_result(vector))
 
-        if len(self.parents) > 1:
-            raise ParentCountException(
-                f"{self.__class__.__name__} cannot have more than one parents, got {len(self.parents)}."
-            )
-
         if len(self.parents) == 0:
-            stored_result = self.load_stored_result(
-                parsed_schema.id_, parsed_schema.schema
-            )
-            if stored_result is None:
-                raise DagEvaluationException(
-                    f"{self.class_name} doesn't have a stored result."
-                )
+            stored_result = self.load_stored_result_or_raise_exception(parsed_schema)
             return EvaluationResult(self._get_single_evaluation_result(stored_result))
 
         input_: EvaluationResult[float | int] = cast(

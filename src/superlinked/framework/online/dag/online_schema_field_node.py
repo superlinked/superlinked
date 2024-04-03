@@ -20,7 +20,6 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
-from superlinked.framework.common.exception import InitializationException
 from superlinked.framework.common.parser.parsed_schema import (
     ParsedSchema,
     ParsedSchemaField,
@@ -29,6 +28,7 @@ from superlinked.framework.common.schema.schema_object import SFT, Timestamp
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.exception import ValueNotProvidedException
 from superlinked.framework.online.dag.online_node import OnlineNode
+from superlinked.framework.online.dag.parent_validator import ParentValidationType
 from superlinked.framework.online.store_manager.evaluation_result_store_manager import (
     EvaluationResultStoreManager,
 )
@@ -38,24 +38,15 @@ class OnlineSchemaFieldNode(Generic[SFT], OnlineNode[SchemaFieldNode, SFT]):
     def __init__(
         self,
         node: SchemaFieldNode,
-        evaluation_result_store_manager: EvaluationResultStoreManager,
-    ) -> None:
-        super().__init__(node, [], evaluation_result_store_manager)
-
-    @classmethod
-    def from_node(
-        cls,
-        node: SchemaFieldNode,
         parents: list[OnlineNode],
         evaluation_result_store_manager: EvaluationResultStoreManager,
-    ) -> OnlineSchemaFieldNode:
-        if len(parents) != 0:
-            raise InitializationException(f"{cls.__name__} cannot have parents.")
-        return cls(node, evaluation_result_store_manager)
-
-    @classmethod
-    def get_node_type(cls) -> type[SchemaFieldNode]:
-        return SchemaFieldNode
+    ) -> None:
+        super().__init__(
+            node,
+            parents,
+            evaluation_result_store_manager,
+            ParentValidationType.NO_PARENTS,
+        )
 
     @override
     def evaluate_self(

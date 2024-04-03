@@ -41,19 +41,6 @@ class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasL
     def length(self) -> int:
         return self.node.length
 
-    @classmethod
-    def from_node(
-        cls,
-        node: TextEmbeddingNode,
-        parents: list[OnlineNode],
-        evaluation_result_store_manager: EvaluationResultStoreManager,
-    ) -> OnlineTextEmbeddingNode:
-        return cls(node, parents, evaluation_result_store_manager)
-
-    @classmethod
-    def get_node_type(cls) -> type[TextEmbeddingNode]:
-        return TextEmbeddingNode
-
     @override
     def _evaluate_singles(
         self,

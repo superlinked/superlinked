@@ -19,11 +19,11 @@ from typing_extensions import override
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.recency_node import RecencyNode
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.exception import InitializationException
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
 from superlinked.framework.online.dag.evaluation_result import SingleEvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
+from superlinked.framework.online.dag.parent_validator import ParentValidationType
 from superlinked.framework.online.store_manager.evaluation_result_store_manager import (
     EvaluationResultStoreManager,
 )
@@ -35,25 +35,15 @@ class OnlineRecencyNode(DefaultOnlineNode[RecencyNode, Vector], HasLength):
     def __init__(
         self,
         node: RecencyNode,
-        parent: OnlineNode,
-        evaluation_result_store_manager: EvaluationResultStoreManager,
-    ) -> None:
-        super().__init__(node, [parent], evaluation_result_store_manager)
-
-    @classmethod
-    def from_node(
-        cls,
-        node: RecencyNode,
         parents: list[OnlineNode],
         evaluation_result_store_manager: EvaluationResultStoreManager,
-    ) -> OnlineRecencyNode:
-        if len(parents) != 1:
-            raise InitializationException(f"{cls.__name__} must have exactly 1 parent.")
-        return cls(node, parents[0], evaluation_result_store_manager)
-
-    @classmethod
-    def get_node_type(cls) -> type[RecencyNode]:
-        return RecencyNode
+    ) -> None:
+        super().__init__(
+            node,
+            parents,
+            evaluation_result_store_manager,
+            ParentValidationType.EXACTLY_ONE_PARENT,
+        )
 
     @property
     def length(self) -> int:

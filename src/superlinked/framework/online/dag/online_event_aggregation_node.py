@@ -21,6 +21,7 @@ from typing_extensions import override
 from superlinked.framework.common.const import DEFAULT_WEIGHT
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.event_aggregation_node import EventAggregationNode
+from superlinked.framework.common.dag.exception import ParentCountException
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import (
     DagEvaluationException,
@@ -30,7 +31,6 @@ from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
-from superlinked.framework.online.dag.exception import ParentCountException
 from superlinked.framework.online.dag.online_comparison_filter_node import (
     OnlineComparisonFilterNode,
 )
@@ -85,19 +85,6 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
             ),
             DEFAULT_WEIGHT,
         )
-
-    @classmethod
-    def from_node(
-        cls,
-        node: EventAggregationNode,
-        parents: list[OnlineNode],
-        evaluation_result_store_manager: EvaluationResultStoreManager,
-    ) -> OnlineEventAggregationNode:
-        return cls(node, parents, evaluation_result_store_manager)
-
-    @classmethod
-    def get_node_type(cls) -> type[EventAggregationNode]:
-        return EventAggregationNode
 
     @property
     def length(self) -> int:

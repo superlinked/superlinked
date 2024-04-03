@@ -31,8 +31,8 @@ from superlinked.framework.common.exception import (
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
 from superlinked.framework.online.dag.evaluation_result import SingleEvaluationResult
-from superlinked.framework.online.dag.exception import ParentCountException
 from superlinked.framework.online.dag.online_node import OnlineNode
+from superlinked.framework.online.dag.parent_validator import ParentValidationType
 from superlinked.framework.online.store_manager.evaluation_result_store_manager import (
     EvaluationResultStoreManager,
 )
@@ -45,22 +45,12 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
         parents: list[OnlineNode],
         evaluation_result_store_manager: EvaluationResultStoreManager,
     ) -> None:
-        super().__init__(node, parents, evaluation_result_store_manager)
-
-    @classmethod
-    def from_node(
-        cls,
-        node: ConcatenationNode,
-        parents: list[OnlineNode],
-        evaluation_result_store_manager: EvaluationResultStoreManager,
-    ) -> OnlineConcatenationNode:
-        if len(parents) == 0:
-            raise ParentCountException(f"{cls.__name__} must have at least 1 parent.")
-        return cls(node, parents, evaluation_result_store_manager)
-
-    @classmethod
-    def get_node_type(cls) -> type[ConcatenationNode]:
-        return ConcatenationNode
+        super().__init__(
+            node,
+            parents,
+            evaluation_result_store_manager,
+            ParentValidationType.AT_LEAST_ONE_PARENT,
+        )
 
     @property
     def length(self) -> int:
@@ -98,10 +88,6 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
         vector: Vector,
         context: ExecutionContext,
     ) -> Vector:
-        if len(self.parents) == 0:
-            raise ParentCountException(
-                f"{self.class_name} must have at least 1 parent."
-            )
         parts = self._split_vector(vector)
         vector = sum(
             [
@@ -130,10 +116,6 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
         self,
         parent_results: dict[OnlineNode, list[SingleEvaluationResult]],
     ) -> None:
-        if len(parent_results.items()) == 0:
-            raise ParentCountException(
-                f"{self.class_name} must have at least 1 parent."
-            )
         invalid_results = [
             result
             for results in parent_results.values()

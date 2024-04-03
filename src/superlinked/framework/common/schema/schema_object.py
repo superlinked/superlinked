@@ -17,6 +17,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Generic, TypeVar
 
+import numpy as np
+import numpy.typing as npt
+
 from superlinked.framework.common.interface.comparison_operand import ComparisonOperand
 
 # Exclude from documentation.
@@ -150,7 +153,16 @@ class Integer(Number[int]):
         super().__init__(name, schema_obj, int)
 
 
-ConcreteSchemaField = String | Timestamp | Float | Integer
+class Array(SchemaField[npt.NDArray[np.float64]]):
+    """
+    Field of a schema that represents a vector.
+    """
+
+    def __init__(self, name: str, schema_obj: SchemaObjectT) -> None:
+        super().__init__(name, schema_obj, npt.NDArray[np.float64])
+
+
+ConcreteSchemaField = String | Timestamp | Float | Integer | Array
 ConcreteSchemaFieldT = TypeVar("ConcreteSchemaFieldT", bound="ConcreteSchemaField")
 
 

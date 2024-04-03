@@ -15,10 +15,6 @@
 from superlinked.framework.common.exception import DagEvaluationException
 
 
-class ParentCountException(DagEvaluationException):
-    pass
-
-
 class ChunkException(DagEvaluationException):
     pass
 

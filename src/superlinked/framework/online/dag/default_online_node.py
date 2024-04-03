@@ -23,7 +23,6 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import NDT, NT
-from superlinked.framework.common.exception import DagEvaluationException
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.online.dag.evaluation_result import (
     EvaluationResult,
@@ -190,13 +189,6 @@ class DefaultOnlineNode(OnlineNode[NT, NDT], ABC, Generic[NT, NDT]):
     ) -> list[NDT]:
         stored_results = []
         for parsed_schema in parsed_schemas:
-            stored_result = self.load_stored_result(
-                parsed_schema.id_, parsed_schema.schema
-            )
-            if stored_result is None:
-                raise DagEvaluationException(
-                    f"{self.node_id} doesn't have a stored value for (schema, object_id):"
-                    + f" ({parsed_schema.schema._schema_name}, {parsed_schema.id_})"
-                )
+            stored_result = self.load_stored_result_or_raise_exception(parsed_schema)
             stored_results.append(stored_result)
         return stored_results

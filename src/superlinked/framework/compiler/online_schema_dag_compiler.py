@@ -12,12 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from superlinked.framework.common.const import ONLINE_DAG_NODE_MODULE
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_dag import SchemaDag
-from superlinked.framework.common.exception import NotImplementedException
-from superlinked.framework.common.util.class_helper import ClassHelper
 from superlinked.framework.online.dag.online_node import OnlineNode
+from superlinked.framework.online.dag.online_node_registry import OnlineNodeRegistry
 from superlinked.framework.online.dag.online_schema_dag import OnlineSchemaDag
 from superlinked.framework.online.store_manager.evaluation_result_store_manager import (
     EvaluationResultStoreManager,
@@ -25,17 +23,13 @@ from superlinked.framework.online.store_manager.evaluation_result_store_manager 
 
 
 class OnlineSchemaDagCompiler:
-    online_node_class_mapper: dict[type[Node], type[OnlineNode]] = {
-        c.get_node_type(): c
-        for c in ClassHelper.get_subclasses(OnlineNode, ONLINE_DAG_NODE_MODULE)  # type: ignore
-    }
-
     def __init__(
         self, nodes: set[Node], store_compilation_results: bool = True
     ) -> None:
         self.__nodes = nodes
         self.__store_compilation_results = store_compilation_results
         self.__compiled_nodes: dict[str, OnlineNode] = {}
+        self.__online_node_registry = OnlineNodeRegistry()
 
     def compile_node(
         self,
@@ -49,8 +43,7 @@ class OnlineSchemaDagCompiler:
             for parent in node.parents
             if parent in self.__nodes
         ]
-        online_node_class = OnlineSchemaDagCompiler.find_online_node_class(type(node))
-        compiled_node = online_node_class.from_node(
+        compiled_node = self.__online_node_registry.init_online_node(
             node, compiled_parents, evaluation_result_store_manager
         )
         self.__compiled_nodes[node.node_id] = compiled_node
@@ -68,14 +61,3 @@ class OnlineSchemaDagCompiler:
         if not self.__store_compilation_results:
             self.__compiled_nodes = {}
         return OnlineSchemaDag(dag.schema, compiled_nodes)
-
-    @staticmethod
-    def find_online_node_class(node_class: type[Node]) -> type[OnlineNode]:
-        online_node_class = OnlineSchemaDagCompiler.online_node_class_mapper.get(
-            node_class
-        )
-        if online_node_class is None:
-            raise NotImplementedException(
-                f"Not implemented Node type: {node_class.__name__}"
-            )
-        return online_node_class
