@@ -35,4 +35,5 @@ class Param:
 
 ParamInputType: TypeAlias = str | int | float | bool | None
 ParamType: TypeAlias = ParamInputType | Param
-FloatParamType: TypeAlias = float | Param
+NumericParamType: TypeAlias = float | int | Param
+IntParamType: TypeAlias = int | Param

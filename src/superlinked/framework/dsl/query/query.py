@@ -25,7 +25,11 @@ from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema import T
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.index.index import Index
-from superlinked.framework.dsl.query.param import FloatParamType, ParamType
+from superlinked.framework.dsl.query.param import (
+    IntParamType,
+    NumericParamType,
+    ParamType,
+)
 from superlinked.framework.dsl.query.predicate.binary_op import BinaryOp
 from superlinked.framework.dsl.query.predicate.binary_predicate import BinaryPredicate
 from superlinked.framework.dsl.query.predicate.query_predicate import QueryPredicate
@@ -41,8 +45,8 @@ class QueryObjInternalProperty(TypedDict, total=False):
     """Only intended for self initialization inside QueryObj functions, not for external initialization"""
 
     filters: list[QueryPredicate]
-    limit: int | None
-    radius: float | None
+    limit: IntParamType | None
+    radius: NumericParamType | None
     override_now: int | None
     filtered_spaces: set[Space]
 
@@ -98,7 +102,7 @@ class QueryObj:
         self,
         field_set: SpaceFieldSet,
         param: ParamType,
-        weight: FloatParamType = DEFAULT_WEIGHT,
+        weight: NumericParamType = DEFAULT_WEIGHT,
     ) -> QueryObj:
         """
         Add a 'similar' clause to the query. Similar queries compile query inputs (like query text) into vectors
@@ -109,7 +113,7 @@ class QueryObj:
             field_set (SpaceFieldSet): The referenced space.
             param (ParamType): The parameter. Basically the query itself. It can be a fixed value,
             or a placeholder (Param) for later substitution.
-            weight (FloatParamType, optional): The weight. Defaults to 1.0.
+            weight (NumericParamType, optional): The weight. Defaults to 1.0.
 
         Returns:
             Self: The query object itself.
@@ -143,20 +147,20 @@ class QueryObj:
             f"'find' ({type(self.schema)}) is not in similarity field's schema types."
         )
 
-    def limit(self, limit: int | None) -> QueryObj:
+    def limit(self, limit: IntParamType | None) -> QueryObj:
         """
         Set a limit to the number of results returned by the query.
         If the limit is None, a result set based on all elements in the index will be returned.
 
         Args:
-            limit (int | None): The maximum number of results to return. If None, all results are returned.
+            limit (IntParamType | None): The maximum number of results to return. If None, all results are returned.
 
         Returns:
             Self: The query object itself.
         """
         return self.__alter({"limit": limit})
 
-    def radius(self, radius: float) -> QueryObj:
+    def radius(self, radius: NumericParamType | None) -> QueryObj:
         """
         Set a radius for the search in the query. The radius is a float value that
         determines the maximum distance to the input vector in the search.
@@ -166,7 +170,8 @@ class QueryObj:
         The valid range is between 0 and 1. Otherwise it will raise ValueError.
 
         Args:
-            radius (float): The maximum distance of the returned items from the query vector.
+            radius (NumericParamType | None): The maximum distance of the returned items from the query vector.
+            If None, all results are returned.
 
         Returns:
             Self: The query object itself.
@@ -174,18 +179,13 @@ class QueryObj:
         Raises:
             ValueError: If the radius is not between 0 and 1.
         """
-        if radius > 1 or radius < 0:
-            raise ValueError(
-                f"Not a valid radius value ({radius}). It should be between 0 and 1."
-            )
-
         return self.__alter({"radius": radius})
 
     def with_vector(
         self,
         schema_obj: IdSchemaObject | T,
         id_param: ParamType,
-        weight: FloatParamType = DEFAULT_WEIGHT,
+        weight: NumericParamType = DEFAULT_WEIGHT,
     ) -> QueryObj:
         """
         Add a 'with_vector' clause to the query. This fetches an object with id_param
@@ -245,7 +245,7 @@ class Query:
 
     Attributes:
         index (Index): The index.
-        space_weight_map (Mapping[Space, FloatParamType] | None): The mapping of spaces to weights.
+        space_weight_map (Mapping[Space, NumericParamType] | None): The mapping of spaces to weights.
     """
 
     @TypeValidator.wrap
@@ -254,8 +254,8 @@ class Query:
         index: Index,
         weights: (
             Annotated[
-                dict[Space, FloatParamType],
-                TypeValidator.dict_validator(Space, FloatParamType),
+                dict[Space, NumericParamType],
+                TypeValidator.dict_validator(Space, NumericParamType),
             ]
             | None
         ) = None,
@@ -265,7 +265,7 @@ class Query:
 
         Args:
             index (Index): The index to be used for the query.
-            weights (Mapping[Space, FloatParamType] | None, optional): The mapping of spaces to weights.
+            weights (Mapping[Space, NumericParamType] | None, optional): The mapping of spaces to weights.
                 Defaults to None, which is equal weight for each space.
         """
         self.index = index

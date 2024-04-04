@@ -73,13 +73,17 @@ class QueryExecutor:
             QueryException: If the query index is not amongst the executor's indices.
         """
         self.__check_executor_has_index()
-        entities: list[Entity] = self._knn(self._get_query_vector(params))
+        param_evaluator = ParamEvaluator(params)
+        limit = param_evaluator.evaluate_limit_param(self.query_obj.limit_)
+        radius = param_evaluator.evaluate_radius_param(self.query_obj.radius_)
+        entities: list[Entity] = self._knn(
+            self._get_query_vector(param_evaluator), limit, radius
+        )
         return Result(
             self.query_obj.schema, self._map_entities_to_result_entries(entities)
         )
 
-    def _get_query_vector(self, params: dict[str, Any]) -> Vector:
-        param_evaluator = ParamEvaluator(params)
+    def _get_query_vector(self, param_evaluator: ParamEvaluator) -> Vector:
         query_filters = self._create_query_filters(param_evaluator)
         space_weight_map = self.__get_space_weight_map(param_evaluator)
         return self.query_vector_factory.produce_vector(
@@ -104,13 +108,15 @@ class QueryExecutor:
         )
         return eval_context
 
-    def _knn(self, vector: Vector) -> list[Entity]:
+    def _knn(
+        self, vector: Vector, limit: int | None, radius: float | None
+    ) -> list[Entity]:
         return self.app.entity_store_manager.knn(
             self.query_obj.index._node_id,
             vector,
             self.query_obj.schema._schema_name,
-            self.query_obj.limit_,
-            self.query_obj.radius_,
+            limit,
+            radius,
         )
 
     def _map_entities_to_result_entries(

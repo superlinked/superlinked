@@ -16,7 +16,7 @@ from typing import Any
 
 from superlinked.framework.common.const import DEFAULT_WEIGHT
 from superlinked.framework.common.exception import QueryException
-from superlinked.framework.dsl.query.param import FloatParamType, Param
+from superlinked.framework.dsl.query.param import IntParamType, NumericParamType, Param
 from superlinked.framework.dsl.query.predicate.binary_predicate import BinaryPredicate
 from superlinked.framework.dsl.query.predicate.evaluated_binary_predicate import (
     EvaluatedBinaryPredicate,
@@ -41,17 +41,48 @@ class ParamEvaluator:
 
     def evaluate_weight_param(
         self,
-        param: FloatParamType,
+        param: NumericParamType,
         default: float = DEFAULT_WEIGHT,
     ) -> float:
-        value = self._evaluate_param(param, default)
+        value = self.evaluate_numeric_param(param, "Weight", default)
         if value is None:
             return default
+        return value
+
+    def evaluate_radius_param(
+        self,
+        param: NumericParamType | None,
+    ) -> float | None:
+        value = self.evaluate_numeric_param(param, "Radius")
+        if value is not None and (value > 1 or value < 0):
+            raise ValueError(
+                f"Not a valid Radius value ({value}). It should be between 0 and 1."
+            )
+        return value
+
+    def evaluate_numeric_param(
+        self,
+        param: NumericParamType | None,
+        param_name: str,
+        default: float | None = None,
+    ) -> float | None:
+        value = self._evaluate_param(param, default)
         if isinstance(value, (float, int)):
             return float(value)
+        if value is None:
+            return value
         raise QueryException(
-            f"Weight should be numeric, got {value.__class__.__name__}"
+            f"{param_name} should be numeric, got {value.__class__.__name__}"
         )
+
+    def evaluate_limit_param(
+        self,
+        param: IntParamType | None,
+    ) -> int | None:
+        value = self._evaluate_param(param)
+        if value is None or isinstance(value, int):
+            return value
+        raise QueryException(f"Limit should be int, got {value.__class__.__name__}")
 
     def _evaluate_binary_predicate(
         self, predicate: BinaryPredicate

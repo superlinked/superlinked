@@ -17,7 +17,7 @@ from enum import Enum
 from typing import Generic, TypeVar
 
 from superlinked.framework.common.schema.schema_object import SchemaField
-from superlinked.framework.dsl.query.param import FloatParamType, Param
+from superlinked.framework.dsl.query.param import NumericParamType, Param
 
 # Exclude from documentation.
 __pdoc__ = {}
@@ -31,4 +31,4 @@ OPT = TypeVar("OPT", bound=Enum)
 class QueryPredicate(Generic[OPT]):
     op: OPT
     params: list[SchemaField | Param | str | int | float | None]
-    weight_param: FloatParamType
+    weight_param: NumericParamType

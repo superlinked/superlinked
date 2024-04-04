@@ -14,7 +14,7 @@
 
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.schema.schema_object import SchemaField
-from superlinked.framework.dsl.query.param import FloatParamType, Param
+from superlinked.framework.dsl.query.param import NumericParamType, Param
 from superlinked.framework.dsl.query.predicate.binary_op import BinaryOp
 from superlinked.framework.dsl.query.predicate.query_predicate import QueryPredicate
 
@@ -29,7 +29,7 @@ class BinaryPredicate(QueryPredicate[BinaryOp]):
         op: BinaryOp,
         left_param: SchemaField,
         right_param: Param | str | int | float | None,
-        weight: FloatParamType,
+        weight: NumericParamType,
         left_param_node: Node | None = None,
     ) -> None:
         super().__init__(op=op, params=[left_param, right_param], weight_param=weight)
