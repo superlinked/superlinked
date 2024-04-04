@@ -149,5 +149,18 @@ class QueryExecutor:
             for space, weight_obj in self.query_obj.builder.space_weight_map.items()
         }
 
-    def __query_now(self) -> int:
+    def __check_now(
+        self,
+    ) -> int:
         return self.query_obj._override_now or time_util.now()
+
+    def __query_now(self) -> int:
+        now_ = self.__check_now()
+        if now_ is not None:
+            return now_
+        raise QueryException(
+            (
+                f"Environment's '{CONTEXT_COMMON}.{CONTEXT_COMMON_NOW}' ",
+                "property should always be initialized for query contexts",
+            )
+        )

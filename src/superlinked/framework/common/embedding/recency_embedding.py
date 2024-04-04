@@ -25,7 +25,7 @@ class RecencyEmbedding(HasLength):
     def __init__(
         self,
         period_time_list: list[PeriodTime],
-        negative_filter: float = 0,
+        negative_filter: float = 0.0,
     ) -> None:
         self.__period_time_list: list[PeriodTime] = period_time_list
         self.__negative_filter: float = float(negative_filter)
