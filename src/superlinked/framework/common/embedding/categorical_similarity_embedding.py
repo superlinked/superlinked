@@ -19,30 +19,43 @@ import numpy.typing as npt
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.interface.has_length import HasLength
 
+CATEGORICAL_ENCODING_VALUE: int = 1
+
 
 class CategoricalSimilarityEmbedding(HasLength):
-    def __init__(self, categories: list[str], negative_filter: float) -> None:
+    def __init__(
+        self,
+        categories: list[str],
+        negative_filter: float,
+        uncategorised_as_category: bool,
+    ) -> None:
         self.__length: int = len(categories) + 1  # We reserve the last bin for 'other'
         self.__categories: list[str] = categories
         self.__negative_filter: float = negative_filter
+        self.__uncategorised_as_category: bool = uncategorised_as_category
 
-    def transform(self, text: str) -> Vector:
-        one_hot_encoding: npt.NDArray[np.float64] = self.__one_hot_encode(text)
+    def transform(self, text: str, is_query: bool) -> Vector:
+        one_hot_encoding: npt.NDArray[np.float64] = self.__one_hot_encode(
+            text, is_query
+        )
         return Vector(one_hot_encoding)
 
-    def __one_hot_encode(self, text: str) -> npt.NDArray[np.float64]:
+    def __one_hot_encode(self, text: str, is_query: bool) -> npt.NDArray[np.float64]:
         one_hot_encoding: npt.NDArray[np.float64] = np.full(
-            self.__length, self.__negative_filter, dtype=np.float32
+            self.__length, 0 if is_query else self.__negative_filter, dtype=np.float32
         )
-        category_index: int = self.__get_category_index(text)
-        one_hot_encoding[category_index] = 1
+        category_index: int | None = self.__get_category_index(text, is_query)
+        if category_index is not None:
+            one_hot_encoding[category_index] = CATEGORICAL_ENCODING_VALUE
         return one_hot_encoding
 
-    def __get_category_index(self, text: str) -> int:
+    def __get_category_index(self, text: str, is_query: bool) -> int | None:
+        if text in self.__categories:
+            return self.__categories.index(text)
         return (
-            self.__categories.index(text)
-            if text in self.__categories
-            else self.__length - 1
+            (self.__length - 1)
+            if (self.__uncategorised_as_category or is_query)
+            else None
         )
 
     @property

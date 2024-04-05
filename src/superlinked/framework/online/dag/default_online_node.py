@@ -32,7 +32,6 @@ from superlinked.framework.online.dag.online_node import OnlineNode
 
 
 class DefaultOnlineNode(OnlineNode[NT, NDT], ABC, Generic[NT, NDT]):
-
     @override
     def evaluate_self(
         self,

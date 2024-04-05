@@ -22,11 +22,17 @@ from superlinked.framework.common.interface.has_length import HasLength
 
 class CategoricalSimilarityNode(Node[Vector], HasLength):
     def __init__(
-        self, parent: Node[str], categories: list[str], negative_filter: float
+        self,
+        parent: Node[str],
+        categories: list[str],
+        negative_filter: float,
+        uncategorised_as_category: bool,
     ) -> None:
         super().__init__([parent])
         self.embedding = CategoricalSimilarityEmbedding(
-            categories=categories, negative_filter=negative_filter
+            categories=categories,
+            negative_filter=negative_filter,
+            uncategorised_as_category=uncategorised_as_category,
         )
 
     @property
