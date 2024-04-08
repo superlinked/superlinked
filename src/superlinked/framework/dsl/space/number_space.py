@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import cast
+from typing import Mapping, cast
+
+from typing_extensions import override
 
 from superlinked.framework.common.dag.constant_node import ConstantNode
 from superlinked.framework.common.dag.node import Node
@@ -117,13 +119,9 @@ class NumberSpace(Space):
             case _:
                 raise ValueError(f"Unknown mode: {self.mode}")
 
-    def _get_node(self, schema: SchemaObject) -> Node[Vector]:
-        if node := self.__schema_node_map.get(schema):
-            return node
-        return self.__create_default_node(schema)
-
-    def _get_all_leaf_nodes(self) -> set[Node[Vector]]:
-        return set(self.__schema_node_map.values())
+    @property
+    def _node_by_schema(self) -> Mapping[SchemaObject, Node[Vector]]:
+        return self.__schema_node_map
 
     def __create_node_by_mode(
         self,
@@ -155,7 +153,8 @@ class NumberSpace(Space):
                 f"The negative filter value should not be more than 0. Value is: {negative_filter}"
             )
 
-    def __create_default_node(self, schema: SchemaObject) -> NumberEmbeddingNode:
+    @override
+    def _handle_node_not_present(self, schema: SchemaObject) -> NumberEmbeddingNode:
         if self.mode is Mode.SIMILAR:
             raise NoDefaultNodeException(
                 "Number Space with SIMILAR Mode do not have a default value, a .similar "

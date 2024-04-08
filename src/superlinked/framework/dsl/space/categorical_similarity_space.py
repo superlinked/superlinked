@@ -13,9 +13,7 @@
 # limitations under the License.
 
 
-from typing import cast
-
-from typing_extensions import override
+from typing import Mapping, cast
 
 from superlinked.framework.common.dag.categorical_similarity_node import (
     CategoricalSimilarityNode,
@@ -23,7 +21,6 @@ from superlinked.framework.common.dag.categorical_similarity_node import (
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.exception import InvalidSchemaException
 from superlinked.framework.common.schema.schema_object import (
     SchemaField,
     SchemaObject,
@@ -99,17 +96,9 @@ class CategoricalSimilaritySpace(Space):
             for schema_field, node in unchecked_category_node_map.items()
         }
 
-    @override
-    def _get_node(self, schema: SchemaObject) -> Node[Vector]:
-        if node := self.__schema_node_map.get(schema):
-            return node
-        raise InvalidSchemaException(
-            f"There's no node corresponding to this schema: {schema._schema_name}"
-        )
-
-    @override
-    def _get_all_leaf_nodes(self) -> set[Node[Vector]]:
-        return set(self.__schema_node_map.values())
+    @property
+    def _node_by_schema(self) -> Mapping[SchemaObject, Node[Vector]]:
+        return self.__schema_node_map
 
     @property
     def uncategorised_as_category(self) -> bool:

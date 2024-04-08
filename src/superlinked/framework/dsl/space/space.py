@@ -15,11 +15,12 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TypeVar
+from typing import Mapping, TypeVar
 
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.schema.schema_object import SchemaField, SchemaObjectT
+from superlinked.framework.common.exception import InvalidSchemaException
+from superlinked.framework.common.schema.schema_object import SchemaField, SchemaObject
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.space.exception import InvalidSpaceParamException
 
@@ -52,10 +53,19 @@ class Space(ABC):
                 f"Duplicates schemas in the same space are not allowed. Duplicates: {duplicates}"
             )
 
+    @property
     @abstractmethod
-    def _get_node(self, schema: SchemaObjectT) -> Node[Vector]:
-        pass
+    def _node_by_schema(self) -> Mapping[SchemaObject, Node[Vector]]: ...
 
-    @abstractmethod
+    def _get_node(self, schema: SchemaObject) -> Node[Vector]:
+        if node := self._node_by_schema.get(schema):
+            return node
+        return self._handle_node_not_present(schema)
+
+    def _handle_node_not_present(self, schema: SchemaObject) -> Node[Vector]:
+        raise InvalidSchemaException(
+            f"There's no node corresponding to this schema: {schema._schema_name}"
+        )
+
     def _get_all_leaf_nodes(self) -> set[Node[Vector]]:
-        pass
+        return set(self._node_by_schema.values())

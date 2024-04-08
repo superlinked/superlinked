@@ -14,7 +14,9 @@
 
 import logging
 from datetime import timedelta
-from typing import cast
+from typing import Mapping, cast
+
+from typing_extensions import override
 
 from superlinked.framework.common.dag.named_function_node import NamedFunctionNode
 from superlinked.framework.common.dag.node import Node
@@ -102,13 +104,9 @@ class RecencySpace(Space):
             for field in self.timestamp.fields
         }
 
-    def _get_node(self, schema: SchemaObject) -> Node[Vector]:
-        if (node := self.__schema_node_map.get(schema)) is not None:
-            return node
-        return self.__create_default_node(schema)
-
-    def _get_all_leaf_nodes(self) -> set[Node[Vector]]:
-        return set(self.__schema_node_map.values())
+    @property
+    def _node_by_schema(self) -> Mapping[SchemaObject, Node[Vector]]:
+        return self.__schema_node_map
 
     def __run_parameter_checks(self) -> None:
         if self.negative_filter > 0:
@@ -145,7 +143,8 @@ class RecencySpace(Space):
                 "/notebook/combining_recency_and_relevance.ipynb. "
             )
 
-    def __create_default_node(self, schema: SchemaObject) -> RecencyNode:
+    @override
+    def _handle_node_not_present(self, schema: SchemaObject) -> RecencyNode:
         named_function_node = NamedFunctionNode(NamedFunction.NOW, schema, int)
         recency_node = RecencyNode(
             named_function_node, self.period_time_list, self.negative_filter

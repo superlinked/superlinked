@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import cast
+from typing import Mapping, cast
 
 from superlinked.framework.common.dag.chunking_node import ChunkingNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.dag.text_embedding_node import TextEmbeddingNode
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.exception import InvalidSchemaException
 from superlinked.framework.common.schema.schema_object import SchemaObject, String
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.space.space import Space
@@ -75,15 +74,9 @@ class TextSimilaritySpace(Space):
             return TextEmbeddingNode(text, model)
         return TextEmbeddingNode(SchemaFieldNode(text), model)
 
-    def _get_node(self, schema: SchemaObject) -> Node[Vector]:
-        if node := self.__schema_node_map.get(schema):
-            return node
-        raise InvalidSchemaException(
-            f"There's no node corresponding to this schema: {schema._schema_name}"
-        )
-
-    def _get_all_leaf_nodes(self) -> set[Node[Vector]]:
-        return set(self.__schema_node_map.values())
+    @property
+    def _node_by_schema(self) -> Mapping[SchemaObject, Node[Vector]]:
+        return self.__schema_node_map
 
 
 @TypeValidator.wrap
