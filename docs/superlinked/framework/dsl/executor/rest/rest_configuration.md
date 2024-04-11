@@ -5,7 +5,7 @@ Classes
 -------
 
 `RestEndpointConfiguration(**data: Any)`
-:   Usage docs: https://docs.pydantic.dev/2.6/concepts/models/
+:   Usage docs: https://docs.pydantic.dev/2.7/concepts/models/
     
     A base class for creating Pydantic models.
     

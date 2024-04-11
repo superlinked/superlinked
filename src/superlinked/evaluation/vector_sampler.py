@@ -56,6 +56,13 @@ class VectorCollection:
             )
         return False
 
+    def __str__(self) -> str:
+        num_vectors: int = len(self.id_list)
+        return f"VectorCollection of {num_vectors} vector{'s.' if num_vectors > 1 else '.'}"
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
 
 class VectorSampler:
     """
@@ -145,3 +152,9 @@ class VectorSampler:
         )
         entity_ids = [entity.id_.object_id for entity in entities]
         return self.get_vectors_by_ids(entity_ids, index, schema)
+
+    def __str__(self) -> str:
+        return f"VectorSampler on app: {print(self.__app)}"
+
+    def __repr__(self) -> str:
+        return self.__str__()
