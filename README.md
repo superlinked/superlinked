@@ -43,7 +43,7 @@ Install the superlinked library:
 ```
 
 #### As a script 
-Ensure your python version is 3.10.x.
+Ensure your python version is at least 3.11.x but not newer than 3.12.
 
 ```commandline
 $> python -V

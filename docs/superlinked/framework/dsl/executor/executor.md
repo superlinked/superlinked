@@ -74,7 +74,7 @@ Classes
 
     ### Methods
 
-    `run(self) ‑> superlinked.framework.dsl.executor.executor.App[typing_extensions.Self]`
+    `run(self) ‑> superlinked.framework.dsl.executor.executor.App[typing.Self]`
     :   Abstract method to run the executor.
         
         Returns:
