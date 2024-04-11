@@ -20,8 +20,12 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.text_embedding_node import TextEmbeddingNode
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.interface.has_length import HasLength
+from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
-from superlinked.framework.online.dag.evaluation_result import SingleEvaluationResult
+from superlinked.framework.online.dag.evaluation_result import (
+    EvaluationResult,
+    SingleEvaluationResult,
+)
 from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.store_manager.evaluation_result_store_manager import (
     EvaluationResultStoreManager,
@@ -40,6 +44,20 @@ class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasL
     @property
     def length(self) -> int:
         return self.node.length
+
+    @override
+    def evaluate_self(
+        self,
+        parsed_schemas: list[ParsedSchema],
+        context: ExecutionContext,
+    ) -> list[EvaluationResult[Vector]]:
+        if self._is_query_without_similar_clause(parsed_schemas, context):
+            vector = Vector([0] * self.node.length)
+            return [
+                EvaluationResult(self._get_single_evaluation_result(vector))
+                for _ in parsed_schemas
+            ]
+        return super().evaluate_self(parsed_schemas, context)
 
     @override
     def _evaluate_singles(

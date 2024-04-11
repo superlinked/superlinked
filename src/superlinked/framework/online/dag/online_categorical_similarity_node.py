@@ -60,6 +60,12 @@ class OnlineCategoricalSimilarityNode(
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
     ) -> list[EvaluationResult[Vector]]:
+        if self._is_query_without_similar_clause(parsed_schemas, context):
+            vector = Vector([0] * self.node.length)
+            return [
+                EvaluationResult(self._get_single_evaluation_result(vector))
+                for _ in parsed_schemas
+            ]
         return [self.evaluate_self_single(schema, context) for schema in parsed_schemas]
 
     def evaluate_self_single(

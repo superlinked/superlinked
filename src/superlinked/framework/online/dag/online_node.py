@@ -130,3 +130,12 @@ class OnlineNode(ABC, Generic[NT, NDT], metaclass=ABCMeta):
             raise ParentCountException(
                 f"{type(self).__name__} must have {parent_validation_type.description}."
             )
+
+    def _is_query_without_similar_clause(
+        self,
+        parsed_schemas: list[ParsedSchema],
+        context: ExecutionContext,
+    ) -> bool:
+        return context.is_query_context() and not any(
+            schema.fields for schema in parsed_schemas
+        )
