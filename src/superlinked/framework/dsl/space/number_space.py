@@ -18,12 +18,16 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.constant_node import ConstantNode
 from superlinked.framework.common.dag.node import Node
-from superlinked.framework.common.dag.number_embedding_node import NumberEmbeddingNode
+from superlinked.framework.common.dag.number_embedding_node import (
+    NumberEmbeddingNode,
+    NumberEmbeddingParams,
+)
 from superlinked.framework.common.dag.number_similarity_node import NumberSimilarityNode
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.number_embedding import Mode
 from superlinked.framework.common.schema.schema_object import Number, SchemaObject
+from superlinked.framework.common.space.normalization import NoNorm
 from superlinked.framework.dsl.space.exception import (
     InvalidSpaceParamException,
     NoDefaultNodeException,
@@ -89,18 +93,15 @@ class NumberSpace(Space):
         """
         super().__init__(number, Number)
         self.__validate_parameters(min_value, max_value, negative_filter)
-        self.min_value: float = float(min_value)
-        self.max_value: float = float(max_value)
-        self.mode: Mode = mode
-        self.negative_filter: float = negative_filter
+        self.embedding_params = NumberEmbeddingParams(
+            min_value=float(min_value),
+            max_value=float(max_value),
+            mode=mode,
+            negative_filter=negative_filter,
+            normalization=NoNorm(),
+        )
         number_node_map = {
-            num: self.__create_node_by_mode(
-                SchemaFieldNode(num),
-                float(self.min_value),
-                float(self.max_value),
-                self.mode,
-                self.negative_filter,
-            )
+            num: self.__create_node_by_mode(SchemaFieldNode(num))
             for num in self._field_set
         }
         self.number = SpaceFieldSet(self, set(number_node_map.keys()))
@@ -109,15 +110,15 @@ class NumberSpace(Space):
             for schema_field, node in number_node_map.items()
         }
         self.default_constant_node_input: int | float | None
-        match self.mode:
+        match self.embedding_params.mode:
             case Mode.MAXIMUM:
-                self.default_constant_node_input = self.max_value
+                self.default_constant_node_input = self.embedding_params.max_value
             case Mode.MINIMUM:
-                self.default_constant_node_input = self.min_value
+                self.default_constant_node_input = self.embedding_params.min_value
             case Mode.SIMILAR:
                 self.default_constant_node_input = None
             case _:
-                raise ValueError(f"Unknown mode: {self.mode}")
+                raise ValueError(f"Unknown mode: {self.embedding_params.mode}")
 
     @property
     def _node_by_schema(self) -> Mapping[SchemaObject, Node[Vector]]:
@@ -126,18 +127,19 @@ class NumberSpace(Space):
     def __create_node_by_mode(
         self,
         schema_field_node: SchemaFieldNode,
-        min_value: float,
-        max_value: float,
-        mode: Mode,
-        negative_filter: float,
     ) -> Node:
         return (
             NumberSimilarityNode(
-                schema_field_node, min_value, max_value, negative_filter
+                schema_field_node,
+                self.embedding_params.min_value,
+                self.embedding_params.max_value,
+                self.embedding_params.negative_filter,
+                self.embedding_params.normalization,
             )
-            if mode == Mode.SIMILAR
+            if self.embedding_params.mode == Mode.SIMILAR
             else NumberEmbeddingNode(
-                schema_field_node, min_value, max_value, mode, negative_filter
+                schema_field_node,
+                self.embedding_params,
             )
         )
 
@@ -155,7 +157,7 @@ class NumberSpace(Space):
 
     @override
     def _handle_node_not_present(self, schema: SchemaObject) -> NumberEmbeddingNode:
-        if self.mode is Mode.SIMILAR:
+        if self.embedding_params.mode is Mode.SIMILAR:
             raise NoDefaultNodeException(
                 "Number Space with SIMILAR Mode do not have a default value, a .similar "
                 "clause is needed in the query."
@@ -165,11 +167,7 @@ class NumberSpace(Space):
         )
 
         number_embedding_node = NumberEmbeddingNode(
-            parent=constant_node,
-            min_value=self.min_value,
-            max_value=self.max_value,
-            mode=self.mode,
-            negative_filter=self.negative_filter,
+            constant_node, self.embedding_params
         )
         self.__schema_node_map[schema] = number_embedding_node
         return number_embedding_node

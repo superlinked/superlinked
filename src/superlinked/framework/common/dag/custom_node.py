@@ -16,12 +16,15 @@ from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.custom_embedding import CustomEmbedding
 from superlinked.framework.common.interface.has_length import HasLength
+from superlinked.framework.common.space.normalization import Normalization
 
 
 class CustomNode(Node[Vector], HasLength):
-    def __init__(self, parent: Node[Vector], length: int) -> None:
+    def __init__(
+        self, parent: Node[Vector], length: int, normalization: Normalization
+    ) -> None:
         super().__init__([parent])
-        self.embedding = CustomEmbedding(length=length)
+        self.embedding = CustomEmbedding(length=length, normalization=normalization)
 
     @property
     def length(self) -> int:

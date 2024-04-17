@@ -17,23 +17,37 @@ from typing import cast
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from torch import Tensor
+from typing_extensions import override
 
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.embedding.embedding import Embedding
 from superlinked.framework.common.interface.has_length import HasLength
+from superlinked.framework.common.space.normalization import Normalization
 
 
-class SentenceTransformerEmbedding(HasLength):
-    def __init__(self, model_name: str) -> None:
+class SentenceTransformerEmbedding(Embedding[str], HasLength):
+    def __init__(self, model_name: str, normalization: Normalization) -> None:
         self.model = SentenceTransformer(model_name)
-        self.__length = self.model.get_sentence_embedding_dimension()
+        self.__normalization = normalization
+        self.__length = self.model.get_sentence_embedding_dimension() or 0
 
-    def transform(self, texts: list[str]) -> list[Vector]:
-        embeddings = self.model.encode(texts)
+    def embed_multiple(self, inputs: list[str]) -> list[Vector]:
+        embeddings = self.model.encode(inputs)
         return [self.__to_vector(embedding) for embedding in embeddings]
+
+    @override
+    def embed(
+        self,
+        input_: str,
+        is_query: bool,  # pylint: disable=unused-argument
+    ) -> Vector:
+        return self.embed_multiple([input_])[0]
 
     @property
     def length(self) -> int:
         return self.__length
 
     def __to_vector(self, embedding: list[Tensor] | np.ndarray | Tensor) -> Vector:
-        return Vector(list(cast(np.ndarray, embedding).astype(np.float32).tolist()))
+        vector_input = cast(np.ndarray, embedding).astype(np.float64)
+        vector = Vector(vector_input)
+        return vector.normalize(self.__normalization.norm(vector_input))

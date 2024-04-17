@@ -24,6 +24,7 @@ from superlinked.framework.common.schema.schema_object import (
     SchemaField,
     SchemaObject,
 )
+from superlinked.framework.common.space.normalization import L2Norm, Normalization
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
@@ -33,7 +34,7 @@ class CustomSpace(Space):
     CustomSpace is the instrument of ingesting your own vectors into Superlinked.
     This way you can use your own vectors right away. What you need to know: (you can use numbering too)
     - vectors need to have the same length
-    - vectors will be L2 normalised to ensure weighting makes sense
+    - vectors will be L2Norm normalised to ensure weighting makes sense
     - weighting can be performed (query-time)
     - you are going to need an Array typed SchemaField to supply your data
     - the Array field will be able to parse any Sequence[float]
@@ -43,6 +44,7 @@ class CustomSpace(Space):
         self,
         vector: Array | list[Array],
         length: int,
+        normalization: Normalization = L2Norm(),
     ) -> None:
         """
         Initialize the CustomSpace.
@@ -56,6 +58,7 @@ class CustomSpace(Space):
             vector: CustomNode(
                 parent=SchemaFieldNode(vector),
                 length=length,
+                normalization=normalization,
             )
             for vector in self._field_set
         }

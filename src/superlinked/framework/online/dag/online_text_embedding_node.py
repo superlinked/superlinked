@@ -69,7 +69,7 @@ class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasL
             return None
         input_ = list(parent_results.values())[0]
         values = [result.value for result in input_]
-        return [vector.normalize() for vector in self.__embed_texts(values)]
+        return self.__embed_texts(values)
 
     def __embed_texts(self, texts: list[str]) -> list[Vector]:
-        return self.node.embedding.transform(texts)
+        return self.node.embedding.embed_multiple(texts)

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import logging
+import math
 from datetime import timedelta
 from typing import Mapping, cast
 
@@ -29,6 +30,7 @@ from superlinked.framework.common.schema.schema_object import (
     SchemaObject,
     Timestamp,
 )
+from superlinked.framework.common.space.normalization import Constant
 from superlinked.framework.common.util.named_function_evaluator import NamedFunction
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
@@ -93,12 +95,18 @@ class RecencySpace(Space):
                 else [PeriodTime(period_time=timedelta(days=14))]
             )
         )
+        self.normalization = Constant(
+            math.sqrt(
+                sum(period_time.weight**2 for period_time in self.period_time_list)
+            )
+        )
         self.negative_filter = negative_filter
         self.__run_parameter_checks()
         self.__schema_node_map: dict[SchemaObject, RecencyNode] = {
             field.schema_obj: RecencyNode(
                 SchemaFieldNode(field),
                 self.period_time_list,
+                self.normalization,
                 self.negative_filter,
             )
             for field in self.timestamp.fields
@@ -147,7 +155,10 @@ class RecencySpace(Space):
     def _handle_node_not_present(self, schema: SchemaObject) -> RecencyNode:
         named_function_node = NamedFunctionNode(NamedFunction.NOW, schema, int)
         recency_node = RecencyNode(
-            named_function_node, self.period_time_list, self.negative_filter
+            named_function_node,
+            self.period_time_list,
+            self.normalization,
+            self.negative_filter,
         )
         self.__schema_node_map[schema] = recency_node
         return recency_node

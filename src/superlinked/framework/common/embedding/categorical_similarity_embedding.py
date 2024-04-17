@@ -15,28 +15,34 @@
 
 import numpy as np
 import numpy.typing as npt
+from typing_extensions import override
 
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.embedding.embedding import Embedding
 from superlinked.framework.common.interface.has_length import HasLength
+from superlinked.framework.common.space.normalization import Normalization
 
 CATEGORICAL_ENCODING_VALUE: int = 1
 
 
-class CategoricalSimilarityEmbedding(HasLength):
+class CategoricalSimilarityEmbedding(Embedding[str], HasLength):
     def __init__(
         self,
         categories: list[str],
         negative_filter: float,
         uncategorised_as_category: bool,
+        normalization: Normalization,
     ) -> None:
         self.__length: int = len(categories) + 1  # We reserve the last bin for 'other'
         self.__categories: list[str] = categories
         self.__negative_filter: float = negative_filter
         self.__uncategorised_as_category: bool = uncategorised_as_category
+        self.__normalization: Normalization = normalization
 
-    def transform(self, text: str, is_query: bool) -> Vector:
+    @override
+    def embed(self, input_: str, is_query: bool) -> Vector:
         one_hot_encoding: npt.NDArray[np.float64] = self.__one_hot_encode(
-            text, is_query
+            input_, is_query
         )
         return Vector(one_hot_encoding)
 
@@ -46,8 +52,13 @@ class CategoricalSimilarityEmbedding(HasLength):
         )
         category_index: int | None = self.__get_category_index(text, is_query)
         if category_index is not None:
-            one_hot_encoding[category_index] = CATEGORICAL_ENCODING_VALUE
+            one_hot_encoding[category_index] = self.__get_normalized_vector_input()
         return one_hot_encoding
+
+    def __get_normalized_vector_input(self) -> float:
+        vector_input = np.array([CATEGORICAL_ENCODING_VALUE])
+        vector = Vector(vector_input).normalize(self.__normalization.norm(vector_input))
+        return vector.value[0]
 
     def __get_category_index(self, text: str, is_query: bool) -> int | None:
         if text in self.__categories:

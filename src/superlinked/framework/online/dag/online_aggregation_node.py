@@ -88,7 +88,7 @@ class OnlineAggregationNode(DefaultOnlineNode[AggregationNode, Vector], HasLengt
         self._check_evaluation_inputs(parent_results)
         weighted_vectors = self._get_weighted_vectors(parent_results)
         aggregation = reduce(lambda a, b: a.aggregate(b), weighted_vectors)
-        return aggregation.normalize()
+        return aggregation.normalize(len(weighted_vectors))
 
     def _check_evaluation_inputs(
         self,

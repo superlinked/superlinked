@@ -57,6 +57,7 @@ class RecencyPlotter:
         """
         self._embedding: RecencyEmbedding = RecencyEmbedding(
             period_time_list=recency_space.period_time_list,
+            normalization=recency_space.normalization,
             negative_filter=recency_space.negative_filter,
         )
         self._negative_filter_time_period_showcase_multiplier = (

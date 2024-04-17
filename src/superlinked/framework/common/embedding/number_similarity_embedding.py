@@ -14,38 +14,49 @@
 
 import math
 
+import numpy as np
+from typing_extensions import override
+
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.embedding.embedding import Embedding
 from superlinked.framework.common.interface.has_length import HasLength
+from superlinked.framework.common.space.normalization import Normalization
 
 
-class NumberSimilarityEmbedding(HasLength):
+class NumberSimilarityEmbedding(Embedding[float], HasLength):
     def __init__(
-        self, min_value: float, max_value: float, negative_filter: float
+        self,
+        min_value: float,
+        max_value: float,
+        negative_filter: float,
+        normalization: Normalization,
     ) -> None:
         self.__length = 3
         self.__circle_size_in_rad = math.pi / 2
         self.min_value = min_value
         self.max_value = max_value
         self.negative_filter = negative_filter
+        self.__normalization = normalization
 
-    def transform(self, input_number: float, is_query: bool) -> Vector:
-        if input_number < self.min_value or input_number > self.max_value:
+    @override
+    def embed(self, input_: float, is_query: bool) -> Vector:
+        if input_ < self.min_value or input_ > self.max_value:
             return Vector([0.0, 0.0, self.negative_filter])
 
-        constrained_input: float = min(
-            max(self.min_value, input_number), self.max_value
-        )
+        constrained_input: float = min(max(self.min_value, input_), self.max_value)
         normalized_input = (constrained_input - self.min_value) / (
             self.max_value - self.min_value
         )
         angle_in_radians = normalized_input * self.__circle_size_in_rad
-        return Vector(
+        vector_input = np.array(
             [
                 math.sin(angle_in_radians),
                 math.cos(angle_in_radians),
-                1.0 if is_query else 0.0,
             ]
         )
+        vector = Vector(vector_input).normalize(self.__normalization.norm(vector_input))
+        vector += Vector([1.0 if is_query else 0.0])
+        return vector
 
     @property
     def length(self) -> int:

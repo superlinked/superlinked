@@ -20,9 +20,6 @@ from typing import Any, Union
 import numpy as np
 import numpy.typing as npt
 
-# For some reason mypy does not recognize this import
-from numpy.linalg import norm  # type: ignore[attr-defined]
-
 from superlinked.framework.common.exception import MismatchingDimensionException
 
 Json = Mapping[str, Any]
@@ -37,12 +34,7 @@ class Vector:
         else:
             value_to_set = np.array(value, dtype=float)
         self.value: npt.NDArray[np.float64] = value_to_set
-        self.__length: float = norm(self.value)
         self.__dimension: int = len(self.value)
-
-    @property
-    def length(self) -> float:
-        return self.__length
 
     @property
     def dimension(self) -> int:
@@ -58,10 +50,10 @@ class Vector:
     def is_empty(self) -> bool:
         return self == Vector.EMPTY_VECTOR
 
-    def normalize(self) -> Vector:
-        if self.is_empty:
+    def normalize(self, length: float) -> Vector:
+        if length in [0, 1] or self.is_empty:
             return self
-        return self / (self.length if self.length != 0 else 1)
+        return self / length
 
     def aggregate(self, vector: Vector) -> Vector:
         if self.is_empty:

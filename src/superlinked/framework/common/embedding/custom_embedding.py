@@ -12,20 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import numpy as np
 import numpy.typing as npt
+from typing_extensions import override
 
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.embedding.embedding import Embedding
 from superlinked.framework.common.interface.has_length import HasLength
+from superlinked.framework.common.space.normalization import Normalization
 
 
-class CustomEmbedding(HasLength):
-    def __init__(self, length: int) -> None:
+class CustomEmbedding(Embedding[npt.NDArray[np.float64]], HasLength):
+    def __init__(self, length: int, normalization: Normalization) -> None:
         self.__length: int = length
+        self.__normalization: Normalization = normalization
 
-    def transform(self, array: npt.NDArray[np.float64]) -> Vector:
-        return Vector(array).normalize()
+    @override
+    def embed(
+        self,
+        input_: npt.NDArray[np.float64],
+        is_query: bool,  # pylint: disable=unused-argument
+    ) -> Vector:
+        return Vector(input_).normalize(self.__normalization.norm(input_))
 
     @property
     def length(self) -> int:

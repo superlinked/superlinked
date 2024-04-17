@@ -18,6 +18,7 @@ from superlinked.framework.common.embedding.number_similarity_embedding import (
     NumberSimilarityEmbedding,
 )
 from superlinked.framework.common.interface.has_length import HasLength
+from superlinked.framework.common.space.normalization import Normalization
 
 
 class NumberSimilarityNode(Node[Vector], HasLength):
@@ -27,10 +28,11 @@ class NumberSimilarityNode(Node[Vector], HasLength):
         min_value: float,
         max_value: float,
         negative_filter: float,
+        normalization: Normalization,
     ) -> None:
         super().__init__([parent])
         self.embedding = NumberSimilarityEmbedding(
-            min_value, max_value, negative_filter
+            min_value, max_value, negative_filter, normalization
         )
 
     @property

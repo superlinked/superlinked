@@ -26,6 +26,7 @@ from superlinked.framework.common.schema.schema_object import (
     SchemaObject,
     String,
 )
+from superlinked.framework.common.space.normalization import L2Norm
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
@@ -82,12 +83,14 @@ class CategoricalSimilaritySpace(Space):
         super().__init__(category_input, String)
         self.__category = SpaceFieldSet(self, cast(set[SchemaField], self._field_set))
         self.__uncategorised_as_category: bool = uncategorised_as_category
+        normalization = L2Norm()
         unchecked_category_node_map = {
             single_category: CategoricalSimilarityNode(
                 parent=SchemaFieldNode(single_category),
                 categories=categories,
                 negative_filter=negative_filter,
                 uncategorised_as_category=self.uncategorised_as_category,
+                normalization=normalization,
             )
             for single_category in self._field_set
         }

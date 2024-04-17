@@ -13,18 +13,31 @@
 # limitations under the License.
 
 import math
+from dataclasses import dataclass
 from datetime import datetime, timedelta
+
+import numpy as np
+from typing_extensions import override
 
 from superlinked.framework.common.dag.period_time import PeriodTime
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.embedding.embedding import Embedding
 from superlinked.framework.common.interface.has_length import HasLength
+from superlinked.framework.common.space.normalization import Normalization
 from superlinked.framework.common.util import time_util
 
 
-class RecencyEmbedding(HasLength):
+@dataclass
+class RecencyInput:
+    created_at: int
+    time_period_start: int
+
+
+class RecencyEmbedding(Embedding[RecencyInput], HasLength):
     def __init__(
         self,
         period_time_list: list[PeriodTime],
+        normalization: Normalization,
         negative_filter: float = 0.0,
     ) -> None:
         self.__period_time_list: list[PeriodTime] = period_time_list
@@ -32,6 +45,7 @@ class RecencyEmbedding(HasLength):
         self.__max_period_time: timedelta = max(
             param.period_time for param in self.__period_time_list
         )
+        self.__normalization = normalization
         # a sin-cos pair for every period_time plus a dimension for negative filter or 0
         self.__length = len(period_time_list) * 2 + 1
 
@@ -66,6 +80,12 @@ class RecencyEmbedding(HasLength):
     @property
     def epoch(self) -> int:
         return self.__get_epoch()
+
+    @override
+    def embed(self, input_: RecencyInput, is_query: bool) -> Vector:
+        return self.calc_recency_vector(
+            input_.created_at, input_.time_period_start, is_query
+        )
 
     def calc_recency_vector(
         self, created_at: int, time_period_start: int, is_query: bool
@@ -107,15 +127,11 @@ class RecencyEmbedding(HasLength):
             if period_time.period_time == self.__max_period_time:
                 z_value = self.__negative_filter
 
-        recency_vector: Vector = self.normalise_recency_vector(
-            Vector([x_value, y_value])
+        vector_input = np.array([x_value, y_value])
+        recency_vector: Vector = Vector(vector_input).normalize(
+            self.__normalization.norm(vector_input)
         )
         if period_time.period_time == self.__max_period_time:
             recency_vector += Vector([z_value])
 
         return recency_vector
-
-    def normalise_recency_vector(self, raw_recency_vector: Vector) -> Vector:
-        return raw_recency_vector / math.sqrt(
-            sum(period_time.weight**2 for period_time in self.__period_time_list)
-        )

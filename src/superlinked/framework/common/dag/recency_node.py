@@ -17,6 +17,7 @@ from superlinked.framework.common.dag.period_time import PeriodTime
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.recency_embedding import RecencyEmbedding
 from superlinked.framework.common.interface.has_length import HasLength
+from superlinked.framework.common.space.normalization import Normalization
 
 
 class RecencyNode(Node[Vector], HasLength):
@@ -24,11 +25,13 @@ class RecencyNode(Node[Vector], HasLength):
         self,
         parent: Node[int],
         period_time_list: list[PeriodTime],
+        normalization: Normalization,
         negative_filter: float = 0.0,
     ) -> None:
         super().__init__([parent])
         self.embedding: RecencyEmbedding = RecencyEmbedding(
             period_time_list=period_time_list,
+            normalization=normalization,
             negative_filter=negative_filter,
         )
 

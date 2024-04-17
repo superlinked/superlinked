@@ -15,9 +15,12 @@
 from enum import Enum
 
 import numpy as np
+from typing_extensions import override
 
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.embedding.embedding import Embedding
 from superlinked.framework.common.interface.has_length import HasLength
+from superlinked.framework.common.space.normalization import Normalization
 
 
 class Mode(Enum):
@@ -26,24 +29,29 @@ class Mode(Enum):
     SIMILAR = "similar"
 
 
-class NumberEmbedding(HasLength):
+class NumberEmbedding(Embedding[float], HasLength):
     def __init__(
         self,
         min_value: float,
         max_value: float,
         mode: Mode,
         negative_filter: float,
+        normalization: Normalization,
     ) -> None:
         self.__length = 1
         self.min_value = min_value
         self.max_value = max_value
         self.mode = mode
         self.negative_filter = float(negative_filter)
+        self.__normalization = normalization
 
-    def transform(self, input_number: float) -> Vector:
-        constrained_input: float = min(
-            max(self.min_value, input_number), self.max_value
-        )
+    @override
+    def embed(
+        self,
+        input_: float,
+        is_query: bool,  # pylint: disable=unused-argument
+    ) -> Vector:
+        constrained_input: float = min(max(self.min_value, input_), self.max_value)
         transformed_number: float = (constrained_input - self.min_value) / (
             self.max_value - self.min_value
         )
@@ -51,8 +59,9 @@ class NumberEmbedding(HasLength):
             transformed_number = 1 - transformed_number
         if transformed_number <= 0:
             transformed_number = self.negative_filter
-
-        return Vector(np.array([transformed_number]).astype(np.float32).tolist())
+        vector_input = np.array([transformed_number])
+        vector = Vector(vector_input)
+        return vector.normalize(self.__normalization.norm(vector_input))
 
     @property
     def length(self) -> int:

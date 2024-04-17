@@ -80,7 +80,7 @@ class OnlineCategoricalSimilarityNode(
         input_: EvaluationResult[str] = cast(
             OnlineNode[Node[str], str], self.parents[0]
         ).evaluate_next_single(parsed_schema, context)
-        transformed_input_value = self.node.embedding.transform(
+        transformed_input_value = self.node.embedding.embed(
             input_.main.value, context.is_query_context()
         )
         main = self._get_single_evaluation_result(transformed_input_value)

@@ -69,12 +69,11 @@ class QueryVectorFactory:
         similar_vector: Vector | None = self._get_similar_vector(
             schema, query_filters, context_base
         )
-        # Apply additional weights.
-        vectors: list[Vector | None] = self._apply_vector_weights(
-            looks_like_vector, similar_vector, query_filters
-        )
+        weight_sum = query_filters._get_weight_abs_sum()
         # Aggregate them.
-        vector: Vector = QueryVectorFactory._combine_vectors(vectors)
+        vector: Vector = QueryVectorFactory._combine_vectors(
+            [looks_like_vector, similar_vector], weight_sum
+        )
         # Re-weight by space weights.
         space_node_id_weight_map: dict[str, float] = (
             self.__get_node_id_weight_map_from_space_weight_map(
@@ -86,25 +85,6 @@ class QueryVectorFactory:
         )
         vector = self._evaluator.re_weight_vector(schema, vector, query_context)
         return vector
-
-    def _apply_vector_weights(
-        self,
-        looks_like_vector: Vector | None,
-        similar_vector: Vector | None,
-        query_filters: QueryFilters,
-    ) -> list[Vector | None]:
-        weight_sum = query_filters._get_weight_abs_sum()
-
-        if looks_like_vector is not None:
-            looks_like_vector = looks_like_vector / weight_sum
-
-        if similar_vector is not None:
-            similar_vector_coefficient = self._get_similar_coefficient(query_filters)
-            if similar_vector_coefficient != 0:
-                similar_vector = similar_vector * similar_vector_coefficient
-                similar_vector = similar_vector / weight_sum
-
-        return [looks_like_vector, similar_vector]
 
     def _get_looks_like_vector(
         self,
@@ -151,17 +131,6 @@ class QueryVectorFactory:
             return evaluation.main.value
         return None
 
-    def _get_similar_coefficient(
-        self,
-        query_filters: QueryFilters,
-    ) -> float:
-        weights = [filter_.weight for filter_ in query_filters.similar_filters]
-        weight_sum = sum(weights)
-        if weight_sum != 0:
-            weight_pow_sum = sum(weight**2 for weight in weights)
-            return weight_sum / sqrt(weight_pow_sum)
-        return 0
-
     def _create_query_context(
         self,
         context_base: ExecutionContext,
@@ -198,11 +167,12 @@ class QueryVectorFactory:
         ]
 
     @staticmethod
-    def _combine_vectors(
-        vectors: list[Vector | None],
-    ) -> Vector:
-        if non_none_vectors := [vector for vector in vectors if vector]:
-            return reduce(lambda a, b: a.aggregate(b), non_none_vectors).normalize()
+    def _combine_vectors(vectors: list[Vector | None], weight_sum: float) -> Vector:
+        if non_none_vectors := [
+            vector for vector in vectors if vector and not vector.is_empty
+        ]:
+            aggregation = reduce(lambda a, b: a.aggregate(b), non_none_vectors)
+            return aggregation.normalize(sqrt(weight_sum))
         raise QueryException("No implemented OP provided for the query")
 
     @staticmethod

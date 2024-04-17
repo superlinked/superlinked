@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+from math import sqrt
 from typing import cast
 
 from typing_extensions import override
@@ -64,7 +65,6 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
     ) -> list[Vector] | None:
         self.__check_evaluation_inputs(parent_results)
         len_results = self.len_parent_results(parent_results)
-
         vectors = [
             sum(
                 (
@@ -78,8 +78,13 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
             )
             for i in range(len_results)
         ]
+        weight_sum = self._get_weight_abs_sum(context)
         return [
-            vector if context.is_query_context() else vector.normalize()
+            (
+                vector
+                if context.is_query_context()
+                else vector.normalize(sqrt(weight_sum))
+            )
             for vector in vectors
         ]
 
@@ -96,7 +101,17 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
             ],
             Vector([]),
         )
-        return vector.normalize()
+        weight_sum = self._get_weight_abs_sum(context)
+        return vector.normalize(sqrt(weight_sum))
+
+    def _get_weight_abs_sum(
+        self,
+        context: ExecutionContext,
+    ) -> float:
+        return sum(
+            abs(self.__get_weight_of_node(parent.node_id, context))
+            for parent in self.parents
+        )
 
     def len_parent_results(
         self,

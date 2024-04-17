@@ -18,16 +18,22 @@ from superlinked.framework.common.embedding.sentence_transformer_embedding impor
     SentenceTransformerEmbedding,
 )
 from superlinked.framework.common.interface.has_length import HasLength
+from superlinked.framework.common.space.normalization import Normalization
 
 
 class TextEmbeddingNode(Node[Vector], HasLength):
-    def __init__(self, parent: Node[str], model_name: str) -> None:
+    def __init__(
+        self, parent: Node[str], model_name: str, normalization: Normalization
+    ) -> None:
         super().__init__([parent])
         self.model_name = model_name
+        self.__normalization = normalization
         self.post_init()
 
     def post_init(self) -> None:
-        self.embedding = SentenceTransformerEmbedding(self.model_name)
+        self.embedding = SentenceTransformerEmbedding(
+            self.model_name, self.__normalization
+        )
         self.__length = self.embedding.length
 
     @property

@@ -18,6 +18,7 @@ from superlinked.framework.common.embedding.categorical_similarity_embedding imp
     CategoricalSimilarityEmbedding,
 )
 from superlinked.framework.common.interface.has_length import HasLength
+from superlinked.framework.common.space.normalization import Normalization
 
 
 class CategoricalSimilarityNode(Node[Vector], HasLength):
@@ -27,12 +28,14 @@ class CategoricalSimilarityNode(Node[Vector], HasLength):
         categories: list[str],
         negative_filter: float,
         uncategorised_as_category: bool,
+        normalization: Normalization,
     ) -> None:
         super().__init__([parent])
         self.embedding = CategoricalSimilarityEmbedding(
             categories=categories,
             negative_filter=negative_filter,
             uncategorised_as_category=uncategorised_as_category,
+            normalization=normalization,
         )
 
     @property
