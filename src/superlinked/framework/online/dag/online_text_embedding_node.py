@@ -14,6 +14,9 @@
 
 from __future__ import annotations
 
+from typing import cast
+
+from beartype.typing import Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
@@ -62,14 +65,25 @@ class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasL
     @override
     def _evaluate_singles(
         self,
-        parent_results: dict[OnlineNode, list[SingleEvaluationResult]],
+        parent_results: list[dict[OnlineNode, SingleEvaluationResult]],
         context: ExecutionContext,
-    ) -> list[Vector] | None:
-        if len(parent_results.items()) != 1:
-            return None
-        input_ = list(parent_results.values())[0]
-        values = [result.value for result in input_]
-        return self.__embed_texts(values)
+    ) -> Sequence[Vector | None]:
+        none_indices = [
+            i for i, parent_result in enumerate(parent_results) if not parent_result
+        ]
+        non_none_parent_results = [
+            parent_result for parent_result in parent_results if parent_result
+        ]
+        input_ = list(
+            map(
+                lambda parent_result: list(parent_result.values())[0].value,
+                non_none_parent_results,
+            )
+        )
+        embedded_texts = cast(list[Vector | None], self.__embed_texts(input_))
+        for i in none_indices:
+            embedded_texts.insert(i, None)
+        return embedded_texts
 
     def __embed_texts(self, texts: list[str]) -> list[Vector]:
         return self.node.embedding.embed_multiple(texts)

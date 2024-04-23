@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+from beartype.typing import Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
@@ -52,17 +53,12 @@ class OnlineRecencyNode(DefaultOnlineNode[RecencyNode, Vector], HasLength):
     @override
     def _evaluate_singles(
         self,
-        parent_results: dict[OnlineNode, list[SingleEvaluationResult]],
+        parent_results: list[dict[OnlineNode, SingleEvaluationResult]],
         context: ExecutionContext,
-    ) -> list[Vector]:
+    ) -> Sequence[Vector | None]:
         return [
-            result
-            for result in [
-                self._evaluate_single({parent: result}, context)
-                for parent, results in parent_results.items()
-                for result in results
-            ]
-            if result is not None
+            self._evaluate_single(parent_result, context)
+            for parent_result in parent_results
         ]
 
     def _evaluate_single(

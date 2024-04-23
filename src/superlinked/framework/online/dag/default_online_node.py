@@ -15,20 +15,23 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections import defaultdict
-from itertools import zip_longest
 from typing import Generic
 
+from beartype.typing import Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import NDT, NT
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
+from superlinked.framework.online.dag.batched_chunk_input_item import (
+    BatchedChunkInputItem,
+)
 from superlinked.framework.online.dag.evaluation_result import (
     EvaluationResult,
     SingleEvaluationResult,
 )
 from superlinked.framework.online.dag.online_node import OnlineNode
+from superlinked.framework.online.dag.parent_results import ParentResults
 
 
 class DefaultOnlineNode(OnlineNode[NT, NDT], ABC, Generic[NT, NDT]):
@@ -38,102 +41,92 @@ class DefaultOnlineNode(OnlineNode[NT, NDT], ABC, Generic[NT, NDT]):
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
     ) -> list[EvaluationResult[NDT]]:
-        parent_results = self.__get_parent_results(parsed_schemas, context)
-        chunked_parent_results = self.__filter_chunked_parent_results(
-            context, parent_results
-        )
+        batch_size = len(parsed_schemas)
+        if batch_size == 0:
+            return []
 
-        main_inputs: dict[OnlineNode, list[SingleEvaluationResult]] = {
-            node: [result.main for result in results]
-            for node, results in parent_results.items()
-        }
+        parent_results = self.__get_parent_results(parsed_schemas, context)
+        main_inputs: list[ParentResults] = [
+            {node: result.main for node, result in parent_result.items()}
+            for parent_result in parent_results
+        ]
 
         mains: list[SingleEvaluationResult] = self._get_single_evaluation_results(
             self._evaluate_single_with_fallback(parsed_schemas, context, main_inputs)
         )
-
-        chunk_inputs: dict[str, list[dict[OnlineNode, SingleEvaluationResult]]] = (
-            self.__get_chunk_calculation_input(parsed_schemas, chunked_parent_results)
+        chunk_results_per_parsed_schema: list[list[NDT]] = (
+            self.__get_chunk_results_per_parsed_schema(
+                parsed_schemas, context, parent_results
+            )
         )
-        chunks_by_schema_id: dict[str, list[SingleEvaluationResult]] = (
-            self.__evaluate_chunks(parsed_schemas, context, chunk_inputs)
-        )
-
         return [
             EvaluationResult(
-                main,
-                chunks_by_schema_id.get(parsed_schemas[i].id_) or [],
+                mains[i],
+                [
+                    self._get_single_evaluation_result(chunk_result)
+                    for chunk_result in chunk_results_per_parsed_schema[i]
+                ],
             )
-            for i, main in enumerate(mains)
+            for i in range(batch_size)
         ]
 
-    def __get_chunk_calculation_input(
-        self,
-        parsed_schemas: list[ParsedSchema],
-        chunked_parent_results: dict[OnlineNode, list[EvaluationResult]],
-    ) -> dict[str, list[dict[OnlineNode, SingleEvaluationResult]]]:
-        calculation_input = {
-            parsed_schema.id_: [
-                {
-                    **{
-                        other_node: other_results[index].main
-                        for other_node, other_results in chunked_parent_results.items()
-                        if other_node.node_id != node.node_id
-                    },
-                    node: chunk,
-                }
-                for node, results in chunked_parent_results.items()
-                if results
-                for chunk in results[index].chunks
-            ]
-            for index, parsed_schema in enumerate(parsed_schemas)
-        }
-
-        return calculation_input
-
-    def __evaluate_chunks(
+    def __get_chunk_results_per_parsed_schema(
         self,
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
-        chunk_calculation_input_by_schema_id: dict[
-            str, list[dict[OnlineNode, SingleEvaluationResult]]
-        ],
-    ) -> dict[str, list[SingleEvaluationResult]]:
-        chunked_results_by_schema_id: dict[str, list[SingleEvaluationResult]] = (
-            defaultdict(list)
+        parent_results: list[dict[OnlineNode, EvaluationResult]],
+    ) -> list[list[NDT]]:
+        batch_size = len(parsed_schemas)
+        if context.is_query_context():
+            return [[]] * batch_size
+        chunked_parent_results = self.__filter_chunked_parent_results(
+            context, parent_results
         )
-
-        for chunk_dicts in zip_longest(
-            *chunk_calculation_input_by_schema_id.values(), fillvalue={}
-        ):
-            nodes = set(
-                node for chunk_dict in chunk_dicts for node in chunk_dict.keys()
-            )
-            # Merge results for the same node across different chunk_dicts
-            merged_dict = {
-                node: [
-                    single_chunk_dict[node]
-                    for single_chunk_dict in chunk_dicts
-                    if node in single_chunk_dict
-                ]
-                for node in nodes
-            }
-            parsed_schemas_present: list[str] = [
-                parsed_schemas[i].id_
-                for i, single_chunk_dict in enumerate(chunk_dicts)
-                if single_chunk_dict
-            ]
-
-            merged_result = self._get_single_evaluation_results(
-                self._evaluate_single_with_fallback(
-                    parsed_schemas, context, merged_dict
+        chunk_inputs_per_parsed_schema: list[list[ParentResults]] = [
+            [
+                self.__get_chunk_input(
+                    parent_results[i], chunked_parent, chunked_result
                 )
+                for chunked_parent, chunked_results in chunked_parent_results[i].items()
+                for chunked_result in chunked_results.chunks
+            ]
+            for i in range(batch_size)
+        ]
+        chunks_per_parsed_schema: list[list[NDT]] = [[] for i in range(batch_size)]
+        for batched_inputs in self.__batch_chunk_inputs_by_size(
+            chunk_inputs_per_parsed_schema, batch_size
+        ):
+            chunked_batched_parent_results: list[ParentResults] = [
+                batched_input.input_ for batched_input in batched_inputs
+            ]
+            batch_results = self._evaluate_single_with_fallback(
+                parsed_schemas, context, chunked_batched_parent_results
             )
 
-            for schema_id, result in zip(parsed_schemas_present, merged_result):
-                chunked_results_by_schema_id[schema_id].append(result)
+            for batched_input, batch_result in zip(batched_inputs, batch_results):
+                chunks_per_parsed_schema[batched_input.parsed_schema_index].append(
+                    batch_result
+                )
+        return chunks_per_parsed_schema
 
-        return chunked_results_by_schema_id
+    def __batch_chunk_inputs_by_size(
+        self,
+        inputs_per_parsed_schema: list[list[ParentResults]],
+        batch_size: int,
+    ) -> list[list[BatchedChunkInputItem]]:
+        result: list[list[BatchedChunkInputItem]] = []
+        counter = 0
+        current_batch: list[BatchedChunkInputItem] = []
+        for i, inputs in enumerate(inputs_per_parsed_schema):
+            for input_ in inputs:
+                counter += 1
+                current_batch.append(BatchedChunkInputItem(i, input_))
+                if counter % batch_size == 0:
+                    result.append(current_batch)
+                    current_batch = []
+        if current_batch:
+            result.append(current_batch)
+        return result
 
     def _get_single_evaluation_results(
         self, values: list[NDT]
@@ -144,50 +137,72 @@ class DefaultOnlineNode(OnlineNode[NT, NDT], ABC, Generic[NT, NDT]):
         self,
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
-    ) -> dict[OnlineNode, list[EvaluationResult]]:
-        return {
+    ) -> list[dict[OnlineNode, EvaluationResult]]:
+        inverse_parent_results = {
             parent: parent.evaluate_next(parsed_schemas, context)
             for parent in self.parents
         }
+        return [
+            {parent: inverse_parent_results[parent][i] for parent in self.parents}
+            for i in range(len(parsed_schemas))
+        ]
 
     def __filter_chunked_parent_results(
         self,
         context: ExecutionContext,
-        parent_results: dict[OnlineNode, list[EvaluationResult]],
-    ) -> dict[OnlineNode, list[EvaluationResult]]:
+        parent_results: list[dict[OnlineNode, EvaluationResult]],
+    ) -> list[dict[OnlineNode, EvaluationResult]]:
         if context.is_query_context():
-            return {}
-        return {
-            parent: results
-            for parent, results in parent_results.items()
-            if any(len(result.chunks) > 0 for result in results)
+            return [] * len(parent_results)
+        return [
+            {
+                parent: result
+                for parent, result in parent_result_dict.items()
+                if result.chunks
+            }
+            for parent_result_dict in parent_results
+        ]
+
+    def __get_chunk_input(
+        self,
+        parent_results: dict[OnlineNode, EvaluationResult],
+        chunked_parent: OnlineNode,
+        chunked_result: SingleEvaluationResult,
+    ) -> ParentResults:
+        input_parent_results = {
+            parent: result.main
+            for parent, result in parent_results.items()
+            if parent.node_id != chunked_parent.node_id
         }
+        input_parent_results[chunked_parent] = chunked_result
+        return input_parent_results
 
     def _evaluate_single_with_fallback(
         self,
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
-        parent_results: dict[OnlineNode, list[SingleEvaluationResult]],
+        parent_results: list[ParentResults],
     ) -> list[NDT]:
         single_result_all = self._evaluate_singles(parent_results, context)
-        if single_result_all is not None:
-            return single_result_all
-        return self.get_fallback_result(parsed_schemas)
+        return [
+            (
+                single_result
+                if single_result
+                else self.get_fallback_result(parsed_schemas[i])
+            )
+            for i, single_result in enumerate(single_result_all)
+        ]
 
     @abstractmethod
     def _evaluate_singles(
         self,
-        parent_results: dict[OnlineNode, list[SingleEvaluationResult]],
+        parent_results: list[ParentResults],
         context: ExecutionContext,
-    ) -> list[NDT] | None:
+    ) -> Sequence[NDT | None]:
         pass
 
     def get_fallback_result(
         self,
-        parsed_schemas: list[ParsedSchema],
-    ) -> list[NDT]:
-        stored_results = []
-        for parsed_schema in parsed_schemas:
-            stored_result = self.load_stored_result_or_raise_exception(parsed_schema)
-            stored_results.append(stored_result)
-        return stored_results
+        parsed_schema: ParsedSchema,
+    ) -> NDT:
+        return self.load_stored_result_or_raise_exception(parsed_schema)

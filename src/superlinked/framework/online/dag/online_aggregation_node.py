@@ -17,6 +17,7 @@ from __future__ import annotations
 from functools import reduce
 from typing import cast
 
+from beartype.typing import Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.aggregation_node import AggregationNode
@@ -70,15 +71,11 @@ class OnlineAggregationNode(DefaultOnlineNode[AggregationNode, Vector], HasLengt
     @override
     def _evaluate_singles(
         self,
-        parent_results: dict[OnlineNode, list[SingleEvaluationResult]],
+        parent_results: list[dict[OnlineNode, SingleEvaluationResult]],
         context: ExecutionContext,
-    ) -> list[Vector]:
-        number_of_results = len(list(parent_results.values())[0])
+    ) -> Sequence[Vector | None]:
         return [
-            self._evaluate_single(
-                {parent: results[i] for parent, results in parent_results.items()}
-            )
-            for i in range(number_of_results)
+            self._evaluate_single(parent_result) for parent_result in parent_results
         ]
 
     def _evaluate_single(

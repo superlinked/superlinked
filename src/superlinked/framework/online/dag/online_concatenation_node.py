@@ -17,6 +17,7 @@ from __future__ import annotations
 from math import sqrt
 from typing import cast
 
+from beartype.typing import Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.concatenation_node import ConcatenationNode
@@ -25,10 +26,7 @@ from superlinked.framework.common.dag.context import (
     ExecutionContext,
 )
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.exception import (
-    DagEvaluationException,
-    ValidationException,
-)
+from superlinked.framework.common.exception import ValidationException
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
 from superlinked.framework.online.dag.evaluation_result import SingleEvaluationResult
@@ -60,23 +58,19 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
     @override
     def _evaluate_singles(
         self,
-        parent_results: dict[OnlineNode, list[SingleEvaluationResult]],
+        parent_results: list[dict[OnlineNode, SingleEvaluationResult]],
         context: ExecutionContext,
-    ) -> list[Vector] | None:
+    ) -> Sequence[Vector | None]:
         self.__check_evaluation_inputs(parent_results)
-        len_results = self.len_parent_results(parent_results)
         vectors = [
             sum(
-                (
-                    self.__apply_vector_weight(
-                        results[i].value, parent.node_id, context
-                    )
-                    for parent, results in parent_results.items()
-                    if len(results)
-                ),
+                [
+                    self.__apply_vector_weight(result.value, parent.node_id, context)
+                    for parent, result in parent_result.items()
+                ],
                 Vector([]),
             )
-            for i in range(len_results)
+            for parent_result in parent_results
         ]
         weight_sum = self._get_weight_abs_sum(context)
         return [
@@ -113,28 +107,14 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
             for parent in self.parents
         )
 
-    def len_parent_results(
-        self,
-        parent_results: dict[OnlineNode, list[SingleEvaluationResult]],
-    ) -> int:
-        lens = set()
-        for results in parent_results.values():
-            if len(results) != 0:
-                lens.add(len(results))
-        if len(lens) != 1:
-            raise DagEvaluationException(
-                "Data should be the same length for each columns"
-            )
-        return next(iter(lens))
-
     def __check_evaluation_inputs(
         self,
-        parent_results: dict[OnlineNode, list[SingleEvaluationResult]],
+        parent_results: list[dict[OnlineNode, SingleEvaluationResult]],
     ) -> None:
         invalid_results = [
             result
-            for results in parent_results.values()
-            for result in results
+            for parent_result in parent_results
+            for result in parent_result.values()
             if not isinstance(result.value, Vector)
         ]
         if len(invalid_results) != 0:

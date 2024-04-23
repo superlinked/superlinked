@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+from beartype.typing import Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.comparison_filter_node import ComparisonFilterNode
@@ -44,13 +45,11 @@ class OnlineComparisonFilterNode(DefaultOnlineNode[ComparisonFilterNode, bool]):
     @override
     def _evaluate_singles(
         self,
-        parent_results: dict[OnlineNode, list[SingleEvaluationResult]],
+        parent_results: list[dict[OnlineNode, SingleEvaluationResult]],
         context: ExecutionContext,
-    ) -> list[bool] | None:
+    ) -> Sequence[bool | None]:
         return [
-            self._evaluate_single({parent: result})
-            for parent, results in parent_results.items()
-            for result in results
+            self._evaluate_single(parent_result) for parent_result in parent_results
         ]
 
     def _evaluate_single(
