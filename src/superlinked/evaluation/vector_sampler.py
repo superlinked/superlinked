@@ -41,7 +41,8 @@ class VectorCollection:
     def __init__(self, id_list: list[str], vectors: npt.NDArray[np.float64]) -> None:
         if (len(id_list) > 1) & (len(id_list) != vectors.shape[0]):
             raise ValueError(
-                f"id_list length and vectors parameter shape's first dimension should match. Got {id_list=} and {vectors.shape[0]=}"
+                f"id_list length and vectors parameter shape's first dimension should match. "
+                f"Got {id_list=} and {vectors.shape[0]=}"
             )
         self.id_list: list[str] = id_list
         self.vectors: npt.NDArray[np.float64] = vectors

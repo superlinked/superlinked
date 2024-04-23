@@ -48,12 +48,15 @@ class RecencyPlotter:
         context_data: Mapping[str, Mapping[str, ContextValue]] | None = None,
     ) -> None:
         """
-        Sets up the RecencyPlotter object. Provide it with a space, and observe the score of time points calculated back from `now`.
+        Sets up the RecencyPlotter object. Provide it with a space, and observe the score
+        of time points calculated back from `now`.
 
         Args:
             recency_space (RecencySpace): An instance of RecencySpace class.
-            negative_filter_time_period_showcase_multiplier (float): A multiplier to adjust the time frame for showcasing negative filter area.
-                1.1 means 10% of the largest period time is additionally presented in the chart. Default value tends to work nicely.
+            negative_filter_time_period_showcase_multiplier (float): A multiplier to adjust
+            the time frame for showcasing negative filter area.
+                1.1 means 10% of the largest period time is additionally presented in the
+                chart. Default value tends to work nicely.
         """
         self._embedding: RecencyEmbedding = RecencyEmbedding(
             period_time_list=recency_space.period_time_list,
