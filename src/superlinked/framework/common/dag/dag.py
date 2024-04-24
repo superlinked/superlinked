@@ -16,6 +16,7 @@ from superlinked.framework.common.dag.dag_effect import DagEffect
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_dag import SchemaDag
 from superlinked.framework.common.exception import (
+    DuplicateNodeIdException,
     InvalidDagEffectException,
     InvalidSchemaException,
 )
@@ -27,6 +28,7 @@ class Dag:
         self, nodes: list[Node], dag_effects: list[DagEffect] | None = None
     ) -> None:
         self.nodes = nodes
+        self.__check_for_node_id_duplication()
         self.dag_effects = dag_effects or []
         self.__node_id_schema_map: dict[str, set[SchemaObject]] = (
             self.__init_node_id_schema_map(self.nodes)
@@ -133,3 +135,10 @@ class Dag:
             dag_effect.event_schema,
             list(projected_parents.union(filtered_nodes)),
         )
+
+    def __check_for_node_id_duplication(self) -> None:
+        node_ids = set()
+        for node in self.nodes:
+            if node.node_id in node_ids:
+                raise DuplicateNodeIdException(f"Node id: {node} is duplicated!")
+            node_ids.add(node._node_id)

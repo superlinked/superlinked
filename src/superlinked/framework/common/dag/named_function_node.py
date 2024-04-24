@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Any
+
 from superlinked.framework.common.dag.node import NDT, Node
 from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.util.named_function_evaluator import NamedFunction
@@ -27,3 +29,10 @@ class NamedFunctionNode(Node[NDT]):
         super().__init__([], schemas={schema})
         self.named_function = named_function
         self.return_type = return_type
+
+    def _get_node_id_parameters(self) -> dict[str, Any]:
+        return {
+            "schemas": self.schemas,
+            "named_function": self.named_function,
+            "return_type": self.return_type,
+        }

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Any
+
 from typing_extensions import override
 
 from superlinked.framework.common.dag.dag_effect import DagEffect
@@ -43,5 +45,11 @@ class ComparisonFilterNode(Node[bool]):
     @override
     @property
     def persist_evaluation_result(self) -> bool:
-        # ComparisonFilterNode's result is bool, curently it cannot be persisted.
+        # ComparisonFilterNode's result is bool, currently it cannot be persisted.
         return False
+
+    def _get_node_id_parameters(self) -> dict[str, Any]:
+        return {
+            "comparison_operation": self.comparison_operation,
+            "dag_effects": self.dag_effects,
+        }

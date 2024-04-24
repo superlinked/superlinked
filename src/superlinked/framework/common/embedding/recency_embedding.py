@@ -65,6 +65,10 @@ class RecencyEmbedding(Embedding[RecencyInput], HasLength):
     def period_time_list(self) -> list[PeriodTime]:
         return self.__period_time_list
 
+    @property
+    def normalization(self) -> Normalization:
+        return self.__normalization
+
     @staticmethod
     def __get_epoch() -> int:
         """

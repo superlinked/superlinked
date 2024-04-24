@@ -43,5 +43,8 @@ class Effect:
     filter_: ComparisonOperation[SchemaField]
 
     def __str__(self) -> str:
-        result = f"{self.space}:{self.affected_schema_reference}:{self.affecting_schema_reference}:{self.filter_}"
-        return result
+        return (
+            f"{self.__class__.__name__}(space={self.space}, filter={self.filter_}, "
+            f"affected_schema_reference={self.affected_schema_reference}, "
+            f"affecting_schema_reference={self.affecting_schema_reference})"
+        )

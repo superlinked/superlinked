@@ -53,6 +53,15 @@ class SchemaObject:
     def _schema_name(self) -> str:
         return self.__schema_name
 
+    def __str__(self) -> str:
+        schema_fields = ", ".join(
+            [
+                f"(name={field.name}, type={field.type_})"
+                for field in self._get_schema_fields()
+            ]
+        )
+        return f"{self.__class__.__name__}(schema_name={self._schema_name}, schema_fields=[{schema_fields}])"
+
     def _init_field(
         self: SchemaObjectT, field_descriptor: SchemaFieldDescriptor
     ) -> SchemaField:
@@ -81,6 +90,12 @@ class SchemaField(ComparisonOperand, Generic[SFT]):
 
     def __hash__(self) -> int:
         return hash((self.name, self.schema_obj))
+
+    def __str__(self) -> str:
+        return (
+            f"{self.__class__.__name__}"
+            f"(name={self.name}, type={self.type_}, schema_object_name={self.schema_obj._schema_name})"
+        )
 
     @staticmethod
     def _original_equal(

@@ -45,6 +45,12 @@ class SchemaReference(String, HasMultiplier, Generic[RST]):
             )
         self.__referenced_schema: type[IdSchemaObject] = referenced_schema
 
+    def __str__(self) -> str:
+        return (
+            f"{self.__class__.__name__}(name={self.name}, schema_obj={self.schema_obj}, "
+            f"referenced_schema={self._referenced_schema})"
+        )
+
     @property
     def _referenced_schema(self) -> type[IdSchemaObject]:
         return self.__referenced_schema

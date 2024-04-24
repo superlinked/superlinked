@@ -124,6 +124,9 @@ class ComparisonOperation(Generic[COT]):
             self._operand, self._other
         )
 
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}(op={self._op}, operand={self._operand}, other={self._other})"
+
     def evaluate(self, value: Any) -> bool:
         match self._op:
             case ComparisonOperationType.EQUAL:

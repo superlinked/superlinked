@@ -25,4 +25,7 @@ class ResolvedSchemaReference:
     multiplier: float
 
     def __str__(self) -> str:
-        return f"{self.schema._schema_name}:{self.multiplier}"
+        return (
+            f"{self.__class__.__name__}(schema={self.schema}, multiplier={self.multiplier}, "
+            f"reference_field={self.reference_field})"
+        )

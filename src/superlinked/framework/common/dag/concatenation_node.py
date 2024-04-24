@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import cast
+from typing import Any, cast
 
 from typing_extensions import override
 
@@ -51,6 +51,11 @@ class ConcatenationNode(Node[Vector], HasLength):
     @property
     def length(self) -> int:
         return self.__length
+
+    def _get_node_id_parameters(self) -> dict[str, Any]:
+        return {
+            "default_weight": self.default_weight,
+        }
 
     @override
     def project_parents_to_schema(self, schema: SchemaObject) -> list[Node]:

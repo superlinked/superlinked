@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Any
+
 from superlinked.framework.common.dag.node import Node
 
 
@@ -29,3 +31,11 @@ class ChunkingNode(Node[str]):
         self.chunk_overlap = chunk_overlap
         self.split_chars_keep = split_chars_keep
         self.split_chars_remove = split_chars_remove
+
+    def _get_node_id_parameters(self) -> dict[str, Any]:
+        return {
+            "chunk_size": self.chunk_size,
+            "chunk_overlap": self.chunk_overlap,
+            "split_chars_keep": self.split_chars_keep,
+            "split_chars_remove": self.split_chars_remove,
+        }

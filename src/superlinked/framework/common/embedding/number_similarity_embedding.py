@@ -33,19 +33,19 @@ class NumberSimilarityEmbedding(Embedding[float], HasLength):
     ) -> None:
         self.__length = 3
         self.__circle_size_in_rad = math.pi / 2
-        self.min_value = min_value
-        self.max_value = max_value
-        self.negative_filter = negative_filter
-        self.__normalization = normalization
+        self._min_value = min_value
+        self._max_value = max_value
+        self._negative_filter = negative_filter
+        self._normalization = normalization
 
     @override
     def embed(self, input_: float, is_query: bool) -> Vector:
-        if input_ < self.min_value or input_ > self.max_value:
-            return Vector([0.0, 0.0, self.negative_filter])
+        if input_ < self._min_value or input_ > self._max_value:
+            return Vector([0.0, 0.0, self._negative_filter])
 
-        constrained_input: float = min(max(self.min_value, input_), self.max_value)
-        normalized_input = (constrained_input - self.min_value) / (
-            self.max_value - self.min_value
+        constrained_input: float = min(max(self._min_value, input_), self._max_value)
+        normalized_input = (constrained_input - self._min_value) / (
+            self._max_value - self._min_value
         )
         angle_in_radians = normalized_input * self.__circle_size_in_rad
         vector_input = np.array(
@@ -54,7 +54,7 @@ class NumberSimilarityEmbedding(Embedding[float], HasLength):
                 math.cos(angle_in_radians),
             ]
         )
-        vector = Vector(vector_input).normalize(self.__normalization.norm(vector_input))
+        vector = Vector(vector_input).normalize(self._normalization.norm(vector_input))
         vector += Vector([1.0 if is_query else 0.0])
         return vector
 

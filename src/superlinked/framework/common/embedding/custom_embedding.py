@@ -25,7 +25,7 @@ from superlinked.framework.common.space.normalization import Normalization
 class CustomEmbedding(Embedding[npt.NDArray[np.float64]], HasLength):
     def __init__(self, length: int, normalization: Normalization) -> None:
         self.__length: int = length
-        self.__normalization: Normalization = normalization
+        self._normalization: Normalization = normalization
 
     @override
     def embed(
@@ -33,7 +33,7 @@ class CustomEmbedding(Embedding[npt.NDArray[np.float64]], HasLength):
         input_: npt.NDArray[np.float64],
         is_query: bool,  # pylint: disable=unused-argument
     ) -> Vector:
-        return Vector(input_).normalize(self.__normalization.norm(input_))
+        return Vector(input_).normalize(self._normalization.norm(input_))
 
     @property
     def length(self) -> int:

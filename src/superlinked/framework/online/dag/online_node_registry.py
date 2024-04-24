@@ -111,7 +111,7 @@ class OnlineNodeRegistry:
         self.online_node_type_by_node_type[node] = online_node
 
     def register_node_by_path(self, node_path: str, online_node_path: str) -> None:
-        node_class = self.__import_node_class(node_path, Node)
+        node_class = self.__import_node_class(node_path, Node)  # type: ignore[type-abstract]
         online_node_class = self.__import_node_class(
             online_node_path,
             OnlineNode,  # type: ignore[type-abstract]

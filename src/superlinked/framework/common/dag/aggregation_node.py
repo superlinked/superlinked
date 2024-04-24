@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import cast
+from typing import Any, cast
 
 from typing_extensions import override
 
@@ -36,8 +36,8 @@ class AggregationNode(Node[Vector], HasLength):
         super().__init__(
             [weighted_parent.item for weighted_parent in weighted_parents],
             persistence_params=PersistenceParams(persist_parent_evaluation_result=True),
+            dag_effects=dag_effects,
         )
-        self.dag_effects = dag_effects
         self.__validate_parents()
         self.weighted_parents = weighted_parents
         # All parents are of the same length as it was validated earlier.
@@ -65,6 +65,16 @@ class AggregationNode(Node[Vector], HasLength):
     @property
     def length(self) -> int:
         return self.__length
+
+    def _get_node_id_parameters(self) -> dict[str, Any]:
+        weighted_parents = [
+            {"node_id": parent.item.node_id, "weight": parent.weight}
+            for parent in self.weighted_parents
+        ]
+        return {
+            "weighted_parents": weighted_parents,
+            "dag_effects": self.dag_effects,
+        }
 
     @override
     @property

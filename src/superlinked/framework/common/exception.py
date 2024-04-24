@@ -55,3 +55,7 @@ class SchemaMismatchException(Exception):
 
 class ValidationException(Exception):
     pass
+
+
+class DuplicateNodeIdException(Exception):
+    pass

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Any
+
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.period_time import PeriodTime
 from superlinked.framework.common.data_types import Vector
@@ -38,3 +40,10 @@ class RecencyNode(Node[Vector], HasLength):
     @property
     def length(self) -> int:
         return self.embedding.length
+
+    def _get_node_id_parameters(self) -> dict[str, Any]:
+        return {
+            "period_time_list": self.embedding.period_time_list,
+            "negative_filter": self.embedding.negative_filter,
+            "normalization": self.embedding.normalization,
+        }

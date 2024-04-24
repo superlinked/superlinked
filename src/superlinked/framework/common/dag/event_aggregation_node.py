@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import cast
+from typing import Any, cast
 
 from typing_extensions import override
 
@@ -66,6 +66,20 @@ class EventAggregationNode(Node[str], HasLength):
     @property
     def length(self) -> int:
         return self.__length
+
+    def _get_node_id_parameters(self) -> dict[str, Any]:
+        filters = [
+            {"node_id": filter_.item.node_id, "weight": filter_.weight}
+            for filter_ in self.filters
+        ]
+        return {
+            "dag_effects": self.dag_effects,
+            "schemas": self.schemas,
+            "event_schema": self.event_schema,
+            "affected_schema": self.affected_schema,
+            "affecting_schema": self.affecting_schema,
+            "filters": filters,
+        }
 
     @override
     def project_parents_to_schema(self, schema: SchemaObject) -> list[Node]:

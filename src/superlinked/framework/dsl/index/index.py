@@ -194,15 +194,13 @@ class Index:
             if len(spaces) == 1:
                 space = spaces[0]
                 index_parents.add(
-                    self.__init_parent_for_index_or_concatenation(
-                        space, schema, effects
-                    )
+                    self.__init_parent_for_index_or_aggregation(space, schema, effects)
                 )
             else:
                 concatenation_node_parents: list[Node[Vector]] = []
                 for space in spaces:
                     concatenation_node_parents.append(
-                        self.__init_parent_for_index_or_concatenation(
+                        self.__init_parent_for_index_or_aggregation(
                             space, schema, effects
                         )
                     )
@@ -214,7 +212,7 @@ class Index:
     ) -> list[DagEffect]:
         return [effect.dag_effect for effect in effects_with_schema]
 
-    def __init_parent_for_index_or_concatenation(
+    def __init_parent_for_index_or_aggregation(
         self,
         space: Space,
         schema: SchemaObject,

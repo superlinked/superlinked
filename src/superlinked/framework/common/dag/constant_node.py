@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Any
+
 from superlinked.framework.common.dag.node import NDT, Node
 from superlinked.framework.common.schema.schema_object import SchemaObject
 
@@ -20,3 +22,6 @@ class ConstantNode(Node[NDT]):
     def __init__(self, value: NDT, schema: SchemaObject) -> None:
         super().__init__([], schemas={schema})
         self.value = value
+
+    def _get_node_id_parameters(self) -> dict[str, Any]:
+        return {"schemas": self.schemas, "value": str(self.value)}

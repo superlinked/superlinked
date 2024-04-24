@@ -14,14 +14,15 @@
 
 from __future__ import annotations
 
-import uuid
-from abc import ABC
-from typing import Generic, TypeVar
+import hashlib
+from abc import ABC, abstractmethod
+from typing import Any, Generic, TypeVar
 
 from superlinked.framework.common.dag.dag_effect import DagEffect
 from superlinked.framework.common.dag.persistence_params import PersistenceParams
 from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.storage.persistence_type import PersistenceType
+from superlinked.framework.common.util.string_util import StringUtil
 
 # NodeDataType
 NDT = TypeVar("NDT")
@@ -30,6 +31,18 @@ NT = TypeVar("NT", bound="Node")
 
 
 class Node(Generic[NDT], ABC):
+    _instances: dict[str, Node] = {}
+
+    def __new__(cls: type[Node], *args: Any, **kwargs: Any) -> Node:
+        instance = super().__new__(cls)
+        instance.__init__(*args, **kwargs)  # type: ignore
+        node_id = instance.node_id
+        if node_id in cls._instances:
+            instance = cls._instances[node_id]
+        else:
+            cls._instances[node_id] = instance
+        return instance
+
     def __init__(
         self,
         parents: list[Node],
@@ -37,12 +50,9 @@ class Node(Generic[NDT], ABC):
         dag_effects: set[DagEffect] | None = None,
         persistence_params: PersistenceParams | None = None,
     ) -> None:
+        self._node_id: str | None = None
         self.children: list[Node] = []
         self.parents = parents
-        self._node_id = (
-            f"{self.class_name}-{str(uuid.uuid4())}"
-            f'({"|".join([parent.node_id for parent in self.parents])})'
-        )
         self.schemas: set[SchemaObject] = (schemas or set()).union(
             {schema for parent in parents for schema in parent.schemas}
             if parents
@@ -65,6 +75,8 @@ class Node(Generic[NDT], ABC):
 
     @property
     def node_id(self) -> str:
+        if not self._node_id:
+            self._node_id = self._generate_node_id()
         return self._node_id
 
     @property
@@ -78,6 +90,23 @@ class Node(Generic[NDT], ABC):
     @property
     def persistence_type(self) -> PersistenceType:
         return self._persistence_params.persistence_type
+
+    @abstractmethod
+    def _get_node_id_parameters(self) -> dict[str, Any]:
+        """
+        This method should include all class members that define its functionality, excluding the parent(s).
+        """
+
+    def __str__(self) -> str:
+        members = StringUtil.sort_and_serialize(self._get_node_id_parameters())
+        return f"{self.class_name}({members})"
+
+    def _generate_node_id(self) -> str:
+        to_hash = " | ".join(
+            [StringUtil.sort_and_serialize(self._get_node_id_parameters())]
+            + [parent.node_id for parent in self.parents]
+        )
+        return hashlib.sha3_256(to_hash.encode()).hexdigest()[:16]
 
     def project_parents_to_schema(self, schema: SchemaObject) -> list[Node]:
         if schema in self.schemas:

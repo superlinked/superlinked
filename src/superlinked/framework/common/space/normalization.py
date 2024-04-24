@@ -23,6 +23,9 @@ class Normalization(ABC):
     @abstractmethod
     def norm(self, value: npt.NDArray[np.float64]) -> float: ...
 
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}({self.__dict__ if self.__dict__ else ''})"
+
 
 class L2Norm(Normalization):
     def norm(self, value: npt.NDArray[np.float64]) -> float:

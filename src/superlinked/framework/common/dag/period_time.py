@@ -12,11 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from dataclasses import dataclass, field
 from datetime import timedelta
 
 from superlinked.framework.common.const import DEFAULT_WEIGHT
 
 
+@dataclass(frozen=True)
 class PeriodTime:
     """
     A class representing a period time parameter.
@@ -26,18 +28,15 @@ class PeriodTime:
         weight (float): Defaults to 1.0. Useful to tune different period_times against each other.
     """
 
-    def __init__(self, period_time: timedelta, weight: float = DEFAULT_WEIGHT) -> None:
+    period_time: timedelta = field(init=True)
+    weight: float = field(default=DEFAULT_WEIGHT, init=True)
+
+    def __post_init__(self) -> None:
         """
-        Initialize the PeriodTime.
-        Args:
-            period_time (timedelta): Oldest item the parameter will differentiate.
-                Older items will have 0 or `negative_filter` recency_score.
-            weight (float, optional): Defaults to 1.0. Useful to tune different period_times against each other.
+        Validate the PeriodTime after initialization.
         """
-        if int(period_time.total_seconds()) <= 0:
+        if int(self.period_time.total_seconds()) <= 0:
             raise ValueError(
                 f"Period_time parameter must be a positive time period, at least 1 seconds. "
-                f"Got {period_time.__str__()} which is {int(period_time.total_seconds())} seconds."
+                f"Got {self.period_time.__str__()} which is {int(self.period_time.total_seconds())} seconds."
             )
-        self.period_time = period_time
-        self.weight = weight

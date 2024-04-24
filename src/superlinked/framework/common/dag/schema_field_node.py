@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Generic
+from typing import Any, Generic
 
 from superlinked.framework.common.dag.dag_effect import DagEffect
 from superlinked.framework.common.dag.node import Node
@@ -25,3 +25,10 @@ class SchemaFieldNode(Generic[SFT], Node[SFT]):
     ) -> None:
         super().__init__([], schemas={schema_field.schema_obj}, dag_effects=dag_effects)
         self.schema_field = schema_field
+
+    def _get_node_id_parameters(self) -> dict[str, Any]:
+        return {
+            "schema_field": self.schema_field,
+            "schemas": self.schemas,
+            "dag_effects": self.dag_effects,
+        }

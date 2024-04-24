@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Any
+
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.sentence_transformer_embedding import (
@@ -29,13 +31,16 @@ class TextEmbeddingNode(Node[Vector], HasLength):
         self.model_name = model_name
         self.__normalization = normalization
         self.post_init()
+        super().__init__([parent])
 
     def post_init(self) -> None:
         self.embedding = SentenceTransformerEmbedding(
             self.model_name, self.__normalization
         )
-        self.__length = self.embedding.length
 
     @property
     def length(self) -> int:
-        return self.__length
+        return self.embedding.length
+
+    def _get_node_id_parameters(self) -> dict[str, Any]:
+        return {"model_name": self.model_name, "normalization": self.__normalization}

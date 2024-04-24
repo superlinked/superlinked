@@ -24,3 +24,6 @@ WT = TypeVar("WT")
 class Weighted(Generic[WT]):
     item: WT
     weight: float = DEFAULT_WEIGHT
+
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}(item={self.item}, weight={self.weight})"

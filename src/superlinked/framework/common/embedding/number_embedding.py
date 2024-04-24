@@ -39,11 +39,11 @@ class NumberEmbedding(Embedding[float], HasLength):
         normalization: Normalization,
     ) -> None:
         self.__length = 1
-        self.min_value = min_value
-        self.max_value = max_value
-        self.mode = mode
-        self.negative_filter = float(negative_filter)
-        self.__normalization = normalization
+        self._min_value = min_value
+        self._max_value = max_value
+        self._mode = mode
+        self._negative_filter = float(negative_filter)
+        self._normalization = normalization
 
     @override
     def embed(
@@ -51,17 +51,17 @@ class NumberEmbedding(Embedding[float], HasLength):
         input_: float,
         is_query: bool,  # pylint: disable=unused-argument
     ) -> Vector:
-        constrained_input: float = min(max(self.min_value, input_), self.max_value)
-        transformed_number: float = (constrained_input - self.min_value) / (
-            self.max_value - self.min_value
+        constrained_input: float = min(max(self._min_value, input_), self._max_value)
+        transformed_number: float = (constrained_input - self._min_value) / (
+            self._max_value - self._min_value
         )
-        if self.mode == Mode.MINIMUM:
+        if self._mode == Mode.MINIMUM:
             transformed_number = 1 - transformed_number
         if transformed_number <= 0:
-            transformed_number = self.negative_filter
+            transformed_number = self._negative_filter
         vector_input = np.array([transformed_number])
         vector = Vector(vector_input)
-        return vector.normalize(self.__normalization.norm(vector_input))
+        return vector.normalize(self._normalization.norm(vector_input))
 
     @property
     def length(self) -> int:

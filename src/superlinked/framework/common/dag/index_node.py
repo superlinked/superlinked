@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import cast
+from typing import Any, cast
 
 from superlinked.framework.common.dag.exception import ParentCountException
 from superlinked.framework.common.dag.node import Node
@@ -28,20 +28,25 @@ class IndexNode(Node[Vector], HasLength):
         parents: set[Node[Vector]],
     ) -> None:
         super().__init__(
-            list(self.__validate_parents(parents)),
+            self.__validate_and_order_parents(parents),
             persistence_params=PersistenceParams(
                 persist_evaluation_result=True, persistence_type=PersistenceType.VECTOR
             ),
         )
         self.__length = cast(HasLength, self.parents[0]).length
 
-    def __validate_parents(self, parents: set[Node[Vector]]) -> set[Node[Vector]]:
+    def __validate_and_order_parents(
+        self, parents: set[Node[Vector]]
+    ) -> list[Node[Vector]]:
         if len(parents) == 0:
             raise ParentCountException(
                 f"{self.class_name} must have at least 1 parent."
             )
-        return parents
+        return sorted(parents, key=lambda parent: parent.node_id)
 
     @property
     def length(self) -> int:
         return self.__length
+
+    def _get_node_id_parameters(self) -> dict[str, Any]:
+        return {"length": self.length}

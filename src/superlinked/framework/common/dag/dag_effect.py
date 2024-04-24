@@ -28,7 +28,7 @@ class DagEffect:
 
     def __str__(self) -> str:
         return (
-            f"{self.resolved_affected_schema_reference}:"
-            + f"{self.resolved_affecting_schema_reference}:"
-            + f"{self.event_schema._schema_name}"
+            f"{self.__class__.__name__}(resolved_affected_schema_reference={self.resolved_affected_schema_reference}, "
+            f"resolved_affecting_schema_reference={self.resolved_affecting_schema_reference}, "
+            f"event_schema={self.event_schema})"
         )

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Any
+
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.number_similarity_embedding import (
@@ -38,3 +40,11 @@ class NumberSimilarityNode(Node[Vector], HasLength):
     @property
     def length(self) -> int:
         return self.embedding.length
+
+    def _get_node_id_parameters(self) -> dict[str, Any]:
+        return {
+            "min_value": self.embedding._min_value,
+            "max_value": self.embedding._max_value,
+            "negative_filter": self.embedding._negative_filter,
+            "normalization": self.embedding._normalization,
+        }

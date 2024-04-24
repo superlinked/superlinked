@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Any
+
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.custom_embedding import CustomEmbedding
@@ -29,3 +31,6 @@ class CustomNode(Node[Vector], HasLength):
     @property
     def length(self) -> int:
         return self.embedding.length
+
+    def _get_node_id_parameters(self) -> dict[str, Any]:
+        return {"length": self.length, "normalization": self.embedding._normalization}
