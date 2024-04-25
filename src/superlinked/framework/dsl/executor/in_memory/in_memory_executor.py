@@ -134,12 +134,16 @@ class InMemoryApp(App[InMemoryExecutor]):
                 source._source.register(data_processor)
 
     def restore(self, reader: ObjectReader) -> None:
-        cast(InMemoryObjectStore, self._object_store).restore(reader)
-        cast(InMemoryEntityStore, self._entity_store).restore(reader)
+        node_ids = [index._node_id for index in self.executor._indices]
+        app_identifier = "_".join(node_ids)
+        cast(InMemoryObjectStore, self._object_store).restore(reader, app_identifier)
+        cast(InMemoryEntityStore, self._entity_store).restore(reader, app_identifier)
 
     def persist(self, writer: ObjectWriter) -> None:
-        cast(InMemoryObjectStore, self._object_store).persist(writer)
-        cast(InMemoryEntityStore, self._entity_store).persist(writer)
+        node_ids = [index._node_id for index in self.executor._indices]
+        app_identifier = "_".join(node_ids)
+        cast(InMemoryObjectStore, self._object_store).persist(writer, app_identifier)
+        cast(InMemoryEntityStore, self._entity_store).persist(writer, app_identifier)
 
     def query(self, query_obj: QueryObj, **params: Any) -> Result:
         """

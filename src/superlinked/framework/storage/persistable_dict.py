@@ -25,11 +25,14 @@ from superlinked.framework.storage.field import TextField, VectorField
 class ObjectWriter(ABC):
     """
     This abstract base class sets the interface for an object writer. The object to be written is a dictionary.
-    The identifier represents a field name and the value is a dictionary's string representation, serialized using JSON.
+    The identifier represents a field name and the value is the string representation of a dict, serialized using JSON.
+    The app_identifier is a unique deterministic id specific to each application and its version.
     """
 
     @abstractmethod
-    def write(self, identifier: str, serialized_object: str) -> None:
+    def write(
+        self, field_identifier: str, serialized_object: str, app_identifier: str
+    ) -> None:
         pass
 
 
@@ -37,10 +40,11 @@ class ObjectReader(ABC):
     """
     This abstract base class outlines the interface for an object reader. The identifier represents the field name.
     The method should return the object that corresponds to the field, that the writer previously written.
+    The app_identifier is a unique deterministic id specific to each application and its version.
     """
 
     @abstractmethod
-    def read(self, identifier: str) -> str:
+    def read(self, field_identifier: str, app_identifier: str) -> str:
         pass
 
 
@@ -73,10 +77,16 @@ class PersistableDict:
         self._dict_identifier: str = self.__class__.__name__
         self._dict: dict[str, Any] = dict_value
 
-    def persist(self, writer: ObjectWriter) -> None:
-        writer.write(self._dict_identifier, json.dumps(self._dict, cls=CustomEncoder))
+    def persist(self, writer: ObjectWriter, app_identifier: str) -> None:
+        writer.write(
+            self._dict_identifier,
+            json.dumps(self._dict, cls=CustomEncoder),
+            app_identifier,
+        )
 
-    def restore(self, reader: ObjectReader) -> None:
+    def restore(self, reader: ObjectReader, app_identifier: str) -> None:
         self._dict.update(
-            json.loads(reader.read(self._dict_identifier), cls=CustomDecoder)
+            json.loads(
+                reader.read(self._dict_identifier, app_identifier), cls=CustomDecoder
+            )
         )
