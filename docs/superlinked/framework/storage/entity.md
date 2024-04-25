@@ -8,6 +8,11 @@ Classes
 :   Entity contains the stored field values of a schema,
     queries return the values in entities too.
 
+    ### Methods
+
+    `is_chunk(self) ‑> bool`
+    :
+
 `EntityId(object_id: str, node_id: str, schema_id: str)`
 :   EntityId is used to identify a single entry within the vector storage.
 

@@ -80,6 +80,10 @@ class Node(Generic[NDT], ABC):
         return self._node_id
 
     @property
+    def is_root(self) -> bool:
+        return bool(self.parents)
+
+    @property
     def class_name(self) -> str:
         return self.__class__.__name__
 

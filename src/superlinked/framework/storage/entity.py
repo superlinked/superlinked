@@ -87,3 +87,6 @@ class Entity:
 
     def __hash__(self) -> int:
         return hash((self.id_, frozenset(self.__to_str_dict()), (self.origin_id or "")))
+
+    def is_chunk(self) -> bool:
+        return self.origin_id is not None

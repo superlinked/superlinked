@@ -21,7 +21,7 @@ from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema import T
 from superlinked.framework.dsl.executor.in_memory.in_memory_executor import InMemoryApp
 from superlinked.framework.dsl.index.index import Index
-from superlinked.framework.storage.entity import EntityId
+from superlinked.framework.storage.entity import Entity, EntityId
 
 
 class VectorNotFoundError(Exception):
@@ -95,15 +95,21 @@ class VectorSampler:
         self.__app = app
 
     def get_vectors_by_ids(
-        self, id_: str | list[str], index: Index, schema: IdSchemaObject | T
+        self,
+        id_: str | list[str],
+        index: Index,
+        schema: IdSchemaObject | T,
+        readable_id_: str | list[str] | None = None,
     ) -> VectorCollection:
         """
         Retrieves an entity's vector by its id, schema, and the index it's stored in.
 
         Args:
-            id_ (str): The id of the entity.
+            id_ (str) | list(str): The id of the entity(ies).
             index (Index): The index in which the entity is stored.
             schema (IdSchemaObject | T): The schema of the entity.
+            readable_id_ (str) | list(str): The readable id of the entity(ies). For chunks, it is constructed from the
+                origin_id (entity from which it originates from) and the chunk id. Defaults to using the ids.
 
         Returns:
             ndarray: The vector corresponding to the given id, index, and schema.
@@ -112,11 +118,22 @@ class VectorSampler:
             VectorNotFoundError: If no entity is found.
         """
         schema = cast(IdSchemaObject, schema)
-        id_list = [id_] if isinstance(id_, str) else id_
+        ids = [id_] if isinstance(id_, str) else id_
+        if readable_id_ is None:
+            readable_ids = ids
+        else:
+            readable_ids = (
+                [readable_id_] if isinstance(readable_id_, str) else readable_id_
+            )
+        if len(ids) != len(readable_ids):
+            raise ValueError(
+                f"id_ and readable_id_ should have the same length. "
+                f"Got {len(ids)} and {len(readable_ids)}"
+            )
 
         entity_vectors: list[npt.NDArray[np.float64]] = []
         entity_ids: list[str] = []
-        for identification in id_list:
+        for identification, readable_id in zip(ids, readable_ids):
             user_entity_id = EntityId(
                 identification, index._node.node_id, schema._base_class_name
             )
@@ -127,12 +144,12 @@ class VectorSampler:
                 )
 
             entity_vectors.append(vector.value)
-            entity_ids.append(identification)
+            entity_ids.append(readable_id)
 
         return VectorCollection(entity_ids, np.array(entity_vectors))
 
     def get_all_vectors(
-        self, index: Index, schema: IdSchemaObject | T
+        self, index: Index, schema: IdSchemaObject | T, include_chunks: bool = False
     ) -> VectorCollection:
         """
         Retrieves all entities and their vectors for a given schema and the index they're stored in.
@@ -140,9 +157,12 @@ class VectorSampler:
         Args:
             index (Index): The index in which the entities are stored.
             schema (IdSchemaObject | T): The schema of the entities.
+            include_chunks (bool): Whether to include vectors of chunks present in the index. Chunks are created if
+                the index contains a TextSimilaritySpace that is chunked.
 
         Returns:
-            ndarray: All vectors for each corresponding entity to the given index and schema.
+            VectorCollection: All vectors for each corresponding entity to the given index and schema and a list of
+                ids. Position `i` in the id list correspond to row `i` in the vector array.
 
         Raises:
             VectorNotFoundError: If no vector is found for any entities.
@@ -151,8 +171,34 @@ class VectorSampler:
         entities = self.__app.entity_store_manager.get_entities(
             index._node.node_id, schema._schema_name
         )
-        entity_ids = [entity.id_.object_id for entity in entities]
+        if include_chunks:
+            entity_ids: list[str] = [entity.id_.object_id for entity in entities]
+            readable_ids: list[str] = [
+                self.human_readable_id_for_chunks(entity) for entity in entities
+            ]
+            return self.get_vectors_by_ids(entity_ids, index, schema, readable_ids)
+
+        entity_ids = list(
+            {
+                self.get_id_for_standalone_entity_origin_id_for_chunk(entity)
+                for entity in entities
+            }
+        )
         return self.get_vectors_by_ids(entity_ids, index, schema)
+
+    @staticmethod
+    def get_id_for_standalone_entity_origin_id_for_chunk(entity: Entity) -> str:
+        if entity.is_chunk():
+            origin_id = cast(EntityId, entity.origin_id)
+            return origin_id.object_id
+        return entity.id_.object_id
+
+    @staticmethod
+    def human_readable_id_for_chunks(entity: Entity) -> str:
+        if entity.is_chunk():
+            origin_id = cast(EntityId, entity.origin_id)
+            return f"{origin_id.object_id}-{entity.id_.object_id}"
+        return entity.id_.object_id
 
     def __str__(self) -> str:
         return f"VectorSampler on app: {print(self.__app)}"
