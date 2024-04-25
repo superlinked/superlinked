@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Mapping
+from typing import Any, Mapping, cast
 
 from beartype.typing import Sequence
 
@@ -41,6 +41,7 @@ from superlinked.framework.online.source.in_memory_object_writer import (
 )
 from superlinked.framework.storage.in_memory_entity_store import InMemoryEntityStore
 from superlinked.framework.storage.in_memory_object_store import InMemoryObjectStore
+from superlinked.framework.storage.persistable_dict import ObjectReader, ObjectWriter
 
 
 class InMemoryExecutor(Executor[InMemorySource]):
@@ -131,6 +132,14 @@ class InMemoryApp(App[InMemoryExecutor]):
         ):
             for source in self.__filter_index_sources(index, self._executor._sources):
                 source._source.register(data_processor)
+
+    def _restore(self, reader: ObjectReader) -> None:
+        cast(InMemoryObjectStore, self._object_store).restore(reader)
+        cast(InMemoryEntityStore, self._entity_store).restore(reader)
+
+    def _persist(self, writer: ObjectWriter) -> None:
+        cast(InMemoryObjectStore, self._object_store).persist(writer)
+        cast(InMemoryEntityStore, self._entity_store).persist(writer)
 
     def query(self, query_obj: QueryObj, **params: Any) -> Result:
         """

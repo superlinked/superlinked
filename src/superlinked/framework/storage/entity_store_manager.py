@@ -51,11 +51,16 @@ class EntityStoreManager:
             )
         return field.vector
 
-    def get_entities(self, node_id: str, schema: str) -> list[Entity]:
-        filter_fields = {
-            EntityStoreManager.NODE_ID_KEY: TextField(node_id),
-            EntityStoreManager.SCHEMA_NAME_KEY: TextField(schema),
-        }
+    def get_entities(
+        self, node_id: str = None, schema: str = None, object_id: str = None
+    ) -> list[Entity]:
+        filter_fields = {}
+        if node_id:
+            filter_fields[EntityStoreManager.NODE_ID_KEY] = TextField(node_id)
+        if schema:
+            filter_fields[EntityStoreManager.SCHEMA_NAME_KEY] = TextField(schema)
+        if object_id:
+            filter_fields[EntityStoreManager.OBJECT_ID_KEY] = TextField(object_id)
         return self.store.get_entities(filter_fields)
 
     def set_property(

@@ -25,9 +25,10 @@ from superlinked.framework.common.calculation.vector_similarity import (
 from superlinked.framework.storage.entity import Entity, EntityId
 from superlinked.framework.storage.entity_store import EntityStore
 from superlinked.framework.storage.field import Field, TextField, VectorField
+from superlinked.framework.storage.persistable_dict import PersistableDict
 
 
-class InMemoryEntityStore(EntityStore):
+class InMemoryEntityStore(EntityStore, PersistableDict):
     """
     Store and retrieve vector and text values.
 
@@ -45,22 +46,22 @@ class InMemoryEntityStore(EntityStore):
             SimilarityMethod.INNER_PRODUCT
         ),
     ) -> None:
-        self.entities: defaultdict[str, dict[str, Field]] = defaultdict(lambda: {})
+        super().__init__(dict_value=defaultdict(dict))
         self.vector_similarity_calculator = vector_similarity_calculator
 
     def set_field(self, entity_id: EntityId, key: str, value: Field) -> None:
         row_id: str = InMemoryEntityStore._get_row_id_from_entity_id(entity_id)
-        entity = self.entities[row_id]
+        entity = self._dict[row_id]
         entity.update({key: value})
 
     def get_field(self, entity_id: EntityId, key: str) -> Field | None:
         row_id: str = InMemoryEntityStore._get_row_id_from_entity_id(entity_id)
-        entity = self.entities[row_id]
+        entity = self._dict[row_id]
         return entity.get(key)
 
     def set_origin_id(self, entity_id: EntityId, origin_id: EntityId) -> None:
         row_id: str = InMemoryEntityStore._get_row_id_from_entity_id(entity_id)
-        entity = self.entities[row_id]
+        entity = self._dict[row_id]
         entity.update(
             {
                 InMemoryEntityStore.ORIGIN_ID_KEY: TextField(
@@ -71,7 +72,7 @@ class InMemoryEntityStore(EntityStore):
 
     def get_origin_id(self, entity_id: EntityId) -> EntityId | None:
         row_id: str = InMemoryEntityStore._get_row_id_from_entity_id(entity_id)
-        entity = self.entities[row_id]
+        entity = self._dict[row_id]
         origin_id_field: Field | None = entity.get(InMemoryEntityStore.ORIGIN_ID_KEY)
         if origin_id_field and isinstance(origin_id_field, TextField):
             return InMemoryEntityStore._get_entity_id_from_row_id(origin_id_field.value)
@@ -79,12 +80,12 @@ class InMemoryEntityStore(EntityStore):
 
     def set_entity(self, entity: Entity) -> None:
         row_id: str = InMemoryEntityStore._get_row_id_from_entity_id(entity.id_)
-        entity_ = self.entities[row_id]
+        entity_ = self._dict[row_id]
         entity_.update(entity._items)
 
     def get_entity(self, entity_id: EntityId) -> Entity:
         row_id: str = InMemoryEntityStore._get_row_id_from_entity_id(entity_id)
-        entity = self.entities[row_id]
+        entity = self._dict[row_id]
         origin_id_field: Field | None = entity.get(InMemoryEntityStore.ORIGIN_ID_KEY)
         return Entity(
             entity_id,
@@ -102,7 +103,7 @@ class InMemoryEntityStore(EntityStore):
     ) -> list[Entity]:
         return [
             self.get_entity(InMemoryEntityStore._get_entity_id_from_row_id(k))
-            for k, v in self.entities.items()
+            for k, v in self._dict.items()
             if InMemoryEntityStore._is_subset(v, key_value_filter)
         ]
 
@@ -116,7 +117,7 @@ class InMemoryEntityStore(EntityStore):
     ) -> list[Entity]:
         filtered_entities: dict[str, dict] = {
             k: {InMemoryEntityStore.ITEMS_KEY: v}
-            for k, v in self.entities.items()
+            for k, v in self._dict.items()
             if InMemoryEntityStore._is_subset(v, key_value_filter)
         }
 

@@ -16,17 +16,18 @@ from __future__ import annotations
 
 from superlinked.framework.common.data_types import Json
 from superlinked.framework.storage.object_store import ObjectStore
+from superlinked.framework.storage.persistable_dict import PersistableDict
 
 
-class InMemoryObjectStore(ObjectStore[Json]):
+class InMemoryObjectStore(ObjectStore[Json], PersistableDict):
     def __init__(self) -> None:
-        self.__store: dict[str, Json] = {}
+        super().__init__(dict_value={})
 
     def save(self, row_id: str, data: Json) -> None:
-        self.__store[row_id] = data
+        self._dict[row_id] = data
 
     def load(self, row_id: str) -> Json | None:
-        return self.__store.get(row_id)
+        return self._dict.get(row_id)
 
     def load_all(self) -> list[Json]:
-        return list(self.__store.values())
+        return list(self._dict.values())
