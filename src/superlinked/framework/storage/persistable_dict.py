@@ -24,23 +24,23 @@ from superlinked.framework.storage.field import TextField, VectorField
 
 class ObjectWriter(ABC):
     """
-    This abstract base class defines the interface for an object writer. The writeable object is a dictionary where
-    each key is the name of a field and the value is a string representation of a dictionary, serialized using JSON.
+    This abstract base class sets the interface for an object writer. The object to be written is a dictionary.
+    The identifier represents a field name and the value is a dictionary's string representation, serialized using JSON.
     """
 
     @abstractmethod
-    def write(self, writeable_object: dict[str, str]) -> None:
+    def write(self, identifier: str, serialized_object: str) -> None:
         pass
 
 
 class ObjectReader(ABC):
     """
-    This abstract base class outlines the interface for an object reader. The 'read_key' parameter represents the
-    field name. The method should return the object that corresponds to the field, that the writer previously written.
+    This abstract base class outlines the interface for an object reader. The identifier represents the field name.
+    The method should return the object that corresponds to the field, that the writer previously written.
     """
 
     @abstractmethod
-    def read(self, read_key: str) -> str:
+    def read(self, identifier: str) -> str:
         pass
 
 
@@ -70,11 +70,11 @@ class CustomDecoder(json.JSONDecoder):
 
 class PersistableDict:
     def __init__(self, dict_value: dict) -> None:
-        self._dict_identifier: str = self.__class__.__name__ + ":" + str(dict_value)
+        self._dict_identifier: str = self.__class__.__name__
         self._dict: dict[str, Any] = dict_value
 
     def persist(self, writer: ObjectWriter) -> None:
-        writer.write({self._dict_identifier: json.dumps(self._dict, cls=CustomEncoder)})
+        writer.write(self._dict_identifier, json.dumps(self._dict, cls=CustomEncoder))
 
     def restore(self, reader: ObjectReader) -> None:
         self._dict.update(
