@@ -23,6 +23,9 @@ Classes
 
     ### Methods
 
+    `persist(self, writer: superlinked.framework.storage.persistable_dict.ObjectWriter) ‑> None`
+    :
+
     `query(self, query_obj: superlinked.framework.dsl.query.query.QueryObj, **params: Any) ‑> superlinked.framework.dsl.query.result.Result`
     :   Execute a query. Example:
         ```
@@ -47,6 +50,9 @@ Classes
         
         Raises:
             QueryException: If the query index is not amongst the executor's indices.
+
+    `restore(self, reader: superlinked.framework.storage.persistable_dict.ObjectReader) ‑> None`
+    :
 
 `InMemoryExecutor(sources: Sequence[InMemorySource], indices: Sequence[Index], context_data: Mapping[str, Mapping[str, ContextValue]] | None = None)`
 :   In-memory implementation of the Executor class. Supply it with the sources through which

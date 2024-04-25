@@ -29,6 +29,12 @@ Classes
         Returns:
             RestHandler: An instance of RestHandler.
 
+    `online_app: superlinked.framework.dsl.executor.in_memory.in_memory_executor.InMemoryApp`
+    :   Property that returns the InMemoryApp instance associated with the RestApp.
+        
+        Returns:
+            InMemoryApp: An instance of InMemoryApp.
+
 `RestExecutor(sources: list[RestSource], indices: list[Index], queries: list[RestQuery], endpoint_configuration: RestEndpointConfiguration | None = None, context_data: Mapping[str, Mapping[str, ContextValue]] | None = None)`
 :   The RestExecutor is a subclass of the Executor base class. It encapsulates all the parameters required for
     the REST application. It also instantiates an InMemoryExecutor for data storage purposes.

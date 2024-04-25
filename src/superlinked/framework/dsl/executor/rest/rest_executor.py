@@ -19,6 +19,7 @@ from typing import Mapping
 from superlinked.framework.common.dag.context import ContextValue
 from superlinked.framework.dsl.executor.executor import App, Executor
 from superlinked.framework.dsl.executor.in_memory.in_memory_executor import (
+    InMemoryApp,
     InMemoryExecutor,
 )
 from superlinked.framework.dsl.executor.rest.rest_configuration import (
@@ -104,6 +105,16 @@ class RestApp(App):
             executor._queries,
             executor._endpoint_configuration,
         )
+
+    @property
+    def online_app(self) -> InMemoryApp:
+        """
+        Property that returns the InMemoryApp instance associated with the RestApp.
+
+        Returns:
+            InMemoryApp: An instance of InMemoryApp.
+        """
+        return self.__online_app
 
     @property
     def handler(self) -> RestHandler:

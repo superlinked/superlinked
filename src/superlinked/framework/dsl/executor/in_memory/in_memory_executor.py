@@ -133,11 +133,11 @@ class InMemoryApp(App[InMemoryExecutor]):
             for source in self.__filter_index_sources(index, self._executor._sources):
                 source._source.register(data_processor)
 
-    def _restore(self, reader: ObjectReader) -> None:
+    def restore(self, reader: ObjectReader) -> None:
         cast(InMemoryObjectStore, self._object_store).restore(reader)
         cast(InMemoryEntityStore, self._entity_store).restore(reader)
 
-    def _persist(self, writer: ObjectWriter) -> None:
+    def persist(self, writer: ObjectWriter) -> None:
         cast(InMemoryObjectStore, self._object_store).persist(writer)
         cast(InMemoryEntityStore, self._entity_store).persist(writer)
 
