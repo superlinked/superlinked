@@ -33,7 +33,7 @@ You can check a list of our [features](https://github.com/superlinked/superlinke
 
 Example on how to use Superlinked to experiment with the semantic search use-case. 
 
-### Pre-requisities
+### Pre-requisites
 
 #### In a notebook
 
@@ -75,7 +75,7 @@ from superlinked.framework.dsl.source.in_memory_source import InMemorySource
 from superlinked.framework.dsl.executor.in_memory.in_memory_executor import InMemoryExecutor
 
 
-@schema # Desribe your schemas.
+@schema # Describe your schemas.
 class Document:
     id: IdField  # Each schema should have exactly one `IdField`.
     body: String # Use `String` for text fields.
@@ -103,10 +103,10 @@ Ready to go to production? We are launching our first Vector DB connectors soon!
 
 ## Articles
 
-- [Vector DB Comparison](https://superlinked.com/vector-db-comparison/): Open-source collaboritve comparison of vector databases by Superlinked.
+- [Vector DB Comparison](https://superlinked.com/vector-db-comparison/): Open-source collaborative comparison of vector databases by Superlinked.
 - [Vector Hub](https://superlinked.com/vectorhub/): VectorHub is a free and open-sourced learning hub for people interested in adding vector retrieval to their ML stack
 
 ## Support
 
-If you encounter any challanges during your experiments, feel free to create an [issue](https://github.com/superlinked/superlinked/issues/new?assignees=ClaireSuperlinked&labels=bug&projects=&template=bug_report.md&title=), request a [feature](https://github.com/superlinked/superlinked/issues/new?assignees=ClaireSuperlinked&labels=enhancement&projects=&template=feature_request.md&title=) or to [start a discussion](https://github.com/superlinked/superlinked/discussions/new/choose).
+If you encounter any challenges during your experiments, feel free to create an [issue](https://github.com/superlinked/superlinked/issues/new?assignees=ClaireSuperlinked&labels=bug&projects=&template=bug_report.md&title=), request a [feature](https://github.com/superlinked/superlinked/issues/new?assignees=ClaireSuperlinked&labels=enhancement&projects=&template=feature_request.md&title=) or to [start a discussion](https://github.com/superlinked/superlinked/discussions/new/choose).
 Make sure to group your feedback in separate issues and discussions by topic. Thank you for your feedback!

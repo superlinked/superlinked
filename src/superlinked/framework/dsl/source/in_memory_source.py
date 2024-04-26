@@ -67,7 +67,7 @@ class InMemorySource(Source, Generic[SchemaObjectT, SourceTypeT]):
 
     def put(self, data: list[SourceTypeT]) -> None:
         """
-        Put data into the InMemorySource. This operation can take time as the vectorisation
+        Put data into the InMemorySource. This operation can take time as the vectorization
         of your data happens here.
 
         Args:

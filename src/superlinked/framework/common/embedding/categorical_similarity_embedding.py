@@ -28,12 +28,12 @@ class CategoricalSimilarityParams:
     def __init__(
         self,
         categories: list[str],
-        uncategorised_as_category: bool,
+        uncategorized_as_category: bool,
         category_separator: str | None = None,
         negative_filter: float = 0.0,
     ):
         self.categories: list[str] = categories
-        self.uncategorised_as_category: bool = uncategorised_as_category
+        self.uncategorized_as_category: bool = uncategorized_as_category
         self.category_separator: str | None = category_separator
         self.negative_filter: float = negative_filter
 
@@ -57,7 +57,7 @@ class CategoricalSimilarityEmbedding(Embedding[str], HasLength):
         }
         self.other_category_index: int | None = (
             self.__length - 1
-            if self.categorical_similarity_param.uncategorised_as_category
+            if self.categorical_similarity_param.uncategorized_as_category
             else None
         )
 
@@ -135,8 +135,8 @@ class CategoricalSimilarityEmbedding(Embedding[str], HasLength):
         return self.categorical_similarity_param.negative_filter
 
     @property
-    def uncategorised_as_category(self) -> bool:
-        return self.categorical_similarity_param.uncategorised_as_category
+    def uncategorized_as_category(self) -> bool:
+        return self.categorical_similarity_param.uncategorized_as_category
 
     @property
     def normalization(self) -> Normalization:

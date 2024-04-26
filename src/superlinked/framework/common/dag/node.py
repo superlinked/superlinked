@@ -81,7 +81,7 @@ class Node(Generic[NDT], ABC):
 
     @property
     def is_root(self) -> bool:
-        return bool(self.parents)
+        return len(self.parents) == 0
 
     @property
     def class_name(self) -> str:

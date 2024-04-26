@@ -57,7 +57,7 @@ Classes
 `InMemoryExecutor(sources: Sequence[InMemorySource], indices: Sequence[Index], context_data: Mapping[str, Mapping[str, ContextValue]] | None = None)`
 :   In-memory implementation of the Executor class. Supply it with the sources through which
     your data is received, and the indices indicating the desired vector spaces, and the executor will
-    create the spaces optimised for search.
+    create the spaces optimized for search.
     
     Attributes:
         sources (list[InMemorySource]): List of in-memory sources.

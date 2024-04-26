@@ -45,6 +45,6 @@ class CategoricalSimilarityNode(Node[Vector], HasLength):
         return {
             "categories": self.embedding.categories,
             "negative_filter": self.embedding.negative_filter,
-            "uncategorised_as_category": self.embedding.uncategorised_as_category,
+            "uncategorized_as_category": self.embedding.uncategorized_as_category,
             "normalization": self.embedding.normalization,
         }

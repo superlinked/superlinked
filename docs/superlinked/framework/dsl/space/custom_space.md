@@ -8,7 +8,7 @@ Classes
 :   CustomSpace is the instrument of ingesting your own vectors into Superlinked.
     This way you can use your own vectors right away. What you need to know: (you can use numbering too)
     - vectors need to have the same length
-    - vectors will be L2Norm normalised to ensure weighting makes sense
+    - vectors will be L2Norm normalized to ensure weighting makes sense
     - weighting can be performed (query-time)
     - you are going to need an Array typed SchemaField to supply your data
     - the Array field will be able to parse any Sequence[float]
