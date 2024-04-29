@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# TODO ENG-1747 check if PersistenceType should be relocated!
+
 from enum import Enum
 
 
