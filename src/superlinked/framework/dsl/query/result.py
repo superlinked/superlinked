@@ -15,6 +15,8 @@
 from dataclasses import dataclass
 from typing import Any
 
+from pandas import DataFrame
+
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.storage.entity import Entity
 
@@ -48,6 +50,19 @@ class Result:
 
     schema: IdSchemaObject
     entries: list[ResultEntry]
+
+    def to_pandas(self) -> DataFrame:
+        """
+        Converts the query result entries into a pandas DataFrame.
+
+        Each row in the DataFrame corresponds to a single entity in the result, with
+        columns representing the fields of the stored objects.
+
+        Returns:
+            DataFrame: A pandas DataFrame where each row represents a result entity, and
+                each column corresponds to the fields of the stored objects.
+        """
+        return DataFrame([entry.stored_object for entry in self.entries])
 
     def __str__(self) -> str:
         return "\n".join(

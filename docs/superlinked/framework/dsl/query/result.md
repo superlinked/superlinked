@@ -19,6 +19,18 @@ Classes
     `schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject`
     :
 
+    ### Methods
+
+    `to_pandas(self) ‑> pandas.core.frame.DataFrame`
+    :   Converts the query result entries into a pandas DataFrame.
+        
+        Each row in the DataFrame corresponds to a single entity in the result, with
+        columns representing the fields of the stored objects.
+        
+        Returns:
+            DataFrame: A pandas DataFrame where each row represents a result entity, and
+                each column corresponds to the fields of the stored objects.
+
 `ResultEntry(entity: superlinked.framework.storage.entity.Entity, stored_object: dict[str, typing.Any])`
 :   Represents a single entry in a Result, encapsulating the entity and its associated data.
     

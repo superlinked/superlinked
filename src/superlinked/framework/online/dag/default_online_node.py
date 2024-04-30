@@ -187,7 +187,7 @@ class DefaultOnlineNode(OnlineNode[NT, NDT], ABC, Generic[NT, NDT]):
         return [
             (
                 single_result
-                if single_result
+                if single_result is not None
                 else self.get_fallback_result(parsed_schemas[i])
             )
             for i, single_result in enumerate(single_result_all)
