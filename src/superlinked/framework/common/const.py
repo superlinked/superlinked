@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
+# TODO: https://linear.app/superlinked/issue/FAI-1786/create-settings-mechanics-for-congig
 MAX_DAG_DEPTH = 20
 DEFAULT_WEIGHT = 1.0
-DEFAULT_INMEMORY_PUT_BATCH_SIZE = 6000
+INMEMORY_PUT_CHUNK_SIZE: int = int(os.getenv("INMEMORY_PUT_CHUNK_SIZE", "6000"))

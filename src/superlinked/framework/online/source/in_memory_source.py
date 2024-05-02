@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from typing import Generic
 
-from superlinked.framework.common.const import DEFAULT_INMEMORY_PUT_BATCH_SIZE
+from superlinked.framework.common.const import INMEMORY_PUT_CHUNK_SIZE
 from superlinked.framework.common.observable import Publisher
 from superlinked.framework.common.parser.data_parser import DataParser
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
@@ -38,6 +38,6 @@ class InMemorySource(
     def put(self, data: SourceTypeT) -> None:
         parsed_schemas: list[ParsedSchema] = self.parser.unmarshal(data)
         for batch in chunk_list(
-            data=parsed_schemas, chunk_size=DEFAULT_INMEMORY_PUT_BATCH_SIZE
+            data=parsed_schemas, chunk_size=INMEMORY_PUT_CHUNK_SIZE
         ):
             self._dispatch(batch)
