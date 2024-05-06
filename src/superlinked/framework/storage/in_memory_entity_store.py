@@ -18,8 +18,8 @@ from collections import defaultdict
 from collections.abc import Mapping
 from typing import cast
 
+from superlinked.framework.common.calculation.distance_metric import DistanceMetric
 from superlinked.framework.common.calculation.vector_similarity import (
-    SimilarityMethod,
     VectorSimilarityCalculator,
 )
 from superlinked.framework.storage.entity import Entity, EntityId
@@ -43,7 +43,7 @@ class InMemoryEntityStore(EntityStore, PersistableDict):
     def __init__(
         self,
         vector_similarity_calculator: VectorSimilarityCalculator = VectorSimilarityCalculator(
-            SimilarityMethod.INNER_PRODUCT
+            DistanceMetric.INNER_PRODUCT
         ),
     ) -> None:
         super().__init__(dict_value=defaultdict(dict))

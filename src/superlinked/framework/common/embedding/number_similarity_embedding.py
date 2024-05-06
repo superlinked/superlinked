@@ -17,6 +17,7 @@ import math
 import numpy as np
 from typing_extensions import override
 
+from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.embedding import Embedding
 from superlinked.framework.common.interface.has_length import HasLength
@@ -39,7 +40,7 @@ class NumberSimilarityEmbedding(Embedding[float], HasLength):
         self._normalization = normalization
 
     @override
-    def embed(self, input_: float, is_query: bool) -> Vector:
+    def embed(self, input_: float, context: ExecutionContext) -> Vector:
         if input_ < self._min_value or input_ > self._max_value:
             return Vector([0.0, 0.0, self._negative_filter])
 
@@ -55,7 +56,7 @@ class NumberSimilarityEmbedding(Embedding[float], HasLength):
             ]
         )
         vector = Vector(vector_input).normalize(self._normalization.norm(vector_input))
-        vector += Vector([1.0 if is_query else 0.0])
+        vector += Vector([1.0 if context.is_query_context() else 0.0])
         return vector
 
     @property

@@ -14,37 +14,49 @@
 
 from typing import Any
 
+from typing_extensions import override
+
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.categorical_similarity_embedding import (
     CategoricalSimilarityEmbedding,
     CategoricalSimilarityParams,
 )
+from superlinked.framework.common.interface.has_aggregation import HasAggregation
 from superlinked.framework.common.interface.has_length import HasLength
-from superlinked.framework.common.space.normalization import Normalization
+from superlinked.framework.common.space.aggregation import (
+    Aggregation,
+    VectorAggregation,
+)
+from superlinked.framework.common.space.normalization import L2Norm
 
 
-class CategoricalSimilarityNode(Node[Vector], HasLength):
+class CategoricalSimilarityNode(Node[Vector], HasLength, HasAggregation):
     def __init__(
         self,
         parent: Node[str],
         categorical_similarity_param: CategoricalSimilarityParams,
-        normalization: Normalization,
     ) -> None:
         super().__init__([parent])
+        self.__aggregation = VectorAggregation(L2Norm())
         self.embedding = CategoricalSimilarityEmbedding(
             categorical_similarity_param=categorical_similarity_param,
-            normalization=normalization,
+            normalization=self.__aggregation.normalization,
         )
 
     @property
     def length(self) -> int:
         return self.embedding.length
 
+    @property
+    @override
+    def aggregation(self) -> Aggregation:
+        return self.__aggregation
+
     def _get_node_id_parameters(self) -> dict[str, Any]:
         return {
             "categories": self.embedding.categories,
             "negative_filter": self.embedding.negative_filter,
             "uncategorized_as_category": self.embedding.uncategorized_as_category,
-            "normalization": self.embedding.normalization,
+            "aggregation": self.__aggregation,
         }

@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+from __future__ import annotations
+
 from typing import Generic, TypeVar
 
 from superlinked.framework.common.data_types import Vector
@@ -42,27 +45,31 @@ class FieldData(Field, Generic[FT]):
                 f"Invalid value {value} for the given field data type {type_}"
             )
 
+    @classmethod
+    def from_field(cls, field: Field, value: FT) -> FieldData:
+        return cls(field.data_type, field.name, value)
 
-class BlobField(FieldData[str]):
+
+class BlobFieldData(FieldData[str]):
     def __init__(self, name: str, value: str) -> None:
         super().__init__(FieldDataType.BLOB, name, value)
 
 
-class DoubleField(FieldData[float]):
+class DoubleFieldData(FieldData[float]):
     def __init__(self, name: str, value: float) -> None:
         super().__init__(FieldDataType.DOUBLE, name, value)
 
 
-class IntField(FieldData[int]):
+class IntFieldData(FieldData[int]):
     def __init__(self, name: str, value: int) -> None:
         super().__init__(FieldDataType.INT, name, value)
 
 
-class StringField(FieldData[str]):
+class StringFieldData(FieldData[str]):
     def __init__(self, name: str, value: str) -> None:
         super().__init__(FieldDataType.STRING, name, value)
 
 
-class VectorField(FieldData[Vector]):
+class VectorFieldData(FieldData[Vector]):
     def __init__(self, name: str, value: Vector) -> None:
         super().__init__(FieldDataType.VECTOR, name, value)

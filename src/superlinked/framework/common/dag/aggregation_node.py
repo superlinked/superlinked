@@ -76,8 +76,8 @@ class AggregationNode(Node[Vector], HasLength):
             "dag_effects": self.dag_effects,
         }
 
-    @override
     @property
+    @override
     def persist_evaluation_result(self) -> bool:
         # Aggregation node's parents are always persisted, no need for double persistence.
         return False

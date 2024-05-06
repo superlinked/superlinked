@@ -134,7 +134,7 @@ class DataParser(ABC, Generic[IdSchemaObjectT, SourceTypeT]):
     ) -> None:
         if not mapping:
             return
-        schema_fields = schema._get_schema_fields() + [schema.id]
+        schema_fields = list(schema._get_schema_fields()) + [schema.id]
         if invalid_keys := [key for key in mapping.keys() if key not in schema_fields]:
             invalid_key_names = [
                 f"{key.schema_obj._base_class_name}.{key.name}" for key in invalid_keys

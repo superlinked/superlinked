@@ -19,6 +19,7 @@ from sentence_transformers import SentenceTransformer
 from torch import Tensor
 from typing_extensions import override
 
+from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.embedding import Embedding
 from superlinked.framework.common.interface.has_length import HasLength
@@ -39,7 +40,7 @@ class SentenceTransformerEmbedding(Embedding[str], HasLength):
     def embed(
         self,
         input_: str,
-        is_query: bool,  # pylint: disable=unused-argument
+        context: ExecutionContext,  # pylint: disable=unused-argument
     ) -> Vector:
         return self.embed_multiple([input_])[0]
 

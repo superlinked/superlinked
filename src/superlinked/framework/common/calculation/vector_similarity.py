@@ -12,25 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from enum import Enum
-
 import numpy as np
 import numpy.typing as npt
 
-
-class SimilarityMethod(Enum):
-    INNER_PRODUCT = "inner_product"
+from superlinked.framework.common.calculation.distance_metric import DistanceMetric
 
 
 class VectorSimilarityCalculator:
-    def __init__(self, method: SimilarityMethod) -> None:
+
+    def __init__(self, method: DistanceMetric) -> None:
         self.__method = method
 
     def calculate_similarity(
         self, vector_a: npt.NDArray[np.float64], vector_b: npt.NDArray[np.float64]
     ) -> float:
         match self.__method:
-            case SimilarityMethod.INNER_PRODUCT:
+            case DistanceMetric.INNER_PRODUCT:
                 return self.__calculate_inner_product(vector_a, vector_b)
             case _:
                 raise ValueError(f"Unsupported calculation method: {self.__method}")

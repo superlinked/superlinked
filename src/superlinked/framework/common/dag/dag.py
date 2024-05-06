@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from beartype.typing import Sequence
+
 from superlinked.framework.common.dag.dag_effect import DagEffect
+from superlinked.framework.common.dag.exception import InvalidDagException
+from superlinked.framework.common.dag.index_node import IndexNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_dag import SchemaDag
 from superlinked.framework.common.exception import (
@@ -28,29 +32,32 @@ class Dag:
         self, nodes: list[Node], dag_effects: list[DagEffect] | None = None
     ) -> None:
         self.nodes = nodes
+        self._index_node = self.__init_index_node(self.nodes)
         self.__check_for_node_id_duplication()
         self.dag_effects = dag_effects or []
-        self.__node_id_schema_map: dict[str, set[SchemaObject]] = (
+        node_id_schema_map: dict[str, set[SchemaObject]] = (
             self.__init_node_id_schema_map(self.nodes)
         )
-        self.__node_id_dag_effect_map: dict[str, set[DagEffect]] = (
+        node_id_dag_effect_map: dict[str, set[DagEffect]] = (
             self.__init_node_id_dag_effect_map(self.nodes)
         )
-        self.__schemas: set[SchemaObject] = self.__init_schemas(
-            self.__node_id_schema_map
-        )
+        self.__schemas: set[SchemaObject] = self.__init_schemas(node_id_schema_map)
         self.__schema_dag_map: dict[SchemaObject, SchemaDag] = (
-            self.__init_schema_schema_dag_map(self.__schemas, self.__node_id_schema_map)
+            self.__init_schema_schema_dag_map(self.__schemas, node_id_schema_map)
         )
         self.__dag_effect_dag_map: dict[DagEffect, SchemaDag] = (
             self.__init_dag_effect_schema_dag_map(
-                self.dag_effects, self.__node_id_dag_effect_map
+                self.dag_effects, node_id_dag_effect_map
             )
         )
 
     @property
     def schemas(self) -> set[SchemaObject]:
         return self.__schemas
+
+    @property
+    def index_node(self) -> IndexNode:
+        return self._index_node
 
     def project_to_schema(self, schema: SchemaObject) -> SchemaDag:
         if (dag := self.__schema_dag_map.get(schema)) is not None:
@@ -66,6 +73,13 @@ class Dag:
             f"SchemaDag for the given dag effect ({dag_effect} "
             + f"- {dag_effect.event_schema._base_class_name}) doesn't exist."
         )
+
+    def __init_index_node(self, nodes: Sequence[Node]) -> IndexNode:
+        if index_node := next(
+            (node for node in nodes if isinstance(node, IndexNode)), None
+        ):
+            return index_node
+        raise InvalidDagException("Dag doesn't have an IndexNode.")
 
     def __init_node_id_schema_map(
         self, nodes: list[Node]

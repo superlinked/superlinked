@@ -14,6 +14,14 @@
 
 from dataclasses import dataclass
 
+from superlinked.framework.common.calculation.distance_metric import DistanceMetric
+from superlinked.framework.common.storage.search_index_creation.search_algorithm import (
+    SearchAlgorithm,
+)
+from superlinked.framework.common.storage.search_index_creation.vector_component_precision import (
+    VectorComponentPrecision,
+)
+
 
 @dataclass
 class IndexFieldDescriptor:
@@ -23,6 +31,6 @@ class IndexFieldDescriptor:
 @dataclass
 class VectorIndexFieldDescriptor(IndexFieldDescriptor):
     field_size: int
-    distance_metric: str
-    vector_type: str
-    coordinate_type: str
+    distance_metric: DistanceMetric
+    search_algorithm: SearchAlgorithm
+    coordinate_type: VectorComponentPrecision

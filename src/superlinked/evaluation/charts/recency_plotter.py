@@ -19,8 +19,8 @@ import altair as alt
 import numpy as np
 import pandas as pd
 
+from superlinked.framework.common.calculation.distance_metric import DistanceMetric
 from superlinked.framework.common.calculation.vector_similarity import (
-    SimilarityMethod,
     VectorSimilarityCalculator,
 )
 from superlinked.framework.common.dag.context import (
@@ -29,7 +29,10 @@ from superlinked.framework.common.dag.context import (
     ExecutionEnvironment,
 )
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.embedding.recency_embedding import RecencyEmbedding
+from superlinked.framework.common.embedding.recency_embedding import (
+    RecencyEmbedding,
+    calculate_recency_normalization,
+)
 from superlinked.framework.dsl.space.recency_space import RecencySpace
 
 
@@ -42,7 +45,7 @@ class RecencyPlotter:
         self,
         recency_space: RecencySpace,
         vector_similarity_calculator: VectorSimilarityCalculator = VectorSimilarityCalculator(
-            SimilarityMethod.INNER_PRODUCT
+            DistanceMetric.INNER_PRODUCT
         ),
         negative_filter_time_period_showcase_multiplier: float = 1.1,
         context_data: Mapping[str, Mapping[str, ContextValue]] | None = None,
@@ -58,18 +61,20 @@ class RecencyPlotter:
                 1.1 means 10% of the largest period time is additionally presented in the
                 chart. Default value tends to work nicely.
         """
-        self._embedding: RecencyEmbedding = RecencyEmbedding(
+        self.context: ExecutionContext = ExecutionContext.from_context_data(
+            context_data, environment=ExecutionEnvironment.IN_MEMORY
+        )
+        normalization = calculate_recency_normalization(recency_space.period_time_list)
+        self._embedding = RecencyEmbedding(
             period_time_list=recency_space.period_time_list,
-            normalization=recency_space.normalization,
+            normalization=normalization,
+            time_period_hour_offset=recency_space.time_period_hour_offset,
             negative_filter=recency_space.negative_filter,
         )
         self._negative_filter_time_period_showcase_multiplier = (
             negative_filter_time_period_showcase_multiplier
         )
         self.vector_similarity_calculator = vector_similarity_calculator
-        self.context: ExecutionContext = ExecutionContext.from_context_data(
-            context_data, environment=ExecutionEnvironment.IN_MEMORY
-        )
 
     def __generate_recency_scores(
         self, oldest_ts_to_plot: int, now_ts: int, num_points: int
@@ -78,11 +83,13 @@ class RecencyPlotter:
             start=oldest_ts_to_plot, stop=now_ts, num=num_points
         )
         recency_vectors: list[Vector] = [
-            self._embedding.calc_recency_vector(plot_ts, now_ts, False)
+            self._embedding.calc_recency_vector(plot_ts, self.context)
             for plot_ts in plot_timestamps
         ]
 
-        now_vector: Vector = self._embedding.calc_recency_vector(now_ts, now_ts, True)
+        now_vector: Vector = self._embedding.calc_recency_vector(
+            now_ts, ExecutionContext(ExecutionEnvironment.QUERY)
+        )
         recency_scores: list[float] = [
             self.vector_similarity_calculator.calculate_similarity(
                 now_vector.value, vec.value
@@ -114,7 +121,9 @@ class RecencyPlotter:
             alt.Chart: A Chart object with plotted recency scores.
         """
         now_ts: int = self.context.now()
-        max_period_time_ts: int = int(self._embedding.max_period_time.total_seconds())
+        max_period_time_ts: int = int(
+            self._embedding.max_period_time.period_time.total_seconds()
+        )
         oldest_ts_to_plot: int = int(
             now_ts
             - (

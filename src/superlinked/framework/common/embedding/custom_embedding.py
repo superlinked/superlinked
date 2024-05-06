@@ -16,6 +16,7 @@ import numpy as np
 import numpy.typing as npt
 from typing_extensions import override
 
+from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.embedding import Embedding
 from superlinked.framework.common.interface.has_length import HasLength
@@ -31,7 +32,7 @@ class CustomEmbedding(Embedding[npt.NDArray[np.float64]], HasLength):
     def embed(
         self,
         input_: npt.NDArray[np.float64],
-        is_query: bool,  # pylint: disable=unused-argument
+        context: ExecutionContext,  # pylint: disable=unused-argument
     ) -> Vector:
         return Vector(input_).normalize(self._normalization.norm(input_))
 

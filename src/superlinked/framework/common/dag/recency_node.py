@@ -12,38 +12,60 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datetime import timedelta
 from typing import Any
+
+from typing_extensions import override
 
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.period_time import PeriodTime
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.embedding.recency_embedding import RecencyEmbedding
+from superlinked.framework.common.embedding.recency_embedding import (
+    RecencyEmbedding,
+    calculate_recency_normalization,
+)
+from superlinked.framework.common.interface.has_aggregation import HasAggregation
 from superlinked.framework.common.interface.has_length import HasLength
-from superlinked.framework.common.space.normalization import Normalization
+from superlinked.framework.common.space.aggregation import (
+    Aggregation,
+    InputAggregationMode,
+    get_input_aggregation,
+)
 
 
-class RecencyNode(Node[Vector], HasLength):
+class RecencyNode(Node[Vector], HasLength, HasAggregation):
     def __init__(
         self,
         parent: Node[int],
+        time_period_hour_offset: timedelta,
         period_time_list: list[PeriodTime],
-        normalization: Normalization,
-        negative_filter: float = 0.0,
+        aggregation_mode: InputAggregationMode,
+        negative_filter: float,
     ) -> None:
         super().__init__([parent])
-        self.embedding: RecencyEmbedding = RecencyEmbedding(
-            period_time_list=period_time_list,
-            normalization=normalization,
-            negative_filter=negative_filter,
+        normalization = calculate_recency_normalization(period_time_list)
+        self.embedding = RecencyEmbedding(
+            period_time_list,
+            normalization,
+            time_period_hour_offset,
+            negative_filter,
+        )
+        self.__aggregation = get_input_aggregation(
+            aggregation_mode, normalization, self.embedding
         )
 
     @property
     def length(self) -> int:
         return self.embedding.length
 
+    @property
+    @override
+    def aggregation(self) -> Aggregation:
+        return self.__aggregation
+
     def _get_node_id_parameters(self) -> dict[str, Any]:
         return {
             "period_time_list": self.embedding.period_time_list,
             "negative_filter": self.embedding.negative_filter,
-            "normalization": self.embedding.normalization,
+            "aggregation": self.__aggregation,
         }

@@ -51,7 +51,7 @@ class DataFrameParser(
     def _get_column_name_to_schema_field_mapping(self) -> dict[str, SchemaField]:
         reverse_mapping: dict[str, SchemaField] = {
             self.mapping.get(field, field.name) if self.mapping else field.name: field
-            for field in self._schema._get_schema_fields() + [self._schema.id]
+            for field in list(self._schema._get_schema_fields()) + [self._schema.id]
         }
         return reverse_mapping
 

@@ -27,7 +27,7 @@ from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.number_embedding import Mode
 from superlinked.framework.common.schema.schema_object import Number, SchemaObject
-from superlinked.framework.common.space.normalization import NoNorm
+from superlinked.framework.common.space.aggregation import InputAggregationMode
 from superlinked.framework.dsl.space.exception import (
     InvalidSpaceParamException,
     NoDefaultNodeException,
@@ -53,6 +53,8 @@ class NumberSpace(Space):
             this will be considered as this maximum value. It can be either a float or an integer.
         mode (Mode): The mode of the number embedding. Possible values are: maximum, minimum and similar.
             Similar mode expects a .similar on the query, otherwise it will default to maximum.
+        aggregation_mode (InputAggregationMode): The  aggregation mode of the number embedding.
+                Possible values are: maximum, minimum and average.
         negative_filter (float): This is a value that will be set for everything that is equal or
             lower than the min_value. It can be a float. It defaults to 0 (No effect)
 
@@ -63,12 +65,13 @@ class NumberSpace(Space):
 
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         number: Number | list[Number],
         min_value: float | int,
         max_value: float | int,
         mode: Mode,
+        aggregation_mode: InputAggregationMode = InputAggregationMode.INPUT_AVERAGE,
         negative_filter: float = 0.0,
     ) -> None:
         """
@@ -83,6 +86,8 @@ class NumberSpace(Space):
                 this will be considered as this maximum value. It can be either a float or an integer.
             mode (Mode): The mode of the number embedding. Possible values are: maximum, minimum and similar.
                 Similar mode expects a .similar on the query, otherwise it will default to maximum.
+            aggregation_mode (InputAggregationMode): The  aggregation mode of the number embedding.
+                Possible values are: maximum, minimum and average.
             negative_filter (float): This is a value that will be set for everything that is equal or
                 lower than the min_value. It can be a float. It defaults to 0 (No effect)
 
@@ -93,16 +98,15 @@ class NumberSpace(Space):
         """
         super().__init__(number, Number)
         self.__validate_parameters(min_value, max_value, negative_filter)
+        self.aggregation_mode = aggregation_mode
         self.embedding_params = NumberEmbeddingParams(
             min_value=float(min_value),
             max_value=float(max_value),
             mode=mode,
             negative_filter=negative_filter,
-            normalization=NoNorm(),
         )
         number_node_map = {
-            num: self.__create_node_by_mode(SchemaFieldNode(num))
-            for num in self._field_set
+            num: self.__create_node(SchemaFieldNode(num)) for num in self._field_set
         }
         self.number = SpaceFieldSet(self, set(number_node_map.keys()))
         self.__schema_node_map: dict[SchemaObject, Node] = {
@@ -110,21 +114,21 @@ class NumberSpace(Space):
             for schema_field, node in number_node_map.items()
         }
         self.default_constant_node_input: int | float | None
-        match self.embedding_params.mode:
+        match mode:
             case Mode.MAXIMUM:
-                self.default_constant_node_input = self.embedding_params.max_value
+                self.default_constant_node_input = max_value
             case Mode.MINIMUM:
-                self.default_constant_node_input = self.embedding_params.min_value
+                self.default_constant_node_input = min_value
             case Mode.SIMILAR:
                 self.default_constant_node_input = None
             case _:
-                raise ValueError(f"Unknown mode: {self.embedding_params.mode}")
+                raise ValueError(f"Unknown mode: {mode}")
 
     @property
     def _node_by_schema(self) -> Mapping[SchemaObject, Node[Vector]]:
         return self.__schema_node_map
 
-    def __create_node_by_mode(
+    def __create_node(
         self,
         schema_field_node: SchemaFieldNode,
     ) -> Node:
@@ -134,13 +138,10 @@ class NumberSpace(Space):
                 self.embedding_params.min_value,
                 self.embedding_params.max_value,
                 self.embedding_params.negative_filter,
-                self.embedding_params.normalization,
+                self.aggregation_mode,
             )
             if self.embedding_params.mode == Mode.SIMILAR
-            else NumberEmbeddingNode(
-                schema_field_node,
-                self.embedding_params,
-            )
+            else NumberEmbeddingNode(schema_field_node, self.embedding_params)
         )
 
     def __validate_parameters(

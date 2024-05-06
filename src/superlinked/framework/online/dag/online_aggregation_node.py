@@ -14,7 +14,6 @@
 
 from __future__ import annotations
 
-from functools import reduce
 from typing import cast
 
 from beartype.typing import Sequence
@@ -29,7 +28,9 @@ from superlinked.framework.common.exception import (
     MismatchingDimensionException,
     ValidationException,
 )
+from superlinked.framework.common.interface.has_aggregation import HasAggregation
 from superlinked.framework.common.interface.has_length import HasLength
+from superlinked.framework.common.space.aggregation import Aggregation
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
 from superlinked.framework.online.dag.evaluation_result import SingleEvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
@@ -75,17 +76,42 @@ class OnlineAggregationNode(DefaultOnlineNode[AggregationNode, Vector], HasLengt
         context: ExecutionContext,
     ) -> Sequence[Vector | None]:
         return [
-            self._evaluate_single(parent_result) for parent_result in parent_results
+            self._evaluate_single(parent_result, context)
+            for parent_result in parent_results
         ]
 
     def _evaluate_single(
         self,
         parent_results: dict[OnlineNode, SingleEvaluationResult],
+        context: ExecutionContext,
     ) -> Vector:
         self._check_evaluation_inputs(parent_results)
         weighted_vectors = self._get_weighted_vectors(parent_results)
-        aggregation = reduce(lambda a, b: a.aggregate(b), weighted_vectors)
-        return aggregation.normalize(len(weighted_vectors))
+        return self.__get_aggregation(parent_results).aggregate(
+            weighted_vectors, context
+        )
+
+    def __get_aggregation(
+        self, parent_results: dict[OnlineNode, SingleEvaluationResult]
+    ) -> Aggregation:
+        aggregations: list[Aggregation] = [
+            online_node.node.aggregation
+            for online_node in parent_results.keys()
+            if isinstance(online_node.node, HasAggregation)
+        ]
+        if not aggregations:
+            raise ValidationException("No Aggregation set.")
+        if not all(
+            aggregation.normalization == aggregations[0].normalization
+            for aggregation in aggregations
+        ):
+            aggregation_class_names = [
+                str(aggregation.__class__) for aggregation in aggregations
+            ]
+            raise ValidationException(
+                f"Cannot aggregate with different Aggregations: {str(aggregation_class_names)}."
+            )
+        return aggregations[0]
 
     def _check_evaluation_inputs(
         self,

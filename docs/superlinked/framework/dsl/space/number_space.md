@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.space.number_space
 Classes
 -------
 
-`NumberSpace(number: superlinked.framework.common.schema.schema_object.Number | list[superlinked.framework.common.schema.schema_object.Number], min_value: float | int, max_value: float | int, mode: superlinked.framework.common.embedding.number_embedding.Mode, negative_filter: float = 0.0)`
+`NumberSpace(number: superlinked.framework.common.schema.schema_object.Number | list[superlinked.framework.common.schema.schema_object.Number], min_value: float | int, max_value: float | int, mode: superlinked.framework.common.embedding.number_embedding.Mode, aggregation_mode: superlinked.framework.common.space.aggregation.InputAggregationMode = InputAggregationMode.INPUT_AVERAGE, negative_filter: float = 0.0)`
 :   NumberSpace is used to encode numerical values within a specified range.
     The range is defined by the min_value and max_value parameters.
     The preference can be controlled by the mode parameter.
@@ -20,6 +20,8 @@ Classes
             this will be considered as this maximum value. It can be either a float or an integer.
         mode (Mode): The mode of the number embedding. Possible values are: maximum, minimum and similar.
             Similar mode expects a .similar on the query, otherwise it will default to maximum.
+        aggregation_mode (InputAggregationMode): The  aggregation mode of the number embedding.
+                Possible values are: maximum, minimum and average.
         negative_filter (float): This is a value that will be set for everything that is equal or
             lower than the min_value. It can be a float. It defaults to 0 (No effect)
     
@@ -39,6 +41,8 @@ Classes
             this will be considered as this maximum value. It can be either a float or an integer.
         mode (Mode): The mode of the number embedding. Possible values are: maximum, minimum and similar.
             Similar mode expects a .similar on the query, otherwise it will default to maximum.
+        aggregation_mode (InputAggregationMode): The  aggregation mode of the number embedding.
+            Possible values are: maximum, minimum and average.
         negative_filter (float): This is a value that will be set for everything that is equal or
             lower than the min_value. It can be a float. It defaults to 0 (No effect)
     

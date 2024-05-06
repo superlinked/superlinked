@@ -14,8 +14,6 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 from typing_extensions import override
 
 from superlinked.framework.common.const import DEFAULT_WEIGHT
@@ -42,11 +40,6 @@ from superlinked.framework.online.store_manager.evaluation_result_store_manager 
 
 class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLength):
     EFFECT_COUNT_KEY = "effect_count"
-
-    @dataclass
-    class EventEffect:
-        aggregation: Vector
-        effect_count: int
 
     def __init__(
         self,
@@ -114,21 +107,20 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
             or self.input_to_aggregate is None
         ):
             return EvaluationResult(self._get_single_evaluation_result(stored_result))
-        previous_result = stored_result
-        event_effect = self._process_event(parsed_schema.event_parsed_schema, context)
-
+        event_effects = self._process_event(parsed_schema.event_parsed_schema, context)
         previous_effect_count = self.__load_effect_count(
             parsed_schema.id_, parsed_schema.schema
         )
-        accumulated_previous_result = (
-            Vector.empty_vector()
+        previous_results = (
+            [Vector.empty_vector()]
             if previous_effect_count == 0
-            else (previous_result * previous_effect_count)
+            else ([stored_result] * previous_effect_count)
         )
-        new_effect_count = previous_effect_count + event_effect.effect_count
+        new_effect_count = previous_effect_count + len(event_effects)
         vector = (
-            (accumulated_previous_result.aggregate(event_effect.aggregation))
-            / new_effect_count
+            self.input_to_aggregate.node.aggregation.aggregate(
+                previous_results + event_effects, context
+            )
             if new_effect_count
             else Vector.empty_vector()
         )
@@ -150,7 +142,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         self,
         event_parsed_schema: ParsedSchema,
         context: ExecutionContext,
-    ) -> EventEffect:
+    ) -> list[Vector]:
         if self.input_to_aggregate is None:
             raise DagEvaluationException(
                 f"{self.class_name} must have an input to aggregate."
@@ -167,32 +159,26 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
                 "parent_to_aggregate's evaluation result must be of type Vector"
                 + f", got {type(parent_result)}"
             )
-        event_effect = self._aggregate_event_effect(
+        event_effects = self._aggregate_event_effect(
             event_parsed_schema, parent_result, context
         )
-        return event_effect
+        return event_effects
 
     def _aggregate_event_effect(
         self,
         event_parsed_schema: ParsedSchema,
         affecting_vector: Vector,
         context: ExecutionContext,
-    ) -> EventEffect:
-        aggregated_vector: Vector = Vector.empty_vector()
-        effect_count = 0
-        if not affecting_vector.is_empty:
-            for filter_parent, weight in self.weighted_filter_parents.items():
-                filter_result = filter_parent.evaluate_next_single(
-                    event_parsed_schema,
-                    context,
-                )
-                if filter_result.main.value:
-                    weighted_affecting_vector = affecting_vector * weight
-                    aggregated_vector = aggregated_vector.aggregate(
-                        weighted_affecting_vector
-                    )
-                    effect_count += 1
-        return OnlineEventAggregationNode.EventEffect(aggregated_vector, effect_count)
+    ) -> list[Vector]:
+        if affecting_vector.is_empty:
+            return []
+        return [
+            affecting_vector * weight
+            for filter_parent, weight in self.weighted_filter_parents.items()
+            if filter_parent.evaluate_next_single(
+                event_parsed_schema, context
+            ).main.value
+        ]
 
     def _map_event_schema_to_affecting_schema(
         self, event_parsed_schema: ParsedSchema

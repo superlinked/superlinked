@@ -33,6 +33,10 @@ class MismatchingDimensionException(Exception):
     pass
 
 
+class NegativeFilterException(Exception):
+    pass
+
+
 class NotImplementedException(Exception):
     pass
 

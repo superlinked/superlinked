@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 from dataclasses import dataclass
 from typing import Any
+
+from typing_extensions import override
 
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
@@ -21,8 +24,10 @@ from superlinked.framework.common.embedding.number_embedding import (
     Mode,
     NumberEmbedding,
 )
+from superlinked.framework.common.interface.has_aggregation import HasAggregation
 from superlinked.framework.common.interface.has_length import HasLength
-from superlinked.framework.common.space.normalization import Normalization
+from superlinked.framework.common.space.aggregation import Aggregation, VectorAvg
+from superlinked.framework.common.space.normalization import NoNorm
 
 
 @dataclass
@@ -31,27 +36,32 @@ class NumberEmbeddingParams:
     max_value: float
     mode: Mode
     negative_filter: float
-    normalization: Normalization
 
 
-class NumberEmbeddingNode(Node[Vector], HasLength):
+class NumberEmbeddingNode(Node[Vector], HasLength, HasAggregation):
     def __init__(
         self,
         parent: Node[float | int],
         embedding_params: NumberEmbeddingParams,
     ) -> None:
         super().__init__([parent])
+        self.__aggregation = VectorAvg(NoNorm())
         self.embedding = NumberEmbedding(
             embedding_params.min_value,
             embedding_params.max_value,
             embedding_params.mode,
             embedding_params.negative_filter,
-            embedding_params.normalization,
+            self.__aggregation.normalization,
         )
 
     @property
     def length(self) -> int:
         return self.embedding.length
+
+    @property
+    @override
+    def aggregation(self) -> Aggregation:
+        return self.__aggregation
 
     def _get_node_id_parameters(self) -> dict[str, Any]:
         return {
@@ -59,5 +69,5 @@ class NumberEmbeddingNode(Node[Vector], HasLength):
             "max_value": self.embedding._max_value,
             "mode": self.embedding._mode,
             "negative_filter": self.embedding._negative_filter,
-            "normalization": self.embedding._normalization,
+            "aggregation": self.__aggregation,
         }

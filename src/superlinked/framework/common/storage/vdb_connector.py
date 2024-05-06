@@ -20,10 +20,15 @@ from beartype.typing import Sequence
 from superlinked.framework.common.storage.entity import Entity
 from superlinked.framework.common.storage.entity_data import EntityData
 from superlinked.framework.common.storage.field import Field
-from superlinked.framework.common.storage.field_data import VectorField
 from superlinked.framework.common.storage.search_index_creation.index_field_descriptor import (
     IndexFieldDescriptor,
     VectorIndexFieldDescriptor,
+)
+from superlinked.framework.common.storage.search_index_creation.search_algorithm import (
+    SearchAlgorithm,
+)
+from superlinked.framework.common.storage.vdb_knn_search_params import (
+    VDBKnnSearchParams,
 )
 
 
@@ -48,25 +53,24 @@ class VDBConnector(ABC):
 
     @property
     @abstractmethod
-    def supported_vector_indexing(self) -> Sequence[Any]:
+    def supported_vector_indexing(self) -> Sequence[SearchAlgorithm]:
         pass
 
     @abstractmethod
     def knn_search(
         self,
         index_name: str,
-        schema: str,
-        vector_field: VectorField,
+        schema_name: str,
         returned_fields: Sequence[Field],
-        limit: int,
+        vdb_knn_search_params: VDBKnnSearchParams,
         **params: Any
-    ) -> Any:
+    ) -> Sequence[EntityData]:
         pass
 
     @abstractmethod
-    def write_fields(self, fields: Sequence[EntityData]) -> None:
+    def write_entities(self, entity_data: Sequence[EntityData]) -> None:
         pass
 
     @abstractmethod
-    def read_field(self, fields: Sequence[Entity]) -> Sequence[EntityData]:
+    def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
         pass

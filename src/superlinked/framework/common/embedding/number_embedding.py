@@ -17,6 +17,7 @@ from enum import Enum
 import numpy as np
 from typing_extensions import override
 
+from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.embedding import Embedding
 from superlinked.framework.common.interface.has_length import HasLength
@@ -49,7 +50,7 @@ class NumberEmbedding(Embedding[float], HasLength):
     def embed(
         self,
         input_: float,
-        is_query: bool,  # pylint: disable=unused-argument
+        context: ExecutionContext,  # pylint: disable=unused-argument
     ) -> Vector:
         constrained_input: float = min(max(self._min_value, input_), self._max_value)
         transformed_number: float = (constrained_input - self._min_value) / (
@@ -62,6 +63,27 @@ class NumberEmbedding(Embedding[float], HasLength):
         vector_input = np.array([transformed_number])
         vector = Vector(vector_input)
         return vector.normalize(self._normalization.norm(vector_input))
+
+    @override
+    def inverse_embed(
+        self,
+        vector: Vector,
+        context: ExecutionContext,  # pylint: disable=unused-argument
+    ) -> float:
+        """
+        This function might seem complex,
+        but it essentially performs the inverse operation of the embed function.
+        """
+        denormalized = self._normalization.denormalize(vector)
+        transformed_number = denormalized.value[0]
+        if transformed_number == self._negative_filter:
+            transformed_number = -1
+        if self._mode == Mode.MINIMUM:
+            transformed_number = 1 - transformed_number
+        transformed_number = (
+            transformed_number * (self._max_value - self._min_value) + self._min_value
+        )
+        return transformed_number
 
     @property
     def length(self) -> int:

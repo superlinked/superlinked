@@ -24,7 +24,11 @@ from superlinked.framework.common.schema.schema_object import (
     SchemaField,
     SchemaObject,
 )
-from superlinked.framework.common.space.normalization import L2Norm, Normalization
+from superlinked.framework.common.space.aggregation import (
+    Aggregation,
+    VectorAggregation,
+)
+from superlinked.framework.common.space.normalization import L2Norm
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
@@ -44,7 +48,7 @@ class CustomSpace(Space):
         self,
         vector: Array | list[Array],
         length: int,
-        normalization: Normalization = L2Norm(),
+        aggregation: Aggregation = VectorAggregation(L2Norm()),
     ) -> None:
         """
         Initialize the CustomSpace.
@@ -58,7 +62,7 @@ class CustomSpace(Space):
             vector: CustomNode(
                 parent=SchemaFieldNode(vector),
                 length=length,
-                normalization=normalization,
+                aggregation=aggregation,
             )
             for vector in self._field_set
         }

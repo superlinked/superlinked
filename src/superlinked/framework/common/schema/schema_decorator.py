@@ -15,6 +15,8 @@
 import inspect
 from typing import Any, TypeAlias, cast
 
+from beartype.typing import Sequence
+
 from superlinked.framework.common.schema.event_schema_object import EventSchemaObject
 from superlinked.framework.common.schema.general_type import T
 from superlinked.framework.common.schema.id_schema_object import IdField, IdSchemaObject
@@ -65,7 +67,7 @@ class SchemaDecorator:
                     for schema_field_descriptor in schema_field_descriptors
                 ]
 
-            def _get_schema_fields(self) -> list[SchemaField]:
+            def _get_schema_fields(self) -> Sequence[SchemaField]:
                 """Returns all declared SchemaFields. Does not include the mandatory "id" field."""
                 return self._schema_fields
 

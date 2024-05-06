@@ -14,23 +14,40 @@
 
 from typing import Any
 
+from typing_extensions import override
+
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.custom_embedding import CustomEmbedding
+from superlinked.framework.common.interface.has_aggregation import HasAggregation
 from superlinked.framework.common.interface.has_length import HasLength
-from superlinked.framework.common.space.normalization import Normalization
+from superlinked.framework.common.space.aggregation import Aggregation
 
 
-class CustomNode(Node[Vector], HasLength):
+class CustomNode(Node[Vector], HasLength, HasAggregation):
     def __init__(
-        self, parent: Node[Vector], length: int, normalization: Normalization
+        self,
+        parent: Node[Vector],
+        length: int,
+        aggregation: Aggregation,
     ) -> None:
         super().__init__([parent])
-        self.embedding = CustomEmbedding(length=length, normalization=normalization)
+        self.__aggregation = aggregation
+        self.embedding = CustomEmbedding(
+            length=length, normalization=self.__aggregation.normalization
+        )
 
     @property
     def length(self) -> int:
         return self.embedding.length
 
+    @property
+    @override
+    def aggregation(self) -> Aggregation:
+        return self.__aggregation
+
     def _get_node_id_parameters(self) -> dict[str, Any]:
-        return {"length": self.length, "normalization": self.embedding._normalization}
+        return {
+            "length": self.length,
+            "aggregation": self.__aggregation,
+        }

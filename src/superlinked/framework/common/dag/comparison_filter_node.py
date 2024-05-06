@@ -42,8 +42,8 @@ class ComparisonFilterNode(Node[bool]):
             self.dag_effects = dag_effects
         self.comparison_operation = comparison_operation
 
-    @override
     @property
+    @override
     def persist_evaluation_result(self) -> bool:
         # ComparisonFilterNode's result is bool, currently it cannot be persisted.
         return False

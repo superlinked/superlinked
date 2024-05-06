@@ -91,7 +91,7 @@ class FieldEncoder(ABC, Generic[ET]):
 
     def decode_field(self, field: Field, value: ET) -> FieldData:
         if decoder := self._decode_map.get(field.data_type):
-            return FieldData(field.data_type, field.name, decoder(value))
+            return FieldData.from_field(field, decoder(value))
         raise EncoderException(
             f"Unknown field type: {field.data_type}, cannot decode field."
         )

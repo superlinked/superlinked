@@ -19,6 +19,7 @@ from typing import Any, Generic, TypeVar
 
 import numpy as np
 import numpy.typing as npt
+from beartype.typing import Sequence
 
 from superlinked.framework.common.interface.comparison_operand import ComparisonOperand
 
@@ -69,7 +70,7 @@ class SchemaObject:
         setattr(self, field_descriptor.name, value)
         return value
 
-    def _get_schema_fields(self) -> list[SchemaField]:
+    def _get_schema_fields(self) -> Sequence[SchemaField]:
         return []
 
 

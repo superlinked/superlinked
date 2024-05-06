@@ -15,7 +15,9 @@
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
+from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.exception import NotImplementedException
 
 # EmbeddingInputType
 EIT = TypeVar("EIT")
@@ -24,5 +26,11 @@ EIT = TypeVar("EIT")
 class Embedding(Generic[EIT], ABC):
 
     @abstractmethod
-    def embed(self, input_: EIT, is_query: bool) -> Vector:
+    def embed(self, input_: EIT, context: ExecutionContext) -> Vector:
         pass
+
+    def inverse_embed(self, vector: Vector, context: ExecutionContext) -> EIT:
+        raise NotImplementedException
+
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}({self.__dict__ if self.__dict__ else ''})"

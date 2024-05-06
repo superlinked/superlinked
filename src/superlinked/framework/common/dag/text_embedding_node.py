@@ -14,33 +14,47 @@
 
 from typing import Any
 
+from typing_extensions import override
+
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.sentence_transformer_embedding import (
     SentenceTransformerEmbedding,
 )
+from superlinked.framework.common.interface.has_aggregation import HasAggregation
 from superlinked.framework.common.interface.has_length import HasLength
-from superlinked.framework.common.space.normalization import Normalization
+from superlinked.framework.common.space.aggregation import (
+    Aggregation,
+    VectorAggregation,
+)
+from superlinked.framework.common.space.normalization import L2Norm
 
 
-class TextEmbeddingNode(Node[Vector], HasLength):
+class TextEmbeddingNode(Node[Vector], HasLength, HasAggregation):
     def __init__(
-        self, parent: Node[str], model_name: str, normalization: Normalization
+        self,
+        parent: Node[str],
+        model_name: str,
     ) -> None:
         super().__init__([parent])
         self.model_name = model_name
-        self.__normalization = normalization
+        self.__aggregation = VectorAggregation(L2Norm())
         self.post_init()
         super().__init__([parent])
 
     def post_init(self) -> None:
         self.embedding = SentenceTransformerEmbedding(
-            self.model_name, self.__normalization
+            self.model_name, self.__aggregation.normalization
         )
 
     @property
     def length(self) -> int:
         return self.embedding.length
 
+    @property
+    @override
+    def aggregation(self) -> Aggregation:
+        return self.__aggregation
+
     def _get_node_id_parameters(self) -> dict[str, Any]:
-        return {"model_name": self.model_name, "normalization": self.__normalization}
+        return {"model_name": self.model_name, "aggregation": self.__aggregation}

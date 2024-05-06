@@ -16,6 +16,7 @@ import numpy as np
 import numpy.typing as npt
 from typing_extensions import override
 
+from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.embedding import Embedding
 from superlinked.framework.common.interface.has_length import HasLength
@@ -62,11 +63,11 @@ class CategoricalSimilarityEmbedding(Embedding[str], HasLength):
         )
 
     @override
-    def embed(self, input_: str, is_query: bool) -> Vector:
+    def embed(self, input_: str, context: ExecutionContext) -> Vector:
         # TODO: https://linear.app/superlinked/issue/ENG-1736/make-schemafields-composite
         parsed_input: list[str] = self.__parse_categories(input_=input_)
         one_hot_encoding: npt.NDArray[np.float64] = self.__n_hot_encode(
-            parsed_input, is_query
+            parsed_input, context.is_query_context()
         )
         return Vector(one_hot_encoding)
 

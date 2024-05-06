@@ -72,8 +72,4 @@ class OnlineRecencyNode(DefaultOnlineNode[RecencyNode, Vector], HasLength):
         return self._calc_recency(input_.value, context)
 
     def _calc_recency(self, created_at: int, context: ExecutionContext) -> Vector:
-        time_period_start: int = context.now()
-
-        return self.node.embedding.calc_recency_vector(
-            created_at, time_period_start, context.is_query_context()
-        )
+        return self.node.embedding.calc_recency_vector(created_at, context)

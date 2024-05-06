@@ -20,7 +20,6 @@ from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.dag.text_embedding_node import TextEmbeddingNode
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.schema.schema_object import SchemaObject, String
-from superlinked.framework.common.space.normalization import L2Norm, Normalization
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
@@ -48,10 +47,9 @@ class TextSimilaritySpace(Space):
             It is a SchemaFieldObject (String), not a regular python string.
             model (str): The model used for text similarity.
         """
-        normalization = L2Norm()
         text_text_node_map = {
             self.__get_root(unchecked_text): self.__generate_embedding_node(
-                unchecked_text, model, normalization
+                unchecked_text, model
             )
             for unchecked_text in (text if isinstance(text, list) else [text])
         }
@@ -70,11 +68,13 @@ class TextSimilaritySpace(Space):
         return self.__get_root(text.parents[0])
 
     def __generate_embedding_node(
-        self, text: TextInput, model: str, normalization: Normalization
+        self,
+        text: TextInput,
+        model: str,
     ) -> TextEmbeddingNode:
         if isinstance(text, ChunkingNode):
-            return TextEmbeddingNode(text, model, normalization)
-        return TextEmbeddingNode(SchemaFieldNode(text), model, normalization)
+            return TextEmbeddingNode(text, model)
+        return TextEmbeddingNode(SchemaFieldNode(text), model)
 
     @property
     def _node_by_schema(self) -> Mapping[SchemaObject, Node[Vector]]:

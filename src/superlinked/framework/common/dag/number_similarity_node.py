@@ -14,37 +14,57 @@
 
 from typing import Any
 
+from typing_extensions import override
+
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.number_similarity_embedding import (
     NumberSimilarityEmbedding,
 )
+from superlinked.framework.common.interface.has_aggregation import HasAggregation
 from superlinked.framework.common.interface.has_length import HasLength
-from superlinked.framework.common.space.normalization import Normalization
+from superlinked.framework.common.space.aggregation import (
+    Aggregation,
+    InputAggregationMode,
+    get_input_aggregation,
+)
+from superlinked.framework.common.space.normalization import NoNorm
 
 
-class NumberSimilarityNode(Node[Vector], HasLength):
+class NumberSimilarityNode(Node[Vector], HasLength, HasAggregation):
     def __init__(
         self,
         parent: Node[float | int],
         min_value: float,
         max_value: float,
         negative_filter: float,
-        normalization: Normalization,
+        aggregation_mode: InputAggregationMode,
     ) -> None:
         super().__init__([parent])
+        normalization = NoNorm()
         self.embedding = NumberSimilarityEmbedding(
-            min_value, max_value, negative_filter, normalization
+            min_value,
+            max_value,
+            negative_filter,
+            normalization,
+        )
+        self.__aggregation = get_input_aggregation(
+            aggregation_mode, normalization, self.embedding
         )
 
     @property
     def length(self) -> int:
         return self.embedding.length
 
+    @property
+    @override
+    def aggregation(self) -> Aggregation:
+        return self.__aggregation
+
     def _get_node_id_parameters(self) -> dict[str, Any]:
         return {
             "min_value": self.embedding._min_value,
             "max_value": self.embedding._max_value,
             "negative_filter": self.embedding._negative_filter,
-            "normalization": self.embedding._normalization,
+            "aggregation": self.__aggregation,
         }

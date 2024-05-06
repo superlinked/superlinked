@@ -18,6 +18,10 @@ from superlinked.framework.common.exception import (
 )
 
 
+class InvalidDagException(ValidationException):
+    pass
+
+
 class LeafNodeCountException(ValidationException):
     pass
 

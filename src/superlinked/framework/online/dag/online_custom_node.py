@@ -80,8 +80,6 @@ class OnlineCustomNode(OnlineNode[CustomNode, Vector], HasLength):
                 + f" of size {self.length}"
                 + f", got {len(input_value)}"
             )
-        transformed_input_value = self.node.embedding.embed(
-            input_value, context.is_query_context()
-        )
+        transformed_input_value = self.node.embedding.embed(input_value, context)
         main = self._get_single_evaluation_result(transformed_input_value)
         return EvaluationResult(main)

@@ -74,8 +74,6 @@ class OnlineNumberEmbeddingNode(OnlineNode[NumberEmbeddingNode, Vector], HasLeng
         input_: EvaluationResult[float | int] = cast(
             OnlineNode[Node[float | int], float | int], self.parents[0]
         ).evaluate_next_single(parsed_schema, context)
-        transformed_input_value = self.node.embedding.embed(
-            input_.main.value, context.is_query_context()
-        )
+        transformed_input_value = self.node.embedding.embed(input_.main.value, context)
         main = self._get_single_evaluation_result(transformed_input_value)
         return EvaluationResult(main)
