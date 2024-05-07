@@ -21,3 +21,7 @@ class NoDefaultNodeException(ValidationException):
 
 class InvalidSpaceParamException(ValidationException):
     pass
+
+
+class InvalidAggregationStrategyException(ValidationException):
+    pass
