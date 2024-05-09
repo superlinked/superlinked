@@ -124,11 +124,13 @@ class InMemoryEntityStore(EntityStore, PersistableDict):
         InMemoryEntityStore._validate_entities(filtered_entities, key, vector)
 
         for k, v in filtered_entities.items():
-            actual_vector = cast(VectorField, v[InMemoryEntityStore.ITEMS_KEY][key])
+            comparison_vector_field = cast(
+                VectorField, v[InMemoryEntityStore.ITEMS_KEY][key]
+            )
             filtered_entities[k].update(
                 {
                     InMemoryEntityStore.SIMILARITY_KEY: self.vector_similarity_calculator.calculate_similarity(
-                        actual_vector.value, vector.value
+                        comparison_vector_field.vector, vector.vector
                     )
                 }
             )

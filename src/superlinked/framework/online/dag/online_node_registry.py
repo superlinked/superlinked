@@ -32,7 +32,9 @@ from superlinked.framework.online.dag.online_concatenation_node import (
     OnlineConcatenationNode,
 )
 from superlinked.framework.online.dag.online_constant_node import OnlineConstantNode
-from superlinked.framework.online.dag.online_custom_node import OnlineCustomNode
+from superlinked.framework.online.dag.online_custom_node import (
+    OnlineCustomVectorEmbeddingNode,
+)
 from superlinked.framework.online.dag.online_event_aggregation_node import (
     OnlineEventAggregationNode,
 )
@@ -66,7 +68,7 @@ DEFAULT_NODE_TYPES: list[type[OnlineNode]] = [
     OnlineComparisonFilterNode,
     OnlineConcatenationNode,
     OnlineConstantNode,
-    OnlineCustomNode,
+    OnlineCustomVectorEmbeddingNode,
     OnlineEventAggregationNode,
     OnlineIndexNode,
     OnlineNamedFunctionNode,

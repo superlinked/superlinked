@@ -91,9 +91,7 @@ class RecencyPlotter:
             now_ts, ExecutionContext(ExecutionEnvironment.QUERY)
         )
         recency_scores: list[float] = [
-            self.vector_similarity_calculator.calculate_similarity(
-                now_vector.value, vec.value
-            )
+            self.vector_similarity_calculator.calculate_similarity(now_vector, vec)
             for vec in recency_vectors
         ]
         date_labels: list[datetime.datetime] = [

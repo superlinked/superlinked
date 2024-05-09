@@ -21,7 +21,7 @@ import numpy.typing as npt
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.dag.custom_node import CustomNode
+from superlinked.framework.common.dag.custom_node import CustomVectorEmbeddingNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import ValidationException
@@ -35,10 +35,12 @@ from superlinked.framework.online.store_manager.evaluation_result_store_manager 
 )
 
 
-class OnlineCustomNode(OnlineNode[CustomNode, Vector], HasLength):
+class OnlineCustomVectorEmbeddingNode(
+    OnlineNode[CustomVectorEmbeddingNode, Vector], HasLength
+):
     def __init__(
         self,
-        node: CustomNode,
+        node: CustomVectorEmbeddingNode,
         parents: list[OnlineNode],
         evaluation_result_store_manager: EvaluationResultStoreManager,
     ) -> None:

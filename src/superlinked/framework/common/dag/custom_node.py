@@ -24,7 +24,7 @@ from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.space.aggregation import Aggregation
 
 
-class CustomNode(Node[Vector], HasLength, HasAggregation):
+class CustomVectorEmbeddingNode(Node[Vector], HasLength, HasAggregation):
     def __init__(
         self,
         parent: Node[Vector],

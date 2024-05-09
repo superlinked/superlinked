@@ -57,6 +57,14 @@ class VDBConnector(ABC):
         pass
 
     @abstractmethod
+    def write_entities(self, entity_data: Sequence[EntityData]) -> None:
+        pass
+
+    @abstractmethod
+    def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
+        pass
+
+    @abstractmethod
     def knn_search(
         self,
         index_name: str,
@@ -65,12 +73,4 @@ class VDBConnector(ABC):
         vdb_knn_search_params: VDBKnnSearchParams,
         **params: Any
     ) -> Sequence[EntityData]:
-        pass
-
-    @abstractmethod
-    def write_entities(self, entity_data: Sequence[EntityData]) -> None:
-        pass
-
-    @abstractmethod
-    def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
         pass

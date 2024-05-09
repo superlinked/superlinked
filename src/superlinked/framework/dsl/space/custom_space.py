@@ -14,7 +14,7 @@
 from enum import Enum
 from typing import Mapping, cast
 
-from superlinked.framework.common.dag.custom_node import CustomNode
+from superlinked.framework.common.dag.custom_node import CustomVectorEmbeddingNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
@@ -101,7 +101,7 @@ class CustomSpace(Space):
                     f"Invalid aggregation strategy. Should be one of AggregationStrategy Enum. Got {aggregation=}."
                 )
         unchecked_custom_node_map = {
-            vector: CustomNode(
+            vector: CustomVectorEmbeddingNode(
                 parent=SchemaFieldNode(vector),
                 length=length,
                 aggregation=aggregation_strategy,
@@ -109,7 +109,7 @@ class CustomSpace(Space):
             for vector in self._field_set
         }
         self.vector = SpaceFieldSet(self, cast(set[SchemaField], self._field_set))
-        self.__schema_node_map: dict[SchemaObject, CustomNode] = {
+        self.__schema_node_map: dict[SchemaObject, CustomVectorEmbeddingNode] = {
             schema_field.schema_obj: node
             for schema_field, node in unchecked_custom_node_map.items()
         }
