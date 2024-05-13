@@ -13,5 +13,5 @@
 # limitations under the License.
 
 
-class DuplicateRunnablesException(Exception):
+class DuplicateElementException(Exception):
     pass

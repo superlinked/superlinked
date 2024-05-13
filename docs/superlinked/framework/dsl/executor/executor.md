@@ -56,9 +56,8 @@ Classes
 
     ### Ancestors (in MRO)
 
-    * superlinked.framework.dsl.executor.runnable.Runnable
-    * typing.Generic
     * abc.ABC
+    * typing.Generic
 
     ### Descendants
 

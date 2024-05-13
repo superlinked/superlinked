@@ -9,8 +9,11 @@ Classes
 
     ### Static methods
 
-    `register(*items: superlinked.framework.dsl.executor.runnable.Runnable) ‑> None`
+    `get_data_loaders() ‑> frozenset[superlinked.framework.dsl.data_loader.data_loader.DataLoader]`
     :
 
-    `registered_items() ‑> frozenset[superlinked.framework.dsl.executor.runnable.Runnable]`
+    `get_executors() ‑> frozenset[superlinked.framework.dsl.executor.executor.Executor]`
+    :
+
+    `register(*items: superlinked.framework.dsl.executor.executor.Executor | superlinked.framework.dsl.data_loader.data_loader.DataLoader) ‑> None`
     :

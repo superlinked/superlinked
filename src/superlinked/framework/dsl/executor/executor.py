@@ -23,7 +23,6 @@ from typing_extensions import Self
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.util.time_util import now
 from superlinked.framework.common.util.type_validator import TypeValidator
-from superlinked.framework.dsl.executor.runnable import Runnable
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.source.source import SourceT
 from superlinked.framework.storage.entity_store import EntityStore
@@ -88,7 +87,7 @@ class App(ABC, Generic[ExecutorT]):
         return self._entity_store_manager
 
 
-class Executor(Runnable, Generic[SourceT], ABC):
+class Executor(ABC, Generic[SourceT]):
     """
     Abstract base class for an executor.
     """

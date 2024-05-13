@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.registry.exception
 Classes
 -------
 
-`DuplicateRunnablesException(*args, **kwargs)`
+`DuplicateElementException(*args, **kwargs)`
 :   Common base class for all non-exit exceptions.
 
     ### Ancestors (in MRO)
