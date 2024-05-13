@@ -7,5 +7,6 @@ Sub-modules
 * superlinked.framework.dsl.executor
 * superlinked.framework.dsl.index
 * superlinked.framework.dsl.query
+* superlinked.framework.dsl.registry
 * superlinked.framework.dsl.source
 * superlinked.framework.dsl.space

@@ -10,3 +10,4 @@ Sub-modules
 * superlinked.framework.dsl.executor.in_memory
 * superlinked.framework.dsl.executor.query
 * superlinked.framework.dsl.executor.rest
+* superlinked.framework.dsl.executor.runnable
