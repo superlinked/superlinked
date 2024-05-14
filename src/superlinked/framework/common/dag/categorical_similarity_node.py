@@ -53,6 +53,7 @@ class CategoricalSimilarityNode(Node[Vector], HasLength, HasAggregation):
     def aggregation(self) -> Aggregation:
         return self.__aggregation
 
+    @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
         return {
             "categories": self.embedding.categories,

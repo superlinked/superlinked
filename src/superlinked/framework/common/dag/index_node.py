@@ -14,6 +14,8 @@
 
 from typing import Any, cast
 
+from typing_extensions import override
+
 from superlinked.framework.common.dag.exception import ParentCountException
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.persistence_params import PersistenceParams
@@ -48,5 +50,6 @@ class IndexNode(Node[Vector], HasLength):
     def length(self) -> int:
         return self.__length
 
+    @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
         return {"length": self.length}

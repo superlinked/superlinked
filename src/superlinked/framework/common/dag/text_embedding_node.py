@@ -56,5 +56,6 @@ class TextEmbeddingNode(Node[Vector], HasLength, HasAggregation):
     def aggregation(self) -> Aggregation:
         return self.__aggregation
 
+    @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
         return {"model_name": self.model_name, "aggregation": self.__aggregation}

@@ -61,6 +61,7 @@ class NumberSimilarityNode(Node[Vector], HasLength, HasAggregation):
     def aggregation(self) -> Aggregation:
         return self.__aggregation
 
+    @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
         return {
             "min_value": self.embedding._min_value,

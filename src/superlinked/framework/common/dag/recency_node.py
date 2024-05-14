@@ -63,6 +63,7 @@ class RecencyNode(Node[Vector], HasLength, HasAggregation):
     def aggregation(self) -> Aggregation:
         return self.__aggregation
 
+    @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
         return {
             "period_time_list": self.embedding.period_time_list,

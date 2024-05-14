@@ -4,13 +4,14 @@ Module superlinked.framework.dsl.index.index
 Classes
 -------
 
-`Index(spaces: Union[superlinked.framework.dsl.space.space.Space, Annotated[list[superlinked.framework.dsl.space.space.Space], Is[TypeValidator.list_validator.validator]]], effects: Optional[typing.Annotated[list[superlinked.framework.dsl.index.effect.Effect], Is[TypeValidator.list_validator.validator]]] = None)`
+`Index(spaces: Union[superlinked.framework.dsl.space.space.Space, Annotated[list[superlinked.framework.dsl.space.space.Space], Is[TypeValidator.list_validator.validator]]], fields: Union[superlinked.framework.common.schema.schema_object.SchemaField, Annotated[list[superlinked.framework.common.schema.schema_object.SchemaField], Is[TypeValidator.list_validator.validator]], ForwardRef(None)] = None, effects: Optional[typing.Annotated[list[superlinked.framework.dsl.index.effect.Effect], Is[TypeValidator.list_validator.validator]]] = None)`
 :   An index is an abstraction which represents a collection of spaces that will enable us to query our data.
     
     Initialize the Index.
     
     Args:
         spaces (Space | list[Space]): The space or list of spaces.
+        fields (SchemaField | list[SchemaField]): The field or list of fields to be indexed.
         effects (list[Effect]): A list of conditional interactions within a `Space`.
         Defaults to None.
     

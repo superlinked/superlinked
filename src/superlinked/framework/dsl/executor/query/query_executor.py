@@ -76,6 +76,7 @@ class QueryExecutor:
         param_evaluator = ParamEvaluator(params)
         limit = param_evaluator.evaluate_limit_param(self.query_obj.limit_)
         radius = param_evaluator.evaluate_radius_param(self.query_obj.radius_)
+        # TODO FAI-1838 use self.query_obj.hard_filters in self._knn_search
         entities: list[Entity] = self._knn(
             self._get_query_vector(param_evaluator), limit, radius
         )

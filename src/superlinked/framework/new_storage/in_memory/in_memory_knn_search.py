@@ -22,7 +22,11 @@ from superlinked.framework.common.calculation.vector_similarity import (
 )
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import ValidationException
-from superlinked.framework.common.storage.field_data import FieldData, VectorFieldData
+from superlinked.framework.common.interface.comparison_operand import (
+    ComparisonOperation,
+)
+from superlinked.framework.common.storage.field import Field
+from superlinked.framework.common.storage.field_data import VectorFieldData
 from superlinked.framework.common.storage.vdb_knn_search_params import (
     VDBKnnSearchParams,
 )
@@ -73,20 +77,23 @@ class InMemoryKnnSearch:
             )
 
     def _check_filters(
-        self, index_config: IndexConfig, filters: Sequence[FieldData] | None
+        self,
+        index_config: IndexConfig,
+        filters: Sequence[ComparisonOperation[Field]] | None,
     ) -> None:
-        if unindexed_filters := [
-            filter_
+        if unindexed_fields := set(
+            field_name
             for filter_ in (filters or [])
-            if filter_.name not in index_config.indexed_field_names
-        ]:
-            raise ValidationException(f"Unindexed filters found: {unindexed_filters}")
+            if (field_name := cast(Field, filter_._operand).name)
+            not in index_config.indexed_field_names
+        ):
+            raise ValidationException(f"Unindexed fields found: {unindexed_fields}")
 
     def _filter_indexed_vectors(
         self,
         vdb: dict[str, dict[str, Any]],
         vector_field: VectorFieldData,
-        filters: Sequence[FieldData] | None,
+        filters: Sequence[ComparisonOperation[Field]] | None,
     ) -> dict[str, Vector]:
         filtered_unchecked_vectors = {
             row_id: values[vector_field.name]
@@ -152,14 +159,14 @@ class InMemoryKnnSearch:
     @staticmethod
     def _is_subset(
         raw_entity: dict[str, Any],
-        filters: Sequence[FieldData],
+        filters: Sequence[ComparisonOperation[Field]],
     ) -> bool:
         """
         Return true, if all filters are True to the entity.
         """
         if not filters:
             return True
-
-        if all(raw_entity.get(filter_.name) == filter_.value for filter_ in filters):
-            return True
-        return False
+        return all(
+            filter_.evaluate(raw_entity.get(cast(Field, filter_._operand).name))
+            for filter_ in filters
+        )

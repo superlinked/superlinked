@@ -21,13 +21,22 @@ from superlinked.framework.common.exception import (
     InvalidSchemaException,
     QueryException,
 )
+from superlinked.framework.common.interface.comparison_operand import (
+    ComparisonOperation,
+)
+from superlinked.framework.common.interface.comparison_operation_type import (
+    ComparisonOperationType,
+)
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema import T
+from superlinked.framework.common.schema.schema_object import SchemaField
+from superlinked.framework.common.util.type_util import get_single_generic_type
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.query.param import (
     IntParamType,
     NumericParamType,
+    Param,
     ParamType,
 )
 from superlinked.framework.dsl.query.predicate.binary_op import BinaryOp
@@ -41,18 +50,25 @@ __pdoc__ = {}
 __pdoc__["QueryObjInternalProperty"] = False
 
 
+VALID_HARD_FILTER_TYPES = [
+    ComparisonOperationType.EQUAL,
+    ComparisonOperationType.NOT_EQUAL,
+]
+
+
 class QueryObjInternalProperty(TypedDict, total=False):
     """Only intended for self initialization inside QueryObj functions, not for external initialization"""
 
     filters: list[QueryPredicate]
     limit: IntParamType | None
     radius: NumericParamType | None
+    hard_filters: list[ComparisonOperation[SchemaField]]
     override_now: int | None
     filtered_spaces: set[Space]
 
 
 @TypeValidator.wrap
-class QueryObj:
+class QueryObj:  # pylint: disable=too-many-instance-attributes
     """
     A class representing a query object. Use .with_vector to run queries using a stored
     vector, or use .similar for queries where you supply the query at query-time. Or combine
@@ -82,6 +98,9 @@ class QueryObj:
         if not internal_property:
             internal_property = {}
         self.filters = internal_property.get("filters", list[QueryPredicate]())
+        self.hard_filters = internal_property.get(
+            "hard_filters", list[ComparisonOperation[SchemaField]]()
+        )
         self.limit_ = internal_property.get("limit")
         self.radius_ = internal_property.get("radius")
         # by default now in queries is the system time, but it can be overridden for testing/reproducible notebooks
@@ -215,6 +234,36 @@ class QueryObj:
             )
         )
         return self.__alter({"filters": filters})
+
+    def filter(
+        self, comparison_operation: ComparisonOperation[SchemaField]
+    ) -> QueryObj:
+        """
+        Add a 'filter' clause to the query. This filters the results from the db
+        to only contain items based on the filtering input.
+        E.g:
+        filter(color_schema.color == "blue")
+        filter(color_schema.color == Param("color_param"))
+        filter(color_schema.color != "red")
+
+        Args:
+            comparison_operation ComparisonOperation[SchemaField]: The comparison operation.
+
+        Returns:
+            Self: The query object itself.
+        """
+        if comparison_operation._op not in VALID_HARD_FILTER_TYPES:
+            raise QueryException(
+                f"Unsupported filter operation: {comparison_operation._op}."
+            )
+        allowed_types = [Param, get_single_generic_type(comparison_operation._operand)]
+        if type(comparison_operation._other) not in allowed_types:
+            raise QueryException(
+                f"Unsupported filter operand type: {comparison_operation._other.__class__.__name__}."
+            )
+        hard_filters = self.hard_filters.copy()
+        hard_filters.append(comparison_operation)
+        return self.__alter({"hard_filters": hard_filters})
 
     def __is_indexed_space(self, space: Space) -> bool:
         return self.builder.index.has_space(space)

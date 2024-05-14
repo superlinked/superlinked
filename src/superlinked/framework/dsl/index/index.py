@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Annotated, Sequence
+from typing import Annotated
+
+from beartype.typing import Sequence
 
 from superlinked.framework.common.const import MAX_DAG_DEPTH
 from superlinked.framework.common.dag.concatenation_node import ConcatenationNode
@@ -28,7 +30,7 @@ from superlinked.framework.common.exception import (
 )
 from superlinked.framework.common.schema.event_schema_object import EventSchemaObject
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
-from superlinked.framework.common.schema.schema_object import SchemaObject
+from superlinked.framework.common.schema.schema_object import SchemaField, SchemaObject
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.index.effect import Effect
 from superlinked.framework.dsl.index.util.aggregation_effect_group import (
@@ -42,8 +44,14 @@ from superlinked.framework.dsl.index.util.effect_with_referenced_schema_object i
 )
 from superlinked.framework.dsl.space.space import Space
 
+ValidatedSpaceList = Annotated[list[Space], TypeValidator.list_validator(Space)]
+ValidatedSchemaFieldList = Annotated[
+    list[SchemaField], TypeValidator.list_validator(SchemaField)
+]
+ValidatedEffectList = Annotated[list[Effect], TypeValidator.list_validator(Effect)]
 
-class Index:
+
+class Index:  # pylint: disable=too-many-instance-attributes
     """
     An index is an abstraction which represents a collection of spaces that will enable us to query our data.
     """
@@ -51,16 +59,16 @@ class Index:
     @TypeValidator.wrap
     def __init__(
         self,
-        spaces: Space | Annotated[list[Space], TypeValidator.list_validator(Space)],
-        effects: (
-            Annotated[list[Effect], TypeValidator.list_validator(Effect)] | None
-        ) = None,
+        spaces: Space | ValidatedSpaceList,
+        fields: SchemaField | ValidatedSchemaFieldList | None = None,
+        effects: ValidatedEffectList | None = None,
     ) -> None:
         """
         Initialize the Index.
 
         Args:
             spaces (Space | list[Space]): The space or list of spaces.
+            fields (SchemaField | list[SchemaField]): The field or list of fields to be indexed.
             effects (list[Effect]): A list of conditional interactions within a `Space`.
             Defaults to None.
 
@@ -69,6 +77,7 @@ class Index:
         """
         self.__spaces = self.__init_spaces(spaces)
         self.__space_schemas = self.__init_node_schemas(self.__spaces)
+        self.__fields = self.__init_fields(fields)
         effects_with_schema = self.__init_effects_with_schema(effects, self.__spaces)
         self.__effect_schemas = self.__init_effect_schemas(effects_with_schema)
         self.__node = self.__init_index_node(self.__spaces, effects_with_schema)
@@ -89,6 +98,10 @@ class Index:
     @property
     def _node(self) -> IndexNode:
         return self.__node
+
+    @property
+    def _fields(self) -> Sequence[SchemaField]:
+        return self.__fields
 
     @property
     def _node_id(self) -> str:
@@ -147,6 +160,15 @@ class Index:
             for schema in node.schemas
             if not (schema in seen or seen_add(schema))
         ]
+
+    def __init_fields(
+        self, fields: SchemaField | Sequence[SchemaField] | None
+    ) -> Sequence[SchemaField]:
+        if fields is None:
+            return []
+        if not isinstance(fields, Sequence):
+            return [fields]
+        return fields
 
     def __init_effects_with_schema(
         self, effects: list[Effect] | None, spaces: list[Space]

@@ -27,36 +27,36 @@ COT = TypeVar("COT", bound="ComparisonOperand")
 class ComparisonOperand(ABC, Generic[COT]):
     def __init__(self, _: type[COT]) -> None:
         super().__init__()
-        self.__original_operation_mapping: dict[
+        self.__built_in_operation_mapping: dict[
             ComparisonOperationType, Callable[[ComparisonOperand[COT], object], bool]
         ] = {
-            ComparisonOperationType.EQUAL: self._original_equal,
-            ComparisonOperationType.NOT_EQUAL: self._original_not_equal,
-            ComparisonOperationType.GREATER_THAN: self._original_greater_than,
-            ComparisonOperationType.LESS_THAN: self._original_less_than,
-            ComparisonOperationType.GREATER_EQUAL: self._original_greater_equal,
-            ComparisonOperationType.LESS_EQUAL: self._original_less_equal,
+            ComparisonOperationType.EQUAL: self._built_in_equal,
+            ComparisonOperationType.NOT_EQUAL: self._built_in_not_equal,
+            ComparisonOperationType.GREATER_THAN: self._built_in_greater_than,
+            ComparisonOperationType.LESS_THAN: self._built_in_less_than,
+            ComparisonOperationType.GREATER_EQUAL: self._built_in_greater_equal,
+            ComparisonOperationType.LESS_EQUAL: self._built_in_less_equal,
         }
 
     @property
-    def _original_operation_mapping(
+    def _built_in_operation_mapping(
         self,
     ) -> dict[
         ComparisonOperationType, Callable[[ComparisonOperand[COT], object], bool]
     ]:
-        return self.__original_operation_mapping
+        return self.__built_in_operation_mapping
 
-    def _get_original_operation(
+    def _get_built_in_operation(
         self, operation_type: ComparisonOperationType
     ) -> Callable[[ComparisonOperand[COT], object], bool]:
-        return self.__original_operation_mapping[operation_type]
+        return self.__built_in_operation_mapping[operation_type]
 
     def __eq__(self, __value: object) -> ComparisonOperation[COT]:  # type: ignore[override]
         return ComparisonOperation(ComparisonOperationType.EQUAL, self, __value)
 
     @staticmethod
     @abstractmethod
-    def _original_equal(
+    def _built_in_equal(
         left_operand: ComparisonOperand[COT], right_operand: object
     ) -> bool:
         pass
@@ -66,7 +66,7 @@ class ComparisonOperand(ABC, Generic[COT]):
 
     @staticmethod
     @abstractmethod
-    def _original_not_equal(
+    def _built_in_not_equal(
         left_operand: ComparisonOperand[COT], right_operand: object
     ) -> bool:
         pass
@@ -75,7 +75,7 @@ class ComparisonOperand(ABC, Generic[COT]):
         return ComparisonOperation(ComparisonOperationType.GREATER_THAN, self, __value)
 
     @staticmethod
-    def _original_greater_than(
+    def _built_in_greater_than(
         left_operand: ComparisonOperand[COT], right_operand: object
     ) -> bool:
         raise NotImplementedError()
@@ -84,7 +84,7 @@ class ComparisonOperand(ABC, Generic[COT]):
         return ComparisonOperation(ComparisonOperationType.LESS_THAN, self, __value)
 
     @staticmethod
-    def _original_less_than(
+    def _built_in_less_than(
         left_operand: ComparisonOperand[COT], right_operand: object
     ) -> bool:
         raise NotImplementedError()
@@ -93,7 +93,7 @@ class ComparisonOperand(ABC, Generic[COT]):
         return ComparisonOperation(ComparisonOperationType.GREATER_EQUAL, self, __value)
 
     @staticmethod
-    def _original_greater_equal(
+    def _built_in_greater_equal(
         left_operand: ComparisonOperand[COT], right_operand: object
     ) -> bool:
         raise NotImplementedError()
@@ -102,7 +102,7 @@ class ComparisonOperand(ABC, Generic[COT]):
         return ComparisonOperation(ComparisonOperationType.LESS_EQUAL, self, __value)
 
     @staticmethod
-    def _original_less_equal(
+    def _built_in_less_equal(
         left_operand: ComparisonOperand[COT], right_operand: object
     ) -> bool:
         raise NotImplementedError()
@@ -120,7 +120,7 @@ class ComparisonOperation(Generic[COT]):
         self._other = other
 
     def __bool__(self) -> bool:
-        return self._operand._get_original_operation(self._op)(
+        return self._operand._get_built_in_operation(self._op)(
             self._operand, self._other
         )
 

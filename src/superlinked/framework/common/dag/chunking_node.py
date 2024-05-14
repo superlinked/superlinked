@@ -14,6 +14,8 @@
 
 from typing import Any
 
+from typing_extensions import override
+
 from superlinked.framework.common.dag.node import Node
 
 
@@ -32,6 +34,7 @@ class ChunkingNode(Node[str]):
         self.split_chars_keep = split_chars_keep
         self.split_chars_remove = split_chars_remove
 
+    @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
         return {
             "chunk_size": self.chunk_size,

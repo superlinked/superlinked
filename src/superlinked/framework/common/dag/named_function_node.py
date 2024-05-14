@@ -14,6 +14,8 @@
 
 from typing import Any
 
+from typing_extensions import override
+
 from superlinked.framework.common.dag.node import NDT, Node
 from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.util.named_function_evaluator import NamedFunction
@@ -30,6 +32,7 @@ class NamedFunctionNode(Node[NDT]):
         self.named_function = named_function
         self.return_type = return_type
 
+    @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
         return {
             "schemas": self.schemas,

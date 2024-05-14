@@ -13,9 +13,13 @@
 # limitations under the License.
 
 from dataclasses import dataclass
-from typing import Any
+
+from beartype.typing import Sequence
 
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.interface.comparison_operand import (
+    ComparisonOperation,
+)
 from superlinked.framework.common.schema.schema_object import SchemaField
 
 
@@ -23,5 +27,5 @@ from superlinked.framework.common.schema.schema_object import SchemaField
 class KnnSearchParams:
     vector: Vector
     limit: int
-    filters: dict[SchemaField | str, Any] | None = None
+    filters: Sequence[ComparisonOperation[SchemaField]] | None = None
     radius: float | None = None

@@ -48,6 +48,7 @@ class ComparisonFilterNode(Node[bool]):
         # ComparisonFilterNode's result is bool, currently it cannot be persisted.
         return False
 
+    @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
         return {
             "comparison_operation": self.comparison_operation,

@@ -12,12 +12,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
+from superlinked.framework.common.interface.comparison_operand import ComparisonOperand
 from superlinked.framework.common.storage.field_data_type import FieldDataType
 
 
 @dataclass(frozen=True)
-class Field:
+class Field(ComparisonOperand):
     data_type: FieldDataType
     name: str
+
+    @staticmethod
+    def _built_in_equal(
+        left_operand: ComparisonOperand[Field], right_operand: object
+    ) -> bool:
+        if isinstance(left_operand, Field) and isinstance(right_operand, Field):
+            return (
+                right_operand.data_type == left_operand.data_type
+                and right_operand.name == left_operand.name
+            )
+        return False
+
+    @staticmethod
+    def _built_in_not_equal(
+        left_operand: ComparisonOperand[Field], right_operand: object
+    ) -> bool:
+        return not Field._built_in_equal(left_operand, right_operand)

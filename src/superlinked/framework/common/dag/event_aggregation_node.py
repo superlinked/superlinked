@@ -67,6 +67,7 @@ class EventAggregationNode(Node[str], HasLength):
     def length(self) -> int:
         return self.__length
 
+    @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
         filters = [
             {"node_id": filter_.item.node_id, "weight": filter_.weight}

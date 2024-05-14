@@ -14,6 +14,8 @@
 
 from typing import Any
 
+from typing_extensions import override
+
 from superlinked.framework.common.dag.node import NDT, Node
 from superlinked.framework.common.schema.schema_object import SchemaObject
 
@@ -23,5 +25,6 @@ class ConstantNode(Node[NDT]):
         super().__init__([], schemas={schema})
         self.value = value
 
+    @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
         return {"schemas": self.schemas, "value": str(self.value)}

@@ -57,6 +57,20 @@ Classes
 
     ### Methods
 
+    `filter(self, comparison_operation: superlinked.framework.common.interface.comparison_operand.ComparisonOperation[superlinked.framework.common.schema.schema_object.SchemaField]) ‑> superlinked.framework.dsl.query.query.QueryObj`
+    :   Add a 'filter' clause to the query. This filters the results from the db
+        to only contain items based on the filtering input.
+        E.g:
+        filter(color_schema.color == "blue")
+        filter(color_schema.color == Param("color_param"))
+        filter(color_schema.color != "red")
+        
+        Args:
+            comparison_operation ComparisonOperation[SchemaField]: The comparison operation.
+        
+        Returns:
+            Self: The query object itself.
+
     `limit(self, limit: int | superlinked.framework.dsl.query.param.Param | None) ‑> superlinked.framework.dsl.query.query.QueryObj`
     :   Set a limit to the number of results returned by the query.
         If the limit is None, a result set based on all elements in the index will be returned.

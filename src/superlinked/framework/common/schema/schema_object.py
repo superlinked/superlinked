@@ -99,7 +99,7 @@ class SchemaField(ComparisonOperand, Generic[SFT]):
         )
 
     @staticmethod
-    def _original_equal(
+    def _built_in_equal(
         left_operand: ComparisonOperand[SchemaField], right_operand: object
     ) -> bool:
         if isinstance(left_operand, SchemaField) and isinstance(
@@ -112,10 +112,10 @@ class SchemaField(ComparisonOperand, Generic[SFT]):
         return False
 
     @staticmethod
-    def _original_not_equal(
+    def _built_in_not_equal(
         left_operand: ComparisonOperand[SchemaField], right_operand: object
     ) -> bool:
-        return not SchemaField._original_equal(left_operand, right_operand)
+        return not SchemaField._built_in_equal(left_operand, right_operand)
 
 
 class String(SchemaField[str]):

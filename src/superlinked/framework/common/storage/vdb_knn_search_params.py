@@ -16,12 +16,16 @@ from dataclasses import dataclass
 
 from beartype.typing import Sequence
 
-from superlinked.framework.common.storage.field_data import FieldData, VectorFieldData
+from superlinked.framework.common.interface.comparison_operand import (
+    ComparisonOperation,
+)
+from superlinked.framework.common.storage.field import Field
+from superlinked.framework.common.storage.field_data import VectorFieldData
 
 
 @dataclass
 class VDBKnnSearchParams:
     vector_field: VectorFieldData
     limit: int
-    filters: Sequence[FieldData] | None = None
+    filters: Sequence[ComparisonOperation[Field]] | None = None
     radius: float | None = None

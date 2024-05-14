@@ -15,13 +15,14 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Annotated, Generic, TypeVar, get_args
+from typing import Annotated, Generic, TypeVar
 
 from beartype.typing import Sequence
 from typing_extensions import Self
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.util.time_util import now
+from superlinked.framework.common.util.type_util import get_single_generic_type
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.source.source import SourceT
@@ -108,14 +109,11 @@ class Executor(ABC, Generic[SourceT]):
             context (Mapping[str, Mapping[str, Any]]): The context mapping.
         """
         TypeValidator.validate_list_item_type(
-            sources, self.__get_generic_type(), "sources"
+            sources, get_single_generic_type(self), "sources"
         )
         self._sources = sources
         self._indices = indices
         self._context = context
-
-    def __get_generic_type(self) -> type[SourceT]:
-        return get_args(self.__class__.__orig_bases__[0])[0]  # type: ignore[attr-defined] # pylint: disable=no-member
 
     @property
     def context(self) -> ExecutionContext:

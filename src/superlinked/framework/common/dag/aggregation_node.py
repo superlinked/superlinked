@@ -66,6 +66,7 @@ class AggregationNode(Node[Vector], HasLength):
     def length(self) -> int:
         return self.__length
 
+    @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
         weighted_parents = [
             {"node_id": parent.item.node_id, "weight": parent.weight}

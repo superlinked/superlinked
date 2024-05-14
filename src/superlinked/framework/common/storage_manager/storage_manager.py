@@ -21,6 +21,9 @@ from superlinked.framework.common.calculation.distance_metric import DistanceMet
 from superlinked.framework.common.dag.dag import Dag
 from superlinked.framework.common.dag.index_node import IndexNode
 from superlinked.framework.common.exception import InvalidSchemaException
+from superlinked.framework.common.interface.comparison_operand import (
+    ComparisonOperation,
+)
 from superlinked.framework.common.parser.parsed_schema import (
     ParsedSchema,
     ParsedSchemaField,
@@ -29,7 +32,7 @@ from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import SchemaField, SchemaObject
 from superlinked.framework.common.storage.entity_data import EntityData
 from superlinked.framework.common.storage.field import Field
-from superlinked.framework.common.storage.field_data import FieldData, VectorFieldData
+from superlinked.framework.common.storage.field_data import VectorFieldData
 from superlinked.framework.common.storage.search_index_creation.index_field_descriptor import (
     IndexFieldDescriptor,
     VectorIndexFieldDescriptor,
@@ -122,7 +125,7 @@ class StorageManager:
             VDBKnnSearchParams(
                 vector_field,
                 knn_search_params.limit,
-                self._get_filter_field_data(knn_search_params.filters or {}),
+                self._get_filter_field_data(knn_search_params.filters or []),
                 knn_search_params.radius,
             ),
             **params,
@@ -153,24 +156,18 @@ class StorageManager:
             )
 
     def _get_filter_field_data(
-        self, filters: dict[SchemaField | str, Any]
-    ) -> Sequence[FieldData]:
-        parsed_schema_field_filters = [
-            self._entity_builder.convert_parsed_schema_field_to_field_data(
-                ParsedSchemaField.from_schema_field(key, value)
+        self, filters: Sequence[ComparisonOperation[SchemaField]]
+    ) -> Sequence[ComparisonOperation[Field]]:
+        return [
+            ComparisonOperation(
+                filter_._op,
+                self._entity_builder.convert_schema_field_to_field(
+                    cast(SchemaField, filter_._operand)
+                ),
+                filter_._other,
             )
-            for key, value in filters.items()
-            if isinstance(key, SchemaField)
+            for filter_ in filters
         ]
-        node_data_filters_dictionary = {
-            key: value
-            for key, value in filters.items()
-            if not isinstance(key, SchemaField)
-        }
-        node_data_filters = self._entity_builder.compose_field_data_from_node_data(
-            node_data_filters_dictionary
-        )
-        return parsed_schema_field_filters + list(node_data_filters)
 
     def write_parsed_schema_fields(
         self, object_id: str, parsed_schema_fields: Sequence[ParsedSchemaField]

@@ -14,6 +14,8 @@
 
 from typing import Any, Generic
 
+from typing_extensions import override
+
 from superlinked.framework.common.dag.dag_effect import DagEffect
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.schema.schema_object import SFT, SchemaField
@@ -26,6 +28,7 @@ class SchemaFieldNode(Generic[SFT], Node[SFT]):
         super().__init__([], schemas={schema_field.schema_obj}, dag_effects=dag_effects)
         self.schema_field = schema_field
 
+    @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
         return {
             "schema_field": self.schema_field,

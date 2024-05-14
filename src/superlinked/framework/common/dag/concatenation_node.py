@@ -52,6 +52,7 @@ class ConcatenationNode(Node[Vector], HasLength):
     def length(self) -> int:
         return self.__length
 
+    @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
         return {
             "default_weight": self.default_weight,
