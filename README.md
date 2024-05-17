@@ -8,27 +8,10 @@ Visit [Superlinked](https://superlinked.com/) for more information about the com
 
 If you like what we do, give us a star! ⭐
 
-## Use-cases
+The screenshot below shows how to build multimodal vectors from your data & define weights at query time to avoid postprocessing & rerank requirements.
 
-- **RAG**: [HR Knowledgebase](https://github.com/superlinked/superlinked/blob/main/notebook/rag_hr_knowledgebase.ipynb)
-- **Semantic Search**: [Movies](https://github.com/superlinked/superlinked/blob/main/notebook/semantic_search_netflix_titles.ipynb), [Business News](https://github.com/superlinked/superlinked/blob/main/notebook/semantic_search_news.ipynb)
-- **Recommendation Systems**: [E-commerce](https://github.com/superlinked/superlinked/blob/main/notebook/recommendations_e_commerce.ipynb)
-- **Analytics**: [User Acquisition](https://github.com/superlinked/superlinked/blob/main/notebook/analytics_user_acquisition.ipynb)
+![If the image does not render, you can check the notebook here: https://github.com/superlinked/superlinked/blob/main/notebook/recommendations_e_commerce.ipynb](https://storage.googleapis.com/superlinked-public-assets/notebook.png)
 
-You can check a full list of examples [here](https://github.com/superlinked/superlinked/tree/main/notebook).
-
-## Reference
-
-1. Describe your data using Python classes with the [@schema](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/common/schema/schema.md) decorator.
-2. Describe your vector embeddings from building blocks with [Spaces](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/dsl/space/index.md).
-3. Combine your embeddings into a queryable [Index](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/dsl/index/index.m.md).
-4. Define your search with dynamic parameters and weights as a [Query](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/dsl/query/query.md).
-5. Load your data using a [Source](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/dsl/source/index.md).
-6. Define your transformations with a [Parser](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/common/parser) (e.g.: from [`pd.DataFrame`](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/common/parser/dataframe_parser.md)). 
-7. Run your configuration with an [Executor](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/dsl/executor/in_memory/in_memory_executor.md).
-
-You can check a list of our [features](https://github.com/superlinked/superlinked/tree/main/notebook/feature) or head to our [documentation](https://github.com/superlinked/superlinked/tree/main/docs).
-  
 ## Try it out
 
 Example on how to use Superlinked to experiment with the semantic search use-case. 
@@ -101,6 +84,27 @@ print(app.query(query, query_text="Who is a positive friend?")) # Run your query
 
 Ready to go to production? We are launching our first Vector DB connectors soon! [Tell us which Vector DB we should support!](https://github.com/superlinked/superlinked/discussions/41)
 
+## Use-cases
+
+- **RAG**: [HR Knowledgebase](https://github.com/superlinked/superlinked/blob/main/notebook/rag_hr_knowledgebase.ipynb)
+- **Semantic Search**: [Movies](https://github.com/superlinked/superlinked/blob/main/notebook/semantic_search_netflix_titles.ipynb), [Business News](https://github.com/superlinked/superlinked/blob/main/notebook/semantic_search_news.ipynb)
+- **Recommendation Systems**: [E-commerce](https://github.com/superlinked/superlinked/blob/main/notebook/recommendations_e_commerce.ipynb)
+- **Analytics**: [User Acquisition](https://github.com/superlinked/superlinked/blob/main/notebook/analytics_user_acquisition.ipynb)
+
+You can check a full list of examples [here](https://github.com/superlinked/superlinked/tree/main/notebook).
+
+## Reference
+
+1. Describe your data using Python classes with the [@schema](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/common/schema/schema.md) decorator.
+2. Describe your vector embeddings from building blocks with [Spaces](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/dsl/space/index.md).
+3. Combine your embeddings into a queryable [Index](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/dsl/index/index.m.md).
+4. Define your search with dynamic parameters and weights as a [Query](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/dsl/query/query.md).
+5. Load your data using a [Source](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/dsl/source/index.md).
+6. Define your transformations with a [Parser](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/common/parser) (e.g.: from [`pd.DataFrame`](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/common/parser/dataframe_parser.md)). 
+7. Run your configuration with an [Executor](https://github.com/superlinked/superlinked/blob/main/docs/superlinked/framework/dsl/executor/in_memory/in_memory_executor.md).
+
+You can check a list of our [features](https://github.com/superlinked/superlinked/tree/main/notebook/feature) or head to our [documentation](https://github.com/superlinked/superlinked/tree/main/docs).
+  
 ## Articles
 
 - [Vector DB Comparison](https://superlinked.com/vector-db-comparison/): Open-source collaborative comparison of vector databases by Superlinked.
@@ -110,3 +114,5 @@ Ready to go to production? We are launching our first Vector DB connectors soon!
 
 If you encounter any challenges during your experiments, feel free to create an [issue](https://github.com/superlinked/superlinked/issues/new?assignees=ClaireSuperlinked&labels=bug&projects=&template=bug_report.md&title=), request a [feature](https://github.com/superlinked/superlinked/issues/new?assignees=ClaireSuperlinked&labels=enhancement&projects=&template=feature_request.md&title=) or to [start a discussion](https://github.com/superlinked/superlinked/discussions/new/choose).
 Make sure to group your feedback in separate issues and discussions by topic. Thank you for your feedback!
+
+
