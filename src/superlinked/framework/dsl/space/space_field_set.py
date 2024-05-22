@@ -13,14 +13,14 @@
 # limitations under the License.
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Generic
 
 from superlinked.framework.common.schema.id_schema_object import SchemaField
-from superlinked.framework.dsl.space.space import Space
+from superlinked.framework.dsl.space.space import SIT, Space
 
 
 @dataclass
-class SpaceFieldSet:
+class SpaceFieldSet(Generic[SIT]):
     """
     A class representing a set of fields in a space.
     Attributes:
@@ -29,7 +29,7 @@ class SpaceFieldSet:
     """
 
     space: Space
-    fields: set[SchemaField]
+    fields: set[SIT]
 
     def __post_init__(self) -> None:
         self.__schema_field_map = {field.schema_obj: field for field in self.fields}

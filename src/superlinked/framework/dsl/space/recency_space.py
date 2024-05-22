@@ -14,7 +14,7 @@
 
 import logging
 from datetime import timedelta
-from typing import Mapping, cast
+from typing import Mapping
 
 from typing_extensions import override
 
@@ -24,11 +24,7 @@ from superlinked.framework.common.dag.period_time import PeriodTime
 from superlinked.framework.common.dag.recency_node import RecencyNode
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.schema.schema_object import (
-    SchemaField,
-    SchemaObject,
-    Timestamp,
-)
+from superlinked.framework.common.schema.schema_object import SchemaObject, Timestamp
 from superlinked.framework.common.space.aggregation import InputAggregationMode
 from superlinked.framework.common.util.named_function_evaluator import NamedFunction
 from superlinked.framework.dsl.space.space import Space
@@ -94,7 +90,7 @@ class RecencySpace(Space):  # pylint: disable=too-many-instance-attributes
                 Defaults to 0.0.
         """
         super().__init__(timestamp, Timestamp)
-        self.timestamp = SpaceFieldSet(self, cast(set[SchemaField], self._field_set))
+        self.timestamp = SpaceFieldSet(self, self._field_set)
         self.period_time_list: list[PeriodTime] = (
             period_time_list
             if isinstance(period_time_list, list)

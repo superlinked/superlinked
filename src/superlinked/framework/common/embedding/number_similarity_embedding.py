@@ -56,7 +56,9 @@ class NumberSimilarityEmbedding(Embedding[float], HasLength):
             ]
         )
         vector = Vector(vector_input).normalize(self._normalization.norm(vector_input))
-        vector += Vector([1.0 if context.is_query_context() else 0.0])
+        vector = vector.concatenate(
+            Vector([1.0 if context.is_query_context() else 0.0])
+        )
         return vector
 
     @property

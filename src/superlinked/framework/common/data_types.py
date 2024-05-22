@@ -137,7 +137,7 @@ class Vector:
             ]
         return self.copy_with_new(values, other.negative_filter_indices)
 
-    def __add__(self, other: Any) -> Vector:
+    def concatenate(self, other: Any) -> Vector:
         if not isinstance(other, Vector):
             return NotImplemented
         if self.is_empty:
@@ -148,7 +148,9 @@ class Vector:
             {i + self.dimension for i in other.negative_filter_indices}
         )
         vector_before_normalization = (
-            self.vector_before_normalization + other.vector_before_normalization
+            self.vector_before_normalization.concatenate(
+                other.vector_before_normalization
+            )
             if self.vector_before_normalization and other.vector_before_normalization
             else None
         )

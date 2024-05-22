@@ -14,6 +14,7 @@
 
 import math
 from datetime import datetime, timedelta
+from functools import reduce
 
 import numpy as np
 from typing_extensions import override
@@ -124,7 +125,8 @@ class RecencyEmbedding(Embedding[int], HasLength):
         return int(created_at)
 
     def calc_recency_vector(self, created_at: int, context: ExecutionContext) -> Vector:
-        return sum(
+        return reduce(
+            lambda a, b: a.concatenate(b),
             (
                 self.calc_recency_vector_for_period_time(
                     created_at,
@@ -133,7 +135,6 @@ class RecencyEmbedding(Embedding[int], HasLength):
                 )
                 for period_time_param in self.__period_time_list
             ),
-            Vector([]),
         )
 
     def calc_recency_vector_for_period_time(

@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Mapping, cast
+from typing import Any, Mapping
 
 from beartype.typing import Sequence
 
@@ -88,7 +88,7 @@ class InMemoryExecutor(Executor[InMemorySource]):
 
 
 @TypeValidator.wrap
-class InMemoryApp(App[InMemoryExecutor]):
+class InMemoryApp(App[InMemoryExecutor, InMemoryEntityStore, InMemoryObjectStore]):
     """
     In-memory implementation of the App class.
 
@@ -136,14 +136,14 @@ class InMemoryApp(App[InMemoryExecutor]):
     def restore(self, reader: ObjectReader) -> None:
         node_ids = [index._node_id for index in self.executor._indices]
         app_identifier = "_".join(node_ids)
-        cast(InMemoryObjectStore, self._object_store).restore(reader, app_identifier)
-        cast(InMemoryEntityStore, self._entity_store).restore(reader, app_identifier)
+        self._object_store.restore(reader, app_identifier)
+        self._entity_store.restore(reader, app_identifier)
 
     def persist(self, writer: ObjectWriter) -> None:
         node_ids = [index._node_id for index in self.executor._indices]
         app_identifier = "_".join(node_ids)
-        cast(InMemoryObjectStore, self._object_store).persist(writer, app_identifier)
-        cast(InMemoryEntityStore, self._entity_store).persist(writer, app_identifier)
+        self._object_store.persist(writer, app_identifier)
+        self._entity_store.persist(writer, app_identifier)
 
     def query(self, query_obj: QueryObj, **params: Any) -> Result:
         """

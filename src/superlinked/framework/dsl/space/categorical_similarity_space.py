@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from typing import Mapping, cast
+from typing import Mapping
 
 from superlinked.framework.common.dag.categorical_similarity_node import (
     CategoricalSimilarityNode,
@@ -24,11 +24,7 @@ from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.categorical_similarity_embedding import (
     CategoricalSimilarityParams,
 )
-from superlinked.framework.common.schema.schema_object import (
-    SchemaField,
-    SchemaObject,
-    String,
-)
+from superlinked.framework.common.schema.schema_object import SchemaObject, String
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
@@ -115,7 +111,7 @@ class CategoricalSimilaritySpace(Space):
                 negative_filter=negative_filter,
             )
         )
-        self.__category = SpaceFieldSet(self, cast(set[SchemaField], self._field_set))
+        self.__category = SpaceFieldSet(self, self._field_set)
         unchecked_category_node_map = {
             single_category: CategoricalSimilarityNode(
                 parent=SchemaFieldNode(single_category),

@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Annotated, Generic, TypeVar
+from typing import Annotated, Any, Generic, TypeVar
 
 from beartype.typing import Sequence
 from typing_extensions import Self
@@ -32,15 +32,20 @@ from superlinked.framework.storage.object_store import ObjectStore
 from superlinked.framework.storage.object_store_manager import ObjectStoreManager
 
 ExecutorT = TypeVar("ExecutorT", bound="Executor")
+EntityStoreT = TypeVar("EntityStoreT", bound=EntityStore)
+ObjectStoreT = TypeVar("ObjectStoreT", bound=ObjectStore)
 
 
-class App(ABC, Generic[ExecutorT]):
+class App(ABC, Generic[ExecutorT, EntityStoreT, ObjectStoreT]):
     """
     Abstract base class for an App, a running executor that can for example do queries or ingest data.
     """
 
     def __init__(
-        self, executor: ExecutorT, entity_store: EntityStore, object_store: ObjectStore
+        self,
+        executor: ExecutorT,
+        entity_store: EntityStoreT,
+        object_store: ObjectStoreT,
     ) -> None:
         """
         Initialize the App.
@@ -126,7 +131,7 @@ class Executor(ABC, Generic[SourceT]):
         return self._context
 
     @abstractmethod
-    def run(self) -> App[Self]:
+    def run(self) -> App[Self, Any, Any]:
         """
         Abstract method to run the executor.
 

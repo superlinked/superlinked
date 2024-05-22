@@ -12,17 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from enum import Enum
-from typing import Mapping, cast
+from typing import Mapping
 
 from superlinked.framework.common.dag.custom_node import CustomVectorEmbeddingNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.schema.schema_object import (
-    Array,
-    SchemaField,
-    SchemaObject,
-)
+from superlinked.framework.common.schema.schema_object import Array, SchemaObject
 from superlinked.framework.common.space.aggregation import (
     Aggregation,
     VectorAggregation,
@@ -108,7 +104,7 @@ class CustomSpace(Space):
             )
             for vector in self._field_set
         }
-        self.vector = SpaceFieldSet(self, cast(set[SchemaField], self._field_set))
+        self.vector = SpaceFieldSet(self, self._field_set)
         self.__schema_node_map: dict[SchemaObject, CustomVectorEmbeddingNode] = {
             schema_field.schema_obj: node
             for schema_field, node in unchecked_custom_node_map.items()

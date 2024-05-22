@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+from functools import reduce
 from math import sqrt
 from typing import cast
 
@@ -63,12 +64,12 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
     ) -> Sequence[Vector | None]:
         self.__check_evaluation_inputs(parent_results)
         vectors = [
-            sum(
-                [
+            reduce(
+                lambda a, b: a.concatenate(b),
+                (
                     self.__apply_vector_weight(result.value, parent.node_id, context)
                     for parent, result in parent_result.items()
-                ],
-                Vector([]),
+                ),
             )
             for parent_result in parent_results
         ]
@@ -88,12 +89,12 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
         context: ExecutionContext,
     ) -> Vector:
         parts = self._split_vector(vector)
-        vector = sum(
-            [
+        vector = reduce(
+            lambda a, b: a.concatenate(b),
+            (
                 self.__apply_vector_weight(part, parent.node_id, context)
                 for part, parent in zip(parts, self.parents)
-            ],
-            Vector([]),
+            ),
         )
         weight_sum = self._get_weight_abs_sum(context)
         return vector.normalize(sqrt(weight_sum))

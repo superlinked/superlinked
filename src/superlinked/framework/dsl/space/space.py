@@ -37,7 +37,7 @@ class Space(ABC):
 
     def __init__(self, fields: SIT | list[SIT], type_: type) -> None:
         super().__init__()
-        field_list = fields if isinstance(fields, list) else [fields]
+        field_list: list[SIT] = fields if isinstance(fields, list) else [fields]
         TypeValidator.validate_list_item_type(field_list, type_, "field_list")
         self.__validate_fields(field_list)
         self._field_set = set(field_list)

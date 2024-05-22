@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.executor.executor
 Classes
 -------
 
-`App(executor: ExecutorT, entity_store: EntityStore, object_store: ObjectStore)`
+`App(executor: ExecutorT, entity_store: EntityStoreT, object_store: ObjectStoreT)`
 :   Abstract base class for an App, a running executor that can for example do queries or ingest data.
     
     Initialize the App.
@@ -74,7 +74,7 @@ Classes
 
     ### Methods
 
-    `run(self) ‑> superlinked.framework.dsl.executor.executor.App[typing.Self]`
+    `run(self) ‑> superlinked.framework.dsl.executor.executor.App[typing.Self, typing.Any, typing.Any]`
     :   Abstract method to run the executor.
         
         Returns:
