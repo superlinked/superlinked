@@ -18,7 +18,6 @@ from collections.abc import Mapping
 from typing import Any, Union
 
 import numpy as np
-import numpy.typing as npt
 
 from superlinked.framework.common.exception import (
     MismatchingDimensionException,
@@ -26,6 +25,7 @@ from superlinked.framework.common.exception import (
 )
 
 Json = Mapping[str, Any]
+NPArray = np.ndarray[Any, np.dtype[np.float64]]
 
 
 class Vector:
@@ -33,7 +33,7 @@ class Vector:
 
     def __init__(
         self,
-        value: Union[list[float], npt.NDArray[np.float64]],
+        value: Union[list[float], NPArray],
         negative_filter_indices: set[int] | None = None,
         vector_before_normalization: Vector | None = None,
     ) -> None:
@@ -41,7 +41,7 @@ class Vector:
             value_to_set = value
         else:
             value_to_set = np.array(value, dtype=float)
-        self.value: npt.NDArray[np.float64] = value_to_set
+        self.value: NPArray = value_to_set
         self.__dimension: int = len(self.value)
         self.__negative_filter_indices = negative_filter_indices or set()
         self.__validate_negative_filter_indices()
@@ -196,7 +196,7 @@ class Vector:
 
     def copy_with_new(
         self,
-        value: list[float] | npt.NDArray[np.float64] | None = None,
+        value: list[float] | NPArray | None = None,
         negative_filter_indices: set[int] | None = None,
         vector_before_normalization: Vector | None = None,
     ) -> Vector:
@@ -225,3 +225,6 @@ class Vector:
         if self.is_empty:
             return self
         return self.copy_with_new()
+
+
+PythonTypes = float | int | str | Vector | NPArray

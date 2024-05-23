@@ -14,16 +14,18 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 from superlinked.framework.common.interface.comparison_operand import ComparisonOperand
 from superlinked.framework.common.storage.field_data_type import FieldDataType
 
 
-@dataclass(frozen=True)
 class Field(ComparisonOperand):
-    data_type: FieldDataType
-    name: str
+    def __init__(self, data_type: FieldDataType, name: str) -> None:
+        super().__init__(Field)
+        self.data_type = data_type
+        self.name = name
+
+    def __hash__(self) -> int:
+        return hash((self.name, self.data_type))
 
     @staticmethod
     def _built_in_equal(

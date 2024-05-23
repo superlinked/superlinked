@@ -20,12 +20,13 @@ from typing import Any, Generic, TypeVar
 
 from superlinked.framework.common.dag.dag_effect import DagEffect
 from superlinked.framework.common.dag.persistence_params import PersistenceParams
+from superlinked.framework.common.data_types import PythonTypes
 from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.storage.persistence_type import PersistenceType
 from superlinked.framework.common.util.string_util import StringUtil
 
 # NodeDataType
-NDT = TypeVar("NDT")
+NDT = TypeVar("NDT", bound=PythonTypes)
 # NodeType
 NT = TypeVar("NT", bound="Node")
 
@@ -45,11 +46,13 @@ class Node(Generic[NDT], ABC):
 
     def __init__(
         self,
+        node_data_type: type[NDT],
         parents: list[Node],
         schemas: set[SchemaObject] | None = None,
         dag_effects: set[DagEffect] | None = None,
         persistence_params: PersistenceParams | None = None,
     ) -> None:
+        self._node_data_type = node_data_type
         self._node_id: str | None = None
         self.children: list[Node] = []
         self.parents = parents
@@ -72,6 +75,10 @@ class Node(Generic[NDT], ABC):
         self._persistence_params.persist_evaluation_result |= (
             child._persistence_params.persist_parent_evaluation_result
         )
+
+    @property
+    def node_data_type(self) -> type[NDT]:
+        return self._node_data_type
 
     @property
     def node_id(self) -> str:

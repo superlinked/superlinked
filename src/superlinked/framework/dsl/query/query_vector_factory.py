@@ -30,12 +30,11 @@ from superlinked.framework.common.parser.parsed_schema import (
 )
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import SchemaObject
+from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.dsl.query.query_filters import QueryFilters
 from superlinked.framework.dsl.query.query_weighting import QueryWeighting
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.evaluator.query_dag_evaluator import QueryDagEvaluator
-from superlinked.framework.storage.entity import EntityId
-from superlinked.framework.storage.entity_store_manager import EntityStoreManager
 
 # Exclude from documentation.
 __pdoc__ = {}
@@ -47,10 +46,10 @@ class QueryVectorFactory:
         self,
         dag: Dag,
         schemas: set[SchemaObject],
-        entity_store_manager: EntityStoreManager,
+        storage_manager: StorageManager,
     ) -> None:
-        self._evaluator = QueryDagEvaluator(dag, schemas, entity_store_manager)
-        self._entity_store_manager = entity_store_manager
+        self._evaluator = QueryDagEvaluator(dag, schemas, storage_manager)
+        self._storage_manager = storage_manager
         self._query_weighting = QueryWeighting(dag)
 
     def produce_vector(
@@ -93,12 +92,11 @@ class QueryVectorFactory:
     ) -> Vector | None:
         if looks_like_filter := query_filters.looks_like_filter:
             # search by the vector of the referenced entity
-            if _vector := self._entity_store_manager.get_vector(
-                EntityId(
-                    object_id=str(looks_like_filter.value),
-                    node_id=index_node_id,
-                    schema_id=looks_like_filter.predicate.left_param.schema_obj._schema_name,
-                )
+            if _vector := self._storage_manager.read_node_result(
+                looks_like_filter.predicate.left_param.schema_obj,
+                str(looks_like_filter.value),
+                index_node_id,
+                Vector,
             ):
                 _vector = _vector * looks_like_filter.weight
                 return cast(Vector, _vector)

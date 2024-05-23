@@ -12,18 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
-import numpy.typing as npt
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.data_types import NPArray, Vector
 from superlinked.framework.common.embedding.embedding import Embedding
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.space.normalization import Normalization
 
 
-class CustomEmbedding(Embedding[npt.NDArray[np.float64]], HasLength):
+class CustomEmbedding(Embedding[NPArray], HasLength):
     def __init__(self, length: int, normalization: Normalization) -> None:
         self.__length: int = length
         self._normalization: Normalization = normalization
@@ -31,7 +29,7 @@ class CustomEmbedding(Embedding[npt.NDArray[np.float64]], HasLength):
     @override
     def embed(
         self,
-        input_: npt.NDArray[np.float64],
+        input_: NPArray,
         context: ExecutionContext,  # pylint: disable=unused-argument
     ) -> Vector:
         return Vector(input_).normalize(self._normalization.norm(input_))

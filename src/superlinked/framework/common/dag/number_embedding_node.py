@@ -44,7 +44,7 @@ class NumberEmbeddingNode(Node[Vector], HasLength, HasAggregation):
         parent: Node[float | int],
         embedding_params: NumberEmbeddingParams,
     ) -> None:
-        super().__init__([parent])
+        super().__init__(Vector, [parent])
         self.__aggregation = VectorAvg(NoNorm())
         self.embedding = NumberEmbedding(
             embedding_params.min_value,

@@ -23,6 +23,9 @@ Classes
 
     ### Instance variables
 
+    `data_loader_sources: list[superlinked.framework.dsl.source.data_loader_source.DataLoaderSource]`
+    :
+
     `handler: superlinked.framework.dsl.executor.rest.rest_handler.RestHandler`
     :   Property that returns the RestHandler instance associated with the RestApp.
         
@@ -35,7 +38,7 @@ Classes
         Returns:
             InMemoryApp: An instance of InMemoryApp.
 
-`RestExecutor(sources: list[RestSource], indices: list[Index], queries: list[RestQuery], endpoint_configuration: RestEndpointConfiguration | None = None, context_data: Mapping[str, Mapping[str, ContextValue]] | None = None)`
+`RestExecutor(sources: list[RestSource | DataLoaderSource], indices: list[Index], queries: list[RestQuery], endpoint_configuration: RestEndpointConfiguration | None = None, context_data: Mapping[str, Mapping[str, ContextValue]] | None = None)`
 :   The RestExecutor is a subclass of the Executor base class. It encapsulates all the parameters required for
     the REST application. It also instantiates an InMemoryExecutor for data storage purposes.
     
@@ -46,7 +49,6 @@ Classes
         endpoint_configuration (RestEndpointConfiguration): Optional configuration for REST endpoints.
     
     Initialize the RestExecutor.
-    
     Attributes:
         sources (list[RestSource]): List of Rest sources that has information about the schema.
         indices (list[Index]): List indices.

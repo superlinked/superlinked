@@ -23,13 +23,11 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.embedding.chunking_util import Chunker
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
+from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.exception import ChunkException
 from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.dag.parent_validator import ParentValidationType
-from superlinked.framework.online.store_manager.evaluation_result_store_manager import (
-    EvaluationResultStoreManager,
-)
 
 
 class OnlineChunkingNode(OnlineNode[ChunkingNode, str]):
@@ -37,12 +35,12 @@ class OnlineChunkingNode(OnlineNode[ChunkingNode, str]):
         self,
         node: ChunkingNode,
         parents: list[OnlineNode[Node[str], str]],
-        evaluation_result_store_manager: EvaluationResultStoreManager,
+        storage_manager: StorageManager,
     ) -> None:
         super().__init__(
             node,
             parents,
-            evaluation_result_store_manager,
+            storage_manager,
             ParentValidationType.EXACTLY_ONE_PARENT,
         )
 

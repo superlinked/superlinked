@@ -28,7 +28,7 @@ class NamedFunctionNode(Node[NDT]):
         schema: SchemaObject,
         return_type: type[NDT],
     ) -> None:
-        super().__init__([], schemas={schema})
+        super().__init__(return_type, [], schemas={schema})
         self.named_function = named_function
         self.return_type = return_type
 

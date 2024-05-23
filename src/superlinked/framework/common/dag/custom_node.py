@@ -31,7 +31,7 @@ class CustomVectorEmbeddingNode(Node[Vector], HasLength, HasAggregation):
         length: int,
         aggregation: Aggregation,
     ) -> None:
-        super().__init__([parent])
+        super().__init__(Vector, [parent])
         self.__aggregation = aggregation
         self.embedding = CustomEmbedding(
             length=length, normalization=self.__aggregation.normalization

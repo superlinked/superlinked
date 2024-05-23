@@ -14,6 +14,8 @@
 
 from typing import Any
 
+from beartype.typing import Sequence
+
 from superlinked.framework.common.dag.context import (
     CONTEXT_COMMON,
     CONTEXT_COMMON_NOW,
@@ -23,6 +25,13 @@ from superlinked.framework.common.dag.context import (
 )
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import QueryException
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
+from superlinked.framework.common.storage_manager.knn_search_params import (
+    KNNSearchParams,
+)
+from superlinked.framework.common.storage_manager.search_result_item import (
+    SearchResultItem,
+)
 from superlinked.framework.common.util import time_util
 from superlinked.framework.dsl.executor.executor import App
 from superlinked.framework.dsl.query.param_evaluator import ParamEvaluator
@@ -31,9 +40,6 @@ from superlinked.framework.dsl.query.query_filters import QueryFilters
 from superlinked.framework.dsl.query.query_vector_factory import QueryVectorFactory
 from superlinked.framework.dsl.query.result import Result, ResultEntry
 from superlinked.framework.dsl.space.space import Space
-from superlinked.framework.storage.entity import Entity
-from superlinked.framework.storage.entity_store_manager import EntityId
-from superlinked.framework.storage.object_store_manager import DataId
 
 
 class QueryExecutor:
@@ -77,11 +83,12 @@ class QueryExecutor:
         limit = param_evaluator.evaluate_limit_param(self.query_obj.limit_)
         radius = param_evaluator.evaluate_radius_param(self.query_obj.radius_)
         # TODO FAI-1838 use self.query_obj.hard_filters in self._knn_search
-        entities: list[Entity] = self._knn(
+        entities: Sequence[SearchResultItem] = self._knn(
             self._get_query_vector(param_evaluator), limit, radius
         )
         return Result(
-            self.query_obj.schema, self._map_entities_to_result_entries(entities)
+            self.query_obj.schema,
+            self._map_entities_to_result_entries(self.query_obj.schema, entities),
         )
 
     def _get_query_vector(self, param_evaluator: ParamEvaluator) -> Vector:
@@ -111,33 +118,34 @@ class QueryExecutor:
 
     def _knn(
         self, vector: Vector, limit: int | None, radius: float | None
-    ) -> list[Entity]:
-        return self.app.entity_store_manager.knn(
-            self.query_obj.index._node_id,
-            vector,
-            self.query_obj.schema._schema_name,
-            limit,
-            radius,
+    ) -> Sequence[SearchResultItem]:
+        return self.app.storage_manager.knn_search(
+            self.query_obj.index._node,
+            self.query_obj.schema,
+            [],
+            KNNSearchParams(vector=vector, limit=limit, radius=radius),
         )
 
     def _map_entities_to_result_entries(
-        self, entities: list[Entity]
-    ) -> list[ResultEntry]:
+        self, schema: IdSchemaObject, result_items: Sequence[SearchResultItem]
+    ) -> Sequence[ResultEntry]:
         return [
             ResultEntry(
                 entity,
-                self._get_stored_object_or_raise(entity.origin_id or entity.id_),
+                self._get_stored_object_or_raise(
+                    schema, entity.header.origin_id or entity.header.object_id
+                ),
             )
-            for entity in entities
+            for entity in result_items
         ]
 
-    def _get_stored_object_or_raise(self, entity_id: EntityId) -> dict[str, Any]:
-        stored_object = self.app.object_store_manager.load(
-            DataId(entity_id.schema_id, entity_id.object_id)
-        )
+    def _get_stored_object_or_raise(
+        self, schema: IdSchemaObject, object_id: str
+    ) -> dict[str, Any]:
+        stored_object = self.app.storage_manager.read_object_blob(schema, object_id)
         if not stored_object:
             raise QueryException(
-                f"No stored object found for the given entity_id: {entity_id}"
+                f"No stored {schema._schema_name} object found for the given object_id: {object_id}"
             )
         return stored_object
 

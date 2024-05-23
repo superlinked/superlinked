@@ -37,7 +37,7 @@ class CategoricalSimilarityNode(Node[Vector], HasLength, HasAggregation):
         parent: Node[str],
         categorical_similarity_param: CategoricalSimilarityParams,
     ) -> None:
-        super().__init__([parent])
+        super().__init__(Vector, [parent])
         self.__aggregation = VectorAggregation(L2Norm())
         self.embedding = CategoricalSimilarityEmbedding(
             categorical_similarity_param=categorical_similarity_param,

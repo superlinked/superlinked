@@ -23,14 +23,12 @@ from superlinked.framework.common.dag.node import NDT, NT
 from superlinked.framework.common.exception import DagEvaluationException
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.schema_object import SchemaObject
+from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.online.dag.evaluation_result import (
     EvaluationResult,
     SingleEvaluationResult,
 )
 from superlinked.framework.online.dag.parent_validator import ParentValidationType
-from superlinked.framework.online.store_manager.evaluation_result_store_manager import (
-    EvaluationResultStoreManager,
-)
 
 ONT = TypeVar("ONT", bound="OnlineNode")
 
@@ -40,13 +38,13 @@ class OnlineNode(ABC, Generic[NT, NDT], metaclass=ABCMeta):
         self,
         node: NT,
         parents: list[OnlineNode],
-        evaluation_result_store_manager: EvaluationResultStoreManager,
+        storage_manager: StorageManager,
         parent_validation_type: ParentValidationType = ParentValidationType.NO_VALIDATION,
     ) -> None:
         self.node = node
         self.children: list[OnlineNode] = []
         self.parents = parents
-        self.evaluation_result_store_manager = evaluation_result_store_manager
+        self.storage_manager = storage_manager
         self.validate_parents(parent_validation_type)
         for parent in self.parents:
             parent.children.append(self)
@@ -93,21 +91,27 @@ class OnlineNode(ABC, Generic[NT, NDT], metaclass=ABCMeta):
         result: EvaluationResult[NDT],
         parsed_schema: ParsedSchema,
     ) -> None:
-        self.evaluation_result_store_manager.save_result(
-            result,
+        self.storage_manager.write_node_result(
+            parsed_schema.schema,
             parsed_schema.id_,
-            parsed_schema.schema._schema_name,
-            self.node.persistence_type,
+            result.main.node_id,
+            result.main.value,
         )
+        for chunk in result.chunks:
+            self.storage_manager.write_node_result(
+                parsed_schema.schema,
+                chunk.object_id,
+                chunk.node_id,
+                chunk.value,
+                parsed_schema.id_,
+            )
 
-    def load_stored_result(
-        self, main_object_id: str, schema: SchemaObject
-    ) -> NDT | None:
-        return self.evaluation_result_store_manager.load_stored_result(
-            main_object_id,
+    def load_stored_result(self, object_id: str, schema: SchemaObject) -> NDT | None:
+        return self.storage_manager.read_node_result(
+            schema,
+            object_id,
             self.node_id,
-            schema._schema_name,
-            self.node.persistence_type,
+            self.node.node_data_type,
         )
 
     def load_stored_result_or_raise_exception(

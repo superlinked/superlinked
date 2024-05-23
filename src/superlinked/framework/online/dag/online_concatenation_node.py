@@ -29,13 +29,11 @@ from superlinked.framework.common.dag.context import (
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import ValidationException
 from superlinked.framework.common.interface.has_length import HasLength
+from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
 from superlinked.framework.online.dag.evaluation_result import SingleEvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.dag.parent_validator import ParentValidationType
-from superlinked.framework.online.store_manager.evaluation_result_store_manager import (
-    EvaluationResultStoreManager,
-)
 
 
 class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasLength):
@@ -43,12 +41,12 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
         self,
         node: ConcatenationNode,
         parents: list[OnlineNode],
-        evaluation_result_store_manager: EvaluationResultStoreManager,
+        storage_manager: StorageManager,
     ) -> None:
         super().__init__(
             node,
             parents,
-            evaluation_result_store_manager,
+            storage_manager,
             ParentValidationType.AT_LEAST_ONE_PARENT,
         )
 

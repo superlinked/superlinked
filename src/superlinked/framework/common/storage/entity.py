@@ -14,8 +14,6 @@
 
 from dataclasses import dataclass
 
-from beartype.typing import Sequence
-
 from superlinked.framework.common.storage.entity_id import EntityId
 from superlinked.framework.common.storage.field import Field
 
@@ -23,4 +21,4 @@ from superlinked.framework.common.storage.field import Field
 @dataclass
 class Entity:
     id_: EntityId
-    fields: Sequence[Field]
+    fields: dict[str, Field]

@@ -35,6 +35,7 @@ class ConcatenationNode(Node[Vector], HasLength):
         # Since events can change only a part of the whole result, we
         # must persist the rest of the parts.
         super().__init__(
+            Vector,
             parents,
             persistence_params=PersistenceParams(persist_parent_evaluation_result=True),
         )

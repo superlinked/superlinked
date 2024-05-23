@@ -16,8 +16,10 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Generic, TypeVar
 
+from superlinked.framework.common.data_types import PythonTypes
+
 # EvaluationResultType
-ERT = TypeVar("ERT")
+ERT = TypeVar("ERT", bound=PythonTypes)
 
 
 @dataclass(frozen=True)

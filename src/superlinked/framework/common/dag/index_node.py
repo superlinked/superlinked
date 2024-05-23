@@ -30,6 +30,7 @@ class IndexNode(Node[Vector], HasLength):
         parents: set[Node[Vector]],
     ) -> None:
         super().__init__(
+            Vector,
             self.__validate_and_order_parents(parents),
             persistence_params=PersistenceParams(
                 persist_evaluation_result=True, persistence_type=PersistenceType.VECTOR

@@ -21,22 +21,19 @@ from beartype.typing import Sequence
 from typing_extensions import Self
 
 from superlinked.framework.common.dag.context import ExecutionContext
+from superlinked.framework.common.storage.vdb_connector import VDBConnector
+from superlinked.framework.common.storage_manager.storage_manager import StorageManager
+from superlinked.framework.common.util.generic_class_util import GenericClassUtil
 from superlinked.framework.common.util.time_util import now
-from superlinked.framework.common.util.type_util import get_single_generic_type
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.source.source import SourceT
-from superlinked.framework.storage.entity_store import EntityStore
-from superlinked.framework.storage.entity_store_manager import EntityStoreManager
-from superlinked.framework.storage.object_store import ObjectStore
-from superlinked.framework.storage.object_store_manager import ObjectStoreManager
 
 ExecutorT = TypeVar("ExecutorT", bound="Executor")
-EntityStoreT = TypeVar("EntityStoreT", bound=EntityStore)
-ObjectStoreT = TypeVar("ObjectStoreT", bound=ObjectStore)
+VDBConnectorT = TypeVar("VDBConnectorT", bound=VDBConnector)
 
 
-class App(ABC, Generic[ExecutorT, EntityStoreT, ObjectStoreT]):
+class App(ABC, Generic[ExecutorT, VDBConnectorT]):
     """
     Abstract base class for an App, a running executor that can for example do queries or ingest data.
     """
@@ -44,8 +41,7 @@ class App(ABC, Generic[ExecutorT, EntityStoreT, ObjectStoreT]):
     def __init__(
         self,
         executor: ExecutorT,
-        entity_store: EntityStoreT,
-        object_store: ObjectStoreT,
+        vdb_connector: VDBConnectorT,
     ) -> None:
         """
         Initialize the App.
@@ -56,10 +52,8 @@ class App(ABC, Generic[ExecutorT, EntityStoreT, ObjectStoreT]):
             object_store (ObjectStore): The object store instance.
         """
         self._executor = executor
-        self._entity_store = entity_store
-        self._entity_store_manager = EntityStoreManager(self._entity_store)
-        self._object_store = object_store
-        self._object_store_manager = ObjectStoreManager(self._object_store)
+        self._vdb_connector = vdb_connector
+        self._storage_manager = StorageManager(self._vdb_connector)
         self.now = now()
 
     @property
@@ -73,24 +67,14 @@ class App(ABC, Generic[ExecutorT, EntityStoreT, ObjectStoreT]):
         return self._executor
 
     @property
-    def object_store_manager(self) -> ObjectStoreManager:
+    def storage_manager(self) -> StorageManager:
         """
-        Get the object store manager.
+        Get the storage manager.
 
         Returns:
-            ObjectStoreManager: The object store manager instance.
+            StorageManager: The storage manager instance.
         """
-        return self._object_store_manager
-
-    @property
-    def entity_store_manager(self) -> EntityStoreManager:
-        """
-        Get the entity store manager.
-
-        Returns:
-            EntityStoreManager: The entity store manager instance.
-        """
-        return self._entity_store_manager
+        return self._storage_manager
 
 
 class Executor(ABC, Generic[SourceT]):
@@ -114,7 +98,7 @@ class Executor(ABC, Generic[SourceT]):
             context (Mapping[str, Mapping[str, Any]]): The context mapping.
         """
         TypeValidator.validate_list_item_type(
-            sources, get_single_generic_type(self), "sources"
+            sources, GenericClassUtil.get_single_generic_type(self), "sources"
         )
         self._sources = sources
         self._indices = indices
@@ -131,10 +115,10 @@ class Executor(ABC, Generic[SourceT]):
         return self._context
 
     @abstractmethod
-    def run(self) -> App[Self, Any, Any]:
+    def run(self) -> App[Self, Any]:
         """
         Abstract method to run the executor.
 
         Returns:
-            App[Self]: An instance of App.
+            App[Self, Any]: An instance of App.
         """

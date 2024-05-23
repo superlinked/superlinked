@@ -22,15 +22,13 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.named_function_node import NamedFunctionNode
 from superlinked.framework.common.dag.node import NDT
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
+from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.util.named_function_evaluator import (
     NamedFunctionEvaluator,
 )
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.dag.parent_validator import ParentValidationType
-from superlinked.framework.online.store_manager.evaluation_result_store_manager import (
-    EvaluationResultStoreManager,
-)
 
 
 class OnlineNamedFunctionNode(OnlineNode[NamedFunctionNode[NDT], NDT]):
@@ -38,12 +36,12 @@ class OnlineNamedFunctionNode(OnlineNode[NamedFunctionNode[NDT], NDT]):
         self,
         node: NamedFunctionNode,
         parents: list[OnlineNode],
-        evaluation_result_store_manager: EvaluationResultStoreManager,
+        storage_manager: StorageManager,
     ) -> None:
         super().__init__(
             node,
             parents,
-            evaluation_result_store_manager,
+            storage_manager,
             ParentValidationType.NO_PARENTS,
         )
 

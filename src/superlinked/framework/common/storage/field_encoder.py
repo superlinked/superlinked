@@ -15,7 +15,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Generic, TypeVar
 
-from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.data_types import NPArray, Vector
 from superlinked.framework.common.storage.exception import EncoderException
 from superlinked.framework.common.storage.field import Field
 from superlinked.framework.common.storage.field_data import FieldData
@@ -31,6 +31,7 @@ class FieldEncoder(ABC, Generic[ET]):
             FieldDataType.BLOB: self._encode_blob,
             FieldDataType.DOUBLE: self._encode_double,
             FieldDataType.INT: self._encode_int,
+            FieldDataType.NPARRAY: self._encode_nparray,
             FieldDataType.STRING: self._encode_string,
             FieldDataType.VECTOR: self._encode_vector,
         }
@@ -38,6 +39,7 @@ class FieldEncoder(ABC, Generic[ET]):
             FieldDataType.BLOB: self._decode_blob,
             FieldDataType.DOUBLE: self._decode_double,
             FieldDataType.INT: self._decode_int,
+            FieldDataType.NPARRAY: self._decode_nparray,
             FieldDataType.STRING: self._decode_string,
             FieldDataType.VECTOR: self._decode_vector,
         }
@@ -64,6 +66,14 @@ class FieldEncoder(ABC, Generic[ET]):
 
     @abstractmethod
     def _decode_int(self, int_: ET) -> int:
+        pass
+
+    @abstractmethod
+    def _encode_nparray(self, nparray: NPArray) -> ET:
+        pass
+
+    @abstractmethod
+    def _decode_nparray(self, nparray: ET) -> NPArray:
         pass
 
     @abstractmethod

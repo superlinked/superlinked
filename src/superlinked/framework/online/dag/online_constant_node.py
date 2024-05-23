@@ -20,12 +20,10 @@ from superlinked.framework.common.dag.constant_node import ConstantNode
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import NDT
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
+from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.dag.parent_validator import ParentValidationType
-from superlinked.framework.online.store_manager.evaluation_result_store_manager import (
-    EvaluationResultStoreManager,
-)
 
 
 class OnlineConstantNode(OnlineNode[ConstantNode[NDT], NDT]):
@@ -33,12 +31,12 @@ class OnlineConstantNode(OnlineNode[ConstantNode[NDT], NDT]):
         self,
         node: ConstantNode,
         parents: list[OnlineNode],
-        evaluation_result_store_manager: EvaluationResultStoreManager,
+        storage_manager: StorageManager,
     ) -> None:
         super().__init__(
             node,
             parents,
-            evaluation_result_store_manager,
+            storage_manager,
             ParentValidationType.NO_PARENTS,
         )
 

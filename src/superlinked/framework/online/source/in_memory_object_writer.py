@@ -12,25 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from superlinked.framework.common.data_types import Json
 from superlinked.framework.common.observable import Subscriber
 from superlinked.framework.common.parser.json_parser import JsonParser
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
-from superlinked.framework.storage.object_store_manager import (
-    DataId,
-    ObjectStoreManager,
-)
+from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 
 
 class InMemoryObjectWriter(Subscriber[ParsedSchema]):
-    def __init__(self, object_store_manager: ObjectStoreManager[Json]) -> None:
+    def __init__(self, storage_manager: StorageManager) -> None:
         super().__init__()
-        self.__object_store_manager = object_store_manager
+        self.__storage_manager = storage_manager
 
     def update(self, messages: list[ParsedSchema]) -> None:
         for message in messages:
             parser = JsonParser(message.schema)
             data = parser.marshal(message)
-            data_id = DataId(message.schema._schema_name, message.id_)
             for data_element in data:
-                self.__object_store_manager.save(data_id, data_element)
+                self.__storage_manager.write_object_blob(
+                    message.schema, message.id_, data_element
+                )

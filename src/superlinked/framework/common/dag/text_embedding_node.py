@@ -36,11 +36,10 @@ class TextEmbeddingNode(Node[Vector], HasLength, HasAggregation):
         parent: Node[str],
         model_name: str,
     ) -> None:
-        super().__init__([parent])
+        super().__init__(Vector, [parent])
         self.model_name = model_name
         self.__aggregation = VectorAggregation(L2Norm())
         self.post_init()
-        super().__init__([parent])
 
     def post_init(self) -> None:
         self.embedding = SentenceTransformerEmbedding(

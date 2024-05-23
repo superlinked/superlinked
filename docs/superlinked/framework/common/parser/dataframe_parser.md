@@ -31,9 +31,7 @@ Classes
 
     `unmarshal(self, data: pd.DataFrame) ‑> list[superlinked.framework.common.parser.parsed_schema.ParsedSchema]`
     :   Parses the given DataFrame into a list of ParsedSchema objects according to the defined schema and mapping.
-        
         Args:
             data (pd.DataFrame): Pandas DataFrame input.
-        
         Returns:
             list[ParsedSchema]: A list of ParsedSchema objects that will be processed by the spaces.

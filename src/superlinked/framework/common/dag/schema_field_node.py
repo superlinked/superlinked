@@ -25,7 +25,12 @@ class SchemaFieldNode(Generic[SFT], Node[SFT]):
     def __init__(
         self, schema_field: SchemaField[SFT], dag_effects: set[DagEffect] | None = None
     ) -> None:
-        super().__init__([], schemas={schema_field.schema_obj}, dag_effects=dag_effects)
+        super().__init__(
+            schema_field.type_,
+            [],
+            schemas={schema_field.schema_obj},
+            dag_effects=dag_effects,
+        )
         self.schema_field = schema_field
 
     @override

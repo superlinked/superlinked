@@ -25,7 +25,7 @@ from superlinked.framework.common.schema.id_schema_object import IdField
 from superlinked.framework.common.schema.schema_object import ConcreteSchemaField
 from superlinked.framework.common.schema.schema_reference import SchemaReference
 from superlinked.framework.common.schema.schema_type import SchemaType
-from superlinked.framework.common.util.schema_util import SchemaUtil
+from superlinked.framework.common.util.generic_class_util import GenericClassUtil
 
 valid_schema_field_types = {
     SchemaType.SCHEMA: ConcreteSchemaField | IdField,
@@ -39,7 +39,7 @@ class SchemaValidator:
 
     def check_class_attributes(self, cls: type[T]) -> None:
         for _, type_ in cls.__annotations__.items():
-            type_ = SchemaUtil.if_not_class_get_origin(type_)
+            type_ = GenericClassUtil.if_not_class_get_origin(type_)
             if not (
                 issubclass(
                     type_,

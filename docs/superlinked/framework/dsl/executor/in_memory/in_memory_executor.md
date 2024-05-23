@@ -23,7 +23,7 @@ Classes
 
     ### Methods
 
-    `persist(self, writer: superlinked.framework.storage.persistable_dict.ObjectWriter) ‑> None`
+    `persist(self, serializer: superlinked.framework.storage.in_memory.object_serializer.ObjectSerializer) ‑> None`
     :
 
     `query(self, query_obj: superlinked.framework.dsl.query.query.QueryObj, **params: Any) ‑> superlinked.framework.dsl.query.result.Result`
@@ -51,7 +51,7 @@ Classes
         Raises:
             QueryException: If the query index is not amongst the executor's indices.
 
-    `restore(self, reader: superlinked.framework.storage.persistable_dict.ObjectReader) ‑> None`
+    `restore(self, serializer: superlinked.framework.storage.in_memory.object_serializer.ObjectSerializer) ‑> None`
     :
 
 `InMemoryExecutor(sources: Sequence[InMemorySource], indices: Sequence[Index], context_data: Mapping[str, Mapping[str, ContextValue]] | None = None)`

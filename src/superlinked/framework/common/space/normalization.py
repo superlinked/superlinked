@@ -16,16 +16,15 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 import numpy as np
-import numpy.typing as npt
 from typing_extensions import override
 
-from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.data_types import NPArray, Vector
 
 
 class Normalization(ABC):
 
     @abstractmethod
-    def norm(self, value: npt.NDArray[np.float64]) -> float: ...
+    def norm(self, value: NPArray) -> float: ...
 
     def denormalize(self, vector: Vector) -> Vector:
         if vector.vector_before_normalization is None:
@@ -38,7 +37,7 @@ class Normalization(ABC):
 
 class L2Norm(Normalization):
     @override
-    def norm(self, value: npt.NDArray[np.float64]) -> float:
+    def norm(self, value: NPArray) -> float:
         return np.linalg.norm(value)  # type: ignore[attr-defined]
 
     @override
@@ -56,7 +55,7 @@ class ConstantNorm(Normalization):
             raise ValueError("Normalization length cannot be zero.")
 
     @override
-    def norm(self, value: npt.NDArray[np.float64]) -> float:
+    def norm(self, value: NPArray) -> float:
         return self.length
 
     @override

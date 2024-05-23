@@ -130,10 +130,8 @@ class DataParser(ABC, Generic[IdSchemaObjectT, SourceTypeT]):
         return self._marshal(parsed_schemas)
 
     def __validate_mapping_against_schema(
-        self, schema: IdSchemaObjectT, mapping: Mapping[SchemaField, str] | None
+        self, schema: IdSchemaObjectT, mapping: Mapping[SchemaField, str]
     ) -> None:
-        if not mapping:
-            return
         schema_fields = list(schema._get_schema_fields()) + [schema.id]
         if invalid_keys := [key for key in mapping.keys() if key not in schema_fields]:
             invalid_key_names = [

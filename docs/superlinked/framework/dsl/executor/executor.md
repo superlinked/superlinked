@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.executor.executor
 Classes
 -------
 
-`App(executor: ExecutorT, entity_store: EntityStoreT, object_store: ObjectStoreT)`
+`App(executor: ExecutorT, vdb_connector: VDBConnectorT)`
 :   Abstract base class for an App, a running executor that can for example do queries or ingest data.
     
     Initialize the App.
@@ -26,23 +26,17 @@ Classes
 
     ### Instance variables
 
-    `entity_store_manager: superlinked.framework.storage.entity_store_manager.EntityStoreManager`
-    :   Get the entity store manager.
-        
-        Returns:
-            EntityStoreManager: The entity store manager instance.
-
     `executor: ~ExecutorT`
     :   Get the executor.
         
         Returns:
             ExecutorT: The executor instance.
 
-    `object_store_manager: superlinked.framework.storage.object_store_manager.ObjectStoreManager`
-    :   Get the object store manager.
+    `storage_manager: superlinked.framework.common.storage_manager.storage_manager.StorageManager`
+    :   Get the storage manager.
         
         Returns:
-            ObjectStoreManager: The object store manager instance.
+            StorageManager: The storage manager instance.
 
 `Executor(sources: collections.abc.Sequence[~SourceT], indices: typing.Annotated[collections.abc.Sequence[superlinked.framework.dsl.index.index.Index], Is[TypeValidator.list_validator.validator]], context: superlinked.framework.common.dag.context.ExecutionContext)`
 :   Abstract base class for an executor.
@@ -74,8 +68,8 @@ Classes
 
     ### Methods
 
-    `run(self) ‑> superlinked.framework.dsl.executor.executor.App[typing.Self, typing.Any, typing.Any]`
+    `run(self) ‑> superlinked.framework.dsl.executor.executor.App[typing.Self, typing.Any]`
     :   Abstract method to run the executor.
         
         Returns:
-            App[Self]: An instance of App.
+            App[Self, Any]: An instance of App.

@@ -13,30 +13,24 @@
 # limitations under the License.
 
 import numpy as np
-import numpy.typing as npt
 
 from superlinked.framework.common.calculation.distance_metric import DistanceMetric
-from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.data_types import NPArray, Vector
 
 
 class VectorSimilarityCalculator:
-
     def __init__(self, method: DistanceMetric) -> None:
         self.__method = method
 
     def calculate_similarity(self, vector_a: Vector, vector_b: Vector) -> float:
         return self.calculate_similarity_np(vector_a.value, vector_b.value)
 
-    def calculate_similarity_np(
-        self, vector_a: npt.NDArray[np.float64], vector_b: npt.NDArray[np.float64]
-    ) -> float:
+    def calculate_similarity_np(self, vector_a: NPArray, vector_b: NPArray) -> float:
         match self.__method:
             case DistanceMetric.INNER_PRODUCT:
                 return self.__calculate_inner_product(vector_a, vector_b)
             case _:
                 raise ValueError(f"Unsupported calculation method: {self.__method}")
 
-    def __calculate_inner_product(
-        self, vector_a: npt.NDArray[np.float64], vector_b: npt.NDArray[np.float64]
-    ) -> float:
+    def __calculate_inner_product(self, vector_a: NPArray, vector_b: NPArray) -> float:
         return np.inner(vector_a, vector_b)

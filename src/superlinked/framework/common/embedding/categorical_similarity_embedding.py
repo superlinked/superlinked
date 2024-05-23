@@ -13,11 +13,10 @@
 # limitations under the License.
 
 import numpy as np
-import numpy.typing as npt
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.data_types import NPArray, Vector
 from superlinked.framework.common.embedding.embedding import Embedding
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.space.normalization import Normalization
@@ -66,15 +65,13 @@ class CategoricalSimilarityEmbedding(Embedding[str], HasLength):
     def embed(self, input_: str, context: ExecutionContext) -> Vector:
         # TODO: https://linear.app/superlinked/issue/ENG-1736/make-schemafields-composite
         parsed_input: list[str] = self.__parse_categories(input_=input_)
-        one_hot_encoding: npt.NDArray[np.float64] = self.__n_hot_encode(
+        one_hot_encoding: NPArray = self.__n_hot_encode(
             parsed_input, context.is_query_context()
         )
         return Vector(one_hot_encoding)
 
-    def __n_hot_encode(
-        self, category_list: list[str], is_query: bool
-    ) -> npt.NDArray[np.float64]:
-        n_hot_encoding: npt.NDArray[np.float64] = np.full(
+    def __n_hot_encode(self, category_list: list[str], is_query: bool) -> NPArray:
+        n_hot_encoding: NPArray = np.full(
             self.__length,
             0 if is_query else self.categorical_similarity_param.negative_filter,
             dtype=np.float32,

@@ -12,15 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from dataclasses import dataclass
 
-from beartype.typing import Sequence
+from dataclasses import dataclass
 
 from superlinked.framework.common.storage.entity_id import EntityId
 from superlinked.framework.common.storage.field_data import FieldData
 
 
-@dataclass
+@dataclass(frozen=True)
 class EntityData:
     id_: EntityId
-    field_data: Sequence[FieldData]
+    field_data: dict[str, FieldData]

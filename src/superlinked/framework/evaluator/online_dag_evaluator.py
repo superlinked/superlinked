@@ -23,16 +23,13 @@ from superlinked.framework.common.exception import (
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import SchemaObject
+from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.compiler.online_schema_dag_compiler import (
     OnlineSchemaDagCompiler,
 )
 from superlinked.framework.evaluator.dag_evaluator import DagEvaluator
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_schema_dag import OnlineSchemaDag
-from superlinked.framework.online.store_manager.evaluation_result_store_manager import (
-    EvaluationResultStoreManager,
-)
-from superlinked.framework.storage.entity_store_manager import EntityStoreManager
 
 
 class OnlineDagEvaluator(DagEvaluator[EvaluationResult[Vector]]):
@@ -40,23 +37,18 @@ class OnlineDagEvaluator(DagEvaluator[EvaluationResult[Vector]]):
         self,
         dag: Dag,
         schemas: set[SchemaObject],
-        entity_store_manager: EntityStoreManager,
+        storage_manager: StorageManager,
     ) -> None:
         super().__init__()
         self._dag = dag
         self._schemas = schemas
-        self._evaluation_result_store_manager = EvaluationResultStoreManager(
-            entity_store_manager
-        )
         self._schema_online_schema_dag_mapper = (
             self.__init_schema_online_schema_dag_mapper(
-                self._schemas, self._dag, self._evaluation_result_store_manager
+                self._schemas, self._dag, storage_manager
             )
         )
         self._dag_effect_online_schema_dag_mapper = (
-            self.__init_dag_effect_online_schema_dag_mapper(
-                self._dag, self._evaluation_result_store_manager
-            )
+            self.__init_dag_effect_online_schema_dag_mapper(self._dag, storage_manager)
         )
 
     def __get_single_schema(self, parsed_schemas: list[ParsedSchema]) -> IdSchemaObject:
@@ -103,18 +95,18 @@ class OnlineDagEvaluator(DagEvaluator[EvaluationResult[Vector]]):
         self,
         schemas: set[SchemaObject],
         dag: Dag,
-        evaluation_result_store_manager: EvaluationResultStoreManager,
+        storage_manager: StorageManager,
     ) -> dict[SchemaObject, OnlineSchemaDag]:
         return {
             schema: OnlineSchemaDagCompiler(set(dag.nodes)).compile_schema_dag(
                 dag.project_to_schema(schema),
-                evaluation_result_store_manager,
+                storage_manager,
             )
             for schema in schemas
         }
 
     def __init_dag_effect_online_schema_dag_mapper(
-        self, dag: Dag, evaluation_result_store_manager: EvaluationResultStoreManager
+        self, dag: Dag, storage_manager: StorageManager
     ) -> dict[DagEffect, OnlineSchemaDag]:
         dag_effect_schema_dag_map = {
             dag_effect: dag.project_to_dag_effect(dag_effect)
@@ -125,7 +117,7 @@ class OnlineDagEvaluator(DagEvaluator[EvaluationResult[Vector]]):
                 set(schema_dag.nodes)
             ).compile_schema_dag(
                 schema_dag,
-                evaluation_result_store_manager,
+                storage_manager,
             )
             for dag_effect, schema_dag in dag_effect_schema_dag_map.items()
         }

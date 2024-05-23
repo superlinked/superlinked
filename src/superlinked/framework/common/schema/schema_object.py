@@ -17,10 +17,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Generic, TypeVar
 
-import numpy as np
-import numpy.typing as npt
 from beartype.typing import Sequence
 
+from superlinked.framework.common.data_types import NPArray, PythonTypes
 from superlinked.framework.common.interface.comparison_operand import ComparisonOperand
 
 # Exclude from documentation.
@@ -31,7 +30,7 @@ __pdoc__["SchemaFieldDescriptor"] = False
 
 
 # SchemaFieldType
-SFT = TypeVar("SFT")
+SFT = TypeVar("SFT", bound=PythonTypes)
 SchemaObjectT = TypeVar("SchemaObjectT", bound="SchemaObject")
 
 
@@ -169,13 +168,13 @@ class Integer(Number[int]):
         super().__init__(name, schema_obj, int)
 
 
-class Array(SchemaField[npt.NDArray[np.float64]]):
+class Array(SchemaField[NPArray]):
     """
     Field of a schema that represents a vector.
     """
 
     def __init__(self, name: str, schema_obj: SchemaObjectT) -> None:
-        super().__init__(name, schema_obj, npt.NDArray[np.float64])
+        super().__init__(name, schema_obj, NPArray)
 
 
 ConcreteSchemaField = String | Timestamp | Float | Integer | Array

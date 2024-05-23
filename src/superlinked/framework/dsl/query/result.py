@@ -15,10 +15,13 @@
 from dataclasses import dataclass
 from typing import Any
 
+from beartype.typing import Sequence
 from pandas import DataFrame
 
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
-from superlinked.framework.storage.entity import Entity
+from superlinked.framework.common.storage_manager.search_result_item import (
+    SearchResultItem,
+)
 
 
 @dataclass(frozen=True)
@@ -27,14 +30,14 @@ class ResultEntry:
     Represents a single entry in a Result, encapsulating the entity and its associated data.
 
     Attributes:
-        entity (Entity): The entity of the result entry.
-            This is an instance of the Entity class, which represents a unique entity in the system.
-            It contains information such as the entity's ID and type.
+        entity (SearchResultItem): The entity of the result entry.
+            This is an instance of the SearchResultItem class, which represents a unique entity in the system.
+            It contains header information such as the entity's ID and schema and the queried fields.
         stored_object (dict[str, Any]): The stored object of the result entry.
             This is essentially the raw data that was input into the system.
     """
 
-    entity: Entity
+    entity: SearchResultItem
     stored_object: dict[str, Any]
 
 
@@ -45,11 +48,11 @@ class Result:
 
     Attributes:
         schema (IdSchemaObject): The schema of the result.
-        entries (list[ResultEntry]): A list of result entries.
+        entries (Sequence[ResultEntry]): A list of result entries.
     """
 
     schema: IdSchemaObject
-    entries: list[ResultEntry]
+    entries: Sequence[ResultEntry]
 
     def to_pandas(self) -> DataFrame:
         """
@@ -66,6 +69,6 @@ class Result:
 
     def __str__(self) -> str:
         return "\n".join(
-            f"#{i+1} id:{entry.entity.id_.object_id}, object:{entry.stored_object}"
+            f"#{i+1} id:{entry.entity.header.object_id}, object:{entry.stored_object}"
             for i, entry in enumerate(self.entries)
         )

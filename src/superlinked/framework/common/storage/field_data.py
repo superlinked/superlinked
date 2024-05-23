@@ -17,19 +17,13 @@ from __future__ import annotations
 
 from typing import Generic, TypeVar
 
-from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.data_types import NPArray, Vector
 from superlinked.framework.common.storage.field import Field
 from superlinked.framework.common.storage.field_data_type import FieldDataType
+from superlinked.framework.common.storage.field_type_converter import FieldTypeConverter
 
+# FieldType
 FT = TypeVar("FT")
-
-VALID_TYPE_BY_FIELD_DATA_TYPE: dict[FieldDataType, type] = {
-    FieldDataType.BLOB: str,
-    FieldDataType.DOUBLE: float,
-    FieldDataType.INT: int,
-    FieldDataType.STRING: str,
-    FieldDataType.VECTOR: Vector,
-}
 
 
 class FieldData(Field, Generic[FT]):
@@ -38,11 +32,11 @@ class FieldData(Field, Generic[FT]):
         self.__validate_value(type_, value)
         self.value = value
 
-    def __validate_value(self, type_: FieldDataType, value: FT) -> None:
-        valid_type = VALID_TYPE_BY_FIELD_DATA_TYPE[type_]
+    def __validate_value(self, data_type: FieldDataType, value: FT) -> None:
+        valid_type = FieldTypeConverter.get_valid_python_types(data_type)
         if not isinstance(value, valid_type):
             raise ValueError(
-                f"Invalid value {value} for the given field data type {type_}"
+                f"Invalid value {value} for the given field data type {data_type}"
             )
 
     @classmethod
@@ -63,6 +57,11 @@ class DoubleFieldData(FieldData[float]):
 class IntFieldData(FieldData[int]):
     def __init__(self, name: str, value: int) -> None:
         super().__init__(FieldDataType.INT, name, value)
+
+
+class NPArrayFieldData(FieldData[NPArray]):
+    def __init__(self, name: str, value: NPArray) -> None:
+        super().__init__(FieldDataType.NPARRAY, name, value)
 
 
 class StringFieldData(FieldData[str]):

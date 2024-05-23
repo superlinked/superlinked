@@ -39,9 +39,8 @@ from superlinked.framework.online.source.in_memory_data_processor import (
 from superlinked.framework.online.source.in_memory_object_writer import (
     InMemoryObjectWriter,
 )
-from superlinked.framework.storage.in_memory_entity_store import InMemoryEntityStore
-from superlinked.framework.storage.in_memory_object_store import InMemoryObjectStore
-from superlinked.framework.storage.persistable_dict import ObjectReader, ObjectWriter
+from superlinked.framework.storage.in_memory.in_memory_vdb import InMemoryVDB
+from superlinked.framework.storage.in_memory.object_serializer import ObjectSerializer
 
 
 class InMemoryExecutor(Executor[InMemorySource]):
@@ -88,7 +87,7 @@ class InMemoryExecutor(Executor[InMemorySource]):
 
 
 @TypeValidator.wrap
-class InMemoryApp(App[InMemoryExecutor, InMemoryEntityStore, InMemoryObjectStore]):
+class InMemoryApp(App[InMemoryExecutor, InMemoryVDB]):
     """
     In-memory implementation of the App class.
 
@@ -103,19 +102,24 @@ class InMemoryApp(App[InMemoryExecutor, InMemoryEntityStore, InMemoryObjectStore
         Args:
             executor (InMemoryExecutor): An instance of InMemoryExecutor.
         """
-        super().__init__(executor, InMemoryEntityStore(), InMemoryObjectStore())
-        self._object_writer = InMemoryObjectWriter(self._object_store_manager)
+        super().__init__(
+            executor,
+            InMemoryVDB(),
+        )
+        for index in self.executor._indices:
+            self.storage_manager.create_search_index(index._dag)
+        self._object_writer = InMemoryObjectWriter(self._storage_manager)
         self._index_online_dag_evaluator_map = {
             index: OnlineDagEvaluator(
                 index._dag,
                 set(index._space_schemas).union(index._effect_schemas),
-                self._entity_store_manager,
+                self._storage_manager,
             )
             for index in self.executor._indices
         }
         self._index_query_vector_factory_map = {
             index: QueryVectorFactory(
-                index._dag, set(index._space_schemas), self._entity_store_manager
+                index._dag, set(index._space_schemas), self._storage_manager
             )
             for index in self.executor._indices
         }
@@ -133,17 +137,15 @@ class InMemoryApp(App[InMemoryExecutor, InMemoryEntityStore, InMemoryObjectStore
             for source in self.__filter_index_sources(index, self._executor._sources):
                 source._source.register(data_processor)
 
-    def restore(self, reader: ObjectReader) -> None:
+    def restore(self, serializer: ObjectSerializer) -> None:
         node_ids = [index._node_id for index in self.executor._indices]
         app_identifier = "_".join(node_ids)
-        self._object_store.restore(reader, app_identifier)
-        self._entity_store.restore(reader, app_identifier)
+        self._vdb_connector.restore(serializer, app_identifier)
 
-    def persist(self, writer: ObjectWriter) -> None:
+    def persist(self, serializer: ObjectSerializer) -> None:
         node_ids = [index._node_id for index in self.executor._indices]
         app_identifier = "_".join(node_ids)
-        self._object_store.persist(writer, app_identifier)
-        self._entity_store.persist(writer, app_identifier)
+        self._vdb_connector.persist(serializer, app_identifier)
 
     def query(self, query_obj: QueryObj, **params: Any) -> Result:
         """

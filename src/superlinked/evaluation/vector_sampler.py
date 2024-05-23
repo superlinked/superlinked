@@ -15,13 +15,17 @@
 from typing import Any, cast
 
 import numpy as np
-from numpy import typing as npt
+from beartype.typing import Sequence
 
+from superlinked.framework.common.data_types import NPArray
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema import T
+from superlinked.framework.common.schema.schema_object import SchemaObject
+from superlinked.framework.common.storage_manager.header import Header
+from superlinked.framework.common.storage_manager.storage_manager import ResultTypeT
 from superlinked.framework.dsl.executor.in_memory.in_memory_executor import InMemoryApp
 from superlinked.framework.dsl.index.index import Index
-from superlinked.framework.storage.entity import Entity, EntityId
+from superlinked.framework.storage.in_memory.in_memory_vdb import InMemoryVDB
 
 
 class VectorNotFoundError(Exception):
@@ -38,14 +42,14 @@ class VectorCollection:
         vectors (npt.NDArray[np.float64]): Numpy array of
     """
 
-    def __init__(self, id_list: list[str], vectors: npt.NDArray[np.float64]) -> None:
+    def __init__(self, id_list: Sequence[str], vectors: NPArray) -> None:
         if (len(id_list) > 1) & (len(id_list) != vectors.shape[0]):
             raise ValueError(
                 f"id_list length and vectors parameter shape's first dimension should match. "
                 f"Got {id_list=} and {vectors.shape[0]=}"
             )
-        self.id_list: list[str] = id_list
-        self.vectors: npt.NDArray[np.float64] = vectors
+        self.id_list: Sequence[str] = id_list
+        self.vectors: NPArray = vectors
 
     def __len__(self) -> int:
         return len(self.id_list)
@@ -131,16 +135,15 @@ class VectorSampler:
                 f"Got {len(ids)} and {len(readable_ids)}"
             )
 
-        entity_vectors: list[npt.NDArray[np.float64]] = []
+        entity_vectors: list[NPArray] = []
         entity_ids: list[str] = []
         for identification, readable_id in zip(ids, readable_ids):
-            user_entity_id = EntityId(
-                identification, index._node.node_id, schema._base_class_name
+            vector = self.__app.storage_manager.read_node_result(
+                schema, identification, index._node.node_id, index._node.node_data_type
             )
-            vector = self.__app.entity_store_manager.get_vector(user_entity_id)
             if vector is None:
                 raise VectorNotFoundError(
-                    f"No vector found for entity id {user_entity_id} in the given index and schema."
+                    f"No vector found for {schema._schema_name} with id {identification} in the given index."
                 )
 
             entity_vectors.append(vector.value)
@@ -168,37 +171,56 @@ class VectorSampler:
             VectorNotFoundError: If no vector is found for any entities.
         """
         schema = cast(IdSchemaObject, schema)
-        entities = self.__app.entity_store_manager.get_entities(
-            index._node.node_id, schema._schema_name
+        headers = self._read_node_results(
+            schema, index._node.node_id, index._node.node_data_type
         )
         if include_chunks:
-            entity_ids: list[str] = [entity.id_.object_id for entity in entities]
+            entity_ids: list[str] = [header.object_id for header in headers]
             readable_ids: list[str] = [
-                self.human_readable_id_for_chunks(entity) for entity in entities
+                self.human_readable_id_for_chunks(header) for header in headers
             ]
             return self.get_vectors_by_ids(entity_ids, index, schema, readable_ids)
 
         entity_ids = list(
             {
-                self.get_id_for_standalone_entity_origin_id_for_chunk(entity)
-                for entity in entities
+                self.__get_id_for_standalone_entity_origin_id_for_chunk(header)
+                for header in headers
             }
         )
         return self.get_vectors_by_ids(entity_ids, index, schema)
 
-    @staticmethod
-    def get_id_for_standalone_entity_origin_id_for_chunk(entity: Entity) -> str:
-        if entity.is_chunk():
-            origin_id = cast(EntityId, entity.origin_id)
-            return origin_id.object_id
-        return entity.id_.object_id
+    def _read_node_results(
+        self, schema: SchemaObject, node_id: str, result_type: type[ResultTypeT]
+    ) -> Sequence[Header]:
+        entity_builder = self.__app.storage_manager._entity_builder
+        in_memory_vdb = cast(InMemoryVDB, self.__app.storage_manager._vdb_connector)
+
+        schema_filter = (
+            entity_builder._admin_fields.schema_id.field == schema._schema_name
+        )
+        result_field = entity_builder.compose_field(node_id, result_type)
+        returned_fields = entity_builder._admin_fields.header_fields
+        entity_data = in_memory_vdb.read_entities_matching_filters(
+            [schema_filter], [result_field], returned_fields
+        )
+        return [
+            entity_builder._admin_fields.extract_header(ed.field_data)
+            for ed in entity_data
+        ]
 
     @staticmethod
-    def human_readable_id_for_chunks(entity: Entity) -> str:
-        if entity.is_chunk():
-            origin_id = cast(EntityId, entity.origin_id)
-            return f"{origin_id.object_id}-{entity.id_.object_id}"
-        return entity.id_.object_id
+    def __get_id_for_standalone_entity_origin_id_for_chunk(
+        header: Header,
+    ) -> str:
+        if header.origin_id is not None:
+            return header.origin_id
+        return header.object_id
+
+    @staticmethod
+    def human_readable_id_for_chunks(header: Header) -> str:
+        if header.origin_id is not None:
+            return f"{header.origin_id}-{header.object_id}"
+        return header.object_id
 
     def __str__(self) -> str:
         return f"VectorSampler on app: {print(self.__app)}"

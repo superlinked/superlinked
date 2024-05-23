@@ -42,7 +42,7 @@ class RecencyNode(Node[Vector], HasLength, HasAggregation):
         aggregation_mode: InputAggregationMode,
         negative_filter: float,
     ) -> None:
-        super().__init__([parent])
+        super().__init__(Vector, [parent])
         normalization = calculate_recency_normalization(period_time_list)
         self.embedding = RecencyEmbedding(
             period_time_list,

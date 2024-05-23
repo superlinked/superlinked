@@ -23,9 +23,9 @@ from superlinked.framework.common.interface.comparison_operand import (
 from superlinked.framework.common.schema.schema_object import SchemaField
 
 
-@dataclass
-class KnnSearchParams:
+@dataclass(frozen=True)
+class KNNSearchParams:
     vector: Vector
-    limit: int
+    limit: int | None
     filters: Sequence[ComparisonOperation[SchemaField]] | None = None
     radius: float | None = None

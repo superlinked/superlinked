@@ -28,14 +28,12 @@ from superlinked.framework.common.exception import (
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.schema_object import SchemaObject
+from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_comparison_filter_node import (
     OnlineComparisonFilterNode,
 )
 from superlinked.framework.online.dag.online_node import OnlineNode
-from superlinked.framework.online.store_manager.evaluation_result_store_manager import (
-    EvaluationResultStoreManager,
-)
 
 
 class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLength):
@@ -45,9 +43,9 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         self,
         node: EventAggregationNode,
         parents: list[OnlineNode],
-        evaluation_result_store_manager: EvaluationResultStoreManager,
+        storage_manager: StorageManager,
     ) -> None:
-        super().__init__(node, parents, evaluation_result_store_manager)
+        super().__init__(node, parents, storage_manager)
         self.__init_named_parents()
 
     def __init_named_parents(self) -> None:
@@ -192,14 +190,11 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
     def __store_effect_count(
         self, main_object_id: str, schema: SchemaObject, count: int
     ) -> None:
-        self.evaluation_result_store_manager.save_result_meta(
-            EvaluationResultStoreManager.SaveResultMetaArgs(
-                main_object_id,
-                schema._schema_name,
-                self.node_id,
-                OnlineEventAggregationNode.EFFECT_COUNT_KEY,
-                str(count),
-            )
+        self.storage_manager.write_node_data(
+            schema,
+            main_object_id,
+            self.node_id,
+            {OnlineEventAggregationNode.EFFECT_COUNT_KEY: count},
         )
 
     def __load_effect_count(
@@ -207,13 +202,10 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         main_object_id: str,
         schema: SchemaObject,
     ) -> int:
-        count = int(
-            self.evaluation_result_store_manager.load_result_meta(
-                main_object_id,
-                schema._schema_name,
-                self.node_id,
-                OnlineEventAggregationNode.EFFECT_COUNT_KEY,
-            )
-            or 0
+        node_data = self.storage_manager.read_node_data(
+            schema,
+            main_object_id,
+            self.node_id,
+            {OnlineEventAggregationNode.EFFECT_COUNT_KEY: int},
         )
-        return count
+        return node_data.get(OnlineEventAggregationNode.EFFECT_COUNT_KEY) or 0

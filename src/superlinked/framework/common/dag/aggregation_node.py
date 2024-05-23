@@ -34,6 +34,7 @@ class AggregationNode(Node[Vector], HasLength):
         dag_effects: set[DagEffect],
     ) -> None:
         super().__init__(
+            Vector,
             [weighted_parent.item for weighted_parent in weighted_parents],
             persistence_params=PersistenceParams(persist_parent_evaluation_result=True),
             dag_effects=dag_effects,

@@ -18,6 +18,7 @@ from typing import TypeVar, cast
 
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.exception import NotImplementedException
+from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.online.dag.online_aggregation_node import (
     OnlineAggregationNode,
 )
@@ -55,9 +56,6 @@ from superlinked.framework.online.dag.online_schema_field_node import (
 )
 from superlinked.framework.online.dag.online_text_embedding_node import (
     OnlineTextEmbeddingNode,
-)
-from superlinked.framework.online.store_manager.evaluation_result_store_manager import (
-    EvaluationResultStoreManager,
 )
 
 LNT = TypeVar("LNT", type[Node], type[OnlineNode])
@@ -134,11 +132,11 @@ class OnlineNodeRegistry:
         self,
         node: Node,
         parents: list[OnlineNode],
-        evaluation_result_store_manager: EvaluationResultStoreManager,
+        storage_manager: StorageManager,
     ) -> OnlineNode:
         online_node_class = self.online_node_type_by_node_type.get(type(node))
         if not online_node_class:
             raise NotImplementedException(
                 f"Not implemented Node type: {node.__class__.__name__}"
             )
-        return online_node_class(node, parents, evaluation_result_store_manager)
+        return online_node_class(node, parents, storage_manager)

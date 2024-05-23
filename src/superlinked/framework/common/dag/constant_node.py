@@ -22,7 +22,7 @@ from superlinked.framework.common.schema.schema_object import SchemaObject
 
 class ConstantNode(Node[NDT]):
     def __init__(self, value: NDT, schema: SchemaObject) -> None:
-        super().__init__([], schemas={schema})
+        super().__init__(type(value), [], schemas={schema})
         self.value = value
 
     @override

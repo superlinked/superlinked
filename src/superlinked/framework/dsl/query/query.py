@@ -30,7 +30,7 @@ from superlinked.framework.common.interface.comparison_operation_type import (
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema import T
 from superlinked.framework.common.schema.schema_object import SchemaField
-from superlinked.framework.common.util.type_util import get_single_generic_type
+from superlinked.framework.common.util.generic_class_util import GenericClassUtil
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.query.param import (
@@ -256,7 +256,10 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
             raise QueryException(
                 f"Unsupported filter operation: {comparison_operation._op}."
             )
-        allowed_types = [Param, get_single_generic_type(comparison_operation._operand)]
+        allowed_types = [
+            Param,
+            GenericClassUtil.get_single_generic_type(comparison_operation._operand),
+        ]
         if type(comparison_operation._other) not in allowed_types:
             raise QueryException(
                 f"Unsupported filter operand type: {comparison_operation._other.__class__.__name__}."

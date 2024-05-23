@@ -23,12 +23,12 @@ from superlinked.framework.common.storage.search_index_creation.vector_component
 )
 
 
-@dataclass
+@dataclass(frozen=True)
 class IndexFieldDescriptor:
     field_name: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class VectorIndexFieldDescriptor(IndexFieldDescriptor):
     field_size: int
     distance_metric: DistanceMetric

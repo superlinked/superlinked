@@ -40,7 +40,7 @@ class NumberSimilarityNode(Node[Vector], HasLength, HasAggregation):
         negative_filter: float,
         aggregation_mode: InputAggregationMode,
     ) -> None:
-        super().__init__([parent])
+        super().__init__(Vector, [parent])
         normalization = NoNorm()
         self.embedding = NumberSimilarityEmbedding(
             min_value,

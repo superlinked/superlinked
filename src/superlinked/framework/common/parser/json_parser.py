@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import Generic, cast
+from typing import Generic
 
 from superlinked.framework.common.data_types import Json
 from superlinked.framework.common.parser.data_parser import DataParser
@@ -25,6 +25,7 @@ from superlinked.framework.common.parser.parsed_schema import (
 )
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObjectT
 from superlinked.framework.common.schema.schema_object import SFT, SchemaField
+from superlinked.framework.common.schema.schema_reference import SchemaReference
 from superlinked.framework.common.util.dot_separated_path_util import (
     DotSeparatedPathUtil,
     ValuedDotSeparatedPath,
@@ -99,13 +100,16 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, Json]):
             raise MissingIdException(
                 "The mandatory id field is missing from the input object."
             )
-        return cast(str, id_)
+        return str(id_)
 
     def _parse_schema_field_value(
         self, field: SchemaField[SFT], data: Json
     ) -> SFT | None:
         path: str = self.__get_path(field)
-        return DotSeparatedPathUtil.get(data, path)
+        parsed_schema_field_value = DotSeparatedPathUtil.get(data, path)
+        if isinstance(field, SchemaReference):
+            parsed_schema_field_value = str(parsed_schema_field_value)
+        return parsed_schema_field_value
 
     def __get_path(self, field: SchemaField[SFT]) -> str:
         return self.mapping.get(field, field.name)

@@ -21,6 +21,7 @@ class StorageNaming:
     INDEX_PREFIX = "idx_"
     NODE_DATA_PREFIX = "__node_data__"
     OBJECT_ID_INDEX_NAME = "__object_id__"
+    OBJECT_BLOB_INDEX_NAME = "__object_blob__"
     ORIGIN_ID_INDEX_NAME = "__origin_id__"
     SCHEMA_INDEX_NAME = "__schema__"
     SCHEMA_FIELD_PREFIX = "__schema_field__"
@@ -31,5 +32,5 @@ class StorageNaming:
     def generate_field_name_from_schema_field(self, schema_field: SchemaField) -> str:
         return f"{StorageNaming.SCHEMA_FIELD_PREFIX}{schema_field.schema_obj._schema_name}_{schema_field.name}"
 
-    def generate_node_data_field_name(self, node_data_key: str) -> str:
-        return f"{StorageNaming.NODE_DATA_PREFIX}{node_data_key}"
+    def generate_node_data_field_name(self, node_id: str, node_data_key: str) -> str:
+        return f"{StorageNaming.NODE_DATA_PREFIX}{node_id}_{node_data_key}"

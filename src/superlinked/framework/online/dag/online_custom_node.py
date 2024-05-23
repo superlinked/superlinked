@@ -16,23 +16,19 @@ from __future__ import annotations
 
 from typing import cast
 
-import numpy as np
-import numpy.typing as npt
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.custom_node import CustomVectorEmbeddingNode
 from superlinked.framework.common.dag.node import Node
-from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.data_types import NPArray, Vector
 from superlinked.framework.common.exception import ValidationException
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
+from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.dag.parent_validator import ParentValidationType
-from superlinked.framework.online.store_manager.evaluation_result_store_manager import (
-    EvaluationResultStoreManager,
-)
 
 
 class OnlineCustomVectorEmbeddingNode(
@@ -42,12 +38,12 @@ class OnlineCustomVectorEmbeddingNode(
         self,
         node: CustomVectorEmbeddingNode,
         parents: list[OnlineNode],
-        evaluation_result_store_manager: EvaluationResultStoreManager,
+        storage_manager: StorageManager,
     ) -> None:
         super().__init__(
             node,
             parents,
-            evaluation_result_store_manager,
+            storage_manager,
             ParentValidationType.LESS_THAN_TWO_PARENTS,
         )
 
@@ -72,8 +68,8 @@ class OnlineCustomVectorEmbeddingNode(
             stored_result = self.load_stored_result_or_raise_exception(parsed_schema)
             return EvaluationResult(self._get_single_evaluation_result(stored_result))
 
-        input_: EvaluationResult[npt.NDArray[np.float64]] = cast(
-            OnlineNode[Node[Vector], npt.NDArray[np.float64]], self.parents[0]
+        input_: EvaluationResult[NPArray] = cast(
+            OnlineNode[Node[Vector], NPArray], self.parents[0]
         ).evaluate_next_single(parsed_schema, context)
         input_value = input_.main.value
         if len(input_value) != self.length:

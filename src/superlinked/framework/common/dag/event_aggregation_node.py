@@ -33,7 +33,7 @@ from superlinked.framework.common.schema.event_schema_object import EventSchemaO
 from superlinked.framework.common.schema.schema_object import SchemaObject
 
 
-class EventAggregationNode(Node[str], HasLength):
+class EventAggregationNode(Node[Vector], HasLength):
     @dataclass
     class InitParams:
         input_to_aggregate: Node[Vector]
@@ -45,6 +45,7 @@ class EventAggregationNode(Node[str], HasLength):
 
     def __init__(self, init_params: InitParams) -> None:
         super().__init__(
+            Vector,
             [init_params.input_to_aggregate]
             + [filter.item for filter in init_params.filter_inputs],
             dag_effects=set(init_params.dag_effects),

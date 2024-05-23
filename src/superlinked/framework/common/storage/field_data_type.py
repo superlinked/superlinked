@@ -19,5 +19,6 @@ class FieldDataType(Enum):
     BLOB = "BLOB"
     DOUBLE = "DOUBLE"
     INT = "INT"
+    NPARRAY = "NPARRAY"
     STRING = "STRING"
     VECTOR = "VECTOR"

@@ -28,10 +28,11 @@ from superlinked.framework.dsl.executor.rest.rest_configuration import (
 )
 from superlinked.framework.dsl.executor.rest.rest_handler import RestHandler
 from superlinked.framework.dsl.index.index import Index
+from superlinked.framework.dsl.source.data_loader_source import DataLoaderSource
 from superlinked.framework.dsl.source.rest_source import RestSource
 
 
-class RestExecutor(Executor[RestSource]):
+class RestExecutor(Executor[RestSource | DataLoaderSource]):
     """
     The RestExecutor is a subclass of the Executor base class. It encapsulates all the parameters required for
     the REST application. It also instantiates an InMemoryExecutor for data storage purposes.
@@ -45,7 +46,7 @@ class RestExecutor(Executor[RestSource]):
 
     def __init__(
         self,
-        sources: list[RestSource],
+        sources: list[RestSource | DataLoaderSource],
         indices: list[Index],
         queries: list[RestQuery],
         endpoint_configuration: RestEndpointConfiguration | None = None,
@@ -53,7 +54,6 @@ class RestExecutor(Executor[RestSource]):
     ):
         """
         Initialize the RestExecutor.
-
         Attributes:
             sources (list[RestSource]): List of Rest sources that has information about the schema.
             indices (list[Index]): List indices.
@@ -96,15 +96,26 @@ class RestApp(App):
         """
         self.__online_app = executor._online_executor.run()
         super().__init__(
-            executor, self.__online_app._entity_store, self.__online_app._object_store
+            executor,
+            self.__online_app._vdb_connector,
         )
+
+        self.__data_loader_sources = [
+            source
+            for source in executor._sources
+            if isinstance(source, DataLoaderSource)
+        ]
 
         self.__rest_handler = RestHandler(
             self.__online_app,
-            executor._sources,
+            [source for source in executor._sources if isinstance(source, RestSource)],
             executor._queries,
             executor._endpoint_configuration,
         )
+
+    @property
+    def data_loader_sources(self) -> list[DataLoaderSource]:
+        return self.__data_loader_sources
 
     @property
     def online_app(self) -> InMemoryApp:
