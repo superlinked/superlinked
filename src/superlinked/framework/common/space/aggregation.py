@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 from abc import abstractmethod
 from enum import Enum
 from functools import reduce
@@ -97,6 +99,17 @@ class InputAggregation(Aggregation, Generic[EIT]):
         )
         return f"{self.__class__.__name__}({items})"
 
+    @staticmethod
+    def from_aggregation_mode(
+        aggregation_mode: InputAggregationMode,
+        normalization: Normalization,
+        embedding: Embedding,
+    ) -> InputAggregation[EIT]:
+        agg_class = INPUT_TYPE_BY_AGG_MODE.get(aggregation_mode)
+        if agg_class is None:
+            raise ValueError(f"Unknown aggregation mode: {aggregation_mode}")
+        return agg_class(normalization, embedding)
+
 
 class InputAvg(InputAggregation):
     @override
@@ -121,14 +134,3 @@ INPUT_TYPE_BY_AGG_MODE: Mapping[InputAggregationMode, type[InputAggregation]] = 
     InputAggregationMode.INPUT_MINIMUM: InputMin,
     InputAggregationMode.INPUT_MAXIMUM: InputMax,
 }
-
-
-def get_input_aggregation(
-    aggregation_mode: InputAggregationMode,
-    normalization: Normalization,
-    embedding: Embedding,
-) -> InputAggregation:
-    agg_class = INPUT_TYPE_BY_AGG_MODE.get(aggregation_mode)
-    if agg_class is None:
-        raise ValueError(f"Unknown aggregation mode: {aggregation_mode}")
-    return agg_class(normalization, embedding)

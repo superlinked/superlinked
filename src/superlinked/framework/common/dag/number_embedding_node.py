@@ -25,8 +25,13 @@ from superlinked.framework.common.embedding.number_embedding import (
     NumberEmbedding,
 )
 from superlinked.framework.common.interface.has_aggregation import HasAggregation
+from superlinked.framework.common.interface.has_default_vector import HasDefaultVector
 from superlinked.framework.common.interface.has_length import HasLength
-from superlinked.framework.common.space.aggregation import Aggregation, VectorAvg
+from superlinked.framework.common.space.aggregation import (
+    Aggregation,
+    InputAggregation,
+    InputAggregationMode,
+)
 from superlinked.framework.common.space.normalization import NoNorm
 
 
@@ -38,21 +43,31 @@ class NumberEmbeddingParams:
     negative_filter: float
 
 
-class NumberEmbeddingNode(Node[Vector], HasLength, HasAggregation):
+class NumberEmbeddingNode(Node[Vector], HasLength, HasAggregation, HasDefaultVector):
     def __init__(
         self,
         parent: Node[float | int],
         embedding_params: NumberEmbeddingParams,
+        aggregation_mode: InputAggregationMode,
     ) -> None:
         super().__init__(Vector, [parent])
-        self.__aggregation = VectorAvg(NoNorm())
+        normalization = NoNorm()
         self.embedding = NumberEmbedding(
             embedding_params.min_value,
             embedding_params.max_value,
             embedding_params.mode,
             embedding_params.negative_filter,
-            self.__aggregation.normalization,
+            normalization,
         )
+        self.__aggregation: InputAggregation = InputAggregation.from_aggregation_mode(
+            aggregation_mode, normalization, self.embedding
+        )
+        self.mode = embedding_params.mode
+        self.__default_vector = {
+            Mode.SIMILAR: [0.0, 0.0, 0.0],
+            Mode.MINIMUM: [0.0, 1.0, 1.0],
+            Mode.MAXIMUM: [1.0, 0.0, 1.0],
+        }[self.mode]
 
     @property
     def length(self) -> int:
@@ -62,6 +77,11 @@ class NumberEmbeddingNode(Node[Vector], HasLength, HasAggregation):
     @override
     def aggregation(self) -> Aggregation:
         return self.__aggregation
+
+    @property
+    @override
+    def default_vector(self) -> Vector:
+        return Vector(self.__default_vector)
 
     @override
     def _get_node_id_parameters(self) -> dict[str, Any]:

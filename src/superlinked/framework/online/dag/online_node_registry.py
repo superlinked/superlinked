@@ -47,9 +47,6 @@ from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.dag.online_number_embedding_node import (
     OnlineNumberEmbeddingNode,
 )
-from superlinked.framework.online.dag.online_number_similarity_node import (
-    OnlineNumberSimilarityNode,
-)
 from superlinked.framework.online.dag.online_recency_node import OnlineRecencyNode
 from superlinked.framework.online.dag.online_schema_field_node import (
     OnlineSchemaFieldNode,
@@ -71,7 +68,6 @@ DEFAULT_NODE_TYPES: list[type[OnlineNode]] = [
     OnlineIndexNode,
     OnlineNamedFunctionNode,
     OnlineNumberEmbeddingNode,
-    OnlineNumberSimilarityNode,
     OnlineRecencyNode,
     OnlineSchemaFieldNode,
     OnlineTextEmbeddingNode,

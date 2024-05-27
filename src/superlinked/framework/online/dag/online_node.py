@@ -135,7 +135,7 @@ class OnlineNode(ABC, Generic[NT, NDT], metaclass=ABCMeta):
                 f"{type(self).__name__} must have {parent_validation_type.description}."
             )
 
-    def _is_query_without_similar_clause(
+    def _should_return_default_vector(
         self,
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,

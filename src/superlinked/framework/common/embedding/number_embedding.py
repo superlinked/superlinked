@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import math
 from enum import Enum
 
 import numpy as np
@@ -39,11 +40,12 @@ class NumberEmbedding(Embedding[float], HasLength):
         negative_filter: float,
         normalization: Normalization,
     ) -> None:
-        self.__length = 1
+        self.__circle_size_in_rad = math.pi / 2
+        self.__length = 3
         self._min_value = min_value
         self._max_value = max_value
         self._mode = mode
-        self._negative_filter = float(negative_filter)
+        self._negative_filter = negative_filter
         self._normalization = normalization
 
     @override
@@ -52,17 +54,34 @@ class NumberEmbedding(Embedding[float], HasLength):
         input_: float,
         context: ExecutionContext,  # pylint: disable=unused-argument
     ) -> Vector:
+        if (
+            input_ < self._min_value
+            and self._mode
+            in {
+                Mode.MAXIMUM,
+                Mode.SIMILAR,
+            }
+        ) or (
+            input_ > self._max_value
+            and self._mode
+            in {
+                Mode.MINIMUM,
+                Mode.SIMILAR,
+            }
+        ):
+            return Vector([0.0, 0.0, self._negative_filter], {2})
         constrained_input: float = min(max(self._min_value, input_), self._max_value)
-        transformed_number: float = (constrained_input - self._min_value) / (
+        normalized_input = (constrained_input - self._min_value) / (
             self._max_value - self._min_value
         )
-        if self._mode == Mode.MINIMUM:
-            transformed_number = 1 - transformed_number
-        if transformed_number <= 0:
-            transformed_number = self._negative_filter
-        vector_input = np.array([transformed_number])
-        vector = Vector(vector_input)
-        return vector.normalize(self._normalization.norm(vector_input))
+        angle_in_radians = normalized_input * self.__circle_size_in_rad
+        vector_input = np.array(
+            [math.sin(angle_in_radians), math.cos(angle_in_radians)]
+        )
+        vector = Vector(np.append(vector_input, [0.0]), {2}).normalize(
+            self._normalization.norm(vector_input)
+        )
+        return vector
 
     @override
     def inverse_embed(
@@ -75,11 +94,14 @@ class NumberEmbedding(Embedding[float], HasLength):
         but it essentially performs the inverse operation of the embed function.
         """
         denormalized = self._normalization.denormalize(vector)
-        transformed_number = denormalized.value[0]
-        if transformed_number == self._negative_filter:
-            transformed_number = -1
-        if self._mode == Mode.MINIMUM:
-            transformed_number = 1 - transformed_number
+        if vector.value[2] == self._negative_filter:
+            if self._mode == Mode.MAXIMUM:
+                return self._min_value - 1
+            # INFO: for similar it doesn't matter, which direction is it out of bounds
+            return self._max_value + 1
+
+        angle_in_radians = math.atan2(denormalized.value[0], denormalized.value[1])
+        transformed_number = angle_in_radians / self.__circle_size_in_rad
         transformed_number = (
             transformed_number * (self._max_value - self._min_value) + self._min_value
         )

@@ -28,8 +28,8 @@ from superlinked.framework.common.interface.has_aggregation import HasAggregatio
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.space.aggregation import (
     Aggregation,
+    InputAggregation,
     InputAggregationMode,
-    get_input_aggregation,
 )
 
 
@@ -50,7 +50,7 @@ class RecencyNode(Node[Vector], HasLength, HasAggregation):
             time_period_hour_offset,
             negative_filter,
         )
-        self.__aggregation = get_input_aggregation(
+        self.__aggregation: InputAggregation = InputAggregation.from_aggregation_mode(
             aggregation_mode, normalization, self.embedding
         )
 
