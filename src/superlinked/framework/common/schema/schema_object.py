@@ -14,9 +14,11 @@
 
 from __future__ import annotations
 
+from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Any, Generic, TypeVar
 
+import numpy as np
 from beartype.typing import Sequence
 
 from superlinked.framework.common.data_types import NPArray, PythonTypes
@@ -116,6 +118,11 @@ class SchemaField(ComparisonOperand, Generic[SFT]):
     ) -> bool:
         return not SchemaField._built_in_equal(left_operand, right_operand)
 
+    @staticmethod
+    @abstractmethod
+    def join_values(values: Sequence[SFT]) -> SFT:
+        pass
+
 
 class String(SchemaField[str]):
     """
@@ -127,6 +134,10 @@ class String(SchemaField[str]):
     def __init__(self, name: str, schema_obj: SchemaObjectT) -> None:
         super().__init__(name, schema_obj, str)
 
+    @staticmethod
+    def join_values(values: Sequence[str]) -> str:
+        return ", ".join(values)
+
 
 class Timestamp(SchemaField[int]):
     """
@@ -137,6 +148,10 @@ class Timestamp(SchemaField[int]):
 
     def __init__(self, name: str, schema_obj: SchemaObjectT) -> None:
         super().__init__(name, schema_obj, int)
+
+    @staticmethod
+    def join_values(values: Sequence[int]) -> int:
+        return int(sum(values) / len(values))
 
 
 NSFT = TypeVar("NSFT", float, int)
@@ -158,6 +173,10 @@ class Float(Number[float]):
     def __init__(self, name: str, schema_obj: SchemaObjectT) -> None:
         super().__init__(name, schema_obj, float)
 
+    @staticmethod
+    def join_values(values: Sequence[float]) -> float:
+        return sum(values) / len(values)
+
 
 class Integer(Number[int]):
     """
@@ -167,6 +186,10 @@ class Integer(Number[int]):
     def __init__(self, name: str, schema_obj: SchemaObjectT) -> None:
         super().__init__(name, schema_obj, int)
 
+    @staticmethod
+    def join_values(values: Sequence[int]) -> int:
+        return int(sum(values) / len(values))
+
 
 class Array(SchemaField[NPArray]):
     """
@@ -175,6 +198,12 @@ class Array(SchemaField[NPArray]):
 
     def __init__(self, name: str, schema_obj: SchemaObjectT) -> None:
         super().__init__(name, schema_obj, NPArray)
+
+    @staticmethod
+    def join_values(
+        values: Sequence[NPArray],
+    ) -> NPArray:
+        return np.array(list(values)).mean(axis=0)
 
 
 ConcreteSchemaField = String | Timestamp | Float | Integer | Array

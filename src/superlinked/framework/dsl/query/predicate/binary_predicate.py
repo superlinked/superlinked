@@ -12,15 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from dataclasses import dataclass, field
+from itertools import count
+from typing import Generic, TypeVar
+
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.schema.schema_object import SchemaField
-from superlinked.framework.dsl.query.param import NumericParamType, Param
+from superlinked.framework.dsl.query.param import (
+    NumericParamType,
+    ParamInputType,
+    ParamType,
+)
 from superlinked.framework.dsl.query.predicate.binary_op import BinaryOp
 from superlinked.framework.dsl.query.predicate.query_predicate import QueryPredicate
 
 # Exclude from documentation.
 __pdoc__ = {}
 __pdoc__["BinaryPredicate"] = False
+__pdoc__["EvaluatedBinaryPredicate"] = False
+
+# BinaryPredicateType
+BPT = TypeVar("BPT", bound="BinaryPredicate")
+
+
+@dataclass(frozen=True, eq=True)
+class EvaluatedBinaryPredicate(Generic[BPT]):
+    predicate: BPT = field(compare=False)
+    weight: float = field(compare=False)
+    value: ParamInputType = field(compare=False)
+    id: int = field(default_factory=count().__next__, init=False)
 
 
 class BinaryPredicate(QueryPredicate[BinaryOp]):
@@ -28,11 +48,41 @@ class BinaryPredicate(QueryPredicate[BinaryOp]):
         self,
         op: BinaryOp,
         left_param: SchemaField,
-        right_param: Param | str | int | float | None,
+        right_param: ParamType,
         weight: NumericParamType,
-        left_param_node: Node | None = None,
     ) -> None:
         super().__init__(op=op, params=[left_param, right_param], weight_param=weight)
         self.left_param = left_param
         self.right_param = right_param
+
+
+class LooksLikePredicate(BinaryPredicate):
+    def __init__(
+        self,
+        left_param: SchemaField,
+        right_param: ParamType,
+        weight: NumericParamType,
+    ) -> None:
+        super().__init__(
+            op=BinaryOp.LOOKS_LIKE,
+            left_param=left_param,
+            right_param=right_param,
+            weight=weight,
+        )
+
+
+class SimilarPredicate(BinaryPredicate):
+    def __init__(
+        self,
+        left_param: SchemaField,
+        right_param: ParamType,
+        weight: NumericParamType,
+        left_param_node: Node,
+    ) -> None:
+        super().__init__(
+            op=BinaryOp.SIMILAR,
+            left_param=left_param,
+            right_param=right_param,
+            weight=weight,
+        )
         self.left_param_node = left_param_node

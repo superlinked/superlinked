@@ -17,6 +17,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Generic
 
+from beartype.typing import Sequence
+
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import SFT, SchemaField
 
@@ -37,5 +39,5 @@ class ParsedSchemaField(Generic[SFT]):
 class ParsedSchema:
     schema: IdSchemaObject
     id_: str
-    fields: list[ParsedSchemaField]
+    fields: Sequence[ParsedSchemaField]
     event_parsed_schema: ParsedSchema | None = None

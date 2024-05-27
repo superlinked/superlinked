@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import Annotated, TypedDict, cast
+from typing import Annotated, Sequence, TypedDict, cast
 
 from superlinked.framework.common.const import DEFAULT_WEIGHT
 from superlinked.framework.common.exception import (
@@ -39,9 +39,10 @@ from superlinked.framework.dsl.query.param import (
     Param,
     ParamType,
 )
-from superlinked.framework.dsl.query.predicate.binary_op import BinaryOp
-from superlinked.framework.dsl.query.predicate.binary_predicate import BinaryPredicate
-from superlinked.framework.dsl.query.predicate.query_predicate import QueryPredicate
+from superlinked.framework.dsl.query.predicate.binary_predicate import (
+    LooksLikePredicate,
+    SimilarPredicate,
+)
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
@@ -59,12 +60,12 @@ VALID_HARD_FILTER_TYPES = [
 class QueryObjInternalProperty(TypedDict, total=False):
     """Only intended for self initialization inside QueryObj functions, not for external initialization"""
 
-    filters: list[QueryPredicate]
+    looks_like_filter: LooksLikePredicate | None
+    similar_filters_by_space: dict[Space, Sequence[SimilarPredicate]]
     limit: IntParamType | None
     radius: NumericParamType | None
     hard_filters: list[ComparisonOperation[SchemaField]]
     override_now: int | None
-    filtered_spaces: set[Space]
 
 
 @TypeValidator.wrap
@@ -97,7 +98,10 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
         self.schema = cast(IdSchemaObject, schema)
         if not internal_property:
             internal_property = {}
-        self.filters = internal_property.get("filters", list[QueryPredicate]())
+        self.looks_like_filter = internal_property.get("looks_like_filter")
+        self.similar_filters_by_space = internal_property.get(
+            "similar_filters_by_space", dict[Space, Sequence[SimilarPredicate]]()
+        )
         self.hard_filters = internal_property.get(
             "hard_filters", list[ComparisonOperation[SchemaField]]()
         )
@@ -105,7 +109,6 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
         self.radius_ = internal_property.get("radius")
         # by default now in queries is the system time, but it can be overridden for testing/reproducible notebooks
         self._override_now = internal_property.get("override_now")
-        self.__filtered_spaces = internal_property.get("filtered_spaces", set[Space]())
 
     @property
     def index(self) -> Index:
@@ -148,19 +151,24 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
             raise QueryException("Space attempted to bound in query multiple times.")
 
         if relevant_field := field_set.get_field_for_schema(self.schema):
-            similar_filter = BinaryPredicate(
-                BinaryOp.SIMILAR,
+            similar_filter = SimilarPredicate(
                 relevant_field,
                 param,
                 weight,
                 field_set.space._get_node(self.schema),
             )
-            filtered_spaces = self.__filtered_spaces.copy()
-            filters = self.filters.copy()
-            filtered_spaces.add(field_set.space)
-            filters.append(similar_filter)
+
+            similar_filters_by_space = self.similar_filters_by_space.copy()
+            if field_set.space not in similar_filters_by_space:
+                similar_filters_by_space[field_set.space] = []
+            similar_filters = list(similar_filters_by_space[field_set.space])
+            similar_filters.append(similar_filter)
+            similar_filters_by_space[field_set.space] = similar_filters
+
             return self.__alter(
-                {"filters": filters, "filtered_spaces": filtered_spaces}
+                {
+                    "similar_filters_by_space": similar_filters_by_space,
+                }
             )
         raise InvalidSchemaException(
             f"'find' ({type(self.schema)}) is not in similarity field's schema types."
@@ -224,16 +232,16 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
             raise InvalidSchemaException(
                 f"'with_vector': {type(self.schema)} is not a schema."
             )
-        filters = self.filters.copy()
-        filters.append(
-            BinaryPredicate(
-                op=BinaryOp.LOOKS_LIKE,
-                left_param=schema_obj.id,
-                right_param=id_param,
-                weight=weight,
+        if self.looks_like_filter is not None:
+            raise QueryException(
+                "One query cannot have more than one 'with vector' filter."
             )
+        looks_like_filter = LooksLikePredicate(
+            left_param=schema_obj.id,
+            right_param=id_param,
+            weight=weight,
         )
-        return self.__alter({"filters": filters})
+        return self.__alter({"looks_like_filter": looks_like_filter})
 
     def filter(
         self, comparison_operation: ComparisonOperation[SchemaField]
@@ -272,15 +280,15 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
         return self.builder.index.has_space(space)
 
     def __is_space_bound(self, space: Space) -> bool:
-        return space in self.__filtered_spaces
+        return space in self.similar_filters_by_space.keys()
 
     def __alter(self, properties: QueryObjInternalProperty) -> QueryObj:
         properties_use: QueryObjInternalProperty = {
-            "filters": self.filters,
+            "looks_like_filter": self.looks_like_filter,
+            "similar_filters_by_space": self.similar_filters_by_space,
             "limit": self.limit_,
             "radius": self.radius_,
             "override_now": self._override_now,
-            "filtered_spaces": self.__filtered_spaces,
         }
         properties_use.update(properties)
         return QueryObj(

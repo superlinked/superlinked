@@ -117,6 +117,6 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, Json]):
     def __get_all_fields_from_parsed_schema(
         self, parsed_schema: ParsedSchema
     ) -> list[ParsedSchemaField]:
-        return parsed_schema.fields + [
+        return list(parsed_schema.fields) + [
             ParsedSchemaField.from_schema_field(self._schema.id, parsed_schema.id_)
         ]

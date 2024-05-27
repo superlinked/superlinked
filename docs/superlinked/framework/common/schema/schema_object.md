@@ -14,6 +14,11 @@ Classes
     * abc.ABC
     * typing.Generic
 
+    ### Static methods
+
+    `join_values(values: Sequence[NPArray]) ‑> numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]`
+    :
+
 `Float(name: str, schema_obj: SchemaObjectT)`
 :   Field of a schema that represents a float.
 
@@ -25,6 +30,11 @@ Classes
     * abc.ABC
     * typing.Generic
 
+    ### Static methods
+
+    `join_values(values: Sequence[float]) ‑> float`
+    :
+
 `Integer(name: str, schema_obj: SchemaObjectT)`
 :   Field of a schema that represents an integer.
 
@@ -35,6 +45,11 @@ Classes
     * superlinked.framework.common.interface.comparison_operand.ComparisonOperand
     * abc.ABC
     * typing.Generic
+
+    ### Static methods
+
+    `join_values(values: Sequence[int]) ‑> int`
+    :
 
 `Number(name: str, schema_obj: SchemaObjectT, type_: type[SFT])`
 :   Field of a schema that represents a union of Float and Integer.
@@ -74,6 +89,11 @@ Classes
     * superlinked.framework.common.schema.schema_object.String
     * superlinked.framework.common.schema.schema_object.Timestamp
 
+    ### Static methods
+
+    `join_values(values: Sequence[SFT]) ‑> ~SFT`
+    :
+
 `SchemaObject(base_cls: type, schema_name: str)`
 :   `@schema` decorated class that has multiple `SchemaField`s.
     
@@ -99,6 +119,11 @@ Classes
 
     * superlinked.framework.common.schema.schema_reference.SchemaReference
 
+    ### Static methods
+
+    `join_values(values: Sequence[str]) ‑> str`
+    :
+
 `Timestamp(name: str, schema_obj: SchemaObjectT)`
 :   Field of a schema that represents a unix timestamp.
     
@@ -110,3 +135,8 @@ Classes
     * superlinked.framework.common.interface.comparison_operand.ComparisonOperand
     * abc.ABC
     * typing.Generic
+
+    ### Static methods
+
+    `join_values(values: Sequence[int]) ‑> int`
+    :

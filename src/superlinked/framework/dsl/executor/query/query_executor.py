@@ -103,7 +103,11 @@ class QueryExecutor:
         )
 
     def _create_query_filters(self, param_evaluator: ParamEvaluator) -> QueryFilters:
-        return QueryFilters(self.query_obj.filters, param_evaluator)
+        return QueryFilters(
+            self.query_obj.looks_like_filter,
+            self.query_obj.similar_filters_by_space,
+            param_evaluator,
+        )
 
     def _create_query_context_base(self) -> ExecutionContext:
         eval_context = ExecutionContext(

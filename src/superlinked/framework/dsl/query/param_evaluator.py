@@ -16,9 +16,15 @@ from typing import Any
 
 from superlinked.framework.common.const import DEFAULT_WEIGHT
 from superlinked.framework.common.exception import QueryException
-from superlinked.framework.dsl.query.param import IntParamType, NumericParamType, Param
-from superlinked.framework.dsl.query.predicate.binary_predicate import BinaryPredicate
-from superlinked.framework.dsl.query.predicate.evaluated_binary_predicate import (
+from superlinked.framework.dsl.query.param import (
+    IntParamType,
+    NumericParamType,
+    Param,
+    ParamInputType,
+    ParamType,
+)
+from superlinked.framework.dsl.query.predicate.binary_predicate import (
+    BPT,
     EvaluatedBinaryPredicate,
 )
 
@@ -30,14 +36,6 @@ __pdoc__["ParamEvaluator"] = False
 class ParamEvaluator:
     def __init__(self, params: dict[str, Any]) -> None:
         self.params = params
-
-    def evaluate_filters(
-        self,
-        filters: list[BinaryPredicate],
-    ) -> list[EvaluatedBinaryPredicate]:
-        return [
-            self._evaluate_binary_predicate(query_filter) for query_filter in filters
-        ]
 
     def evaluate_weight_param(
         self,
@@ -84,9 +82,9 @@ class ParamEvaluator:
             return value
         raise QueryException(f"Limit should be int, got {value.__class__.__name__}")
 
-    def _evaluate_binary_predicate(
-        self, predicate: BinaryPredicate
-    ) -> EvaluatedBinaryPredicate:
+    def evaluate_binary_predicate(
+        self, predicate: BPT
+    ) -> EvaluatedBinaryPredicate[BPT]:
         return EvaluatedBinaryPredicate(
             predicate,
             self.evaluate_weight_param(predicate.weight_param),
@@ -94,8 +92,10 @@ class ParamEvaluator:
         )
 
     def _evaluate_param(
-        self, param: Param | int | str | float | None, default_value: Any = None
-    ) -> int | str | float | None:
+        self,
+        param: ParamType,
+        default_value: Any = None,
+    ) -> ParamInputType:
         if isinstance(param, Param):
             if param.name in self.params:
                 return self.params[param.name]

@@ -12,20 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from itertools import groupby
+from collections import defaultdict
+from functools import reduce
 from typing import cast
 
-from superlinked.framework.common.exception import (
-    NotImplementedException,
-    QueryException,
-)
+from beartype.typing import Sequence
+
+from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
+from superlinked.framework.common.exception import QueryException
 from superlinked.framework.dsl.query.param_evaluator import ParamEvaluator
 from superlinked.framework.dsl.query.predicate.binary_op import BinaryOp
-from superlinked.framework.dsl.query.predicate.binary_predicate import BinaryPredicate
-from superlinked.framework.dsl.query.predicate.evaluated_binary_predicate import (
+from superlinked.framework.dsl.query.predicate.binary_predicate import (
     EvaluatedBinaryPredicate,
+    LooksLikePredicate,
+    SimilarPredicate,
 )
-from superlinked.framework.dsl.query.predicate.query_predicate import QueryPredicate
+from superlinked.framework.dsl.space.space import Space
 
 # Exclude from documentation.
 __pdoc__ = {}
@@ -36,126 +38,114 @@ SUPPORTED_BINARY_OPS = {BinaryOp.SIMILAR, BinaryOp.LOOKS_LIKE}
 
 class QueryFilters:
     def __init__(
-        self, filters: list[QueryPredicate], param_evaluator: ParamEvaluator
+        self,
+        looks_like_filter: LooksLikePredicate | None,
+        similar_filters_by_space: dict[Space, Sequence[SimilarPredicate]],
+        param_evaluator: ParamEvaluator,
     ) -> None:
-        evaluated_filters = param_evaluator.evaluate_filters(
-            self._validate_filters(filters)
+        self.__similar_filters_by_space = {
+            space: [
+                param_evaluator.evaluate_binary_predicate(similar_filter)
+                for similar_filter in similar_filters
+            ]
+            for space, similar_filters in similar_filters_by_space.items()
+        }
+        self.__looks_like_filter = (
+            param_evaluator.evaluate_binary_predicate(looks_like_filter)
+            if looks_like_filter
+            else None
         )
-        self._check_all_filter_weight_is_not_zero(evaluated_filters)
-        self.grouped_evaluated_filters: dict[
-            BinaryOp, list[EvaluatedBinaryPredicate]
-        ] = self.__group_filters(evaluated_filters)
-        self.__similar_filters = self.grouped_evaluated_filters.get(
-            BinaryOp.SIMILAR, []
+        self.__space_by_similar_filter: (
+            dict[EvaluatedBinaryPredicate[SimilarPredicate], Space] | None
+        ) = None
+        self.__similar_filters_by_schema_field_node: (
+            dict[SchemaFieldNode, Sequence[EvaluatedBinaryPredicate[SimilarPredicate]]]
+            | None
+        ) = None
+        self.__similar_filters: list[EvaluatedBinaryPredicate[SimilarPredicate]] = (
+            reduce(
+                lambda acc, ele: acc + ele, self.__similar_filters_by_space.values(), []
+            )
         )
-        looks_like_filters = self.grouped_evaluated_filters.get(BinaryOp.LOOKS_LIKE, [])
-        self.__looks_like_filter = looks_like_filters[0] if looks_like_filters else None
-        self.__filter_count = len(evaluated_filters)
+        self._check_all_filter_weight_is_not_zero()
 
     @property
-    def similar_filters(self) -> list[EvaluatedBinaryPredicate]:
-        return self.__similar_filters
-
-    @property
-    def looks_like_filter(self) -> EvaluatedBinaryPredicate | None:
+    def looks_like_filter(self) -> EvaluatedBinaryPredicate[LooksLikePredicate] | None:
         return self.__looks_like_filter
 
     @property
-    def filter_count(self) -> int:
-        return self.__filter_count
+    def space_by_similar_filter(
+        self,
+    ) -> dict[EvaluatedBinaryPredicate[SimilarPredicate], Space]:
+        if self.__space_by_similar_filter is None:
+            self.__space_by_similar_filter = {
+                similar_filter: space
+                for space, similar_filters in self.__similar_filters_by_space.items()
+                for similar_filter in similar_filters
+            }
+        return self.__space_by_similar_filter
 
-    def _get_weight_abs_sum(self) -> float:
-        """Absolute value is needed for the case when the sum of weights would be zero."""
-        weights = [abs(filter_.weight) for filter_ in self.similar_filters]
-        if looks_like_filter := self.looks_like_filter:
-            weights.append(looks_like_filter.weight)
-        weight_sum = sum(weights)
-        return weight_sum
-
-    def _validate_filters(self, filters: list[QueryPredicate]) -> list[BinaryPredicate]:
-        self._check_operations_are_supported(filters)
-        self._check_filter_class_is_supported(filters)
-        binary_filters = cast(list[BinaryPredicate], filters)
-        self._check_similar_filters(binary_filters)
-        self._check_looks_like_filters(binary_filters)
-        return binary_filters
-
-    def __group_filters(
-        self, evaluated_binary_predicates: list[EvaluatedBinaryPredicate]
-    ) -> dict[BinaryOp, list[EvaluatedBinaryPredicate]]:
-        return cast(
-            dict[BinaryOp, list[EvaluatedBinaryPredicate]],
-            {
-                operation_type: list(group_)
-                for operation_type, group_ in groupby(
-                    sorted(
-                        evaluated_binary_predicates,
-                        key=QueryFilters._get_operation_type_hash,
-                    ),
-                    QueryFilters._get_operation_type,
+    @property
+    def similar_filters_by_schema_field_node(
+        self,
+    ) -> dict[SchemaFieldNode, Sequence[EvaluatedBinaryPredicate[SimilarPredicate]]]:
+        if self.__similar_filters_by_schema_field_node is None:
+            similar_filters_by_schema_field_node = defaultdict(list)
+            for similar_filter in self.__similar_filters:
+                embedding_node = similar_filter.predicate.left_param_node
+                schema_field_node = cast(
+                    SchemaFieldNode | None,
+                    embedding_node.find_ancestor(SchemaFieldNode),
                 )
-            },
+                if schema_field_node is not None:
+                    similar_filters_by_schema_field_node[schema_field_node].append(
+                        similar_filter
+                    )
+            self.__similar_filters_by_schema_field_node = dict(
+                similar_filters_by_schema_field_node
+            )
+        return self.__similar_filters_by_schema_field_node
+
+    @property
+    def similar_filters(
+        self,
+    ) -> Sequence[EvaluatedBinaryPredicate[SimilarPredicate]]:
+        return self.__similar_filters
+
+    def _check_all_filter_weight_is_not_zero(self) -> None:
+        all_filters: list[EvaluatedBinaryPredicate] = list(self.similar_filters) + (
+            [self.looks_like_filter] if self.looks_like_filter else []
         )
 
-    def _check_operations_are_supported(self, filters: list[QueryPredicate]) -> None:
-        if unsupported_ops := ", ".join(
-            [
-                str(filter_.op)
-                for filter_ in filters
-                if filter_.op not in SUPPORTED_BINARY_OPS
-            ]
-        ):
-            raise NotImplementedException(
-                f"Unsupported filter op(s): {unsupported_ops}"
-            )
-
-    def _check_filter_class_is_supported(self, filters: list[QueryPredicate]) -> None:
-        if any(
-            filter_ for filter_ in filters if not isinstance(filter_, BinaryPredicate)
-        ):
-            unsupported_types = ", ".join(
-                [
-                    type(filter_).__name__
-                    for filter_ in filters
-                    if not isinstance(filter_, BinaryPredicate)
-                ]
-            )
-            raise NotImplementedException(
-                f"Unsupported filter type(s): {unsupported_types}"
-            )
-
-    def _check_similar_filters(self, filters: list[BinaryPredicate]) -> None:
-        if invalid_nodes := [
-            filter_
-            for filter_ in filters
-            if filter_.op == BinaryOp.SIMILAR and filter_.left_param_node is None
-        ]:
-            raise NotImplementedException(
-                f"Unsupported similar filter: {invalid_nodes}"
-            )
-
-    def _check_looks_like_filters(self, filters: list[BinaryPredicate]) -> None:
-        if (
-            looks_like_filter_count := len(
-                [filter_ for filter_ in filters if filter_.op == BinaryOp.LOOKS_LIKE]
-            )
-        ) > 1:
-            raise QueryException(
-                f"One query cannot have more than one looks like filter, got {looks_like_filter_count}"
-            )
-
-    def _check_all_filter_weight_is_not_zero(
-        self, filters: list[EvaluatedBinaryPredicate]
-    ) -> None:
-        if len(filters) and all(filter_.weight == 0 for filter_ in filters):
+        if all_filters and all(filter_.weight == 0 for filter_ in all_filters):
             raise QueryException("At least one filter needs to have a non-zero weight.")
 
-    @staticmethod
-    def _get_operation_type(binary_predicate: EvaluatedBinaryPredicate) -> BinaryOp:
-        return binary_predicate.predicate.op
+    def has_multiple_similar_for_same_schema_field_node(self) -> bool:
+        """
+        Checks if there are multiple 'similar' filters for the schema field.
+        We temporarily handle this use case separately, until we revamp the the query executor.
+        """
+        return any(
+            len(similar_filters) > 1
+            for similar_filters in self.similar_filters_by_schema_field_node.values()
+        )
 
-    @staticmethod
-    def _get_operation_type_hash(
-        binary_predicate: EvaluatedBinaryPredicate,
-    ) -> int:
-        return hash(binary_predicate.predicate.op)
+    def _get_weight_abs_sum(self, global_space_weight_map: dict[Space, float]) -> float:
+        """Absolute value is needed for the case when the sum of weights would be zero."""
+        weight_sum = self._get_similar_weight_abs_sum(global_space_weight_map)
+        if self.looks_like_filter:
+            weight_sum += abs(self.looks_like_filter.weight)
+        return weight_sum
+
+    def _get_similar_weight_abs_sum(
+        self, global_space_weight_map: dict[Space, float]
+    ) -> float:
+        if self.has_multiple_similar_for_same_schema_field_node():
+            weight_sum = sum(
+                abs(similar.weight * global_space_weight_map.get(space, 1))
+                for space, similar_filters in self.__similar_filters_by_space.items()
+                for similar in similar_filters
+            )
+        else:
+            weight_sum = sum(abs(filter_.weight) for filter_ in self.similar_filters)
+        return weight_sum

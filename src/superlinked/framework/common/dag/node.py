@@ -130,3 +130,12 @@ class Node(Generic[NDT], ABC):
                 parent for parent in self.parents if dag_effect in parent.dag_effects
             ]
         return []
+
+    def find_ancestor(self, type_: type[Node]) -> Node[Any] | None:
+        queue = self.parents.copy()
+        while queue:
+            parent = queue.pop(0)
+            if isinstance(parent, type_):
+                return parent
+            queue.extend(parent.parents)
+        return None
