@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from typing import Generic, TypeVar
 
-from superlinked.framework.common.data_types import NPArray, Vector
+from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.storage.field import Field
 from superlinked.framework.common.storage.field_data_type import FieldDataType
 from superlinked.framework.common.storage.field_type_converter import FieldTypeConverter
@@ -33,8 +33,8 @@ class FieldData(Field, Generic[FT]):
         self.value = value
 
     def __validate_value(self, data_type: FieldDataType, value: FT) -> None:
-        valid_type = FieldTypeConverter.get_valid_python_types(data_type)
-        if not isinstance(value, valid_type):
+        valid_types = FieldTypeConverter.get_valid_python_types(data_type)
+        if not isinstance(value, tuple(valid_types)):
             raise ValueError(
                 f"Invalid value {value} for the given field data type {data_type}"
             )
@@ -59,9 +59,9 @@ class IntFieldData(FieldData[int]):
         super().__init__(FieldDataType.INT, name, value)
 
 
-class NPArrayFieldData(FieldData[NPArray]):
-    def __init__(self, name: str, value: NPArray) -> None:
-        super().__init__(FieldDataType.NPARRAY, name, value)
+class NPArrayFieldData(FieldData[list[float]]):
+    def __init__(self, name: str, value: list[float]) -> None:
+        super().__init__(FieldDataType.FLOAT_LIST, name, value)
 
 
 class StringFieldData(FieldData[str]):

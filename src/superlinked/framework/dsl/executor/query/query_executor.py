@@ -25,7 +25,11 @@ from superlinked.framework.common.dag.context import (
 )
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import QueryException
+from superlinked.framework.common.interface.comparison_operand import (
+    ComparisonOperation,
+)
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
+from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.storage_manager.knn_search_params import (
     KNNSearchParams,
 )
@@ -82,9 +86,11 @@ class QueryExecutor:
         param_evaluator = ParamEvaluator(params)
         limit = param_evaluator.evaluate_limit_param(self.query_obj.limit_)
         radius = param_evaluator.evaluate_radius_param(self.query_obj.radius_)
-        # TODO FAI-1838 use self.query_obj.hard_filters in self._knn_search
+        hard_filters = param_evaluator.evaluate_hard_filters_param(
+            self.query_obj.hard_filters
+        )
         entities: Sequence[SearchResultItem] = self._knn(
-            self._get_query_vector(param_evaluator), limit, radius
+            self._get_query_vector(param_evaluator), limit, radius, hard_filters
         )
         return Result(
             self.query_obj.schema,
@@ -121,13 +127,22 @@ class QueryExecutor:
         return eval_context
 
     def _knn(
-        self, vector: Vector, limit: int | None, radius: float | None
+        self,
+        vector: Vector,
+        limit: int | None,
+        radius: float | None,
+        hard_filters: Sequence[ComparisonOperation[SchemaField]],
     ) -> Sequence[SearchResultItem]:
         return self.app.storage_manager.knn_search(
             self.query_obj.index._node,
             self.query_obj.schema,
             [],
-            KNNSearchParams(vector=vector, limit=limit, radius=radius),
+            KNNSearchParams(
+                vector=vector,
+                limit=limit,
+                filters=hard_filters,
+                radius=radius,
+            ),
         )
 
     def _map_entities_to_result_entries(

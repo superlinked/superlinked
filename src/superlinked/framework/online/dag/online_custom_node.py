@@ -21,7 +21,7 @@ from typing_extensions import override
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.custom_node import CustomVectorEmbeddingNode
 from superlinked.framework.common.dag.node import Node
-from superlinked.framework.common.data_types import NPArray, Vector
+from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import ValidationException
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
@@ -68,8 +68,8 @@ class OnlineCustomVectorEmbeddingNode(
             stored_result = self.load_stored_result_or_raise_exception(parsed_schema)
             return EvaluationResult(self._get_single_evaluation_result(stored_result))
 
-        input_: EvaluationResult[NPArray] = cast(
-            OnlineNode[Node[Vector], NPArray], self.parents[0]
+        input_: EvaluationResult[list[float]] = cast(
+            OnlineNode[Node[Vector], list[float]], self.parents[0]
         ).evaluate_next_single(parsed_schema, context)
         input_value = input_.main.value
         if len(input_value) != self.length:

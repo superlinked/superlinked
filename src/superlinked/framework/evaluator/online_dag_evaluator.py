@@ -71,6 +71,7 @@ class OnlineDagEvaluator(DagEvaluator[EvaluationResult[Vector]]):
             online_schema_dag := self._schema_online_schema_dag_mapper.get(index_schema)
         ) is not None:
             return online_schema_dag.evaluate(parsed_schemas, context)
+
         raise InvalidSchemaException(
             f"Schema ({index_schema._schema_name}) isn't present in the index."
         )

@@ -107,7 +107,7 @@ class InMemoryApp(App[InMemoryExecutor, InMemoryVDB]):
             InMemoryVDB(),
         )
         for index in self.executor._indices:
-            self.storage_manager.create_search_index(index._dag)
+            self.storage_manager.create_search_index(index._dag, index._fields)
         self._object_writer = InMemoryObjectWriter(self._storage_manager)
         self._index_online_dag_evaluator_map = {
             index: OnlineDagEvaluator(
@@ -125,7 +125,10 @@ class InMemoryApp(App[InMemoryExecutor, InMemoryVDB]):
         }
         self._data_processors = [
             InMemoryDataProcessor(
-                self._index_online_dag_evaluator_map[index], executor._context, index
+                self._index_online_dag_evaluator_map[index],
+                self._storage_manager,
+                executor._context,
+                index,
             )
             for index in self._executor._indices
         ]

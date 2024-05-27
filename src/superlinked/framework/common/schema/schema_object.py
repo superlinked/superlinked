@@ -16,12 +16,12 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from dataclasses import dataclass
+from itertools import chain
 from typing import Any, Generic, TypeVar
 
-import numpy as np
 from beartype.typing import Sequence
 
-from superlinked.framework.common.data_types import NPArray, PythonTypes
+from superlinked.framework.common.data_types import PythonTypes
 from superlinked.framework.common.interface.comparison_operand import ComparisonOperand
 
 # Exclude from documentation.
@@ -191,19 +191,19 @@ class Integer(Number[int]):
         return int(sum(values) / len(values))
 
 
-class Array(SchemaField[NPArray]):
+class Array(SchemaField[list[float]]):
     """
     Field of a schema that represents a vector.
     """
 
     def __init__(self, name: str, schema_obj: SchemaObjectT) -> None:
-        super().__init__(name, schema_obj, NPArray)
+        super().__init__(name, schema_obj, list[float])
 
     @staticmethod
     def join_values(
-        values: Sequence[NPArray],
-    ) -> NPArray:
-        return np.array(list(values)).mean(axis=0)
+        values: Sequence[list[float]],
+    ) -> list[float]:
+        return list(chain.from_iterable(values))
 
 
 ConcreteSchemaField = String | Timestamp | Float | Integer | Array

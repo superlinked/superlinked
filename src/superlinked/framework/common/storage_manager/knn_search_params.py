@@ -27,5 +27,5 @@ from superlinked.framework.common.schema.schema_object import SchemaField
 class KNNSearchParams:
     vector: Vector
     limit: int | None
-    filters: Sequence[ComparisonOperation[SchemaField]] | None = None
+    filters: Sequence[ComparisonOperation[SchemaField]]
     radius: float | None = None

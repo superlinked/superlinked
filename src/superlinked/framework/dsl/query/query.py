@@ -14,7 +14,9 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Sequence, TypedDict, cast
+from typing import Annotated, TypedDict, cast
+
+from beartype.typing import Sequence
 
 from superlinked.framework.common.const import DEFAULT_WEIGHT
 from superlinked.framework.common.exception import (
@@ -64,7 +66,7 @@ class QueryObjInternalProperty(TypedDict, total=False):
     similar_filters_by_space: dict[Space, Sequence[SimilarPredicate]]
     limit: IntParamType | None
     radius: NumericParamType | None
-    hard_filters: list[ComparisonOperation[SchemaField]]
+    hard_filters: Sequence[ComparisonOperation[SchemaField]]
     override_now: int | None
 
 
@@ -102,9 +104,7 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
         self.similar_filters_by_space = internal_property.get(
             "similar_filters_by_space", dict[Space, Sequence[SimilarPredicate]]()
         )
-        self.hard_filters = internal_property.get(
-            "hard_filters", list[ComparisonOperation[SchemaField]]()
-        )
+        self.hard_filters = internal_property.get("hard_filters", [])
         self.limit_ = internal_property.get("limit")
         self.radius_ = internal_property.get("radius")
         # by default now in queries is the system time, but it can be overridden for testing/reproducible notebooks
@@ -272,7 +272,7 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
             raise QueryException(
                 f"Unsupported filter operand type: {comparison_operation._other.__class__.__name__}."
             )
-        hard_filters = self.hard_filters.copy()
+        hard_filters = list(self.hard_filters)
         hard_filters.append(comparison_operation)
         return self.__alter({"hard_filters": hard_filters})
 

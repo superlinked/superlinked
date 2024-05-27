@@ -17,6 +17,7 @@ from superlinked.framework.common.dag.dag_effect import DagEffect
 from superlinked.framework.common.exception import InvalidDagEffectException
 from superlinked.framework.common.observable import Subscriber
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
+from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.evaluator.online_dag_evaluator import OnlineDagEvaluator
 
@@ -25,11 +26,16 @@ class InMemoryDataProcessor(Subscriber[ParsedSchema]):
     MAX_SAVE_DEPTH = 10
 
     def __init__(
-        self, evaluator: OnlineDagEvaluator, context: ExecutionContext, index: Index
+        self,
+        evaluator: OnlineDagEvaluator,
+        storage_manager: StorageManager,
+        context: ExecutionContext,
+        index: Index,
     ) -> None:
         super().__init__()
         self.evaluator = evaluator
         self.context = context
+        self.storage_manager = storage_manager
         self.effect_schemas = set(index._effect_schemas)
         self._schema_type_schema_mapper = index._schema_type_schema_mapper
         self._dag_effects = index._dag_effects
@@ -42,6 +48,10 @@ class InMemoryDataProcessor(Subscriber[ParsedSchema]):
             else:
                 regular_msgs.append(message)
         if regular_msgs:
+            for parsed_schema in regular_msgs:
+                self.storage_manager.write_parsed_schema_fields(
+                    parsed_schema.id_, parsed_schema.fields
+                )
             self.evaluator.evaluate(regular_msgs, self.context)
 
     def _process_event(

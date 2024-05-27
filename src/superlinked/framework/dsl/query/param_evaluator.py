@@ -12,10 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any
+from typing import Any, cast
+
+from beartype.typing import Sequence
 
 from superlinked.framework.common.const import DEFAULT_WEIGHT
 from superlinked.framework.common.exception import QueryException
+from superlinked.framework.common.interface.comparison_operand import (
+    ComparisonOperation,
+)
+from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.dsl.query.param import (
     IntParamType,
     NumericParamType,
@@ -57,6 +63,19 @@ class ParamEvaluator:
                 f"Not a valid Radius value ({value}). It should be between 0 and 1."
             )
         return value
+
+    def evaluate_hard_filters_param(
+        self,
+        hard_filters: Sequence[ComparisonOperation[SchemaField]],
+    ) -> Sequence[ComparisonOperation[SchemaField]]:
+        return [
+            ComparisonOperation(
+                hard_filter._op,
+                hard_filter._operand,
+                self._evaluate_param(cast(ParamType, hard_filter._other)),
+            )
+            for hard_filter in hard_filters
+        ]
 
     def evaluate_numeric_param(
         self,

@@ -16,7 +16,7 @@ Classes
 
     ### Static methods
 
-    `join_values(values: Sequence[NPArray]) ‑> numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]`
+    `join_values(values: Sequence[list[float]]) ‑> list[float]`
     :
 
 `Float(name: str, schema_obj: SchemaObjectT)`

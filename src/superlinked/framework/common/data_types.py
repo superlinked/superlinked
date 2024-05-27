@@ -227,4 +227,4 @@ class Vector:
         return self.copy_with_new()
 
 
-PythonTypes = float | int | str | Vector | NPArray
+PythonTypes = float | int | str | Vector | list[float]

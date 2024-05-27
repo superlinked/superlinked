@@ -14,7 +14,9 @@
 
 from typing import Any, cast
 
-from superlinked.framework.common.data_types import NPArray, PythonTypes, Vector
+from beartype.typing import Sequence
+
+from superlinked.framework.common.data_types import PythonTypes, Vector
 from superlinked.framework.common.schema.schema_object import (
     Array,
     ConcreteSchemaField,
@@ -28,7 +30,7 @@ from superlinked.framework.common.storage.field_data_type import FieldDataType
 from superlinked.framework.common.util.generic_class_util import GenericClassUtil
 
 FIELD_DATA_TYPE_BY_SCHEMA_FIELD_TYPE: dict[type[ConcreteSchemaField], FieldDataType] = {
-    Array: FieldDataType.NPARRAY,
+    Array: FieldDataType.FLOAT_LIST,
     Float: FieldDataType.DOUBLE,
     Integer: FieldDataType.INT,
     String: FieldDataType.STRING,
@@ -39,17 +41,17 @@ FIELD_DATA_TYPE_BY_PYTHON_TYPE: dict[type[PythonTypes], FieldDataType] = {
     float: FieldDataType.DOUBLE,
     int: FieldDataType.INT,
     str: FieldDataType.STRING,
-    NPArray: FieldDataType.NPARRAY,
+    list[float]: FieldDataType.FLOAT_LIST,
     Vector: FieldDataType.VECTOR,
 }
 
-VALID_TYPE_BY_FIELD_DATA_TYPE: dict[FieldDataType, type[PythonTypes]] = {
-    FieldDataType.BLOB: str,
-    FieldDataType.DOUBLE: float,
-    FieldDataType.INT: int,
-    FieldDataType.NPARRAY: NPArray,
-    FieldDataType.STRING: str,
-    FieldDataType.VECTOR: Vector,
+VALID_TYPE_BY_FIELD_DATA_TYPE: dict[FieldDataType, Sequence[type[PythonTypes]]] = {
+    FieldDataType.BLOB: [str],
+    FieldDataType.DOUBLE: [int, float],
+    FieldDataType.INT: [int],
+    FieldDataType.FLOAT_LIST: [list[float]],
+    FieldDataType.STRING: [str],
+    FieldDataType.VECTOR: [Vector],
 }
 
 
@@ -75,7 +77,8 @@ class FieldTypeConverter:
         raise NotImplementedError(f"Unknown python type: {type_}")
 
     @staticmethod
-    def get_valid_python_types(data_type: FieldDataType) -> type[PythonTypes]:
-        return GenericClassUtil.if_not_class_get_origin(
-            VALID_TYPE_BY_FIELD_DATA_TYPE[data_type]
-        )
+    def get_valid_python_types(data_type: FieldDataType) -> Sequence[type[PythonTypes]]:
+        return [
+            GenericClassUtil.if_not_class_get_origin(type_)
+            for type_ in VALID_TYPE_BY_FIELD_DATA_TYPE[data_type]
+        ]

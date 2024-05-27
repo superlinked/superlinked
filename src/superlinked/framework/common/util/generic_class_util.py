@@ -17,7 +17,6 @@ from typing import Any, cast, get_args, get_origin
 
 from beartype.typing import Sequence
 
-from superlinked.framework.common.data_types import NPArray
 from superlinked.framework.common.schema.general_type import T
 
 
@@ -26,7 +25,7 @@ class GenericClassUtil:
     def if_not_class_get_origin(type_: type[T]) -> type:
         if inspect.isclass(type_):
             # For backward compatibility!
-            if type_ == NPArray:
+            if type_ == list[float]:
                 return type_.__origin__
             return type_
         return cast(type, get_origin(type_))

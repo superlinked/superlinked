@@ -78,6 +78,7 @@ class StorageManager:
     def create_search_index(
         self,
         dag: Dag,
+        indexed_fields: Sequence[SchemaField],
         distance_metric: DistanceMetric = DistanceMetric.INNER_PRODUCT,
         search_algorithm: SearchAlgorithm = SearchAlgorithm.FLAT,
         vector_coordinate_type: VectorComponentPrecision = VectorComponentPrecision.FLOAT32,
@@ -85,6 +86,7 @@ class StorageManager:
         vector_index_field_descriptor, index_field_descriptors = (
             self._get_index_field_descriptors_from_dag(
                 dag,
+                indexed_fields,
                 distance_metric,
                 search_algorithm,
                 vector_coordinate_type,
@@ -130,9 +132,7 @@ class StorageManager:
             VDBKNNSearchParams(
                 vector_field,
                 knn_search_params.limit,
-                self._compose_filter_field_data(
-                    schema, knn_search_params.filters or []
-                ),
+                self._compose_filter_field_data(schema, knn_search_params.filters),
                 knn_search_params.radius,
             ),
             **params,
@@ -382,6 +382,7 @@ class StorageManager:
     def _get_index_field_descriptors_from_dag(
         self,
         dag: Dag,
+        indexed_fields: Sequence[SchemaField],
         distance_metric: DistanceMetric,
         search_algorithm: SearchAlgorithm,
         vector_coordinate_type: VectorComponentPrecision,
@@ -394,7 +395,6 @@ class StorageManager:
             search_algorithm,
             vector_coordinate_type,
         )
-        indexed_fields = StorageManager._get_indexed_schema_fields_of_dag(dag)
 
         return (
             vector_index_field_descriptor,
@@ -427,12 +427,3 @@ class StorageManager:
             )
             for key, type_ in node_data_descriptor.items()
         }
-
-    @staticmethod
-    def _get_indexed_schema_fields_of_dag(dag: Dag) -> Sequence[SchemaField]:
-        # TODO FAI-1814: this should be filtered by the soon-to-be introduced Indexed property of the SchemaField.
-        return [
-            schema_field
-            for schema in dag.schemas
-            for schema_field in schema._get_schema_fields()
-        ]
