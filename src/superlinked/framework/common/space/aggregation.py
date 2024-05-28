@@ -25,7 +25,10 @@ from typing_extensions import override
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.embedding import EIT, Embedding
+from superlinked.framework.common.exception import NegativeFilterException
 from superlinked.framework.common.space.normalization import Normalization
+
+VALUE_UNAFFECTING_AGGREGATION = 0
 
 
 class InputAggregationMode(Enum):
@@ -53,17 +56,60 @@ class Aggregation:
 
 
 class VectorAggregation(Aggregation):
+
     @override
     def aggregate(self, vectors: Sequence[Vector], context: ExecutionContext) -> Vector:
-        vector = reduce(lambda a, b: a.aggregate(b), vectors)
-        vector = vector.normalize(self.normalization.norm(vector.value))
-        return vector
+        vector = self._reduce(vectors)
+        return vector.normalize(self.normalization.norm(vector.value))
+
+    def _reduce(self, vectors: Sequence[Vector]) -> Vector:
+        vectors_with_negative_filters_replaced = (
+            vector.replace_negative_filters(VALUE_UNAFFECTING_AGGREGATION)
+            for vector in vectors
+        )
+        aggregated_vector = reduce(
+            lambda a, b: a.aggregate(b), vectors_with_negative_filters_replaced
+        )
+        return self.__apply_negative_filter(aggregated_vector, vectors)
+
+    def __apply_negative_filter(
+        self, aggregated_vector: Vector, vectors: Sequence[Vector]
+    ) -> Vector:
+        """
+        Applies the previous negative filter on those indices where
+        there was a negative filter in all aggregated vectors.
+        """
+        all_negative_filter_indices = set().union(
+            *(vector.negative_filter_indices for vector in vectors)
+        )
+        return aggregated_vector.copy_with_new(
+            negative_filter_indices={
+                i
+                for i, original_value in enumerate(aggregated_vector.value)
+                if original_value == VALUE_UNAFFECTING_AGGREGATION
+                and i in all_negative_filter_indices
+            }
+        ).replace_negative_filters(self.__calculate_negative_filter(vectors))
+
+    def __calculate_negative_filter(self, vectors: Sequence[Vector]) -> int:
+        if negative_filter_values := {
+            vector.value[negative_filter_index]
+            for vector in vectors
+            for negative_filter_index in vector.negative_filter_indices
+            if vector.value[negative_filter_index] != VALUE_UNAFFECTING_AGGREGATION
+        }:
+            if len(negative_filter_values) > 1:
+                raise NegativeFilterException(
+                    f"Cannot aggregate vectors with different negative filter values: {negative_filter_values}."
+                )
+            return negative_filter_values.pop()
+        return VALUE_UNAFFECTING_AGGREGATION
 
 
 class VectorAvg(VectorAggregation):
     @override
     def aggregate(self, vectors: Sequence[Vector], context: ExecutionContext) -> Vector:
-        return reduce(lambda a, b: a.aggregate(b), vectors) / len(vectors)
+        return self._reduce(vectors).normalize(len(vectors))
 
 
 class InputAggregation(Aggregation, Generic[EIT]):

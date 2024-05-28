@@ -137,6 +137,18 @@ class Vector:
             ]
         return self.copy_with_new(values, other.negative_filter_indices)
 
+    def replace_negative_filters(self, new_negative_filter_value: float) -> Vector:
+        return self.copy_with_new(
+            [
+                (
+                    new_negative_filter_value
+                    if i in self.negative_filter_indices
+                    else original_value
+                )
+                for i, original_value in enumerate(self.value)
+            ]
+        )
+
     def concatenate(self, other: Any) -> Vector:
         if not isinstance(other, Vector):
             return NotImplemented
