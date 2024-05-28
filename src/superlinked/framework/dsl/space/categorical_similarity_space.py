@@ -111,7 +111,7 @@ class CategoricalSimilaritySpace(Space):
                 negative_filter=negative_filter,
             )
         )
-        self.__category = SpaceFieldSet(self, self._field_set)
+        self.category_input = SpaceFieldSet(self, self._field_set)
         unchecked_category_node_map = {
             single_category: CategoricalSimilarityNode(
                 parent=SchemaFieldNode(single_category),
@@ -131,10 +131,6 @@ class CategoricalSimilaritySpace(Space):
     @property
     def uncategorized_as_category(self) -> bool:
         return self.categorical_similarity_param.uncategorized_as_category
-
-    @property
-    def category(self) -> SpaceFieldSet:
-        return self.__category
 
     @property
     def category_separator(self) -> str | None:

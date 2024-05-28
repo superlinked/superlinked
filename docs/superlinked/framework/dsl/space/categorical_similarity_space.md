@@ -73,9 +73,6 @@ Classes
 
     ### Instance variables
 
-    `category: superlinked.framework.dsl.space.space_field_set.SpaceFieldSet`
-    :
-
     `category_separator: str | None`
     :
 

@@ -86,9 +86,11 @@ class RecencyPlotter:
             self._embedding.calc_recency_vector(plot_ts, self.context)
             for plot_ts in plot_timestamps
         ]
-
         now_vector: Vector = self._embedding.calc_recency_vector(
-            now_ts, ExecutionContext(ExecutionEnvironment.QUERY)
+            now_ts,
+            ExecutionContext.from_context_data(
+                self.context.data, environment=ExecutionEnvironment.QUERY
+            ),
         )
         recency_scores: list[float] = [
             self.vector_similarity_calculator.calculate_similarity(now_vector, vec)
@@ -130,7 +132,9 @@ class RecencyPlotter:
             )
         )
 
-        df = self.__generate_recency_scores(oldest_ts_to_plot, now_ts, num_points)
+        df: pd.DataFrame = self.__generate_recency_scores(
+            oldest_ts_to_plot, now_ts, num_points
+        )
 
         return (
             alt.Chart(df)
