@@ -66,15 +66,15 @@ Classes
     `XML`
     :
 
-`DataLoaderConfig(path: str, format: superlinked.framework.dsl.source.data_loader_source.DataFormat, pandas_read_kwargs: dict[str, typing.Any])`
-:   DataLoaderConfig(path: str, format: superlinked.framework.dsl.source.data_loader_source.DataFormat, pandas_read_kwargs: dict[str, typing.Any])
+`DataLoaderConfig(path: str, format: superlinked.framework.dsl.source.data_loader_source.DataFormat, pandas_read_kwargs: dict[str, typing.Any] | None = None)`
+:   DataLoaderConfig(path: str, format: superlinked.framework.dsl.source.data_loader_source.DataFormat, pandas_read_kwargs: dict[str, typing.Any] | None = None)
 
     ### Class variables
 
     `format: superlinked.framework.dsl.source.data_loader_source.DataFormat`
     :
 
-    `pandas_read_kwargs: dict[str, typing.Any]`
+    `pandas_read_kwargs: dict[str, typing.Any] | None`
     :
 
     `path: str`

@@ -40,7 +40,7 @@ class DataFormat(Enum):
 class DataLoaderConfig:
     path: str
     format: DataFormat
-    pandas_read_kwargs: dict[str, Any]
+    pandas_read_kwargs: dict[str, Any] | None = None
 
 
 class DataLoaderSource(Source, Generic[SchemaObjectT, SourceTypeT]):
