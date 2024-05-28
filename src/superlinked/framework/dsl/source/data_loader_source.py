@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Generic
+from typing import Any, Generic
 
 from superlinked.framework.common.parser.data_parser import DataParser
 from superlinked.framework.common.parser.dataframe_parser import DataFrameParser
@@ -26,25 +27,20 @@ from superlinked.framework.online.source.in_memory_source import (
 )
 
 
-class DataLocation(Enum):
-    AWS = auto()
-    GCP = auto()
-    LOCAL = auto()
-
-
 class DataFormat(Enum):
     CSV = auto()
+    FWF = auto()
+    XML = auto()
     JSON = auto()
     PARQUET = auto()
+    ORC = auto()
 
 
+@dataclass
 class DataLoaderConfig:
-    def __init__(
-        self, data_path: str, data_format: DataFormat, data_location: DataLocation
-    ) -> None:
-        self.path = data_path
-        self.format = data_format
-        self.location = data_location
+    path: str
+    format: DataFormat
+    pandas_read_kwargs: dict[str, Any]
 
 
 class DataLoaderSource(Source, Generic[SchemaObjectT, SourceTypeT]):
