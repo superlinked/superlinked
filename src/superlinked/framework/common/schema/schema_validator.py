@@ -15,9 +15,12 @@
 import inspect
 from typing import get_args
 
-from superlinked.framework.common.schema.event_schema_object import SchemaReference
+from superlinked.framework.common.schema.event_schema_object import (
+    CreatedAtField,
+    SchemaReference,
+)
 from superlinked.framework.common.schema.exception import (
-    IdFieldException,
+    FieldException,
     InvalidAttributeException,
     InvalidMemberException,
 )
@@ -29,7 +32,10 @@ from superlinked.framework.common.util.generic_class_util import GenericClassUti
 
 valid_schema_field_types = {
     SchemaType.SCHEMA: ConcreteSchemaField | IdField,
-    SchemaType.EVENT_SCHEMA: ConcreteSchemaField | IdField | SchemaReference,
+    SchemaType.EVENT_SCHEMA: ConcreteSchemaField
+    | IdField
+    | CreatedAtField
+    | SchemaReference,
 }
 
 
@@ -53,6 +59,7 @@ class SchemaValidator:
                     )
                 )
         self.validate_id_field(cls)
+        self.validate_created_at_field(cls)
 
     def check_unannotated_members(self, cls: type[T]) -> None:
         base_members = dir(type("base_members", (object,), {}))
@@ -66,13 +73,20 @@ class SchemaValidator:
                     )
                 )
 
-    def validate_id_field(self, cls: type[T]) -> None:
-        id_field_names = [
+    def __validate_field(self, cls: type[T], field_type: type, field_name: str) -> None:
+        field_names = [
             name
             for name, type_ in cls.__annotations__.items()
-            if inspect.isclass(type_) and issubclass(type_, IdField)
+            if inspect.isclass(type_) and issubclass(type_, field_type)
         ]
-        if len(id_field_names) != 1:
-            raise IdFieldException(
-                f"A schema must have exactly 1 id, got {len(id_field_names)} ({id_field_names})."
+        if len(field_names) != 1:
+            raise FieldException(
+                f"A schema must have exactly 1 {field_name}, got {len(field_names)} ({field_names})."
             )
+
+    def validate_id_field(self, cls: type[T]) -> None:
+        self.__validate_field(cls, IdField, "id")
+
+    def validate_created_at_field(self, cls: type[T]) -> None:
+        if self.__schema_type == SchemaType.EVENT_SCHEMA:
+            self.__validate_field(cls, CreatedAtField, "created_at")

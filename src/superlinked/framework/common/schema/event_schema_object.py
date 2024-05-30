@@ -29,6 +29,7 @@ from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import (
     SchemaField,
     SchemaFieldDescriptor,
+    SchemaObjectT,
 )
 
 # Referenced schema type
@@ -61,9 +62,9 @@ class SchemaReference(SchemaField[str], HasMultiplier, Generic[RST]):
         )
 
     @staticmethod
-    def join_values(values: Sequence[str]) -> str:
+    def combine_values(values: Sequence[str]) -> str:
         raise NotImplementedError(
-            f"{SchemaReference.__name__}'s values cannot be joined."
+            f"{SchemaReference.__name__}'s values cannot be combined."
         )
 
     @property
@@ -99,11 +100,38 @@ class MultipliedSchemaReference(HasMultiplier, Generic[RST]):
         return self * other
 
 
+class CreatedAtField(SchemaField[int]):
+    """
+    A class representing creation time. A unix timestamp field in a schema object.
+    """
+
+    def __init__(self, schema_obj: SchemaObjectT, created_at_field_name: str) -> None:
+        super().__init__(created_at_field_name, schema_obj, int)
+
+    @staticmethod
+    def combine_values(values: Sequence[int]) -> int:
+        return int(sum(values) / len(values))
+
+
 class EventSchemaObject(IdSchemaObject):
     """
     Custom decorated event schema class.
     Event schemas can be used to reference other schema and to define interactions between schemas.
     """
+
+    def __init__(
+        self,
+        base_cls: type,
+        schema_name: str,
+        id_field_name: str,
+        created_at_field_name: str,
+    ) -> None:
+        super().__init__(base_cls, schema_name, id_field_name)
+        self.__created_at = CreatedAtField(self, created_at_field_name)
+
+    @property
+    def created_at(self) -> CreatedAtField:
+        return self.__created_at
 
     @override
     def _init_field(self, field_descriptor: SchemaFieldDescriptor) -> SchemaField:

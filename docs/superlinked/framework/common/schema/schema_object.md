@@ -17,7 +17,7 @@ Classes
 
     ### Static methods
 
-    `join_values(values: Sequence[float]) ‑> float`
+    `combine_values(values: Sequence[float]) ‑> float`
     :
 
 `FloatList(name: str, schema_obj: SchemaObjectT)`
@@ -32,7 +32,7 @@ Classes
 
     ### Static methods
 
-    `join_values(values: Sequence[list[float]]) ‑> list[float]`
+    `combine_values(values: Sequence[list[float]]) ‑> list[float]`
     :
 
     ### Methods
@@ -53,7 +53,7 @@ Classes
 
     ### Static methods
 
-    `join_values(values: Sequence[int]) ‑> int`
+    `combine_values(values: Sequence[int]) ‑> int`
     :
 
 `Number(name: str, schema_obj: SchemaObjectT, type_: type[SFT])`
@@ -88,6 +88,7 @@ Classes
 
     ### Descendants
 
+    * superlinked.framework.common.schema.event_schema_object.CreatedAtField
     * superlinked.framework.common.schema.event_schema_object.SchemaReference
     * superlinked.framework.common.schema.id_schema_object.IdField
     * superlinked.framework.common.schema.schema_object.FloatList
@@ -98,7 +99,7 @@ Classes
 
     ### Static methods
 
-    `join_values(values: Sequence[SFT]) ‑> ~SFT`
+    `combine_values(values: Sequence[SFT]) ‑> ~SFT`
     :
 
     ### Methods
@@ -129,7 +130,7 @@ Classes
 
     ### Static methods
 
-    `join_values(values: Sequence[str]) ‑> str`
+    `combine_values(values: Sequence[str]) ‑> str`
     :
 
 `StringList(name: str, schema_obj: SchemaObjectT)`
@@ -144,7 +145,7 @@ Classes
 
     ### Static methods
 
-    `join_values(values: Sequence[list[str]]) ‑> list[str]`
+    `combine_values(values: Sequence[list[str]]) ‑> list[str]`
     :
 
     ### Methods
@@ -166,5 +167,5 @@ Classes
 
     ### Static methods
 
-    `join_values(values: Sequence[int]) ‑> int`
+    `combine_values(values: Sequence[int]) ‑> int`
     :

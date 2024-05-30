@@ -34,7 +34,7 @@ class IdField(SchemaField[str]):
         super().__init__(id_field_name, schema_obj, str)
 
     @staticmethod
-    def join_values(values: Sequence[str]) -> str:
+    def combine_values(values: Sequence[str]) -> str:
         return ", ".join(values)
 
 
@@ -45,8 +45,8 @@ class IdSchemaObject(SchemaObject):
 
     def __init__(self, base_cls: type, schema_name: str, id_field_name: str) -> None:
         super().__init__(base_cls, schema_name)
-        self._id = IdField(self, id_field_name)
+        self.__id = IdField(self, id_field_name)
 
     @property
     def id(self) -> IdField:
-        return self._id
+        return self.__id

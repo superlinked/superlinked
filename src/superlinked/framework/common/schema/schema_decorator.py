@@ -17,7 +17,10 @@ from typing import Any, TypeAlias, cast
 
 from beartype.typing import Sequence
 
-from superlinked.framework.common.schema.event_schema_object import EventSchemaObject
+from superlinked.framework.common.schema.event_schema_object import (
+    CreatedAtField,
+    EventSchemaObject,
+)
 from superlinked.framework.common.schema.general_type import T
 from superlinked.framework.common.schema.id_schema_object import IdField, IdSchemaObject
 from superlinked.framework.common.schema.schema_object import (
@@ -28,6 +31,7 @@ from superlinked.framework.common.schema.schema_type import SchemaType
 from superlinked.framework.common.schema.schema_validator import SchemaValidator
 
 DEFAULT_ID_FIELD_NAME = "id"
+DEFAULT_CREATED_AT_FIELD_NAME = "created_at"
 
 
 class SchemaDecorator:
@@ -55,13 +59,26 @@ class SchemaDecorator:
         base_class: TypeAlias,
         schema_validator: SchemaValidator,
     ) -> Any:
-        id_field_name: str = SchemaDecorator.__get_id_field_name(
-            schema_cls, schema_validator
-        )
+        schema_validator.validate_id_field(schema_cls)
+        id_field_name = SchemaDecorator.__get_field_name(schema_cls, IdField)
+        if base_class is EventSchemaObject:
+            schema_validator.validate_created_at_field(schema_cls)
+            created_at_field_name: str = SchemaDecorator.__get_field_name(
+                schema_cls, CreatedAtField
+            )
 
         class Decorated(base_class):
             def __init__(self) -> None:
-                super().__init__(schema_cls, schema_name, id_field_name)
+                if base_class is EventSchemaObject:
+                    super().__init__(
+                        schema_cls,
+                        schema_name,
+                        id_field_name,
+                        created_at_field_name,
+                    )
+                else:
+                    super().__init__(schema_cls, schema_name, id_field_name)
+
                 self._schema_fields = [
                     self._init_field(schema_field_descriptor)
                     for schema_field_descriptor in schema_field_descriptors
@@ -77,13 +94,9 @@ class SchemaDecorator:
         )
 
     @staticmethod
-    def __get_id_field_name(
-        schema_cls: type[T], schema_validator: SchemaValidator
-    ) -> str:
-        schema_validator.validate_id_field(schema_cls)
-        id_field_names = [
+    def __get_field_name(schema_cls: type[T], field_type: type) -> str:
+        return next(
             name
             for name, type_ in schema_cls.__annotations__.items()
-            if inspect.isclass(type_) and issubclass(type_, IdField)
-        ]
-        return id_field_names[0]
+            if inspect.isclass(type_) and issubclass(type_, field_type)
+        )

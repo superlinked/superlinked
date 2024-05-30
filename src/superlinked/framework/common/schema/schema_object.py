@@ -123,7 +123,7 @@ class SchemaField(ComparisonOperand, Generic[SFT]):
 
     @staticmethod
     @abstractmethod
-    def join_values(values: Sequence[SFT]) -> SFT:
+    def combine_values(values: Sequence[SFT]) -> SFT:
         pass
 
 
@@ -138,7 +138,7 @@ class String(SchemaField[str]):
         super().__init__(name, schema_obj, str)
 
     @staticmethod
-    def join_values(values: Sequence[str]) -> str:
+    def combine_values(values: Sequence[str]) -> str:
         return ", ".join(values)
 
 
@@ -153,7 +153,7 @@ class Timestamp(SchemaField[int]):
         super().__init__(name, schema_obj, int)
 
     @staticmethod
-    def join_values(values: Sequence[int]) -> int:
+    def combine_values(values: Sequence[int]) -> int:
         return int(sum(values) / len(values))
 
 
@@ -177,7 +177,7 @@ class Float(Number[float]):
         super().__init__(name, schema_obj, float)
 
     @staticmethod
-    def join_values(values: Sequence[float]) -> float:
+    def combine_values(values: Sequence[float]) -> float:
         return sum(values) / len(values)
 
 
@@ -190,7 +190,7 @@ class Integer(Number[int]):
         super().__init__(name, schema_obj, int)
 
     @staticmethod
-    def join_values(values: Sequence[int]) -> int:
+    def combine_values(values: Sequence[int]) -> int:
         return int(sum(values) / len(values))
 
 
@@ -207,7 +207,7 @@ class FloatList(SchemaField[list[float]]):
         return value if isinstance(value, list) else [cast(float, value)]
 
     @staticmethod
-    def join_values(
+    def combine_values(
         values: Sequence[list[float]],
     ) -> list[float]:
         return [
@@ -228,7 +228,7 @@ class StringList(SchemaField[list[str]]):
         return value if isinstance(value, list) else [cast(str, value)]
 
     @staticmethod
-    def join_values(
+    def combine_values(
         values: Sequence[list[str]],
     ) -> list[str]:
         return [", ".join(current_values) for current_values in zip(*values)]

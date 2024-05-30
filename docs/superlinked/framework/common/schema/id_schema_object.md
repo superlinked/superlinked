@@ -16,7 +16,7 @@ Classes
 
     ### Static methods
 
-    `join_values(values: collections.abc.Sequence[str]) ‑> str`
+    `combine_values(values: collections.abc.Sequence[str]) ‑> str`
     :
 
 `IdSchemaObject(base_cls: type, schema_name: str, id_field_name: str)`

@@ -272,7 +272,7 @@ class QueryVectorFactory:
                 parsed_schema_field.schema_field
             ].append(parsed_schema_field.value)
         return [
-            ParsedSchemaField(schema_field, schema_field.join_values(values))
+            ParsedSchemaField(schema_field, schema_field.combine_values(values))
             for schema_field, values in parsed_schema_fields_by_schema_field.items()
         ]
 

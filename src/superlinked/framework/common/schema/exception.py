@@ -30,7 +30,7 @@ class InvalidSchemaTypeException(InvalidSchemaException):
     pass
 
 
-class IdFieldException(InvalidSchemaException):
+class FieldException(InvalidSchemaException):
     pass
 
 
