@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 from typing import Annotated
 
 from beartype.typing import Sequence
@@ -32,7 +33,7 @@ from superlinked.framework.common.schema.event_schema_object import EventSchemaO
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import SchemaField, SchemaObject
 from superlinked.framework.common.util.type_validator import TypeValidator
-from superlinked.framework.dsl.index.effect import Effect
+from superlinked.framework.dsl.index.effect import Effect, EffectModifier
 from superlinked.framework.dsl.index.util.aggregation_effect_group import (
     AggregationEffectGroup,
 )
@@ -57,11 +58,14 @@ class Index:  # pylint: disable=too-many-instance-attributes
     """
 
     @TypeValidator.wrap
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         spaces: Space | ValidatedSpaceList,
         fields: SchemaField | ValidatedSchemaFieldList | None = None,
         effects: ValidatedEffectList | None = None,
+        max_age: datetime.timedelta | None = None,
+        max_count: int | None = None,
+        temperature: float = 0.5,
     ) -> None:
         """
         Initialize the Index.
@@ -71,16 +75,27 @@ class Index:  # pylint: disable=too-many-instance-attributes
             fields (SchemaField | list[SchemaField]): The field or list of fields to be indexed.
             effects (list[Effect]): A list of conditional interactions within a `Space`.
             Defaults to None.
+            max_age (datetime.timedelta | None): Restricts events to be considered
+            only within the given timeframe, if specified. Defaults to None meaning no restriction.
+            max_count (int | None): Restricts how many events should be considered,
+            based on their age. Defaults to None meaning no restriction.
+            temperature (float): Has to be between 0 and 1. Controls how sensitive the system is to events.
+            With 0.5 being default and representing a balanced setting, values closer to 0 decrease,
+            closer 1 increase the effect of events in the vectors.
+            Defaults to 0.5.
 
         Raises:
             InitializationException: If no spaces are provided.
         """
+        event_modifier = EffectModifier(max_age, max_count, temperature)
         self.__spaces = self.__init_spaces(spaces)
         self.__space_schemas = self.__init_node_schemas(self.__spaces)
         self.__fields = self.__init_fields(fields)
         effects_with_schema = self.__init_effects_with_schema(effects, self.__spaces)
         self.__effect_schemas = self.__init_effect_schemas(effects_with_schema)
-        self.__node = self.__init_index_node(self.__spaces, effects_with_schema)
+        self.__node = self.__init_index_node(
+            self.__spaces, effects_with_schema, event_modifier
+        )
         self.__dag_effects = self.__init_dag_effects(effects_with_schema)
         self.__dag = self.__init_dag(self.__node, self.__dag_effects)
         self.__schema_type_schema_mapper = self.__init_schema_type_schema_mapper(
@@ -210,23 +225,20 @@ class Index:  # pylint: disable=too-many-instance-attributes
         self,
         spaces: list[Space],
         effects: list[EffectWithReferencedSchemaObject],
+        effect_modifier: EffectModifier,
     ) -> IndexNode:
         index_parents = set[Node[Vector]]()
         for schema in self.__space_schemas:
-            if len(spaces) == 1:
-                space = spaces[0]
-                index_parents.add(
-                    self.__init_parent_for_index_or_aggregation(space, schema, effects)
+            parents = [
+                self.__init_parent_for_index_or_aggregation(
+                    space, schema, effects, effect_modifier
                 )
+                for space in spaces
+            ]
+            if len(spaces) == 1:
+                index_parents.update(parents)
             else:
-                concatenation_node_parents: list[Node[Vector]] = []
-                for space in spaces:
-                    concatenation_node_parents.append(
-                        self.__init_parent_for_index_or_aggregation(
-                            space, schema, effects
-                        )
-                    )
-                index_parents.add(ConcatenationNode(concatenation_node_parents))
+                index_parents.add(ConcatenationNode(parents))
         return IndexNode(index_parents)
 
     def __init_dag_effects(
@@ -239,6 +251,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
         space: Space,
         schema: SchemaObject,
         effects: list[EffectWithReferencedSchemaObject],
+        effect_modifier: EffectModifier,
     ) -> Node[Vector]:
         filtered_effects = Index.__filter_effects_by_space_and_schema(
             effects=effects,
@@ -250,7 +263,9 @@ class Index:  # pylint: disable=too-many-instance-attributes
         aggregation_effect_group = AggregationEffectGroup.from_filtered_effects(
             filtered_effects
         )
-        return AggregationNodeUtil.init_aggregation_node(aggregation_effect_group)
+        return AggregationNodeUtil.init_aggregation_node(
+            aggregation_effect_group, effect_modifier
+        )
 
     @staticmethod
     def __filter_effects_by_space_and_schema(

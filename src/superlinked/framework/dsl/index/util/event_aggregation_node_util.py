@@ -23,6 +23,7 @@ from superlinked.framework.common.dag.schema_object_reference import (
 from superlinked.framework.common.exception import InitializationException
 from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.schema.schema_object import SchemaField
+from superlinked.framework.dsl.index.effect import EffectModifier
 from superlinked.framework.dsl.index.util.effect_with_referenced_schema_object import (
     EffectWithReferencedSchemaObject,
 )
@@ -35,6 +36,7 @@ class EventAggregationNodeUtil:
     @staticmethod
     def init_event_aggregation_node(
         effect_group: EventAggregationEffectGroup,
+        effect_modifier: EffectModifier,
     ) -> EventAggregationNode:
         if not effect_group.effects:
             raise InitializationException(
@@ -57,6 +59,7 @@ class EventAggregationNodeUtil:
                 ),
                 EventAggregationNodeUtil.__create_filter_inputs(effect_group),
                 [effect.dag_effect for effect in effect_group.effects],
+                effect_modifier,
             )
         )
 

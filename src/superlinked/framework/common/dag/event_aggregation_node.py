@@ -31,9 +31,12 @@ from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.schema.event_schema_object import EventSchemaObject
 from superlinked.framework.common.schema.schema_object import SchemaObject
+from superlinked.framework.dsl.index.effect import EffectModifier
 
 
-class EventAggregationNode(Node[Vector], HasLength):
+class EventAggregationNode(
+    Node[Vector], HasLength
+):  # pylint: disable=too-many-instance-attributes
     @dataclass
     class InitParams:
         input_to_aggregate: Node[Vector]
@@ -42,6 +45,7 @@ class EventAggregationNode(Node[Vector], HasLength):
         affecting_schema: SchemaObjectReference
         filter_inputs: list[Weighted[ComparisonFilterNode]]
         dag_effects: list[DagEffect]
+        effect_modifier: EffectModifier
 
     def __init__(self, init_params: InitParams) -> None:
         super().__init__(
@@ -62,6 +66,7 @@ class EventAggregationNode(Node[Vector], HasLength):
         self.affected_schema = init_params.affected_schema
         self.affecting_schema = init_params.affecting_schema
         self.filters = init_params.filter_inputs
+        self.effect_modifier = init_params.effect_modifier
         self.__length = cast(HasLength, self.parents[0]).length
 
     @property

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 from dataclasses import dataclass
 
 from superlinked.framework.common.interface.comparison_operand import (
@@ -24,6 +25,10 @@ from superlinked.framework.common.schema.event_schema_object import (
 from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.space.space import Space
+
+# Exclude from documentation.
+__pdoc__ = {}
+__pdoc__["EffectModifier"] = False
 
 
 @TypeValidator.wrap
@@ -47,4 +52,23 @@ class Effect:
             f"{self.__class__.__name__}(space={self.space}, filter={self.filter_}, "
             f"affected_schema_reference={self.affected_schema_reference}, "
             f"affecting_schema_reference={self.affecting_schema_reference})"
+        )
+
+
+@TypeValidator.wrap
+@dataclass
+class EffectModifier:
+    max_age: datetime.timedelta | None = None
+    max_count: int | None = None
+    temperature: float = 0.5
+
+    def __post_init__(self) -> None:
+        if not 0 <= self.temperature <= 1:
+            raise ValueError("temperature must be between 0 and 1")
+
+    def __str__(self) -> str:
+        return (
+            f"{self.__class__.__name__}(max_age={self.max_age},"
+            f"max_count={self.max_count}, "
+            f"temperature={self.temperature})"
         )

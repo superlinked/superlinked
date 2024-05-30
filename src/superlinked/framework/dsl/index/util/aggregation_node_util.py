@@ -19,6 +19,7 @@ from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import InitializationException
 from superlinked.framework.common.interface.weighted import Weighted
+from superlinked.framework.dsl.index.effect import EffectModifier
 from superlinked.framework.dsl.index.util.aggregation_effect_group import (
     AggregationEffectGroup,
 )
@@ -34,6 +35,7 @@ class AggregationNodeUtil:
     @staticmethod
     def init_aggregation_node(
         aggregation_effect_group: AggregationEffectGroup,
+        effect_modifier: EffectModifier,
     ) -> AggregationNode:
         if len(aggregation_effect_group.effects) == 0:
             raise InitializationException(
@@ -45,7 +47,7 @@ class AggregationNodeUtil:
             )
         )
         eans = [
-            EventAggregationNodeUtil.init_event_aggregation_node(eg)
+            EventAggregationNodeUtil.init_event_aggregation_node(eg, effect_modifier)
             for eg in event_aggregation_effect_groups
         ]
         aggregation_node = AggregationNode(
