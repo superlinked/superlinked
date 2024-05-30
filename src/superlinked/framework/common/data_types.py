@@ -25,7 +25,7 @@ from superlinked.framework.common.exception import (
 )
 
 Json = Mapping[str, Any]
-NPArray = np.ndarray[Any, np.dtype[np.float64]]
+NPArray = np.ndarray[Any, np.dtype[np.float32]]
 
 
 class Vector:
@@ -239,4 +239,4 @@ class Vector:
         return self.copy_with_new()
 
 
-PythonTypes = float | int | str | Vector | list[float]
+PythonTypes = float | int | str | Vector | list[float] | list[str]

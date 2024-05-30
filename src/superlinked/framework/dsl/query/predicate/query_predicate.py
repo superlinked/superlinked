@@ -16,6 +16,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Generic, TypeVar
 
+from beartype.typing import Sequence
+
 from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.dsl.query.param import NumericParamType, Param
 
@@ -30,5 +32,7 @@ OPT = TypeVar("OPT", bound=Enum)
 @dataclass(frozen=True)
 class QueryPredicate(Generic[OPT]):
     op: OPT
-    params: list[SchemaField | Param | str | int | float | None]
+    params: list[
+        SchemaField | Param | Sequence[str] | Sequence[float] | str | int | float | None
+    ]
     weight_param: NumericParamType

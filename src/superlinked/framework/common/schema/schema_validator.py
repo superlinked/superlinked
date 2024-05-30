@@ -15,6 +15,7 @@
 import inspect
 from typing import get_args
 
+from superlinked.framework.common.schema.event_schema_object import SchemaReference
 from superlinked.framework.common.schema.exception import (
     IdFieldException,
     InvalidAttributeException,
@@ -23,7 +24,6 @@ from superlinked.framework.common.schema.exception import (
 from superlinked.framework.common.schema.general_type import T
 from superlinked.framework.common.schema.id_schema_object import IdField
 from superlinked.framework.common.schema.schema_object import ConcreteSchemaField
-from superlinked.framework.common.schema.schema_reference import SchemaReference
 from superlinked.framework.common.schema.schema_type import SchemaType
 from superlinked.framework.common.util.generic_class_util import GenericClassUtil
 

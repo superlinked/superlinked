@@ -39,7 +39,7 @@ class VectorCollection:
 
     Attributes:
         id_list (list[str]): List of object ids.
-        vectors (npt.NDArray[np.float64]): Numpy array of
+        vectors (np.ndarray[Any, np.dtype[np.float32]]): Numpy array of floats.
     """
 
     def __init__(self, id_list: Sequence[str], vectors: NPArray) -> None:

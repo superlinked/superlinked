@@ -23,9 +23,9 @@ from superlinked.framework.common.parser.parsed_schema import (
     ParsedSchema,
     ParsedSchemaField,
 )
+from superlinked.framework.common.schema.event_schema_object import SchemaReference
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObjectT
 from superlinked.framework.common.schema.schema_object import SFT, SchemaField
-from superlinked.framework.common.schema.schema_reference import SchemaReference
 from superlinked.framework.common.util.dot_separated_path_util import (
     DotSeparatedPathUtil,
     ValuedDotSeparatedPath,

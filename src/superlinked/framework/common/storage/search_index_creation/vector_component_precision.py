@@ -17,4 +17,3 @@ from enum import Enum
 
 class VectorComponentPrecision(Enum):
     FLOAT32 = "FLOAT32"
-    FLOAT64 = "FLOAT64"

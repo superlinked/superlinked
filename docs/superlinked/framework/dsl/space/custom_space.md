@@ -4,14 +4,14 @@ Module superlinked.framework.dsl.space.custom_space
 Classes
 -------
 
-`CustomSpace(vector: superlinked.framework.common.schema.schema_object.Array | list[superlinked.framework.common.schema.schema_object.Array], length: int, aggregation: superlinked.framework.dsl.space.custom_space.CustomSpace.AggregationStrategy = AggregationStrategy.SUM_AND_NORMALIZE)`
+`CustomSpace(vector: superlinked.framework.common.schema.schema_object.FloatList | list[superlinked.framework.common.schema.schema_object.FloatList], length: int, aggregation: superlinked.framework.dsl.space.custom_space.CustomSpace.AggregationStrategy = AggregationStrategy.SUM_AND_NORMALIZE)`
 :   CustomSpace is the instrument of ingesting your own vectors into Superlinked.
     This way you can use your own vectors right away. What you need to know: (you can use numbering too)
     - vectors need to have the same length
     - vectors will be L2Norm normalized to ensure weighting makes sense
     - weighting can be performed (query-time)
-    - you are going to need an Array typed SchemaField to supply your data
-    - the Array field will be able to parse any Sequence[float | int]
+    - you are going to need an FloatList typed SchemaField to supply your data
+    - the FloatList field will be able to parse any Sequence[float | int]
     - you can leave the aggregation parameter as default, or switch it to using vector averaging during aggregation.
     
     Initializes a CustomSpace for vector storage and manipulation within Superlinked.
@@ -20,8 +20,8 @@ Classes
     vectors are aggregated and normalized.
     
     Args:
-        vector (Array | list[Array]): The input vector(s) to be stored in the space. This can be a single Array
-          SchemaField or a list of those.
+        vector (FloatList | list[FloatList]): The input vector(s) to be stored in the space.
+          This can be a single FloatList SchemaField or a list of those.
         length (int): The fixed length that all vectors in this space must have. This ensures uniformity and
           consistency in vector operations.
         aggregation (AggregationStrategy, optional): The strategy to use for aggregating multiple vectors.

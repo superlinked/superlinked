@@ -20,5 +20,6 @@ class FieldDataType(Enum):
     DOUBLE = "DOUBLE"
     INT = "INT"
     FLOAT_LIST = "FLOAT_LIST"
+    STRING_LIST = "STRING_LIST"
     STRING = "STRING"
     VECTOR = "VECTOR"

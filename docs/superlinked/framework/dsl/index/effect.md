@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.index.effect
 Classes
 -------
 
-`Effect(space: superlinked.framework.dsl.space.space.Space, affected_schema_reference: superlinked.framework.common.schema.schema_reference.SchemaReference, affecting_schema_reference: superlinked.framework.common.schema.schema_reference.SchemaReference | superlinked.framework.common.schema.schema_reference.MultipliedSchemaReference, filter_: superlinked.framework.common.interface.comparison_operand.ComparisonOperation[superlinked.framework.common.schema.schema_object.SchemaField])`
+`Effect(space: superlinked.framework.dsl.space.space.Space, affected_schema_reference: superlinked.framework.common.schema.event_schema_object.SchemaReference, affecting_schema_reference: superlinked.framework.common.schema.event_schema_object.SchemaReference | superlinked.framework.common.schema.event_schema_object.MultipliedSchemaReference, filter_: superlinked.framework.common.interface.comparison_operand.ComparisonOperation[superlinked.framework.common.schema.schema_object.SchemaField])`
 :   An effect represents a conditional interaction within a `Space` where the
     `affecting_schema_reference` interacted with the `affected_schema_reference`.
     
@@ -13,10 +13,10 @@ Classes
 
     ### Class variables
 
-    `affected_schema_reference: superlinked.framework.common.schema.schema_reference.SchemaReference`
+    `affected_schema_reference: superlinked.framework.common.schema.event_schema_object.SchemaReference`
     :
 
-    `affecting_schema_reference: superlinked.framework.common.schema.schema_reference.SchemaReference | superlinked.framework.common.schema.schema_reference.MultipliedSchemaReference`
+    `affecting_schema_reference: superlinked.framework.common.schema.event_schema_object.SchemaReference | superlinked.framework.common.schema.event_schema_object.MultipliedSchemaReference`
     :
 
     `filter_: superlinked.framework.common.interface.comparison_operand.ComparisonOperation[superlinked.framework.common.schema.schema_object.SchemaField]`

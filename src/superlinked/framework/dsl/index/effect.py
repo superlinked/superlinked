@@ -17,11 +17,11 @@ from dataclasses import dataclass
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
 )
-from superlinked.framework.common.schema.schema_object import SchemaField
-from superlinked.framework.common.schema.schema_reference import (
+from superlinked.framework.common.schema.event_schema_object import (
     MultipliedSchemaReference,
     SchemaReference,
 )
+from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.space.space import Space
 

@@ -16,10 +16,10 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from dataclasses import dataclass
-from itertools import chain
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, TypeVar, cast
 
 from beartype.typing import Sequence
+from typing_extensions import override
 
 from superlinked.framework.common.data_types import PythonTypes
 from superlinked.framework.common.interface.comparison_operand import ComparisonOperand
@@ -89,6 +89,9 @@ class SchemaField(ComparisonOperand, Generic[SFT]):
         self.name = name
         self.schema_obj = schema_obj
         self.type_ = type_
+
+    def parse(self, value: SFT) -> SFT:
+        return value
 
     def __hash__(self) -> int:
         return hash((self.name, self.schema_obj))
@@ -191,7 +194,7 @@ class Integer(Number[int]):
         return int(sum(values) / len(values))
 
 
-class Array(SchemaField[list[float]]):
+class FloatList(SchemaField[list[float]]):
     """
     Field of a schema that represents a vector.
     """
@@ -199,14 +202,39 @@ class Array(SchemaField[list[float]]):
     def __init__(self, name: str, schema_obj: SchemaObjectT) -> None:
         super().__init__(name, schema_obj, list[float])
 
+    @override
+    def parse(self, value: list[float]) -> list[float]:
+        return value if isinstance(value, list) else [cast(float, value)]
+
     @staticmethod
     def join_values(
         values: Sequence[list[float]],
     ) -> list[float]:
-        return list(chain.from_iterable(values))
+        return [
+            sum(current_values) / len(current_values) for current_values in zip(*values)
+        ]
 
 
-ConcreteSchemaField = String | Timestamp | Float | Integer | Array
+class StringList(SchemaField[list[str]]):
+    """
+    Field of a schema that represents a list of strings.
+    """
+
+    def __init__(self, name: str, schema_obj: SchemaObjectT) -> None:
+        super().__init__(name, schema_obj, list[str])
+
+    @override
+    def parse(self, value: list[str]) -> list[str]:
+        return value if isinstance(value, list) else [cast(str, value)]
+
+    @staticmethod
+    def join_values(
+        values: Sequence[list[str]],
+    ) -> list[str]:
+        return [", ".join(current_values) for current_values in zip(*values)]
+
+
+ConcreteSchemaField = String | Timestamp | Float | Integer | FloatList | StringList
 ConcreteSchemaFieldT = TypeVar("ConcreteSchemaFieldT", bound="ConcreteSchemaField")
 
 

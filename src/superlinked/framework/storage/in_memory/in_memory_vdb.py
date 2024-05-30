@@ -43,23 +43,29 @@ from superlinked.framework.common.storage.vdb_connector import VDBConnector
 from superlinked.framework.common.storage.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
+from superlinked.framework.storage.in_memory.in_memory_index_config import (
+    InMemoryIndexConfig,
+)
 from superlinked.framework.storage.in_memory.in_memory_search import InMemorySearch
-from superlinked.framework.storage.in_memory.index_config import IndexConfig
 from superlinked.framework.storage.in_memory.json_codec import JsonDecoder, JsonEncoder
 from superlinked.framework.storage.in_memory.object_serializer import ObjectSerializer
 
 
-class InMemoryVDB(VDBConnector):
+class InMemoryVDB(VDBConnector[InMemoryIndexConfig]):
     def __init__(self) -> None:
         super().__init__()
         self._vdb = defaultdict[str, dict[str, Any]](dict)
-        self._index_configs: dict[str, IndexConfig] = {}
         self._search = InMemorySearch()
 
     @override
     def close_connection(self) -> None:
         self._vdb = defaultdict[str, dict[str, Any]](dict)
-        self._index_configs = dict[str, IndexConfig]()
+        self._index_configs = dict[str, InMemoryIndexConfig]()
+
+    @override
+    @property
+    def supported_vector_indexing(self) -> Sequence[SearchAlgorithm]:
+        return [SearchAlgorithm.FLAT]
 
     @override
     def create_search_index(
@@ -70,7 +76,8 @@ class InMemoryVDB(VDBConnector):
         **index_params: Any,
     ) -> None:
         self.drop_search_index(index_name)
-        index_config = IndexConfig(
+        index_config = InMemoryIndexConfig(
+            index_name,
             vector_field_descriptor.field_name,
             [field_descriptor.field_name for field_descriptor in field_descriptors],
             VectorSimilarityCalculator(vector_field_descriptor.distance_metric),
@@ -80,11 +87,6 @@ class InMemoryVDB(VDBConnector):
     @override
     def drop_search_index(self, index_name: str) -> None:
         self._index_configs.pop(index_name, None)
-
-    @override
-    @property
-    def supported_vector_indexing(self) -> Sequence[SearchAlgorithm]:
-        return [SearchAlgorithm.FLAT]
 
     @override
     def write_entities(self, entity_data: Sequence[EntityData]) -> None:
@@ -142,7 +144,7 @@ class InMemoryVDB(VDBConnector):
         **params: Any,
     ) -> Sequence[ResultEntityData]:
         index_config = self._get_index_config(index_name)
-        sorted_scores: list[tuple[str, float]] = self._search.knn_search(
+        sorted_scores = self._search.knn_search(
             index_config, self._vdb, vdb_knn_search_params
         )
         return [
@@ -165,7 +167,7 @@ class InMemoryVDB(VDBConnector):
             )
         )
 
-    def _get_index_config(self, index_name: str) -> IndexConfig:
+    def _get_index_config(self, index_name: str) -> InMemoryIndexConfig:
         index_config = self._index_configs.get(index_name)
         if not index_config:
             raise ValidationException(

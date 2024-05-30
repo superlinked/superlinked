@@ -30,10 +30,18 @@ from superlinked.framework.common.parser.parsed_schema import (
     ParsedSchemaField,
 )
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
-from superlinked.framework.common.schema.schema_object import SchemaField, SchemaObject
+from superlinked.framework.common.schema.schema_object import (
+    ConcreteSchemaField,
+    SchemaField,
+    SchemaObject,
+)
 from superlinked.framework.common.storage.entity_data import EntityData
 from superlinked.framework.common.storage.field import Field
 from superlinked.framework.common.storage.field_data import VectorFieldData
+from superlinked.framework.common.storage.field_data_type import FieldDataType
+from superlinked.framework.common.storage.field_type_converter import (
+    FIELD_DATA_TYPE_BY_SCHEMA_FIELD_TYPE,
+)
 from superlinked.framework.common.storage.result_entity_data import ResultEntityData
 from superlinked.framework.common.storage.search_index_creation.index_field_descriptor import (
     IndexFieldDescriptor,
@@ -92,7 +100,7 @@ class StorageManager:
                 vector_coordinate_type,
             )
         )
-        self._vdb_connector.create_search_index(
+        self._vdb_connector.create_search_index_with_check(
             self._storage_naming.get_index_name_from_index_node(dag.index_node),
             vector_index_field_descriptor,
             index_field_descriptors,
@@ -398,20 +406,46 @@ class StorageManager:
 
         return (
             vector_index_field_descriptor,
-            [
-                IndexFieldDescriptor(
-                    self._storage_naming.generate_field_name_from_schema_field(
-                        indexed_field
-                    )
-                )
-                for indexed_field in indexed_fields
-            ]
+            list(
+                self._create_index_field_descriptors_from_schema_fields(indexed_fields)
+            )
             + [
                 IndexFieldDescriptor(
-                    self._entity_builder._admin_fields.schema_id.field.name
+                    FieldDataType.STRING,
+                    self._entity_builder._admin_fields.schema_id.field.name,
                 )
             ],
         )
+
+    def _create_index_field_descriptors_from_schema_fields(
+        self, schema_fields: Sequence[SchemaField]
+    ) -> Sequence[IndexFieldDescriptor]:
+        if unsupported_schema_field_indexing := [
+            f"{schema_field.name} - {type(schema_field)}"
+            for schema_field in schema_fields
+            if not isinstance(
+                schema_field, tuple(FIELD_DATA_TYPE_BY_SCHEMA_FIELD_TYPE.keys())
+            )
+        ]:
+            raise NotImplementedError(
+                f"Unindexable schema fields: {', '.join(unsupported_schema_field_indexing)}"
+            )
+        return [
+            IndexFieldDescriptor(
+                self._get_index_field_type_of_schema_field(
+                    cast(ConcreteSchemaField, schema_field)
+                ),
+                self._storage_naming.generate_field_name_from_schema_field(
+                    schema_field
+                ),
+            )
+            for schema_field in schema_fields
+        ]
+
+    def _get_index_field_type_of_schema_field(
+        self, schema_field: ConcreteSchemaField
+    ) -> FieldDataType:
+        return FIELD_DATA_TYPE_BY_SCHEMA_FIELD_TYPE[type(schema_field)]
 
     def _create_schema_field_by_field_name(
         self, fields: dict[Field, SchemaField]

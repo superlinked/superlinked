@@ -32,7 +32,7 @@ class ParsedSchemaField(Generic[SFT]):
     def from_schema_field(
         cls, schema_field: SchemaField[SFT], value: SFT
     ) -> ParsedSchemaField:
-        return cls(schema_field, value)
+        return cls(schema_field, schema_field.parse(value))
 
 
 @dataclass

@@ -13,8 +13,8 @@
 # limitations under the License.
 
 from superlinked.framework.common.exception import InitializationException
+from superlinked.framework.common.schema.event_schema_object import SchemaReference
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
-from superlinked.framework.common.schema.schema_reference import SchemaReference
 
 
 class SchemaObjectReference:

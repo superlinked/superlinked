@@ -4,21 +4,6 @@ Module superlinked.framework.common.schema.schema_object
 Classes
 -------
 
-`Array(name: str, schema_obj: SchemaObjectT)`
-:   Field of a schema that represents a vector.
-
-    ### Ancestors (in MRO)
-
-    * superlinked.framework.common.schema.schema_object.SchemaField
-    * superlinked.framework.common.interface.comparison_operand.ComparisonOperand
-    * abc.ABC
-    * typing.Generic
-
-    ### Static methods
-
-    `join_values(values: Sequence[list[float]]) ‑> list[float]`
-    :
-
 `Float(name: str, schema_obj: SchemaObjectT)`
 :   Field of a schema that represents a float.
 
@@ -33,6 +18,26 @@ Classes
     ### Static methods
 
     `join_values(values: Sequence[float]) ‑> float`
+    :
+
+`FloatList(name: str, schema_obj: SchemaObjectT)`
+:   Field of a schema that represents a vector.
+
+    ### Ancestors (in MRO)
+
+    * superlinked.framework.common.schema.schema_object.SchemaField
+    * superlinked.framework.common.interface.comparison_operand.ComparisonOperand
+    * abc.ABC
+    * typing.Generic
+
+    ### Static methods
+
+    `join_values(values: Sequence[list[float]]) ‑> list[float]`
+    :
+
+    ### Methods
+
+    `parse(self, value: list[float]) ‑> list[float]`
     :
 
 `Integer(name: str, schema_obj: SchemaObjectT)`
@@ -83,15 +88,22 @@ Classes
 
     ### Descendants
 
+    * superlinked.framework.common.schema.event_schema_object.SchemaReference
     * superlinked.framework.common.schema.id_schema_object.IdField
-    * superlinked.framework.common.schema.schema_object.Array
+    * superlinked.framework.common.schema.schema_object.FloatList
     * superlinked.framework.common.schema.schema_object.Number
     * superlinked.framework.common.schema.schema_object.String
+    * superlinked.framework.common.schema.schema_object.StringList
     * superlinked.framework.common.schema.schema_object.Timestamp
 
     ### Static methods
 
     `join_values(values: Sequence[SFT]) ‑> ~SFT`
+    :
+
+    ### Methods
+
+    `parse(self, value: SFT) ‑> ~SFT`
     :
 
 `SchemaObject(base_cls: type, schema_name: str)`
@@ -115,13 +127,29 @@ Classes
     * abc.ABC
     * typing.Generic
 
-    ### Descendants
-
-    * superlinked.framework.common.schema.schema_reference.SchemaReference
-
     ### Static methods
 
     `join_values(values: Sequence[str]) ‑> str`
+    :
+
+`StringList(name: str, schema_obj: SchemaObjectT)`
+:   Field of a schema that represents a list of strings.
+
+    ### Ancestors (in MRO)
+
+    * superlinked.framework.common.schema.schema_object.SchemaField
+    * superlinked.framework.common.interface.comparison_operand.ComparisonOperand
+    * abc.ABC
+    * typing.Generic
+
+    ### Static methods
+
+    `join_values(values: Sequence[list[str]]) ‑> list[str]`
+    :
+
+    ### Methods
+
+    `parse(self, value: list[str]) ‑> list[str]`
     :
 
 `Timestamp(name: str, schema_obj: SchemaObjectT)`

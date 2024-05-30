@@ -18,7 +18,7 @@ from superlinked.framework.common.dag.custom_node import CustomVectorEmbeddingNo
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.schema.schema_object import Array, SchemaObject
+from superlinked.framework.common.schema.schema_object import FloatList, SchemaObject
 from superlinked.framework.common.space.aggregation import (
     Aggregation,
     VectorAggregation,
@@ -39,8 +39,8 @@ class CustomSpace(Space):
     - vectors need to have the same length
     - vectors will be L2Norm normalized to ensure weighting makes sense
     - weighting can be performed (query-time)
-    - you are going to need an Array typed SchemaField to supply your data
-    - the Array field will be able to parse any Sequence[float | int]
+    - you are going to need an FloatList typed SchemaField to supply your data
+    - the FloatList field will be able to parse any Sequence[float | int]
     - you can leave the aggregation parameter as default, or switch it to using vector averaging during aggregation.
     """
 
@@ -61,7 +61,7 @@ class CustomSpace(Space):
 
     def __init__(
         self,
-        vector: Array | list[Array],
+        vector: FloatList | list[FloatList],
         length: int,
         aggregation: AggregationStrategy = AggregationStrategy.SUM_AND_NORMALIZE,
     ) -> None:
@@ -72,8 +72,8 @@ class CustomSpace(Space):
         vectors are aggregated and normalized.
 
         Args:
-            vector (Array | list[Array]): The input vector(s) to be stored in the space. This can be a single Array
-              SchemaField or a list of those.
+            vector (FloatList | list[FloatList]): The input vector(s) to be stored in the space.
+              This can be a single FloatList SchemaField or a list of those.
             length (int): The fixed length that all vectors in this space must have. This ensures uniformity and
               consistency in vector operations.
             aggregation (AggregationStrategy, optional): The strategy to use for aggregating multiple vectors.
@@ -85,7 +85,7 @@ class CustomSpace(Space):
             InvalidAggregationStrategyException: If the specified aggregation strategy is not recognized. This ensures
               that only valid aggregation strategies are used.
         """
-        super().__init__(vector, Array)
+        super().__init__(vector, FloatList)
         aggregation_strategy: Aggregation
         match aggregation:
             case self.AggregationStrategy.SUM_AND_NORMALIZE:

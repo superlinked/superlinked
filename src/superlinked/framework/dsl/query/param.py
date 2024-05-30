@@ -14,6 +14,8 @@
 
 from typing import TypeAlias
 
+from beartype.typing import Sequence
+
 
 class Param:
     """
@@ -33,7 +35,9 @@ class Param:
         self.name = name
 
 
-ParamInputType: TypeAlias = str | int | float | bool | None
+ParamInputType: TypeAlias = (
+    Sequence[str] | Sequence[float] | str | int | float | bool | None
+)
 ParamType: TypeAlias = ParamInputType | Param
 NumericParamType: TypeAlias = float | int | Param
 IntParamType: TypeAlias = int | Param

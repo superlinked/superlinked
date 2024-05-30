@@ -49,6 +49,6 @@ class SentenceTransformerEmbedding(Embedding[str], HasLength):
         return self.__length
 
     def __to_vector(self, embedding: list[Tensor] | np.ndarray | Tensor) -> Vector:
-        vector_input = cast(np.ndarray, embedding).astype(np.float64)
+        vector_input = cast(np.ndarray, embedding).astype(np.float32)
         vector = Vector(vector_input)
         return vector.normalize(self.__normalization.norm(vector_input))

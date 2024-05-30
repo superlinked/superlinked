@@ -76,8 +76,9 @@ class OnlineCategoricalSimilarityNode(
             stored_result = self.load_stored_result_or_raise_exception(parsed_schema)
             return EvaluationResult(self._get_single_evaluation_result(stored_result))
 
-        input_: EvaluationResult[str] = cast(
-            OnlineNode[Node[str], str], self.parents[0]
+        input_: EvaluationResult[list[str]] = cast(
+            OnlineNode[Node[list[str]], list[str]],
+            self.parents[0],
         ).evaluate_next_single(parsed_schema, context)
         transformed_input_value = self.node.embedding.embed(input_.main.value, context)
         main = self._get_single_evaluation_result(transformed_input_value)

@@ -25,7 +25,7 @@ class GenericClassUtil:
     def if_not_class_get_origin(type_: type[T]) -> type:
         if inspect.isclass(type_):
             # For backward compatibility!
-            if type_ == list[float]:
+            if type_ in [list[str], list[float]]:
                 return type_.__origin__
             return type_
         return cast(type, get_origin(type_))

@@ -21,12 +21,12 @@ from superlinked.framework.common.calculation.vector_similarity import (
     VectorSimilarityCalculator,
 )
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.exception import ValidationException
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
 )
 from superlinked.framework.common.storage.field import Field
 from superlinked.framework.common.storage.field_data import VectorFieldData
+from superlinked.framework.common.storage.search_mixin import SearchMixin
 from superlinked.framework.common.storage.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
@@ -34,10 +34,12 @@ from superlinked.framework.storage.in_memory.exception import (
     VectorFieldDimensionException,
     VectorFieldTypeException,
 )
-from superlinked.framework.storage.in_memory.index_config import IndexConfig
+from superlinked.framework.storage.in_memory.in_memory_index_config import (
+    InMemoryIndexConfig,
+)
 
 
-class InMemorySearch:
+class InMemorySearch(SearchMixin):
     def search(
         self,
         vdb: defaultdict[str, dict[str, Any]],
@@ -52,10 +54,10 @@ class InMemorySearch:
 
     def knn_search(
         self,
-        index_config: IndexConfig,
+        index_config: InMemoryIndexConfig,
         vdb: defaultdict[str, dict[str, Any]],
         search_params: VDBKNNSearchParams,
-    ) -> list[tuple[str, float]]:
+    ) -> Sequence[tuple[str, float]]:
         self._check_vector_field(index_config, search_params.vector_field)
         self._check_filters(index_config, search_params.filters)
         filtered_vectors = self._filter_indexed_vectors(
@@ -77,30 +79,6 @@ class InMemorySearch:
             if search_params.limit
             else sorted_similarities
         )
-
-    def _check_vector_field(
-        self, index_config: IndexConfig, vector_field: VectorFieldData
-    ) -> None:
-        if vector_field.value is None:
-            raise ValidationException("Cannot search with none-type vector!")
-        if index_config.vector_field_name != vector_field.name:
-            raise ValidationException(
-                f"Indexed {index_config.vector_field_name} and"
-                + f" searched {vector_field.name} vectors are different!"
-            )
-
-    def _check_filters(
-        self,
-        index_config: IndexConfig,
-        filters: Sequence[ComparisonOperation[Field]] | None,
-    ) -> None:
-        if unindexed_fields := set(
-            field_name
-            for filter_ in (filters or [])
-            if (field_name := cast(Field, filter_._operand).name)
-            not in index_config.indexed_field_names
-        ):
-            raise ValidationException(f"Unindexed fields found: {unindexed_fields}")
 
     def _filter_indexed_vectors(
         self,
@@ -158,7 +136,7 @@ class InMemorySearch:
         self,
         similarities: dict[str, float],
         radius: float | None,
-    ) -> list[tuple[str, float]]:
+    ) -> Sequence[tuple[str, float]]:
         return sorted(
             {
                 k: similarity

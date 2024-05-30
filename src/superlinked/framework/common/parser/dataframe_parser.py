@@ -28,11 +28,11 @@ from superlinked.framework.common.parser.parsed_schema import (
     ParsedSchema,
     ParsedSchemaField,
 )
+from superlinked.framework.common.schema.event_schema_object import SchemaReference
 from superlinked.framework.common.schema.id_schema_object import (
     IdSchemaObjectT,
     SchemaField,
 )
-from superlinked.framework.common.schema.schema_reference import SchemaReference
 
 
 class DataFrameParser(

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import numpy as np
+from beartype.typing import Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
@@ -29,16 +30,14 @@ class CategoricalSimilarityParams:
         self,
         categories: list[str],
         uncategorized_as_category: bool,
-        category_separator: str | None = None,
         negative_filter: float = 0.0,
     ):
         self.categories: list[str] = categories
         self.uncategorized_as_category: bool = uncategorized_as_category
-        self.category_separator: str | None = category_separator
         self.negative_filter: float = negative_filter
 
 
-class CategoricalSimilarityEmbedding(Embedding[str], HasLength):
+class CategoricalSimilarityEmbedding(Embedding[list[str]], HasLength):
     def __init__(
         self,
         categorical_similarity_param: CategoricalSimilarityParams,
@@ -62,11 +61,9 @@ class CategoricalSimilarityEmbedding(Embedding[str], HasLength):
         )
 
     @override
-    def embed(self, input_: str, context: ExecutionContext) -> Vector:
-        # TODO: https://linear.app/superlinked/issue/ENG-1736/make-schemafields-composite
-        parsed_input: list[str] = self.__parse_categories(input_=input_)
+    def embed(self, input_: list[str], context: ExecutionContext) -> Vector:
         one_hot_encoding: NPArray = self.__n_hot_encode(
-            parsed_input, context.is_query_context()
+            input_, context.is_query_context()
         )
         return Vector(one_hot_encoding)
 
@@ -76,7 +73,7 @@ class CategoricalSimilarityEmbedding(Embedding[str], HasLength):
             0 if is_query else self.categorical_similarity_param.negative_filter,
             dtype=np.float32,
         )
-        category_indices: list[int] = self.__get_category_indices(category_list)
+        category_indices: Sequence[int] = self.__get_category_indices(category_list)
         if category_indices:
             n_hot_encoding[category_indices] = self.__get_normalized_vector_input()
         return n_hot_encoding
@@ -102,23 +99,10 @@ class CategoricalSimilarityEmbedding(Embedding[str], HasLength):
             self.other_category_index,
         )
 
-    def __parse_categories(self, input_: str) -> list[str]:
-        if self.categorical_similarity_param.category_separator:
-            return [
-                category.strip()
-                for category in input_.split(
-                    self.categorical_similarity_param.category_separator
-                )
-            ]
-        return [input_]
-
     @property
+    @override
     def length(self) -> int:
         return self.__length
-
-    @property
-    def category_separator(self) -> str | None:
-        return self.categorical_similarity_param.category_separator
 
     @property
     def category_index_map(self) -> dict[str, int]:

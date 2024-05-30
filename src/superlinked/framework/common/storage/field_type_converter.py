@@ -18,19 +18,21 @@ from beartype.typing import Sequence
 
 from superlinked.framework.common.data_types import PythonTypes, Vector
 from superlinked.framework.common.schema.schema_object import (
-    Array,
     ConcreteSchemaField,
     Float,
+    FloatList,
     Integer,
     SchemaField,
     String,
+    StringList,
     Timestamp,
 )
 from superlinked.framework.common.storage.field_data_type import FieldDataType
 from superlinked.framework.common.util.generic_class_util import GenericClassUtil
 
 FIELD_DATA_TYPE_BY_SCHEMA_FIELD_TYPE: dict[type[ConcreteSchemaField], FieldDataType] = {
-    Array: FieldDataType.FLOAT_LIST,
+    FloatList: FieldDataType.FLOAT_LIST,
+    StringList: FieldDataType.STRING_LIST,
     Float: FieldDataType.DOUBLE,
     Integer: FieldDataType.INT,
     String: FieldDataType.STRING,
@@ -42,6 +44,7 @@ FIELD_DATA_TYPE_BY_PYTHON_TYPE: dict[type[PythonTypes], FieldDataType] = {
     int: FieldDataType.INT,
     str: FieldDataType.STRING,
     list[float]: FieldDataType.FLOAT_LIST,
+    list[str]: FieldDataType.STRING_LIST,
     Vector: FieldDataType.VECTOR,
 }
 
@@ -50,6 +53,7 @@ VALID_TYPE_BY_FIELD_DATA_TYPE: dict[FieldDataType, Sequence[type[PythonTypes]]] 
     FieldDataType.DOUBLE: [int, float],
     FieldDataType.INT: [int],
     FieldDataType.FLOAT_LIST: [list[float]],
+    FieldDataType.STRING_LIST: [list[str]],
     FieldDataType.STRING: [str],
     FieldDataType.VECTOR: [Vector],
 }

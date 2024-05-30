@@ -14,7 +14,10 @@
 
 from typing import cast, get_args
 
-from superlinked.framework.common.schema.event_schema_object import EventSchemaObject
+from superlinked.framework.common.schema.event_schema_object import (
+    EventSchemaObject,
+    SchemaReference,
+)
 from superlinked.framework.common.schema.general_type import T
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_decorator import SchemaDecorator
@@ -22,7 +25,6 @@ from superlinked.framework.common.schema.schema_object import (
     ConcreteSchemaField,
     SchemaFieldDescriptor,
 )
-from superlinked.framework.common.schema.schema_reference import SchemaReference
 from superlinked.framework.common.schema.schema_type import SchemaType
 from superlinked.framework.common.schema.schema_validator import SchemaValidator
 from superlinked.framework.common.util.generic_class_util import GenericClassUtil

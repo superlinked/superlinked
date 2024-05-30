@@ -24,7 +24,7 @@ from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.categorical_similarity_embedding import (
     CategoricalSimilarityParams,
 )
-from superlinked.framework.common.schema.schema_object import SchemaObject, String
+from superlinked.framework.common.schema.schema_object import SchemaObject, StringList
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
@@ -47,9 +47,9 @@ class CategoricalSimilaritySpace(Space):
     items, consider adding it to `categories`.
 
     Attributes:
-        category_input (Union[String, List[String]]): The schema field containing input
-            category or categories to be considered in the similarity space. Input contains
-            either a single category, or multiple categories separated by `category_separator`.
+        category_input (Union[StringList, List[StringList]]): The schema field containing input
+            categories to be considered in the similarity space. Input contains
+            one or more categories in a list.
         categories (List[str]): A list of categories that defines the dimensionality of the
             one-hot encoded vector. Any category not listed is considered as 'other'.
         negative_filter (float): A value to represent unmatched categories in the one-hot vector.
@@ -60,10 +60,6 @@ class CategoricalSimilaritySpace(Space):
             set to 0, or negative_filter if set. By this we can control if a category_input not in
             categories will be similar to other category_inputs not in categories. Note that the same
             category_inputs not in categories will not be similar to each other either.
-        category_separator (str | None): The delimiter used to separate multiple categories within a
-            single input field. This is relevant only when `category_input` is expected to contain
-            multiple categories.
-
     Raises:
         InvalidSchemaException: If a schema object does not have a corresponding node in the
             similarity space.
@@ -71,11 +67,10 @@ class CategoricalSimilaritySpace(Space):
 
     def __init__(
         self,
-        category_input: String | list[String],
+        category_input: StringList | list[StringList],
         categories: list[str],
         negative_filter: float = 0.0,
         uncategorized_as_category: bool = True,
-        category_separator: str | None = None,
     ) -> None:
         """
         Initializes a new instance of the CategoricalSimilaritySpace.
@@ -84,10 +79,9 @@ class CategoricalSimilaritySpace(Space):
         similarity based on the provided parameters.
 
         Args:
-            category_input (String | list[String]): The schema field(s) that contain the input category or categories.
-                This can be a single category field or multiple fields, coming from different schemas.
-                Multilabel instances should be present in a single SchemaField, separated by the `category_separator`
-                character.
+            category_input (Union[StringList, List[StringList]]): The schema field containing input
+            categories to be considered in the similarity space. Input contains
+            one or more categories in a list.
             categories (list[str]): A list of all the recognized categories. Categories not included in this list will
                 be treated as 'other', unless `uncategorized_as_category` is False.
             negative_filter (float, optional): A value used to represent unmatched categories in the encoding process.
@@ -95,23 +89,20 @@ class CategoricalSimilaritySpace(Space):
                  it is possible to influence the similarity score negatively. Defaults to 0.0.
             uncategorized_as_category (bool, optional): Determines whether categories not listed in `categories` should
                 be treated as a distinct 'other' category. Defaults to True.
-            category_separator (str | None, optional): The delimiter used to separate multiple categories within a
-                single input field. Defaults to None effectively meaning the whole text is the category.
 
         Raises:
             InvalidSchemaException: If a schema object does not have a corresponding node in the similarity space,
             indicating a configuration or implementation error.
         """
-        super().__init__(category_input, String)
+        super().__init__(category_input, StringList)
         self.categorical_similarity_param: CategoricalSimilarityParams = (
             CategoricalSimilarityParams(
                 categories=categories,
                 uncategorized_as_category=uncategorized_as_category,
-                category_separator=category_separator,
                 negative_filter=negative_filter,
             )
         )
-        self.category_input = SpaceFieldSet(self, self._field_set)
+        self.__category = SpaceFieldSet(self, self._field_set)
         unchecked_category_node_map = {
             single_category: CategoricalSimilarityNode(
                 parent=SchemaFieldNode(single_category),
@@ -133,5 +124,5 @@ class CategoricalSimilaritySpace(Space):
         return self.categorical_similarity_param.uncategorized_as_category
 
     @property
-    def category_separator(self) -> str | None:
-        return self.categorical_similarity_param.category_separator
+    def category(self) -> SpaceFieldSet:
+        return self.__category

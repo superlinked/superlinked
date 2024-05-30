@@ -25,13 +25,13 @@ from superlinked.framework.common.exception import (
     InitializationException,
     InvalidSchemaException,
 )
-from superlinked.framework.common.schema.event_schema_object import EventSchemaObject
-from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
-from superlinked.framework.common.schema.schema_object import SchemaObject
-from superlinked.framework.common.schema.schema_reference import (
+from superlinked.framework.common.schema.event_schema_object import (
+    EventSchemaObject,
     MultipliedSchemaReference,
     SchemaReference,
 )
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
+from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.dsl.index.effect import Effect
 
 
