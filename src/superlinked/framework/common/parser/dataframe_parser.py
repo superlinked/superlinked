@@ -82,7 +82,10 @@ class DataFrameParser(
                         schema_field=schema_cols[key], value=value
                     )
                     for key, value in record.items()
-                    if key != self._id_name and not pd.isnull(value)
+                    if key != self._id_name
+                    and (
+                        bool(value) if isinstance(value, list) else not pd.isnull(value)
+                    )
                 ],
             )
             for record in records
