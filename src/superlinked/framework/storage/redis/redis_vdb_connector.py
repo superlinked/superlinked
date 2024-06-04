@@ -26,6 +26,9 @@ from superlinked.framework.common.storage.entity_id import EntityId
 from superlinked.framework.common.storage.field import Field
 from superlinked.framework.common.storage.field_data import FieldData
 from superlinked.framework.common.storage.index_config import IndexConfig
+from superlinked.framework.common.storage.query.vdb_knn_search_params import (
+    VDBKNNSearchParams,
+)
 from superlinked.framework.common.storage.result_entity_data import ResultEntityData
 from superlinked.framework.common.storage.search_index_creation.index_field_descriptor import (
     IndexFieldDescriptor,
@@ -35,9 +38,6 @@ from superlinked.framework.common.storage.search_index_creation.search_algorithm
     SearchAlgorithm,
 )
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
-from superlinked.framework.common.storage.vdb_knn_search_params import (
-    VDBKNNSearchParams,
-)
 from superlinked.framework.storage.redis.query.redis_query_builder import (
     VECTOR_SCORE_ALIAS,
 )
@@ -134,8 +134,8 @@ class RedisVDBConnector(VDBConnector[IndexConfig]):
         **params: Any,
     ) -> Sequence[ResultEntityData]:
         index_config = self._get_index_config(index_name)
-        result: dict[str, Any] = self._encoder.convert_bytes_keys(
-            self._search.knn_search(
+        result = self._encoder.convert_bytes_keys(
+            self._search.knn_search_with_checks(
                 index_config, returned_fields, vdb_knn_search_params
             )
         )
@@ -158,7 +158,7 @@ class RedisVDBConnector(VDBConnector[IndexConfig]):
         index_config = self._index_configs.get(index_name)
         if not index_config:
             raise ValidationException(
-                f"Index with the given name {index_name} doesn't exist!"
+                f"Index with the given name {index_name} doesn't exist."
             )
         return index_config
 

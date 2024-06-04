@@ -26,10 +26,10 @@ from superlinked.framework.common.interface.comparison_operand import (
 )
 from superlinked.framework.common.storage.field import Field
 from superlinked.framework.common.storage.field_data import VectorFieldData
-from superlinked.framework.common.storage.search_mixin import SearchMixin
-from superlinked.framework.common.storage.vdb_knn_search_params import (
+from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
+from superlinked.framework.common.storage.search import Search
 from superlinked.framework.storage.in_memory.exception import (
     VectorFieldDimensionException,
     VectorFieldTypeException,
@@ -39,7 +39,7 @@ from superlinked.framework.storage.in_memory.in_memory_index_config import (
 )
 
 
-class InMemorySearch(SearchMixin):
+class InMemorySearch:
     def search(
         self,
         vdb: defaultdict[str, dict[str, Any]],
@@ -58,8 +58,8 @@ class InMemorySearch(SearchMixin):
         vdb: defaultdict[str, dict[str, Any]],
         search_params: VDBKNNSearchParams,
     ) -> Sequence[tuple[str, float]]:
-        self._check_vector_field(index_config, search_params.vector_field)
-        self._check_filters(index_config, search_params.filters)
+        Search.check_vector_field(index_config, search_params.vector_field)
+        Search.check_filters(index_config, search_params.filters)
         filtered_vectors = self._filter_indexed_vectors(
             vdb,
             search_params.vector_field,

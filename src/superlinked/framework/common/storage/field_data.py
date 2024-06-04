@@ -17,6 +17,8 @@ from __future__ import annotations
 
 from typing import Generic, TypeVar, get_args
 
+from beartype.typing import Sequence
+
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.storage.field import Field
 from superlinked.framework.common.storage.field_data_type import FieldDataType
@@ -67,8 +69,8 @@ class IntFieldData(FieldData[int]):
         super().__init__(FieldDataType.INT, name, value)
 
 
-class FloatListFieldData(FieldData[list[float]]):  # TODO currently unused
-    def __init__(self, name: str, value: list[float]) -> None:
+class FloatListFieldData(FieldData[Sequence[float]]):  # TODO currently unused
+    def __init__(self, name: str, value: Sequence[float]) -> None:
         super().__init__(FieldDataType.FLOAT_LIST, name, value)
 
 

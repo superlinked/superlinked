@@ -13,20 +13,17 @@
 # limitations under the License.
 
 from dataclasses import dataclass
-from typing import Any
+
+from superlinked.framework.common.storage.query.equality_filter import EqualityFilter
 
 
 @dataclass(frozen=True)
-class RedisEqualityFilter:
-    field_name: str
-    field_value: Any
-    negated: bool
-
+class RedisEqualityFilter(EqualityFilter):
     def __get_param_prefix(self) -> str:
-        return "" if self.negated else "not_"
+        return "not_" if self.negated else ""
 
     def __get_query_prefix(self) -> str:
-        return f"{'' if self.negated else '-'}"
+        return "-" if self.negated else ""
 
     def __get_param_name(self) -> str:
         return f"{self.__get_param_prefix()}{self.field_name}_param"

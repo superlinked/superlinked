@@ -42,6 +42,9 @@ from superlinked.framework.common.storage.field_data_type import FieldDataType
 from superlinked.framework.common.storage.field_type_converter import (
     FIELD_DATA_TYPE_BY_SCHEMA_FIELD_TYPE,
 )
+from superlinked.framework.common.storage.query.vdb_knn_search_params import (
+    VDBKNNSearchParams,
+)
 from superlinked.framework.common.storage.result_entity_data import ResultEntityData
 from superlinked.framework.common.storage.search_index_creation.index_field_descriptor import (
     IndexFieldDescriptor,
@@ -54,9 +57,6 @@ from superlinked.framework.common.storage.search_index_creation.vector_component
     VectorComponentPrecision,
 )
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
-from superlinked.framework.common.storage.vdb_knn_search_params import (
-    VDBKNNSearchParams,
-)
 from superlinked.framework.common.storage_manager.entity_builder import EntityBuilder
 from superlinked.framework.common.storage_manager.knn_search_params import (
     KNNSearchParams,

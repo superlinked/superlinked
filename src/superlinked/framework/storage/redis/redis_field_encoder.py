@@ -23,7 +23,7 @@ from superlinked.framework.common.storage.field import Field
 from superlinked.framework.common.storage.field_data import FieldData
 from superlinked.framework.common.storage.field_data_type import FieldDataType
 
-REDIS_ENCODED_TYPES = str | float | int | list[float] | bytes
+RedisEncodedTypes = str | float | int | list[float] | bytes
 
 
 class RedisFieldEncoder:
@@ -32,19 +32,19 @@ class RedisFieldEncoder:
         self._encode_map: dict[FieldDataType, Callable[..., Any]] = {
             FieldDataType.BLOB: self._encode_blob,
             FieldDataType.DOUBLE: self._encode_double,
-            FieldDataType.INT: self._encode_int,
             FieldDataType.FLOAT_LIST: self._encode_float_list,
-            FieldDataType.STRING_LIST: self._encode_string_list,
+            FieldDataType.INT: self._encode_int,
             FieldDataType.STRING: self._encode_string,
+            FieldDataType.STRING_LIST: self._encode_string_list,
             FieldDataType.VECTOR: self._encode_vector,
         }
         self._decode_map: dict[FieldDataType, Callable[[bytes], Any]] = {
             FieldDataType.BLOB: self._decode_blob,
             FieldDataType.DOUBLE: self._decode_double,
-            FieldDataType.INT: self._decode_int,
             FieldDataType.FLOAT_LIST: self._decode_float_list,
-            FieldDataType.STRING_LIST: self._decode_string_list,
+            FieldDataType.INT: self._decode_int,
             FieldDataType.STRING: self._decode_string,
+            FieldDataType.STRING_LIST: self._decode_string_list,
             FieldDataType.VECTOR: self._decode_vector,
         }
 
@@ -66,12 +66,6 @@ class RedisFieldEncoder:
     def _decode_float_list(self, float_list: bytes) -> list[float]:
         return self._decode_vector(float_list).value.tolist()
 
-    def _encode_string_list(self, string_list: list[str]) -> bytes:
-        return str.encode(json.dumps(string_list))
-
-    def _decode_string_list(self, string_list: bytes) -> list[str]:
-        return json.loads(string_list.decode("utf-8"))
-
     def _encode_int(self, int_: int) -> int:
         return int_
 
@@ -83,6 +77,12 @@ class RedisFieldEncoder:
 
     def _decode_string(self, string: bytes) -> str:
         return string.decode("utf-8")
+
+    def _encode_string_list(self, string_list: list[str]) -> bytes:
+        return str.encode(json.dumps(string_list))
+
+    def _decode_string_list(self, string_list: bytes) -> list[str]:
+        return json.loads(string_list.decode("utf-8"))
 
     def _encode_vector(self, vector: Vector) -> bytes:
         np_vector: np.ndarray
@@ -99,7 +99,7 @@ class RedisFieldEncoder:
             )
         return Vector(np.frombuffer(vector, np.float32).tolist())
 
-    def encode_field(self, field: FieldData) -> REDIS_ENCODED_TYPES:
+    def encode_field(self, field: FieldData) -> RedisEncodedTypes:
         if encoder := self._encode_map.get(field.data_type):
             return encoder(field.value)
         raise EncoderException(

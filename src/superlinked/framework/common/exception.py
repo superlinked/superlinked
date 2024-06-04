@@ -63,3 +63,7 @@ class ValidationException(Exception):
 
 class DuplicateNodeIdException(Exception):
     pass
+
+
+class UnexpectedResponseException(Exception):
+    pass

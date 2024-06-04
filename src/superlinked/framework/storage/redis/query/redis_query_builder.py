@@ -18,7 +18,6 @@ from typing import Any, cast
 from beartype.typing import Sequence
 from redis.commands.search.query import Query
 
-from superlinked.framework.common.exception import ValidationException
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
 )
@@ -27,7 +26,7 @@ from superlinked.framework.common.interface.comparison_operation_type import (
 )
 from superlinked.framework.common.storage.field import Field
 from superlinked.framework.common.storage.field_data import FieldData, VectorFieldData
-from superlinked.framework.common.storage.vdb_knn_search_params import (
+from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
 from superlinked.framework.storage.redis.query.redis_equality_filter import (
@@ -35,7 +34,7 @@ from superlinked.framework.storage.redis.query.redis_equality_filter import (
 )
 from superlinked.framework.storage.redis.redis_field_encoder import RedisFieldEncoder
 
-RANGE_DISTANCE_PARAM_NAME = "range_dist"
+RANGE_DISTANCE_PARAM_NAME = "__range_dist"
 VECTOR_SCORE_ALIAS = "__vector_score"
 
 
@@ -72,28 +71,16 @@ class RedisQueryBuilder:
     def _compile_filters_to_redis_filters(
         self, filters: Sequence[ComparisonOperation[Field]]
     ) -> Sequence[RedisEqualityFilter]:
-        self.__check_filters(filters)
         return [
             RedisEqualityFilter(
                 cast(Field, filter_._operand).name,
                 self._encoder.encode_field(
                     FieldData.from_field(cast(Field, filter_._operand), filter_._other)
                 ),
-                filter_._op == ComparisonOperationType.EQUAL,
+                filter_._op != ComparisonOperationType.EQUAL,
             )
             for filter_ in filters
         ]
-
-    def __check_filters(self, filters: Sequence[ComparisonOperation[Field]]) -> None:
-        if non_equality_filters := [
-            filter_
-            for filter_ in filters
-            if filter_._op
-            not in [ComparisonOperationType.EQUAL, ComparisonOperationType.NOT_EQUAL]
-        ]:
-            raise ValidationException(
-                f"Unsupported filters found for Redis: {non_equality_filters}"
-            )
 
     def _create_query_string(
         self,

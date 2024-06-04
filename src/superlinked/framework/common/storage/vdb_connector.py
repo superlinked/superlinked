@@ -21,6 +21,9 @@ from superlinked.framework.common.storage.entity import Entity
 from superlinked.framework.common.storage.entity_data import EntityData
 from superlinked.framework.common.storage.field import Field
 from superlinked.framework.common.storage.index_config import IndexConfigT
+from superlinked.framework.common.storage.query.vdb_knn_search_params import (
+    VDBKNNSearchParams,
+)
 from superlinked.framework.common.storage.result_entity_data import ResultEntityData
 from superlinked.framework.common.storage.search_index_creation.index_field_descriptor import (
     IndexFieldDescriptor,
@@ -28,9 +31,6 @@ from superlinked.framework.common.storage.search_index_creation.index_field_desc
 )
 from superlinked.framework.common.storage.search_index_creation.search_algorithm import (
     SearchAlgorithm,
-)
-from superlinked.framework.common.storage.vdb_knn_search_params import (
-    VDBKNNSearchParams,
 )
 
 
