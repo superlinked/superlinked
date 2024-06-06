@@ -17,6 +17,7 @@ from typing import Any, cast
 
 from beartype.typing import Sequence
 
+from superlinked.framework.common.calculation.distance_metric import DistanceMetric
 from superlinked.framework.common.calculation.vector_similarity import (
     VectorSimilarityCalculator,
 )
@@ -26,6 +27,7 @@ from superlinked.framework.common.interface.comparison_operand import (
 )
 from superlinked.framework.common.storage.field import Field
 from superlinked.framework.common.storage.field_data import VectorFieldData
+from superlinked.framework.common.storage.index_config import IndexConfig
 from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
@@ -33,9 +35,6 @@ from superlinked.framework.common.storage.search import Search
 from superlinked.framework.storage.in_memory.exception import (
     VectorFieldDimensionException,
     VectorFieldTypeException,
-)
-from superlinked.framework.storage.in_memory.in_memory_index_config import (
-    InMemoryIndexConfig,
 )
 
 
@@ -54,7 +53,7 @@ class InMemorySearch:
 
     def knn_search(
         self,
-        index_config: InMemoryIndexConfig,
+        index_config: IndexConfig,
         vdb: defaultdict[str, dict[str, Any]],
         search_params: VDBKNNSearchParams,
     ) -> Sequence[tuple[str, float]]:
@@ -66,7 +65,7 @@ class InMemorySearch:
             search_params.filters,
         )
         similarities = self._calculate_similarities(
-            index_config.vector_similarity_calculator,
+            index_config.vector_field_descriptor.distance_metric,
             search_params.vector_field.value,
             filtered_vectors,
         )
@@ -121,10 +120,11 @@ class InMemorySearch:
 
     def _calculate_similarities(
         self,
-        vector_similarity_calculator: VectorSimilarityCalculator,
+        distance_metric: DistanceMetric,
         vector: Vector,
         filtered_vectors: dict[str, Vector],
     ) -> dict[str, float]:
+        vector_similarity_calculator = VectorSimilarityCalculator(distance_metric)
         return {
             row_id: vector_similarity_calculator.calculate_similarity(
                 filtered_vector, vector

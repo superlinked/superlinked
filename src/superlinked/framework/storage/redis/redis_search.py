@@ -32,9 +32,7 @@ from superlinked.framework.storage.redis.query.redis_query_builder import (
 from superlinked.framework.storage.redis.redis_field_encoder import RedisFieldEncoder
 
 
-class RedisSearch(
-    Search[IndexConfig, VDBKNNSearchParams, RedisQuery, dict[bytes, Any]]
-):
+class RedisSearch(Search[VDBKNNSearchParams, RedisQuery, dict[bytes, Any]]):
     def __init__(self, client: Redis, encoder: RedisFieldEncoder) -> None:
         super().__init__()
         self._client = client

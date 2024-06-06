@@ -22,7 +22,10 @@ from typing_extensions import Self
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
-from superlinked.framework.common.storage_manager.storage_manager import StorageManager
+from superlinked.framework.common.storage_manager.storage_manager import (
+    SearchIndexParams,
+    StorageManager,
+)
 from superlinked.framework.common.util.generic_class_util import GenericClassUtil
 from superlinked.framework.common.util.time_util import now
 from superlinked.framework.common.util.type_validator import TypeValidator
@@ -55,6 +58,7 @@ class App(ABC, Generic[ExecutorT, VDBConnectorT]):
         self._vdb_connector = vdb_connector
         self._storage_manager = StorageManager(self._vdb_connector)
         self.now = now()
+        self.__init_search_indices()
 
     @property
     def executor(self) -> ExecutorT:
@@ -75,6 +79,17 @@ class App(ABC, Generic[ExecutorT, VDBConnectorT]):
             StorageManager: The storage manager instance.
         """
         return self._storage_manager
+
+    def __init_search_indices(self) -> None:
+        search_index_params = [
+            SearchIndexParams(
+                index._dag.index_node.node_id,
+                index._dag.index_node.length,
+                index._fields,
+            )
+            for index in self.executor._indices
+        ]
+        self.storage_manager.init_search_indices(search_index_params)
 
 
 class Executor(ABC, Generic[SourceT]):

@@ -13,17 +13,29 @@
 # limitations under the License.
 
 
-from dataclasses import dataclass
-from typing import TypeVar
+from dataclasses import dataclass, field
+from typing import Any
 
 from beartype.typing import Sequence
 
+from superlinked.framework.common.storage.search_index_creation.index_field_descriptor import (
+    IndexFieldDescriptor,
+    VectorIndexFieldDescriptor,
+)
 
-@dataclass(frozen=True)
+
+@dataclass
 class IndexConfig:
     index_name: str
-    vector_field_name: str
-    indexed_field_names: Sequence[str]
+    vector_field_descriptor: VectorIndexFieldDescriptor
+    field_descriptors: Sequence[IndexFieldDescriptor]
+    index_params: dict[str, Any] = field(default_factory=dict)
 
+    def __post_init__(self) -> None:
+        self.__indexed_field_names = [
+            field_descriptor.field_name for field_descriptor in self.field_descriptors
+        ]
 
-IndexConfigT = TypeVar("IndexConfigT", bound=IndexConfig)
+    @property
+    def indexed_field_names(self) -> Sequence[str]:
+        return self.__indexed_field_names

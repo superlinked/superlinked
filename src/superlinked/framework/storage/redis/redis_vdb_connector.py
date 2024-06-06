@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any
+from typing import Any, cast
 
 import redis
 from beartype.typing import Sequence
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from typing_extensions import override
 
-from superlinked.framework.common.exception import ValidationException
 from superlinked.framework.common.storage.entity import Entity
 from superlinked.framework.common.storage.entity_data import EntityData
 from superlinked.framework.common.storage.entity_id import EntityId
@@ -30,10 +29,6 @@ from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
 from superlinked.framework.common.storage.result_entity_data import ResultEntityData
-from superlinked.framework.common.storage.search_index_creation.index_field_descriptor import (
-    IndexFieldDescriptor,
-    VectorIndexFieldDescriptor,
-)
 from superlinked.framework.common.storage.search_index_creation.search_algorithm import (
     SearchAlgorithm,
 )
@@ -51,7 +46,7 @@ from superlinked.framework.storage.redis.redis_field_encoder import RedisFieldEn
 from superlinked.framework.storage.redis.redis_search import RedisSearch
 
 
-class RedisVDBConnector(VDBConnector[IndexConfig]):
+class RedisVDBConnector(VDBConnector):
     def __init__(self, connection_params: RedisConnectionParams) -> None:
         super().__init__()
         self._client = redis.from_url(connection_params.connection_string, protocol=3)
@@ -68,22 +63,20 @@ class RedisVDBConnector(VDBConnector[IndexConfig]):
         return [SearchAlgorithm.FLAT, SearchAlgorithm.HNSW]
 
     @override
-    def create_search_index(
-        self,
-        index_name: str,
-        vector_field_descriptor: VectorIndexFieldDescriptor,
-        field_descriptors: Sequence[IndexFieldDescriptor],
-        **index_params: Any,
-    ) -> None:
+    def _list_search_index_names_from_vdb(self) -> Sequence[str]:
+        return list(
+            self._encoder._decode_string(cast(bytes, index_name))
+            for index_name in self._client.execute_command("FT._LIST")
+        )
+
+    @override
+    def create_search_index(self, index_config: IndexConfig) -> None:
         index_def = IndexDefinition(index_type=IndexType.HASH)
         fields = RedisFieldDescriptorCompiler.compile_descriptors(
-            vector_field_descriptor, field_descriptors
+            index_config.vector_field_descriptor, index_config.field_descriptors
         )
-        self._client.ft(index_name).create_index(fields, definition=index_def)
-        self._index_configs[index_name] = IndexConfig(
-            index_name,
-            vector_field_descriptor.field_name,
-            [field_descriptor.field_name for field_descriptor in field_descriptors],
+        self._client.ft(index_config.index_name).create_index(
+            fields, definition=index_def
         )
 
     @override
@@ -153,14 +146,6 @@ class RedisVDBConnector(VDBConnector[IndexConfig]):
             )
             for document in result["results"]
         ]
-
-    def _get_index_config(self, index_name: str) -> IndexConfig:
-        index_config = self._index_configs.get(index_name)
-        if not index_config:
-            raise ValidationException(
-                f"Index with the given name {index_name} doesn't exist."
-            )
-        return index_config
 
     def _extract_fields_from_document(
         self, document: dict[str, Any], returned_fields: Sequence[Field]

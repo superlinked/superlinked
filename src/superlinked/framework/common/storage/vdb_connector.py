@@ -13,33 +13,55 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from typing import Any, Generic
+from typing import Any
 
 from beartype.typing import Sequence
 
+from superlinked.framework.common.calculation.distance_metric import DistanceMetric
+from superlinked.framework.common.exception import ValidationException
 from superlinked.framework.common.storage.entity import Entity
 from superlinked.framework.common.storage.entity_data import EntityData
 from superlinked.framework.common.storage.field import Field
-from superlinked.framework.common.storage.index_config import IndexConfigT
+from superlinked.framework.common.storage.index_config import IndexConfig
 from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
 from superlinked.framework.common.storage.result_entity_data import ResultEntityData
-from superlinked.framework.common.storage.search_index_creation.index_field_descriptor import (
-    IndexFieldDescriptor,
-    VectorIndexFieldDescriptor,
-)
 from superlinked.framework.common.storage.search_index_creation.search_algorithm import (
     SearchAlgorithm,
 )
+from superlinked.framework.common.storage.search_index_creation.vector_component_precision import (
+    VectorComponentPrecision,
+)
 
 
-class VDBConnector(ABC, Generic[IndexConfigT]):
-    def __init__(self, index_configs: Sequence[IndexConfigT] | None = None) -> None:
-        self._index_configs: dict[str, IndexConfigT] = {
+class VDBConnector(ABC):
+    def __init__(
+        self,
+        distance_metric: DistanceMetric = DistanceMetric.INNER_PRODUCT,
+        search_algorithm: SearchAlgorithm = SearchAlgorithm.FLAT,
+        vector_coordinate_type: VectorComponentPrecision = VectorComponentPrecision.FLOAT32,
+        index_configs: Sequence[IndexConfig] | None = None,
+    ) -> None:
+        self._distance_metric = distance_metric
+        self._search_algorithm = search_algorithm
+        self._vector_coordinate_type = vector_coordinate_type
+        self._index_configs: dict[str, IndexConfig] = {
             index_config.index_name: index_config
             for index_config in (index_configs or [])
         }
+
+    @property
+    def distance_metric(self) -> DistanceMetric:
+        return self._distance_metric
+
+    @property
+    def search_algorithm(self) -> SearchAlgorithm:
+        return self._search_algorithm
+
+    @property
+    def vector_coordinate_type(self) -> VectorComponentPrecision:
+        return self._vector_coordinate_type
 
     @abstractmethod
     def close_connection(self) -> None:
@@ -50,33 +72,37 @@ class VDBConnector(ABC, Generic[IndexConfigT]):
     def supported_vector_indexing(self) -> Sequence[SearchAlgorithm]:
         pass
 
-    def create_search_index_with_check(
+    @abstractmethod
+    def _list_search_index_names_from_vdb(self) -> Sequence[str]:
+        pass
+
+    def init_search_index_configs(
         self,
-        index_name: str,
-        vector_field_descriptor: VectorIndexFieldDescriptor,
-        field_descriptors: Sequence[IndexFieldDescriptor],
-        **index_params: Any,
+        index_configs: Sequence[IndexConfig],
+        override_existing: bool = False,
     ) -> None:
-        if (
-            vector_field_descriptor.search_algorithm
-            not in self.supported_vector_indexing
-        ):
-            raise NotImplementedError(
-                f"The specified vector search algorithm {vector_field_descriptor.search_algorithm}"
-                + f" is not yet supported. Currently supported algorithms: {self.supported_vector_indexing}"
-            )
-        return self.create_search_index(
-            index_name, vector_field_descriptor, field_descriptors, **index_params
-        )
+        existing_index_names = self._list_search_index_names_from_vdb()
+        for index_config in index_configs:
+            if index_config.index_name not in existing_index_names or override_existing:
+                self.create_search_index_with_check(index_config)
+            else:
+                self._index_configs[index_config.index_name] = index_config
+
+    def create_search_index_with_check(self, index_config: IndexConfig) -> None:
+        if index_config.index_name not in self._index_configs.keys():
+            if (
+                index_config.vector_field_descriptor.search_algorithm
+                not in self.supported_vector_indexing
+            ):
+                raise NotImplementedError(
+                    f"The specified vector search algorithm {index_config.vector_field_descriptor.search_algorithm}"
+                    + f" is not yet supported. Currently supported algorithms: {self.supported_vector_indexing}"
+                )
+            self.create_search_index(index_config)
+            self._index_configs[index_config.index_name] = index_config
 
     @abstractmethod
-    def create_search_index(
-        self,
-        index_name: str,
-        vector_field_descriptor: VectorIndexFieldDescriptor,
-        field_descriptors: Sequence[IndexFieldDescriptor],
-        **index_params: Any,
-    ) -> None:
+    def create_search_index(self, index_config: IndexConfig) -> None:
         pass
 
     @abstractmethod
@@ -101,3 +127,11 @@ class VDBConnector(ABC, Generic[IndexConfigT]):
         **params: Any,
     ) -> Sequence[ResultEntityData]:
         pass
+
+    def _get_index_config(self, index_name: str) -> IndexConfig:
+        index_config = self._index_configs.get(index_name)
+        if not index_config:
+            raise ValidationException(
+                f"Index with the given name {index_name} doesn't exist!"
+            )
+        return index_config

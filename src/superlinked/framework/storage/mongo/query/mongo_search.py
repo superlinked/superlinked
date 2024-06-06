@@ -13,14 +13,14 @@
 # limitations under the License.
 
 from beartype.typing import Sequence
+from pymongo.collection import Collection
 from pymongo.command_cursor import CommandCursor
-from pymongo.database import Database
 from typing_extensions import override
 
 from superlinked.framework.common.storage.field import Field
+from superlinked.framework.common.storage.index_config import IndexConfig
 from superlinked.framework.common.storage.search import Search
 from superlinked.framework.storage.mongo.mongo_field_encoder import MongoFieldEncoder
-from superlinked.framework.storage.mongo.mongo_index_config import MongoIndexConfig
 from superlinked.framework.storage.mongo.query.mongo_query import MongoQuery
 from superlinked.framework.storage.mongo.query.mongo_vdb_knn_search_params import (
     MongoVDBKNNSearchParams,
@@ -29,13 +29,10 @@ from superlinked.framework.storage.mongo.query.mongo_vdb_knn_search_params impor
 MAX_NUMBER_OF_CANDIDATES = 10000
 
 
-class MongoSearch(
-    Search[MongoIndexConfig, MongoVDBKNNSearchParams, MongoQuery, CommandCursor]
-):
-
-    def __init__(self, database: Database, encoder: MongoFieldEncoder) -> None:
+class MongoSearch(Search[MongoVDBKNNSearchParams, MongoQuery, CommandCursor]):
+    def __init__(self, collection: Collection, encoder: MongoFieldEncoder) -> None:
         super().__init__()
-        self._database = database
+        self._collection = collection
         self._encoder = encoder
 
     @override
@@ -59,7 +56,7 @@ class MongoSearch(
     @override
     def knn_search(
         self,
-        index_config: MongoIndexConfig,
+        index_config: IndexConfig,
         query: MongoQuery,
     ) -> CommandCursor:
-        return self._database[index_config.collection_name].aggregate(query.query)
+        return self._collection.aggregate(query.query)

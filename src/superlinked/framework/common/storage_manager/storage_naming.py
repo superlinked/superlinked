@@ -13,7 +13,6 @@
 # limitations under the License.
 
 
-from superlinked.framework.common.dag.index_node import IndexNode
 from superlinked.framework.common.schema.schema_object import SchemaField
 
 
@@ -26,8 +25,8 @@ class StorageNaming:
     SCHEMA_INDEX_NAME = "__schema__"
     SCHEMA_FIELD_PREFIX = "__schema_field__"
 
-    def get_index_name_from_index_node(self, index_node: IndexNode) -> str:
-        return f"{StorageNaming.INDEX_PREFIX}{index_node.node_id}"
+    def get_index_name_from_node_id(self, node_id: str) -> str:
+        return f"{StorageNaming.INDEX_PREFIX}{node_id}"
 
     def generate_field_name_from_schema_field(self, schema_field: SchemaField) -> str:
         return f"{StorageNaming.SCHEMA_FIELD_PREFIX}{schema_field.schema_obj._schema_name}_{schema_field.name}"

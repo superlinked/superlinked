@@ -19,10 +19,6 @@ from typing import Any
 from beartype.typing import Sequence
 from typing_extensions import override
 
-from superlinked.framework.common.calculation.vector_similarity import (
-    VectorSimilarityCalculator,
-)
-from superlinked.framework.common.exception import ValidationException
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
 )
@@ -31,27 +27,21 @@ from superlinked.framework.common.storage.entity_data import EntityData
 from superlinked.framework.common.storage.entity_id import EntityId
 from superlinked.framework.common.storage.field import Field
 from superlinked.framework.common.storage.field_data import FieldData
+from superlinked.framework.common.storage.index_config import IndexConfig
 from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
 from superlinked.framework.common.storage.result_entity_data import ResultEntityData
-from superlinked.framework.common.storage.search_index_creation.index_field_descriptor import (
-    IndexFieldDescriptor,
-    VectorIndexFieldDescriptor,
-)
 from superlinked.framework.common.storage.search_index_creation.search_algorithm import (
     SearchAlgorithm,
 )
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
-from superlinked.framework.storage.in_memory.in_memory_index_config import (
-    InMemoryIndexConfig,
-)
 from superlinked.framework.storage.in_memory.in_memory_search import InMemorySearch
 from superlinked.framework.storage.in_memory.json_codec import JsonDecoder, JsonEncoder
 from superlinked.framework.storage.in_memory.object_serializer import ObjectSerializer
 
 
-class InMemoryVDB(VDBConnector[InMemoryIndexConfig]):
+class InMemoryVDB(VDBConnector):
     def __init__(self) -> None:
         super().__init__()
         self._vdb = defaultdict[str, dict[str, Any]](dict)
@@ -60,29 +50,19 @@ class InMemoryVDB(VDBConnector[InMemoryIndexConfig]):
     @override
     def close_connection(self) -> None:
         self._vdb = defaultdict[str, dict[str, Any]](dict)
-        self._index_configs = dict[str, InMemoryIndexConfig]()
+        self._index_configs = dict[str, IndexConfig]()
 
     @override
     @property
     def supported_vector_indexing(self) -> Sequence[SearchAlgorithm]:
         return [SearchAlgorithm.FLAT]
 
+    def _list_search_index_names_from_vdb(self) -> Sequence[str]:
+        return list(self._index_configs.keys())
+
     @override
-    def create_search_index(
-        self,
-        index_name: str,
-        vector_field_descriptor: VectorIndexFieldDescriptor,
-        field_descriptors: Sequence[IndexFieldDescriptor],
-        **index_params: Any,
-    ) -> None:
-        self.drop_search_index(index_name)
-        index_config = InMemoryIndexConfig(
-            index_name,
-            vector_field_descriptor.field_name,
-            [field_descriptor.field_name for field_descriptor in field_descriptors],
-            VectorSimilarityCalculator(vector_field_descriptor.distance_metric),
-        )
-        self._index_configs[index_name] = index_config
+    def create_search_index(self, index_config: IndexConfig) -> None:
+        pass
 
     @override
     def drop_search_index(self, index_name: str) -> None:
@@ -166,14 +146,6 @@ class InMemoryVDB(VDBConnector[InMemoryIndexConfig]):
                 cls=JsonDecoder,
             )
         )
-
-    def _get_index_config(self, index_name: str) -> InMemoryIndexConfig:
-        index_config = self._index_configs.get(index_name)
-        if not index_config:
-            raise ValidationException(
-                f"Index with the given name {index_name} doesn't exist!"
-            )
-        return index_config
 
     def _get_result_entity_data(
         self, row_id: str, score: float, returned_fields: Sequence[Field]

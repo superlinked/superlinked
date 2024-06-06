@@ -27,7 +27,7 @@ from superlinked.framework.common.interface.comparison_operation_type import (
 )
 from superlinked.framework.common.storage.field import Field
 from superlinked.framework.common.storage.field_data import VectorFieldData
-from superlinked.framework.common.storage.index_config import IndexConfig, IndexConfigT
+from superlinked.framework.common.storage.index_config import IndexConfig
 from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
@@ -37,10 +37,10 @@ SearchParamsT = TypeVar("SearchParamsT", bound=VDBKNNSearchParams)
 QuertT = TypeVar("QuertT")
 
 
-class Search(ABC, Generic[IndexConfigT, SearchParamsT, QuertT, KNNReturnT]):
+class Search(ABC, Generic[SearchParamsT, QuertT, KNNReturnT]):
     def knn_search_with_checks(
         self,
-        index_config: IndexConfigT,
+        index_config: IndexConfig,
         returned_fields: Sequence[Field],
         search_params: SearchParamsT,
     ) -> KNNReturnT:
@@ -56,7 +56,7 @@ class Search(ABC, Generic[IndexConfigT, SearchParamsT, QuertT, KNNReturnT]):
         pass
 
     @abstractmethod
-    def knn_search(self, index_config: IndexConfigT, query: QuertT) -> KNNReturnT:
+    def knn_search(self, index_config: IndexConfig, query: QuertT) -> KNNReturnT:
         pass
 
     @staticmethod
@@ -65,9 +65,9 @@ class Search(ABC, Generic[IndexConfigT, SearchParamsT, QuertT, KNNReturnT]):
     ) -> None:
         if vector_field.value is None:
             raise ValidationException("Cannot search with NoneType vector!")
-        if index_config.vector_field_name != vector_field.name:
+        if index_config.vector_field_descriptor.field_name != vector_field.name:
             raise ValidationException(
-                f"Indexed {index_config.vector_field_name} and"
+                f"Indexed {index_config.vector_field_descriptor.field_name} and"
                 + f" searched {vector_field.name} vectors are different."
             )
 

@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from dataclasses import dataclass
 from itertools import groupby
 from typing import Any, Iterator, TypeVar, cast
 
 from beartype.typing import Sequence
 
-from superlinked.framework.common.calculation.distance_metric import DistanceMetric
-from superlinked.framework.common.dag.dag import Dag
 from superlinked.framework.common.dag.index_node import IndexNode
 from superlinked.framework.common.data_types import Json, PythonTypes
 from superlinked.framework.common.exception import InvalidSchemaException
@@ -42,6 +41,7 @@ from superlinked.framework.common.storage.field_data_type import FieldDataType
 from superlinked.framework.common.storage.field_type_converter import (
     FIELD_DATA_TYPE_BY_SCHEMA_FIELD_TYPE,
 )
+from superlinked.framework.common.storage.index_config import IndexConfig
 from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
@@ -49,12 +49,6 @@ from superlinked.framework.common.storage.result_entity_data import ResultEntity
 from superlinked.framework.common.storage.search_index_creation.index_field_descriptor import (
     IndexFieldDescriptor,
     VectorIndexFieldDescriptor,
-)
-from superlinked.framework.common.storage.search_index_creation.search_algorithm import (
-    SearchAlgorithm,
-)
-from superlinked.framework.common.storage.search_index_creation.vector_component_precision import (
-    VectorComponentPrecision,
 )
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
 from superlinked.framework.common.storage_manager.entity_builder import EntityBuilder
@@ -71,6 +65,13 @@ ResultTypeT = TypeVar("ResultTypeT")
 NDVT = TypeVar("NDVT", bound=PythonTypes)
 
 
+@dataclass
+class SearchIndexParams:
+    node_id: str
+    length: int
+    indexed_fields: Sequence[SchemaField]
+
+
 class StorageManager:
     def __init__(
         self,
@@ -83,31 +84,35 @@ class StorageManager:
     def close_connection(self) -> None:
         self._vdb_connector.close_connection()
 
-    def create_search_index(
+    def init_search_indices(
         self,
-        dag: Dag,
-        indexed_fields: Sequence[SchemaField],
-        distance_metric: DistanceMetric = DistanceMetric.INNER_PRODUCT,
-        search_algorithm: SearchAlgorithm = SearchAlgorithm.FLAT,
-        vector_coordinate_type: VectorComponentPrecision = VectorComponentPrecision.FLOAT32,
+        params_list: Sequence[SearchIndexParams],
+        override_existing: bool = False,
     ) -> None:
-        vector_index_field_descriptor, index_field_descriptors = (
-            self._get_index_field_descriptors_from_dag(
-                dag,
-                indexed_fields,
-                distance_metric,
-                search_algorithm,
-                vector_coordinate_type,
-            )
+        self._vdb_connector.init_search_index_configs(
+            [
+                self._compile_create_search_index_params(params)
+                for params in params_list
+            ],
+            override_existing,
         )
-        self._vdb_connector.create_search_index_with_check(
-            self._storage_naming.get_index_name_from_index_node(dag.index_node),
+
+    def _compile_create_search_index_params(
+        self, params: SearchIndexParams
+    ) -> IndexConfig:
+        vector_index_field_descriptor, index_field_descriptors = (
+            self._compile_indexed_fields_to_descriptors(params)
+        )
+        return IndexConfig(
+            self._storage_naming.get_index_name_from_node_id(params.node_id),
             vector_index_field_descriptor,
             index_field_descriptors,
         )
 
     def drop_search_index(self, index_node: IndexNode) -> None:
-        index_name = self._storage_naming.get_index_name_from_index_node(index_node)
+        index_name = self._storage_naming.get_index_name_from_node_id(
+            index_node.node_id
+        )
         self._vdb_connector.drop_search_index(index_name)
 
     def knn_search(
@@ -119,7 +124,9 @@ class StorageManager:
         **params: Any,
     ) -> Sequence[SearchResultItem]:
         self._validate_knn_search_input(schema, returned_schema_fields)
-        index_name = self._storage_naming.get_index_name_from_index_node(index_node)
+        index_name = self._storage_naming.get_index_name_from_node_id(
+            index_node.node_id
+        )
         vector_field = cast(
             VectorFieldData,
             self._entity_builder.compose_field_data(
@@ -387,27 +394,23 @@ class StorageManager:
         }
         return node_data
 
-    def _get_index_field_descriptors_from_dag(
-        self,
-        dag: Dag,
-        indexed_fields: Sequence[SchemaField],
-        distance_metric: DistanceMetric,
-        search_algorithm: SearchAlgorithm,
-        vector_coordinate_type: VectorComponentPrecision,
+    def _compile_indexed_fields_to_descriptors(
+        self, params: SearchIndexParams
     ) -> tuple[VectorIndexFieldDescriptor, Sequence[IndexFieldDescriptor]]:
-        index_node = dag.index_node
         vector_index_field_descriptor = VectorIndexFieldDescriptor(
-            index_node.node_id,
-            index_node.length,
-            distance_metric,
-            search_algorithm,
-            vector_coordinate_type,
+            params.node_id,
+            params.length,
+            self._vdb_connector.distance_metric,
+            self._vdb_connector.search_algorithm,
+            self._vdb_connector.vector_coordinate_type,
         )
 
         return (
             vector_index_field_descriptor,
             list(
-                self._create_index_field_descriptors_from_schema_fields(indexed_fields)
+                self._create_index_field_descriptors_from_schema_fields(
+                    params.indexed_fields
+                )
             )
             + [
                 IndexFieldDescriptor(

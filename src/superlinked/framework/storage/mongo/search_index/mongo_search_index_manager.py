@@ -95,7 +95,7 @@ class MongoSearchIndexManager:
     def drop_search_index(
         self, database_name: str, collection_name: str, index_name: str
     ) -> None:
-        index_id_by_name = self._get_search_index_ids_by_name(
+        index_id_by_name = self.get_search_index_ids_by_name(
             database_name, collection_name
         )
         if index_id := index_id_by_name.get(index_name):
@@ -114,7 +114,7 @@ class MongoSearchIndexManager:
                     }
                 )
 
-    def _get_search_index_ids_by_name(
+    def get_search_index_ids_by_name(
         self,
         database_name: str,
         collection_name: str,
