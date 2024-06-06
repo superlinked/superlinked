@@ -33,6 +33,7 @@ from superlinked.framework.common.schema.id_schema_object import (
     IdSchemaObjectT,
     SchemaField,
 )
+from superlinked.framework.common.schema.schema_object import Timestamp
 
 
 class DataFrameParser(
@@ -63,6 +64,12 @@ class DataFrameParser(
         )
 
         self._ensure_id(data_copy)
+
+        if timestamp_cols := [
+            key for key, value in schema_cols.items() if isinstance(value, Timestamp)
+        ]:
+            data_copy[timestamp_cols] = data_copy[timestamp_cols].astype(int)
+
         data_copy[self._id_name] = data_copy[self._id_name].astype(str)
         schema_ref_cols = [
             key
