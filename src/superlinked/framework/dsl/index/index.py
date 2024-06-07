@@ -103,6 +103,10 @@ class Index:  # pylint: disable=too-many-instance-attributes
         )
 
     @property
+    def _spaces(self) -> Sequence[Space]:
+        return self.__spaces
+
+    @property
     def _space_schemas(self) -> list[SchemaObject]:
         return self.__space_schemas
 

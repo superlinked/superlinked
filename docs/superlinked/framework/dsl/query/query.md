@@ -128,8 +128,10 @@ Classes
         vector).
         
         Args:
-            schema_obj (SchemaObject | T): The schema object.
-            id_param (ParamType): The ID parameter.
+            weight (NumericParamType): Weight attributed to the vector retrieved via this clause in the aggregated
+                query.
+            schema_obj (SchemaObject | T): The schema object the vector is originating from.
+            id_param (ParamType): The ID parameter. Eventually it is the ID of the vector to be used in the query.
         
         Returns:
             Self: The query object itself.

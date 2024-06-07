@@ -28,6 +28,12 @@ Json = Mapping[str, Any]
 NPArray = np.ndarray[Any, np.dtype[np.float32]]
 
 
+def get_l2_norm_np(array: NPArray) -> NPArray:
+    # TODO: https://linear.app/superlinked/issue/FAI-1936/figure-out-numpy-typing
+    # ignoring this as linter falsely thinks there is no such thing as below
+    return np.linalg.norm(array)  # type: ignore[attr-defined]
+
+
 class Vector:
     EMPTY_VECTOR: Vector | None = None
 
@@ -71,9 +77,13 @@ class Vector:
 
     @property
     def without_negative_filter(self) -> Vector:
+        return Vector(self.value[self.non_negative_filter_mask])
+
+    @property
+    def non_negative_filter_mask(self) -> np.ndarray:
         mask = np.ones(self.dimension, dtype=bool)
         mask[list(self.negative_filter_indices)] = False
-        return Vector(self.value[mask])
+        return mask
 
     def normalize(self, length: float) -> Vector:
         if length in [0, 1]:

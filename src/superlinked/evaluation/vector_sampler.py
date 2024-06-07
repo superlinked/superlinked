@@ -17,7 +17,8 @@ from typing import Any, cast
 import numpy as np
 from beartype.typing import Sequence
 
-from superlinked.framework.common.data_types import NPArray
+from superlinked.framework.common.data_types import NPArray, Vector, get_l2_norm_np
+from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema import T
 from superlinked.framework.common.schema.schema_object import SchemaObject
@@ -25,6 +26,7 @@ from superlinked.framework.common.storage_manager.header import Header
 from superlinked.framework.common.storage_manager.storage_manager import ResultTypeT
 from superlinked.framework.dsl.executor.in_memory.in_memory_executor import InMemoryApp
 from superlinked.framework.dsl.index.index import Index
+from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.storage.in_memory.in_memory_vdb import InMemoryVDB
 
 
@@ -98,11 +100,47 @@ class VectorSampler:
         """
         self.__app = app
 
+    @staticmethod
+    def apply_weights_on_vectors(
+        vector: Vector,
+        schema: SchemaObject,
+        spaces: Sequence[Space],
+        weight_dict: dict[Space, float],
+    ) -> Vector:
+        if isinstance(spaces, Space):
+            spaces = [spaces]
+
+        vector_value: np.ndarray = vector.replace_negative_filters(0).value
+        if get_l2_norm_np(vector_value) == 0:
+            return vector
+
+        nodes: list[HasLength] = [
+            cast(HasLength, space._get_node(schema)) for space in spaces
+        ]
+        lengths = np.array([node.length for node in nodes])
+        weights = [weight_dict.get(space, 1) for space in spaces]
+        vector_slices = np.split(vector_value, lengths.cumsum())
+        weighted_vector_values = np.concatenate(
+            [
+                vector_slice * weight
+                for vector_slice, weight in zip(vector_slices, weights)
+            ]
+        )
+        normalized_vector_values = weighted_vector_values / get_l2_norm_np(
+            weighted_vector_values
+        )
+        vector.value[vector.non_negative_filter_mask] = normalized_vector_values[
+            vector.non_negative_filter_mask
+        ]
+
+        return vector
+
     def get_vectors_by_ids(
         self,
         id_: str | list[str],
         index: Index,
         schema: IdSchemaObject | T,
+        weight_dict: dict[Space, float] | None = None,
         readable_id_: str | list[str] | None = None,
     ) -> VectorCollection:
         """
@@ -112,6 +150,8 @@ class VectorSampler:
             id_ (str) | list(str): The id of the entity(ies).
             index (Index): The index in which the entity is stored.
             schema (IdSchemaObject | T): The schema of the entity.
+            weight_dict (dict[Space, float]): Dictionary containing weights per spaces.
+                Defaults to uniform unit weights.
             readable_id_ (str) | list(str): The readable id of the entity(ies). For chunks, it is constructed from the
                 origin_id (entity from which it originates from) and the chunk id. Defaults to using the ids.
 
@@ -138,7 +178,7 @@ class VectorSampler:
         entity_vectors: list[NPArray] = []
         entity_ids: list[str] = []
         for identification, readable_id in zip(ids, readable_ids):
-            vector = self.__app.storage_manager.read_node_result(
+            vector: Vector | None = self.__app.storage_manager.read_node_result(
                 schema, identification, index._node.node_id, index._node.node_data_type
             )
             if vector is None:
@@ -146,13 +186,27 @@ class VectorSampler:
                     f"No vector found for {schema._schema_name} with id {identification} in the given index."
                 )
 
-            entity_vectors.append(vector.value)
+            weighted_vector = (
+                self.apply_weights_on_vectors(
+                    vector,
+                    schema,
+                    index._spaces,
+                    weight_dict,
+                )
+                if weight_dict
+                else vector
+            )
+            entity_vectors.append(np.array(weighted_vector.value))
             entity_ids.append(readable_id)
 
         return VectorCollection(entity_ids, np.array(entity_vectors))
 
     def get_all_vectors(
-        self, index: Index, schema: IdSchemaObject | T, include_chunks: bool = False
+        self,
+        index: Index,
+        schema: IdSchemaObject | T,
+        weight_dict: dict[Space, float] | None = None,
+        include_chunks: bool = False,
     ) -> VectorCollection:
         """
         Retrieves all entities and their vectors for a given schema and the index they're stored in.
@@ -160,6 +214,8 @@ class VectorSampler:
         Args:
             index (Index): The index in which the entities are stored.
             schema (IdSchemaObject | T): The schema of the entities.
+            weight_dict (dict[Space, float]): Dictionary containing weights per spaces.
+                Defaults to uniform unit weights for each space.
             include_chunks (bool): Whether to include vectors of chunks present in the index. Chunks are created if
                 the index contains a TextSimilaritySpace that is chunked.
 
@@ -179,7 +235,9 @@ class VectorSampler:
             readable_ids: list[str] = [
                 self.human_readable_id_for_chunks(header) for header in headers
             ]
-            return self.get_vectors_by_ids(entity_ids, index, schema, readable_ids)
+            return self.get_vectors_by_ids(
+                entity_ids, index, schema, weight_dict, readable_ids
+            )
 
         entity_ids = list(
             {
