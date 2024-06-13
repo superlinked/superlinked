@@ -32,6 +32,10 @@ from superlinked.framework.dsl.query.query import QueryObj
 from superlinked.framework.dsl.query.query_vector_factory import QueryVectorFactory
 from superlinked.framework.dsl.query.result import Result
 from superlinked.framework.dsl.source.in_memory_source import InMemorySource
+from superlinked.framework.dsl.storage.in_memory_vector_database import (
+    InMemoryVectorDatabase,
+)
+from superlinked.framework.dsl.storage.vector_database import VectorDatabase
 from superlinked.framework.evaluator.online_dag_evaluator import OnlineDagEvaluator
 from superlinked.framework.online.source.in_memory_data_processor import (
     InMemoryDataProcessor,
@@ -39,7 +43,6 @@ from superlinked.framework.online.source.in_memory_data_processor import (
 from superlinked.framework.online.source.in_memory_object_writer import (
     InMemoryObjectWriter,
 )
-from superlinked.framework.storage.in_memory.in_memory_vdb import InMemoryVDB
 from superlinked.framework.storage.in_memory.object_serializer import ObjectSerializer
 
 
@@ -52,12 +55,14 @@ class InMemoryExecutor(Executor[InMemorySource]):
     Attributes:
         sources (list[InMemorySource]): List of in-memory sources.
         indices (list[Index]): List of indices.
+        vector_database (VectorDatabase | None): Vector database instance. Defaults to InMemory.
     """
 
     def __init__(
         self,
         sources: Sequence[InMemorySource],
         indices: Sequence[Index],
+        vector_database: VectorDatabase | None = None,
         context_data: Mapping[str, Mapping[str, ContextValue]] | None = None,
     ) -> None:
         """
@@ -66,11 +71,13 @@ class InMemoryExecutor(Executor[InMemorySource]):
         Args:
             sources (list[InMemorySource]): List of in-memory sources.
             indices (list[Index]): List of indices.
+            vector_database: (VectorDatabase | None): Vector database instance. Defaults to InMemory.
             context (Mapping[str, Mapping[str, Any]]): Context mapping.
         """
         super().__init__(
             sources,
             indices,
+            vector_database or InMemoryVectorDatabase(),
             ExecutionContext.from_context_data(
                 context_data, environment=ExecutionEnvironment.IN_MEMORY
             ),
@@ -87,7 +94,7 @@ class InMemoryExecutor(Executor[InMemorySource]):
 
 
 @TypeValidator.wrap
-class InMemoryApp(App[InMemoryExecutor, InMemoryVDB]):
+class InMemoryApp(App[InMemoryExecutor]):
     """
     In-memory implementation of the App class.
 
@@ -102,10 +109,7 @@ class InMemoryApp(App[InMemoryExecutor, InMemoryVDB]):
         Args:
             executor (InMemoryExecutor): An instance of InMemoryExecutor.
         """
-        super().__init__(
-            executor,
-            InMemoryVDB(),
-        )
+        super().__init__(executor)
         self._object_writer = InMemoryObjectWriter(self._storage_manager)
         self._index_online_dag_evaluator_map = {
             index: OnlineDagEvaluator(
@@ -141,12 +145,16 @@ class InMemoryApp(App[InMemoryExecutor, InMemoryVDB]):
     def restore(self, serializer: ObjectSerializer) -> None:
         node_ids = [index._node_id for index in self.executor._indices]
         app_identifier = "_".join(node_ids)
-        self._vdb_connector.restore(serializer, app_identifier)
+        self._executor._vector_database._vdb_connector.restore(
+            serializer, app_identifier
+        )
 
     def persist(self, serializer: ObjectSerializer) -> None:
         node_ids = [index._node_id for index in self.executor._indices]
         app_identifier = "_".join(node_ids)
-        self._vdb_connector.persist(serializer, app_identifier)
+        self._executor._vector_database._vdb_connector.persist(
+            serializer, app_identifier
+        )
 
     def query(self, query_obj: QueryObj, **params: Any) -> Result:
         """

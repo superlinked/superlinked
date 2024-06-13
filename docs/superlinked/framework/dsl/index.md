@@ -10,3 +10,4 @@ Sub-modules
 * superlinked.framework.dsl.registry
 * superlinked.framework.dsl.source
 * superlinked.framework.dsl.space
+* superlinked.framework.dsl.storage

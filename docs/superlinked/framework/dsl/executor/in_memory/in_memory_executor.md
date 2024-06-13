@@ -54,7 +54,7 @@ Classes
     `restore(self, serializer: superlinked.framework.storage.in_memory.object_serializer.ObjectSerializer) ‑> None`
     :
 
-`InMemoryExecutor(sources: Sequence[InMemorySource], indices: Sequence[Index], context_data: Mapping[str, Mapping[str, ContextValue]] | None = None)`
+`InMemoryExecutor(sources: Sequence[InMemorySource], indices: Sequence[Index], vector_database: VectorDatabase | None = None, context_data: Mapping[str, Mapping[str, ContextValue]] | None = None)`
 :   In-memory implementation of the Executor class. Supply it with the sources through which
     your data is received, and the indices indicating the desired vector spaces, and the executor will
     create the spaces optimized for search.
@@ -62,12 +62,14 @@ Classes
     Attributes:
         sources (list[InMemorySource]): List of in-memory sources.
         indices (list[Index]): List of indices.
+        vector_database (VectorDatabase | None): Vector database instance. Defaults to InMemory.
     
     Initialize the InMemoryExecutor.
     
     Args:
         sources (list[InMemorySource]): List of in-memory sources.
         indices (list[Index]): List of indices.
+        vector_database: (VectorDatabase | None): Vector database instance. Defaults to InMemory.
         context (Mapping[str, Mapping[str, Any]]): Context mapping.
 
     ### Ancestors (in MRO)

@@ -23,8 +23,11 @@ Classes
 
     ### Instance variables
 
-    `data_loader_sources: list[superlinked.framework.dsl.source.data_loader_source.DataLoaderSource]`
-    :
+    `data_loader_sources: Sequence[superlinked.framework.dsl.source.data_loader_source.DataLoaderSource]`
+    :   Property that returns the list of DataLoaderSource instances associated with the RestApp.
+        
+        Returns:
+            Sequence[DataLoaderSource]: A sequence of DataLoaderSource instances.
 
     `handler: superlinked.framework.dsl.executor.rest.rest_handler.RestHandler`
     :   Property that returns the RestHandler instance associated with the RestApp.
@@ -38,21 +41,22 @@ Classes
         Returns:
             InMemoryApp: An instance of InMemoryApp.
 
-`RestExecutor(sources: list[RestSource | DataLoaderSource], indices: list[Index], queries: list[RestQuery], endpoint_configuration: RestEndpointConfiguration | None = None, context_data: Mapping[str, Mapping[str, ContextValue]] | None = None)`
+`RestExecutor(sources: Sequence[RestSource | DataLoaderSource], indices: Sequence[Index], queries: Sequence[RestQuery], vector_database: VectorDatabase, endpoint_configuration: RestEndpointConfiguration | None = None, context_data: Mapping[str, Mapping[str, ContextValue]] | None = None)`
 :   The RestExecutor is a subclass of the Executor base class. It encapsulates all the parameters required for
     the REST application. It also instantiates an InMemoryExecutor for data storage purposes.
     
     Attributes:
-        sources (list[RestSource]): List of Rest sources that has information about the schema.
-        indices (list[Index]): List indices.
-        queries (list[RestQuery]): List of executable queries.
+        sources (Sequence[RestSource]): A sequence of rest sources that has information about the schema.
+        indices (Sequence[Index]): A sequence of indices.
+        queries (Sequence[RestQuery]): A sequence of executable queries.
         endpoint_configuration (RestEndpointConfiguration): Optional configuration for REST endpoints.
     
     Initialize the RestExecutor.
     Attributes:
-        sources (list[RestSource]): List of Rest sources that has information about the schema.
-        indices (list[Index]): List indices.
-        queries (list[RestQuery]): List of executable queries.
+        sources (Sequence[RestSource]): A sequence ofRest sources that has information about the schema.
+        indices (Sequence[Index]): A sequence of indices.
+        queries (Sequence[RestQuery]): A sequence ofexecutable queries.
+        vector_database (VectorDatabase): Vector database instance.
         endpoint_configuration (RestEndpointConfiguration): Optional configuration for REST endpoints.
 
     ### Ancestors (in MRO)

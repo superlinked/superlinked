@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import Mapping
+from typing import Mapping, Sequence
 
 from superlinked.framework.common.dag.context import ContextValue
 from superlinked.framework.dsl.executor.executor import App, Executor
@@ -30,6 +30,7 @@ from superlinked.framework.dsl.executor.rest.rest_handler import RestHandler
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.source.data_loader_source import DataLoaderSource
 from superlinked.framework.dsl.source.rest_source import RestSource
+from superlinked.framework.dsl.storage.vector_database import VectorDatabase
 
 
 class RestExecutor(Executor[RestSource | DataLoaderSource]):
@@ -38,31 +39,37 @@ class RestExecutor(Executor[RestSource | DataLoaderSource]):
     the REST application. It also instantiates an InMemoryExecutor for data storage purposes.
 
     Attributes:
-        sources (list[RestSource]): List of Rest sources that has information about the schema.
-        indices (list[Index]): List indices.
-        queries (list[RestQuery]): List of executable queries.
+        sources (Sequence[RestSource]): A sequence of rest sources that has information about the schema.
+        indices (Sequence[Index]): A sequence of indices.
+        queries (Sequence[RestQuery]): A sequence of executable queries.
         endpoint_configuration (RestEndpointConfiguration): Optional configuration for REST endpoints.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
-        sources: list[RestSource | DataLoaderSource],
-        indices: list[Index],
-        queries: list[RestQuery],
+        sources: Sequence[RestSource | DataLoaderSource],
+        indices: Sequence[Index],
+        queries: Sequence[RestQuery],
+        vector_database: VectorDatabase,
         endpoint_configuration: RestEndpointConfiguration | None = None,
         context_data: Mapping[str, Mapping[str, ContextValue]] | None = None,
     ):
         """
         Initialize the RestExecutor.
         Attributes:
-            sources (list[RestSource]): List of Rest sources that has information about the schema.
-            indices (list[Index]): List indices.
-            queries (list[RestQuery]): List of executable queries.
+            sources (Sequence[RestSource]): A sequence ofRest sources that has information about the schema.
+            indices (Sequence[Index]): A sequence of indices.
+            queries (Sequence[RestQuery]): A sequence ofexecutable queries.
+            vector_database (VectorDatabase): Vector database instance.
             endpoint_configuration (RestEndpointConfiguration): Optional configuration for REST endpoints.
         """
         online_sources = [source._online_source for source in sources]
-        self._online_executor = InMemoryExecutor(online_sources, indices, context_data)
-        super().__init__(sources, indices, self._online_executor.context)
+        self._online_executor = InMemoryExecutor(
+            online_sources, indices, vector_database, context_data
+        )
+        super().__init__(
+            sources, indices, vector_database, self._online_executor.context
+        )
 
         self._queries = queries
         self._endpoint_configuration = (
@@ -95,10 +102,7 @@ class RestApp(App):
             executor (RestExecutor): An instance of RestExecutor.
         """
         self.__online_app = executor._online_executor.run()
-        super().__init__(
-            executor,
-            self.__online_app._vdb_connector,
-        )
+        super().__init__(executor)
 
         self.__data_loader_sources = [
             source
@@ -114,7 +118,13 @@ class RestApp(App):
         )
 
     @property
-    def data_loader_sources(self) -> list[DataLoaderSource]:
+    def data_loader_sources(self) -> Sequence[DataLoaderSource]:
+        """
+        Property that returns the list of DataLoaderSource instances associated with the RestApp.
+
+        Returns:
+            Sequence[DataLoaderSource]: A sequence of DataLoaderSource instances.
+        """
         return self.__data_loader_sources
 
     @property
