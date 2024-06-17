@@ -13,10 +13,7 @@ If you like what we do, give us a star! ⭐
 
 The video below shows how to use Superlinked to build multimodal embedding vectors from your data and then define weights at query time to avoid postprocessing & reranking while increasing retrieval quality. You can see the full code [here](https://github.com/superlinked/superlinked/blob/main/notebook/recommendations_e_commerce.ipynb).
 
-<div align="center">
-<video src="https://storage.googleapis.com/superlinked-public-assets/README_video.mp4" controls="controls" style="max-width: 730px;">
-</video>
-</div>
+[![](https://storage.googleapis.com/superlinked-public-assets/README_video_thumbnail.png)](https://storage.googleapis.com/superlinked-public-assets/README_video.mp4)
 
 Our current release allows you to explore our computational model in simple scripts and python notebooks, our next major release will focus on helping you run Superlinked in production, with built-in data infra and vector database integrations.
 
