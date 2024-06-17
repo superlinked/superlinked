@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![GitHub](https://img.shields.io/github/license/superlinked/superlinked) ![GitHub last commit](https://img.shields.io/github/last-commit/superlinked/superlinked) [![Version](https://img.shields.io/npm/v/superlinked.svg)](https://npmjs.org/package/superlinked)
+![GitHub](https://img.shields.io/github/license/superlinked/superlinked) ![GitHub last commit](https://img.shields.io/github/last-commit/superlinked/superlinked)
 
 </div>
 
@@ -11,9 +11,9 @@ Superlinked is a compute framework for your information retrieval and feature en
 
 If you like what we do, give us a star! ⭐
 
-The video below shows how to use Superlinked to build multimodal embedding vectors from your data and then define weights at query time to avoid postprocessing & reranking while increasing retrieval quality. You can see the full code [here](https://github.com/superlinked/superlinked/blob/main/notebook/recommendations_e_commerce.ipynb).
+The screenshot below shows how to build multimodal vectors from your data & define weights at query time to avoid postprocessing & rerank requirements.
 
-[![](https://storage.googleapis.com/superlinked-public-assets/README_video_thumbnail.png)](https://storage.googleapis.com/superlinked-public-assets/README_video.mp4)
+![If the image does not render, you can check the notebook here: https://github.com/superlinked/superlinked/blob/main/notebook/recommendations_e_commerce.ipynb](https://storage.googleapis.com/superlinked-public-assets/notebook.png)
 
 Our current release allows you to explore our computational model in simple scripts and python notebooks, our next major release will focus on helping you run Superlinked in production, with built-in data infra and vector database integrations.
 
