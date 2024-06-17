@@ -1,16 +1,26 @@
 # Superlinked 
 
-Superlinked is a compute framework for your information retrieval and feature engineering systems, focused on turning complex data into vector embeddings within your RAG, Search, RecSys and Analytics stack.
+<div align="center">
+
+![GitHub](https://img.shields.io/github/license/superlinked/superlinked) ![GitHub last commit](https://img.shields.io/github/last-commit/superlinked/superlinked) [![Version](https://img.shields.io/npm/v/superlinked.svg)](https://npmjs.org/package/superlinked)
+
+</div>
+
+
+Superlinked is a compute framework for your information retrieval and feature engineering systems, focused on turning complex data into vector embeddings within your RAG, Search, RecSys and Analytics stack. Integrate Superlinked into your machine learning stack for custom model performance with pre-trained model convenience. 
+
+If you like what we do, give us a star! ⭐
+
+The video below shows how to use Superlinked to build multimodal embedding vectors from your data and then define weights at query time to avoid postprocessing & reranking while increasing retrieval quality. You can see the full code [here](https://github.com/superlinked/superlinked/blob/main/notebook/recommendations_e_commerce.ipynb).
+
+<div align="center">
+<video src="https://storage.googleapis.com/superlinked-public-assets/README_video.mp4" controls="controls" style="max-width: 730px;">
+</video>
+</div>
 
 Our current release allows you to explore our computational model in simple scripts and python notebooks, our next major release will focus on helping you run Superlinked in production, with built-in data infra and vector database integrations.
 
 Visit [Superlinked](https://superlinked.com/) for more information about the company behind this product and our other initiatives.
-
-If you like what we do, give us a star! ⭐
-
-The screenshot below shows how to build multimodal vectors from your data & define weights at query time to avoid postprocessing & rerank requirements.
-
-![If the image does not render, you can check the notebook here: https://github.com/superlinked/superlinked/blob/main/notebook/recommendations_e_commerce.ipynb](https://storage.googleapis.com/superlinked-public-assets/notebook.png)
 
 ## Try it out
 
@@ -35,7 +45,7 @@ Python 3.10.9
 
 If your python version is not `3.10.x` you might use [pyenv](https://github.com/pyenv/pyenv) to install it. 
 
-Upgrade pip and install the superlinked library
+Upgrade pip and install the superlinked library.
 
 ```commandline
 $> python -m pip install --upgrade pip
