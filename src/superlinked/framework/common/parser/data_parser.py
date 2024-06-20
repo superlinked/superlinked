@@ -16,7 +16,8 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from math import isfinite
-from typing import Generic, Mapping
+
+from beartype.typing import Generic, Mapping
 
 from superlinked.framework.common.exception import InitializationException
 from superlinked.framework.common.parser.exception import InvalidMappingException

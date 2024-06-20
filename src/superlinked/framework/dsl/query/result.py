@@ -13,9 +13,8 @@
 # limitations under the License.
 
 from dataclasses import dataclass
-from typing import Any
 
-from beartype.typing import Sequence
+from beartype.typing import Any, Sequence
 from pandas import DataFrame
 
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject

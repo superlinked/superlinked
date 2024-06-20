@@ -14,8 +14,7 @@
 
 from __future__ import annotations
 
-from typing import Generic, cast
-
+from beartype.typing import Generic, cast
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext

@@ -15,7 +15,8 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Mapping, TypeVar
+
+from beartype.typing import Mapping, TypeVar
 
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector

@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.space.categorical_similarity_space
 Classes
 -------
 
-`CategoricalSimilaritySpace(category_input: superlinked.framework.common.schema.schema_object.StringList | list[superlinked.framework.common.schema.schema_object.StringList], categories: list[str], negative_filter: float = 0.0, uncategorized_as_category: bool = True)`
+`CategoricalSimilaritySpace(category_input: superlinked.framework.common.schema.schema_object.StringList | list[superlinked.framework.common.schema.schema_object.StringList] | superlinked.framework.common.schema.schema_object.String | list[superlinked.framework.common.schema.schema_object.String], categories: list[str], negative_filter: float = 0.0, uncategorized_as_category: bool = True)`
 :   Represents a space for encoding categorical similarity.
     
     A CategoricalSimilaritySpace is designed to measure the similarity between items that
@@ -21,9 +21,10 @@ Classes
     items, consider adding it to `categories`.
     
     Attributes:
-        category_input (Union[StringList, List[StringList]]): The schema field containing input
-            categories to be considered in the similarity space. Input contains
-            one or more categories in a list.
+        category_input (StringList | List[StringList] | String | List[String]):
+            The schema field containing input categories to be considered in the similarity space.
+            Input contains one or more categories in a list if `StringList` is provided.
+            If `String` is provided, then the input must be a single value.
         categories (List[str]): A list of categories that defines the dimensionality of the
             one-hot encoded vector. Any category not listed is considered as 'other'.
         negative_filter (float): A value to represent unmatched categories in the one-hot vector.
@@ -44,9 +45,10 @@ Classes
     similarity based on the provided parameters.
     
     Args:
-        category_input (Union[StringList, List[StringList]]): The schema field containing input
-        categories to be considered in the similarity space. Input contains
-        one or more categories in a list.
+        category_input (StringList | List[StringList] | String | List[String]):
+        The schema field containing input categories to be considered in the similarity space.
+        Input contains one or more categories in a list if `StringList` is provided.
+        If `String` is provided, then the input must be a single value.
         categories (list[str]): A list of all the recognized categories. Categories not included in this list will
             be treated as 'other', unless `uncategorized_as_category` is False.
         negative_filter (float, optional): A value used to represent unmatched categories in the encoding process.

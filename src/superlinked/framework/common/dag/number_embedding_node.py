@@ -14,8 +14,8 @@
 
 
 from dataclasses import dataclass
-from typing import Any
 
+from beartype.typing import Any
 from typing_extensions import override
 
 from superlinked.framework.common.dag.node import Node

@@ -13,9 +13,9 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from typing import Any
 
-import numpy as np
+from beartype.typing import Any
+from scipy import linalg
 from typing_extensions import override
 
 from superlinked.framework.common.data_types import NPArray, Vector
@@ -38,7 +38,7 @@ class Normalization(ABC):
 class L2Norm(Normalization):
     @override
     def norm(self, value: NPArray) -> float:
-        return np.linalg.norm(value)  # type: ignore[attr-defined]
+        return linalg.norm(value)
 
     @override
     def __eq__(self, other: Any) -> bool:

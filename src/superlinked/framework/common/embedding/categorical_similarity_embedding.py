@@ -61,9 +61,10 @@ class CategoricalSimilarityEmbedding(Embedding[list[str]], HasLength):
         )
 
     @override
-    def embed(self, input_: list[str], context: ExecutionContext) -> Vector:
+    def embed(self, input_: list[str] | str, context: ExecutionContext) -> Vector:
+        inputs: list[str] = input_ if isinstance(input_, list) else [input_]
         one_hot_encoding: NPArray = self.__n_hot_encode(
-            input_, context.is_query_context()
+            inputs, context.is_query_context()
         )
         return Vector(one_hot_encoding)
 

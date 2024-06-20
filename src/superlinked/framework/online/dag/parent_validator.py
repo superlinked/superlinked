@@ -15,7 +15,8 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Callable
+
+from beartype.typing import Callable
 
 
 class ParentValidationType(Enum):

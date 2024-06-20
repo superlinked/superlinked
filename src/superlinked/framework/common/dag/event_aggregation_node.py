@@ -15,8 +15,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, cast
 
+from beartype.typing import Any, cast
 from typing_extensions import override
 
 from superlinked.framework.common.dag.comparison_filter_node import ComparisonFilterNode

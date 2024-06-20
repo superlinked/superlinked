@@ -13,9 +13,9 @@
 # limitations under the License.
 
 import datetime
-from typing import Annotated
 
 from beartype.typing import Sequence
+from typing_extensions import Annotated
 
 from superlinked.framework.common.const import MAX_DAG_DEPTH
 from superlinked.framework.common.dag.concatenation_node import ConcatenationNode

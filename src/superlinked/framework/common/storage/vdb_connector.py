@@ -13,9 +13,8 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from typing import Any
 
-from beartype.typing import Sequence
+from beartype.typing import Any, Sequence
 
 from superlinked.framework.common.calculation.distance_metric import DistanceMetric
 from superlinked.framework.common.exception import ValidationException

@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, cast
-
-from beartype.typing import Sequence
+from beartype.typing import Any, Sequence, cast
 
 from superlinked.framework.common.data_types import PythonTypes, Vector
 from superlinked.framework.common.schema.schema_object import (

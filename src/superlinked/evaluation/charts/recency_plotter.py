@@ -13,11 +13,11 @@
 # limitations under the License.
 
 import datetime
-from typing import Mapping
 
 import altair as alt
 import numpy as np
 import pandas as pd
+from beartype.typing import Mapping
 
 from superlinked.framework.common.calculation.distance_metric import DistanceMetric
 from superlinked.framework.common.calculation.vector_similarity import (

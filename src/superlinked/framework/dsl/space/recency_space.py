@@ -14,8 +14,8 @@
 
 import logging
 from datetime import timedelta
-from typing import Mapping
 
+from beartype.typing import Mapping
 from typing_extensions import override
 
 from superlinked.framework.common.dag.named_function_node import NamedFunctionNode

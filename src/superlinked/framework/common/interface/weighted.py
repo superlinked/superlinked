@@ -13,7 +13,8 @@
 # limitations under the License.
 
 from dataclasses import dataclass
-from typing import Generic, TypeVar
+
+from beartype.typing import Generic, TypeVar
 
 from superlinked.framework.common.const import DEFAULT_WEIGHT
 

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from typing import Any
+from beartype.typing import Any
 
 
 class StringUtil:

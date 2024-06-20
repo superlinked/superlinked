@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from typing import Any
+from beartype.typing import Any
 
 from superlinked.framework.dsl.storage.vector_database import VectorDatabase
 from superlinked.framework.storage.redis.redis_connection_params import (

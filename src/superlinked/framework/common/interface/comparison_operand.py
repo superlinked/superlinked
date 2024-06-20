@@ -15,7 +15,8 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Generic, TypeVar
+
+from beartype.typing import Any, Callable, Generic, TypeVar
 
 from superlinked.framework.common.interface.comparison_operation_type import (
     ComparisonOperationType,

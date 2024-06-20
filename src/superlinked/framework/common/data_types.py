@@ -15,9 +15,9 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any, Union
 
 import numpy as np
+from beartype.typing import Any, Union
 
 from superlinked.framework.common.exception import (
     MismatchingDimensionException,
@@ -26,12 +26,6 @@ from superlinked.framework.common.exception import (
 
 Json = Mapping[str, Any]
 NPArray = np.ndarray[Any, np.dtype[np.float32]]
-
-
-def get_l2_norm_np(array: NPArray) -> NPArray:
-    # TODO: https://linear.app/superlinked/issue/FAI-1936/figure-out-numpy-typing
-    # ignoring this as linter falsely thinks there is no such thing as below
-    return np.linalg.norm(array)  # type: ignore[attr-defined]
 
 
 class Vector:

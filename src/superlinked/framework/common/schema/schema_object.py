@@ -16,9 +16,8 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Any, Generic, TypeVar, cast
 
-from beartype.typing import Sequence
+from beartype.typing import Any, Generic, Sequence, TypeVar, cast
 from typing_extensions import override
 
 from superlinked.framework.common.data_types import PythonTypes

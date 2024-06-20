@@ -15,9 +15,7 @@
 
 from __future__ import annotations
 
-from typing import Generic, TypeVar, get_args
-
-from beartype.typing import Sequence
+from beartype.typing import Generic, Sequence, TypeVar, get_args
 
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.storage.field import Field

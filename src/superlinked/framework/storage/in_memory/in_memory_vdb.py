@@ -14,9 +14,8 @@
 
 import json
 from collections import defaultdict
-from typing import Any
 
-from beartype.typing import Sequence
+from beartype.typing import Any, Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.interface.comparison_operand import (

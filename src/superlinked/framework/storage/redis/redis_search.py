@@ -13,9 +13,7 @@
 # limitations under the License.
 
 
-from typing import Any
-
-from beartype.typing import Sequence
+from beartype.typing import Any, Sequence
 from redis import Redis
 from typing_extensions import override
 

@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import TypeVar
-
-from beartype.typing import Sequence
+from beartype.typing import Sequence, TypeVar
 
 from superlinked.framework.common.schema.schema_object import (
     SchemaField,

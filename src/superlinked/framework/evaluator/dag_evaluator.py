@@ -13,7 +13,8 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+
+from beartype.typing import Generic, TypeVar
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema

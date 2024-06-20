@@ -14,9 +14,8 @@
 
 from collections import defaultdict
 from functools import reduce
-from typing import cast
 
-from beartype.typing import Sequence
+from beartype.typing import Sequence, cast
 
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.exception import QueryException

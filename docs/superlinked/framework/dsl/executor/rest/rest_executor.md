@@ -23,7 +23,7 @@ Classes
 
     ### Instance variables
 
-    `data_loader_sources: Sequence[superlinked.framework.dsl.source.data_loader_source.DataLoaderSource]`
+    `data_loader_sources: collections.abc.Sequence[superlinked.framework.dsl.source.data_loader_source.DataLoaderSource]`
     :   Property that returns the list of DataLoaderSource instances associated with the RestApp.
         
         Returns:

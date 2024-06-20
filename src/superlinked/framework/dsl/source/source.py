@@ -13,7 +13,8 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from typing import TypeVar
+
+from beartype.typing import TypeVar
 
 from superlinked.framework.common.source.source import Source as CommonSource
 

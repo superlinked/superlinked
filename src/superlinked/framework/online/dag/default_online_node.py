@@ -15,9 +15,8 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Generic
 
-from beartype.typing import Sequence
+from beartype.typing import Generic, Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext

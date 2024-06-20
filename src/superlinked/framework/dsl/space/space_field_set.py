@@ -13,7 +13,8 @@
 # limitations under the License.
 
 from dataclasses import dataclass
-from typing import Any, Generic
+
+from beartype.typing import Any, Generic
 
 from superlinked.framework.common.schema.id_schema_object import SchemaField
 from superlinked.framework.dsl.space.space import SIT, Space

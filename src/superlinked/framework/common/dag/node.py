@@ -16,7 +16,8 @@ from __future__ import annotations
 
 import hashlib
 from abc import ABC, abstractmethod
-from typing import Any, Generic, TypeVar
+
+from beartype.typing import Any, Generic, TypeVar
 
 from superlinked.framework.common.dag.dag_effect import DagEffect
 from superlinked.framework.common.dag.persistence_params import PersistenceParams

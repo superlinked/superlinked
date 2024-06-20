@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Generic
-
+from beartype.typing import Any, Generic
 from typing_extensions import override
 
 from superlinked.framework.common.dag.dag_effect import DagEffect

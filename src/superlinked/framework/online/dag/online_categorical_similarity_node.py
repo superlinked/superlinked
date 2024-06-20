@@ -14,8 +14,7 @@
 
 from __future__ import annotations
 
-from typing import cast
-
+from beartype.typing import cast
 from typing_extensions import override
 
 from superlinked.framework.common.dag.categorical_similarity_node import (

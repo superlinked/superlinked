@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import Generic
+from beartype.typing import Generic
 
 from superlinked.framework.common.data_types import Json
 from superlinked.framework.common.parser.data_parser import DataParser

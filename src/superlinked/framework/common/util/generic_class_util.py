@@ -13,9 +13,8 @@
 # limitations under the License.
 
 import inspect
-from typing import Any, cast, get_args, get_origin
 
-from beartype.typing import Sequence
+from beartype.typing import Any, Sequence, cast, get_args, get_origin
 
 from superlinked.framework.common.schema.general_type import T
 

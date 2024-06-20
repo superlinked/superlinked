@@ -13,9 +13,9 @@
 # limitations under the License.
 
 import json
-from typing import Any, Callable, cast
 
 import numpy as np
+from beartype.typing import Any, Callable, cast
 
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.storage.exception import EncoderException

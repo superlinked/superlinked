@@ -14,9 +14,7 @@
 
 from __future__ import annotations
 
-from typing import Any, cast
-
-from beartype.typing import Sequence
+from beartype.typing import Any, Sequence, cast
 from typing_extensions import Self
 
 from superlinked.framework.common.interface.comparison_operand import (

@@ -15,7 +15,8 @@
 from __future__ import annotations
 
 from abc import ABC, ABCMeta, abstractmethod
-from typing import Generic, TypeVar
+
+from beartype.typing import Generic, TypeVar
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.exception import ParentCountException

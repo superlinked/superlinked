@@ -17,9 +17,8 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from typing import Any, cast
 
-from beartype.typing import Sequence
+from beartype.typing import Any, Sequence, cast
 
 from superlinked.framework.common.data_types import Json, PythonTypes
 from superlinked.framework.common.storage.entity_id import EntityId

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import cast, get_args
+from beartype.typing import cast, get_args
 
 from superlinked.framework.common.schema.event_schema_object import (
     EventSchemaObject,

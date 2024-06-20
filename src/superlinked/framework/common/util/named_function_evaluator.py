@@ -13,7 +13,8 @@
 # limitations under the License.
 
 from enum import Enum
-from typing import Any
+
+from beartype.typing import Any
 
 from superlinked.framework.common.dag.context import ExecutionContext
 

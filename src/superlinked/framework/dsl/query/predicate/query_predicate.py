@@ -14,9 +14,8 @@
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Generic, TypeVar
 
-from beartype.typing import Sequence
+from beartype.typing import Generic, Sequence, TypeVar
 
 from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.dsl.query.param import NumericParamType, Param

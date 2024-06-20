@@ -13,7 +13,8 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+
+from beartype.typing import Generic, TypeVar
 
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
 

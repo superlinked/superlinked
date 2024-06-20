@@ -14,9 +14,8 @@
 
 
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar, cast
 
-from beartype.typing import Sequence
+from beartype.typing import Generic, Sequence, TypeVar, cast
 
 from superlinked.framework.common.exception import ValidationException
 from superlinked.framework.common.interface.comparison_operand import (

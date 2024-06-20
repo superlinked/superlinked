@@ -14,9 +14,8 @@
 
 from __future__ import annotations
 
-from typing import Annotated, TypedDict, cast
-
-from beartype.typing import Sequence
+from beartype.typing import Sequence, TypedDict, cast
+from typing_extensions import Annotated
 
 from superlinked.framework.common.const import DEFAULT_WEIGHT
 from superlinked.framework.common.exception import (

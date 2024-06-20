@@ -13,9 +13,8 @@
 # limitations under the License.
 
 import inspect
-from typing import Any, TypeAlias, cast
 
-from beartype.typing import Sequence
+from beartype.typing import Any, Sequence, TypeAlias, cast
 
 from superlinked.framework.common.schema.event_schema_object import (
     CreatedAtField,

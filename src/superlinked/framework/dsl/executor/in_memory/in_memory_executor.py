@@ -14,9 +14,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Mapping
-
-from beartype.typing import Sequence
+from beartype.typing import Any, Mapping, Sequence
 
 from superlinked.framework.common.dag.context import (
     ContextValue,

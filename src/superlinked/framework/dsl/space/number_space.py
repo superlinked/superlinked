@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Mapping, cast
-
+from beartype.typing import Mapping, cast
 from typing_extensions import override
 
 from superlinked.framework.common.dag.constant_node import ConstantNode

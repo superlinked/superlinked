@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any
+from beartype.typing import Any
 
 from superlinked.framework.storage.common.connection_params import ConnectionParams
 

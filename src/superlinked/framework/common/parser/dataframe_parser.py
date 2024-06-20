@@ -15,9 +15,9 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Generic
 
 import pandas as pd
+from beartype.typing import Generic
 
 from superlinked.framework.common.parser.data_parser import DataParser
 from superlinked.framework.common.parser.exception import (

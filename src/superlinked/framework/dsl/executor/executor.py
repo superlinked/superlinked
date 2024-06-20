@@ -15,10 +15,9 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Annotated, Generic, TypeVar
 
-from beartype.typing import Sequence
-from typing_extensions import Self
+from beartype.typing import Generic, Sequence, TypeVar
+from typing_extensions import Annotated, Self
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.storage_manager.storage_manager import (

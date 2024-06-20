@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Generic
+from beartype.typing import Generic
 
 from superlinked.framework.common.parser.data_parser import DataParser
 from superlinked.framework.common.schema.schema_object import SchemaObjectT

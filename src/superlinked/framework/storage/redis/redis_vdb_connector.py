@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, cast
-
 import redis
-from beartype.typing import Sequence
+from beartype.typing import Any, Sequence, cast
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from typing_extensions import override
 

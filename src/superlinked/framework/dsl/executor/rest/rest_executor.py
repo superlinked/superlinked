@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import Mapping, Sequence
+from beartype.typing import Mapping, Sequence
 
 from superlinked.framework.common.dag.context import ContextValue
 from superlinked.framework.dsl.executor.executor import App, Executor

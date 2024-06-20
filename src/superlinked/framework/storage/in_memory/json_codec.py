@@ -13,9 +13,9 @@
 # limitations under the License.
 
 import json
-from typing import Any
 
 import numpy as np
+from beartype.typing import Any
 
 from superlinked.framework.common.data_types import Vector
 

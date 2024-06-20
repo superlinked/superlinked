@@ -13,9 +13,8 @@
 # limitations under the License.
 
 from collections import defaultdict
-from typing import Any, cast
 
-from beartype.typing import Sequence
+from beartype.typing import Any, Sequence, cast
 
 from superlinked.framework.common.calculation.distance_metric import DistanceMetric
 from superlinked.framework.common.calculation.vector_similarity import (

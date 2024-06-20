@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any
-
-from beartype.typing import Sequence
+from beartype.typing import Any, Sequence
 from pymongo import MongoClient, UpdateOne
 from typing_extensions import override
 

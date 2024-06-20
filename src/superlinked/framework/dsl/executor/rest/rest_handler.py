@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Sequence, TypeVar
-
+from beartype.typing import Sequence, TypeVar
 from furl import furl
 from pydantic.alias_generators import to_snake
 

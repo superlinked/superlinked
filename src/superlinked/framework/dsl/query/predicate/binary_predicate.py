@@ -14,7 +14,8 @@
 
 from dataclasses import dataclass, field
 from itertools import count
-from typing import Generic, TypeVar
+
+from beartype.typing import Generic, TypeVar
 
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.schema.schema_object import SchemaField

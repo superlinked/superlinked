@@ -14,7 +14,8 @@
 
 import inspect
 from pydoc import locate
-from typing import TypeVar, cast
+
+from beartype.typing import TypeVar, cast
 
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.exception import NotImplementedException

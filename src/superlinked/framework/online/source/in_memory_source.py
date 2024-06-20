@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import Generic
+from beartype.typing import Generic
 
 from superlinked.framework.common.const import INMEMORY_PUT_CHUNK_SIZE
 from superlinked.framework.common.observable import Publisher

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from typing import Mapping
+from beartype.typing import Mapping
 
 from superlinked.framework.common.dag.categorical_similarity_node import (
     CategoricalSimilarityNode,
@@ -24,7 +24,11 @@ from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.categorical_similarity_embedding import (
     CategoricalSimilarityParams,
 )
-from superlinked.framework.common.schema.schema_object import SchemaObject, StringList
+from superlinked.framework.common.schema.schema_object import (
+    SchemaObject,
+    String,
+    StringList,
+)
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
@@ -47,9 +51,10 @@ class CategoricalSimilaritySpace(Space):
     items, consider adding it to `categories`.
 
     Attributes:
-        category_input (Union[StringList, List[StringList]]): The schema field containing input
-            categories to be considered in the similarity space. Input contains
-            one or more categories in a list.
+        category_input (StringList | List[StringList] | String | List[String]):
+            The schema field containing input categories to be considered in the similarity space.
+            Input contains one or more categories in a list if `StringList` is provided.
+            If `String` is provided, then the input must be a single value.
         categories (List[str]): A list of categories that defines the dimensionality of the
             one-hot encoded vector. Any category not listed is considered as 'other'.
         negative_filter (float): A value to represent unmatched categories in the one-hot vector.
@@ -67,7 +72,7 @@ class CategoricalSimilaritySpace(Space):
 
     def __init__(
         self,
-        category_input: StringList | list[StringList],
+        category_input: StringList | list[StringList] | String | list[String],
         categories: list[str],
         negative_filter: float = 0.0,
         uncategorized_as_category: bool = True,
@@ -79,9 +84,10 @@ class CategoricalSimilaritySpace(Space):
         similarity based on the provided parameters.
 
         Args:
-            category_input (Union[StringList, List[StringList]]): The schema field containing input
-            categories to be considered in the similarity space. Input contains
-            one or more categories in a list.
+            category_input (StringList | List[StringList] | String | List[String]):
+            The schema field containing input categories to be considered in the similarity space.
+            Input contains one or more categories in a list if `StringList` is provided.
+            If `String` is provided, then the input must be a single value.
             categories (list[str]): A list of all the recognized categories. Categories not included in this list will
                 be treated as 'other', unless `uncategorized_as_category` is False.
             negative_filter (float, optional): A value used to represent unmatched categories in the encoding process.
@@ -94,7 +100,10 @@ class CategoricalSimilaritySpace(Space):
             InvalidSchemaException: If a schema object does not have a corresponding node in the similarity space,
             indicating a configuration or implementation error.
         """
-        super().__init__(category_input, StringList)
+        if isinstance(category_input, StringList):
+            super().__init__(category_input, StringList)
+        elif isinstance(category_input, String):
+            super().__init__(category_input, String)
         self.categorical_similarity_param: CategoricalSimilarityParams = (
             CategoricalSimilarityParams(
                 categories=categories,

@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import cast
-
 import numpy as np
+from beartype.typing import cast
 from sentence_transformers import SentenceTransformer
 from torch import Tensor
 from typing_extensions import override

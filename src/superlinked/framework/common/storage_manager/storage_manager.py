@@ -14,9 +14,8 @@
 
 from dataclasses import dataclass
 from itertools import groupby
-from typing import Any, Iterator, TypeVar, cast
 
-from beartype.typing import Sequence
+from beartype.typing import Any, Iterator, Sequence, TypeVar, cast
 
 from superlinked.framework.common.dag.index_node import IndexNode
 from superlinked.framework.common.data_types import Json, PythonTypes

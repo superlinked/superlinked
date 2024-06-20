@@ -16,9 +16,8 @@ from __future__ import annotations
 
 from functools import reduce
 from math import sqrt
-from typing import cast
 
-from beartype.typing import Sequence
+from beartype.typing import Sequence, cast
 from typing_extensions import override
 
 from superlinked.framework.common.dag.concatenation_node import ConcatenationNode

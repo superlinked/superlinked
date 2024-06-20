@@ -13,7 +13,8 @@
 # limitations under the License.
 
 import inspect
-from typing import get_args
+
+from beartype.typing import get_args
 
 from superlinked.framework.common.schema.event_schema_object import (
     CreatedAtField,

@@ -17,9 +17,8 @@ from __future__ import annotations
 from abc import abstractmethod
 from enum import Enum
 from functools import reduce
-from typing import Any, Generic, Mapping
 
-from beartype.typing import Sequence
+from beartype.typing import Any, Generic, Mapping, Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext

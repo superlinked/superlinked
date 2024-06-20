@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, cast
-
 import numpy as np
-from beartype.typing import Sequence
+from beartype.typing import Any, Sequence, cast
+from scipy import linalg
 
-from superlinked.framework.common.data_types import NPArray, Vector, get_l2_norm_np
+from superlinked.framework.common.data_types import NPArray, Vector
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema import T
@@ -111,7 +110,7 @@ class VectorSampler:
             spaces = [spaces]
 
         vector_value: np.ndarray = vector.replace_negative_filters(0).value
-        if get_l2_norm_np(vector_value) == 0:
+        if linalg.norm(vector_value) == 0:
             return vector
 
         nodes: list[HasLength] = [
@@ -126,7 +125,7 @@ class VectorSampler:
                 for vector_slice, weight in zip(vector_slices, weights)
             ]
         )
-        normalized_vector_values = weighted_vector_values / get_l2_norm_np(
+        normalized_vector_values = weighted_vector_values / linalg.norm(
             weighted_vector_values
         )
         vector.value[vector.non_negative_filter_mask] = normalized_vector_values[

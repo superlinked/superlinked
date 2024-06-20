@@ -16,8 +16,8 @@ from __future__ import annotations
 
 from collections import defaultdict
 from enum import Enum, auto
-from typing import Mapping, TypeVar, cast
 
+from beartype.typing import Mapping, TypeVar, cast
 from typing_extensions import Self, TypeAlias
 
 from superlinked.framework.common.exception import (

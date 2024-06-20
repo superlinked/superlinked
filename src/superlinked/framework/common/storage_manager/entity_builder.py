@@ -13,9 +13,7 @@
 # limitations under the License.
 
 
-from typing import Any
-
-from beartype.typing import Sequence
+from beartype.typing import Any, Sequence
 
 from superlinked.framework.common.data_types import PythonTypes
 from superlinked.framework.common.parser.parsed_schema import (

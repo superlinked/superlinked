@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Callable
+from beartype.typing import Callable
 
 DEFAULT_CHUNK_SIZE: int = 250
 DEFAULT_CHUNK_OVERLAP: int = 20

@@ -14,9 +14,7 @@
 
 from __future__ import annotations
 
-from typing import Generic, TypeVar
-
-from beartype.typing import Sequence
+from beartype.typing import Generic, Sequence, TypeVar
 from typing_extensions import override
 
 from superlinked.framework.common.exception import InitializationException

@@ -13,9 +13,8 @@
 # limitations under the License.
 
 from dataclasses import dataclass
-from typing import Any, cast
 
-from beartype.typing import Sequence
+from beartype.typing import Any, Sequence, cast
 from redis.commands.search.query import Query
 
 from superlinked.framework.common.interface.comparison_operand import (

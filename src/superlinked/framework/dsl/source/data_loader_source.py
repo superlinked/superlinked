@@ -14,7 +14,8 @@
 
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Any, Generic
+
+from beartype.typing import Any, Generic
 
 from superlinked.framework.common.parser.data_parser import DataParser
 from superlinked.framework.common.parser.dataframe_parser import DataFrameParser

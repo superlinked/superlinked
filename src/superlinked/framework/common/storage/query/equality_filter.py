@@ -13,7 +13,8 @@
 # limitations under the License.
 
 from dataclasses import dataclass
-from typing import Any
+
+from beartype.typing import Any
 
 
 @dataclass(frozen=True)

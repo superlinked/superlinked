@@ -13,7 +13,8 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from typing import Any
+
+from beartype.typing import Any
 
 
 class ConnectionParams(ABC):

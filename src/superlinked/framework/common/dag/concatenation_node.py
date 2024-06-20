@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, cast
-
+from beartype.typing import Any, cast
 from typing_extensions import override
 
 from superlinked.framework.common.const import DEFAULT_WEIGHT
