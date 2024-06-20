@@ -15,8 +15,7 @@
 from typing import Any
 
 from beartype.typing import Sequence
-from bson import ObjectId
-from pymongo import MongoClient
+from pymongo import MongoClient, UpdateOne
 from typing_extensions import override
 
 from superlinked.framework.common.storage.entity import Entity
@@ -96,6 +95,7 @@ class MongoVDBConnector(VDBConnector):
         )
         self._index_configs.pop(index_name, None)
 
+    @override
     def write_entities(self, entity_data: Sequence[EntityData]) -> None:
         docs = [
             {
@@ -107,12 +107,14 @@ class MongoVDBConnector(VDBConnector):
             }
             for ed in entity_data
         ]
-        self._db[self._collection_name].insert_many(docs)
+        self._db[self._collection_name].bulk_write(
+            [UpdateOne({"_id": doc["_id"]}, {"$set": doc}, upsert=True) for doc in docs]
+        )
 
     def _read_field_data(self, entity: Entity) -> dict[str, FieldData]:
         doc = (
             self._db[self._collection_name].find_one(
-                {"_id": ObjectId(MongoVDBConnector._get_mongo_id(entity.id_))}
+                {"_id": MongoVDBConnector._get_mongo_id(entity.id_)}
             )
             or {}
         )
