@@ -21,11 +21,12 @@ from typing_extensions import override
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.embedding import Embedding
+from superlinked.framework.common.interface.has_default_vector import HasDefaultVector
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.space.normalization import Normalization
 
 
-class SentenceTransformerEmbedding(Embedding[str], HasLength):
+class SentenceTransformerEmbedding(Embedding[str], HasLength, HasDefaultVector):
     def __init__(self, model_name: str, normalization: Normalization) -> None:
         self.model = SentenceTransformer(model_name)
         self.__normalization = normalization
@@ -46,6 +47,11 @@ class SentenceTransformerEmbedding(Embedding[str], HasLength):
     @property
     def length(self) -> int:
         return self.__length
+
+    @property
+    @override
+    def default_vector(self) -> Vector:
+        return Vector([0.0] * self.length)
 
     def __to_vector(self, embedding: list[Tensor] | np.ndarray | Tensor) -> Vector:
         vector_input = cast(np.ndarray, embedding).astype(np.float32)

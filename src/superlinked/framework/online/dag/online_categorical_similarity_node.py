@@ -57,13 +57,6 @@ class OnlineCategoricalSimilarityNode(
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
     ) -> list[EvaluationResult[Vector]]:
-        if self._should_return_default_vector(parsed_schemas, context):
-            return [
-                EvaluationResult(
-                    self._get_single_evaluation_result(self.node.default_vector)
-                )
-                for _ in parsed_schemas
-            ]
         return [self.evaluate_self_single(schema, context) for schema in parsed_schemas]
 
     def evaluate_self_single(
@@ -71,14 +64,14 @@ class OnlineCategoricalSimilarityNode(
         parsed_schema: ParsedSchema,
         context: ExecutionContext,
     ) -> EvaluationResult[Vector]:
-        if len(self.parents) == 0:
-            stored_result = self.load_stored_result_or_raise_exception(parsed_schema)
-            return EvaluationResult(self._get_single_evaluation_result(stored_result))
-
-        input_: EvaluationResult[list[str]] = cast(
-            OnlineNode[Node[list[str]], list[str]],
-            self.parents[0],
-        ).evaluate_next_single(parsed_schema, context)
-        transformed_input_value = self.node.embedding.embed(input_.main.value, context)
-        main = self._get_single_evaluation_result(transformed_input_value)
-        return EvaluationResult(main)
+        if context.should_load_default_node_input:
+            result = self.node.embedding.default_vector
+        elif len(self.parents) == 0:
+            result = self.load_stored_result_or_raise_exception(parsed_schema)
+        else:
+            input_: EvaluationResult[list[str]] = cast(
+                OnlineNode[Node[list[str]], list[str]],
+                self.parents[0],
+            ).evaluate_next_single(parsed_schema, context)
+            result = self.node.embedding.embed(input_.main.value, context)
+        return EvaluationResult(self._get_single_evaluation_result(result))

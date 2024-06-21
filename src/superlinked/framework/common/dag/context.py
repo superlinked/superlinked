@@ -26,11 +26,12 @@ from superlinked.framework.common.exception import (
 )
 from superlinked.framework.common.util import time_util
 
-ContextValue: TypeAlias = int | float | str | Mapping | list | None
+ContextValue: TypeAlias = int | float | str | Mapping | list | bool | None
 T = TypeVar("T", bound=ContextValue)
 CONTEXT_COMMON = "common"
 CONTEXT_COMMON_ENVIRONMENT = "environment"
 CONTEXT_COMMON_NOW = "now"
+LOAD_DEFAULT_NODE_INPUT = "load_default_node_input"
 SPACE_WEIGHT_PARAM_NAME = "weight"
 
 
@@ -131,8 +132,18 @@ class ExecutionContext:
     def __node_context(self, node_id: str) -> dict[str, ContextValue]:
         return self.__data[node_id]
 
+    @property
     def is_query_context(self) -> bool:
         return self.has_environment(ExecutionEnvironment.QUERY)
+
+    @property
+    def should_load_default_node_input(self) -> bool:
+        return bool(self.__data[CONTEXT_COMMON].get(LOAD_DEFAULT_NODE_INPUT))
+
+    def set_load_default_node_input(self, load_default_node_input: bool) -> None:
+        self.update_data(
+            {CONTEXT_COMMON: {LOAD_DEFAULT_NODE_INPUT: load_default_node_input}}
+        )
 
     @classmethod
     def from_context_data(

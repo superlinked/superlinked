@@ -50,13 +50,11 @@ class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasL
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
     ) -> list[EvaluationResult[Vector]]:
-        if self._should_return_default_vector(parsed_schemas, context):
-            return [
-                EvaluationResult(
-                    self._get_single_evaluation_result(self.node.default_vector)
-                )
-                for _ in parsed_schemas
-            ]
+        if context.should_load_default_node_input:
+            result = EvaluationResult(
+                self._get_single_evaluation_result(self.node.embedding.default_vector)
+            )
+            return [result for _ in parsed_schemas]
         return super().evaluate_self(parsed_schemas, context)
 
     @override

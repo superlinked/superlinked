@@ -171,9 +171,11 @@ class QueryVectorFactory:
         parsed_schema = ParsedSchema(
             schema, "", similar_evaluation_input.parsed_schema_fields
         )
+        load_default_node_input = not similar_evaluation_input.parsed_schema_fields
         query_context = self._create_query_context(
             context_base,
             similar_evaluation_input.node_id_weight_map,
+            load_default_node_input,
         )
         return self._evaluator.evaluate_single(
             parsed_schema,
@@ -211,6 +213,7 @@ class QueryVectorFactory:
         self,
         context_base: ExecutionContext,
         node_id_weight_map: dict[str, float],
+        load_default_node_input: bool = False,
     ) -> ExecutionContext:
         eval_context = ExecutionContext(
             environment=ExecutionEnvironment.QUERY,
@@ -220,6 +223,7 @@ class QueryVectorFactory:
         eval_context.update_data(
             self._query_weighting.get_node_weights(node_id_weight_map)
         )
+        eval_context.set_load_default_node_input(load_default_node_input)
         return eval_context
 
     @staticmethod

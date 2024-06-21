@@ -72,11 +72,7 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
         ]
         weight_sum = self._get_weight_abs_sum(context)
         return [
-            (
-                vector
-                if context.is_query_context()
-                else vector.normalize(sqrt(weight_sum))
-            )
+            (vector if context.is_query_context else vector.normalize(sqrt(weight_sum)))
             for vector in vectors
         ]
 

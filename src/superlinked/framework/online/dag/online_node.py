@@ -67,7 +67,7 @@ class OnlineNode(ABC, Generic[NT, NDT], metaclass=ABCMeta):
         context: ExecutionContext,
     ) -> list[EvaluationResult[NDT]]:
         results = self.evaluate_self(parsed_schemas, context)
-        if self.node.persist_evaluation_result and not context.is_query_context():
+        if self.node.persist_evaluation_result and not context.is_query_context:
             for i, result in enumerate(results):
                 self.persist(result, parsed_schemas[i])
         return results
@@ -135,12 +135,3 @@ class OnlineNode(ABC, Generic[NT, NDT], metaclass=ABCMeta):
             raise ParentCountException(
                 f"{type(self).__name__} must have {parent_validation_type.description}."
             )
-
-    def _should_return_default_vector(
-        self,
-        parsed_schemas: list[ParsedSchema],
-        context: ExecutionContext,
-    ) -> bool:
-        return context.is_query_context() and not any(
-            schema.fields for schema in parsed_schemas
-        )

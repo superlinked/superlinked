@@ -22,7 +22,6 @@ from superlinked.framework.common.embedding.categorical_similarity_embedding imp
     CategoricalSimilarityParams,
 )
 from superlinked.framework.common.interface.has_aggregation import HasAggregation
-from superlinked.framework.common.interface.has_default_vector import HasDefaultVector
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.space.aggregation import (
     Aggregation,
@@ -31,9 +30,7 @@ from superlinked.framework.common.space.aggregation import (
 from superlinked.framework.common.space.normalization import L2Norm
 
 
-class CategoricalSimilarityNode(
-    Node[Vector], HasLength, HasAggregation, HasDefaultVector
-):
+class CategoricalSimilarityNode(Node[Vector], HasLength, HasAggregation):
     def __init__(
         self,
         parent: Node[str],
@@ -54,11 +51,6 @@ class CategoricalSimilarityNode(
     @override
     def aggregation(self) -> Aggregation:
         return self.__aggregation
-
-    @property
-    @override
-    def default_vector(self) -> Vector:
-        return Vector([0] * self.length)
 
     @override
     def _get_node_id_parameters(self) -> dict[str, Any]:

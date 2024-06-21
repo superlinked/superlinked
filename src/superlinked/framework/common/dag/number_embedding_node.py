@@ -25,7 +25,6 @@ from superlinked.framework.common.embedding.number_embedding import (
     NumberEmbedding,
 )
 from superlinked.framework.common.interface.has_aggregation import HasAggregation
-from superlinked.framework.common.interface.has_default_vector import HasDefaultVector
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.space.aggregation import (
     Aggregation,
@@ -43,7 +42,7 @@ class NumberEmbeddingParams:
     negative_filter: float
 
 
-class NumberEmbeddingNode(Node[Vector], HasLength, HasAggregation, HasDefaultVector):
+class NumberEmbeddingNode(Node[Vector], HasLength, HasAggregation):
     def __init__(
         self,
         parent: Node[float | int],
@@ -63,11 +62,6 @@ class NumberEmbeddingNode(Node[Vector], HasLength, HasAggregation, HasDefaultVec
             aggregation_mode, normalization, self.embedding
         )
         self.mode = embedding_params.mode
-        self.__default_vector = {
-            Mode.SIMILAR: [0.0, 0.0, 0.0],
-            Mode.MINIMUM: [0.0, 1.0, 1.0],
-            Mode.MAXIMUM: [1.0, 0.0, 1.0],
-        }[self.mode]
 
     @property
     def length(self) -> int:
@@ -77,11 +71,6 @@ class NumberEmbeddingNode(Node[Vector], HasLength, HasAggregation, HasDefaultVec
     @override
     def aggregation(self) -> Aggregation:
         return self.__aggregation
-
-    @property
-    @override
-    def default_vector(self) -> Vector:
-        return Vector(self.__default_vector)
 
     @override
     def _get_node_id_parameters(self) -> dict[str, Any]:

@@ -21,6 +21,7 @@ from typing_extensions import override
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.embedding import Embedding
+from superlinked.framework.common.interface.has_default_vector import HasDefaultVector
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.space.normalization import Normalization
 
@@ -31,7 +32,9 @@ class Mode(Enum):
     SIMILAR = "similar"
 
 
-class NumberEmbedding(Embedding[float], HasLength):
+class NumberEmbedding(
+    Embedding[float], HasLength, HasDefaultVector
+):  # pylint: disable=too-many-instance-attributes
     def __init__(
         self,
         min_value: float,
@@ -47,6 +50,26 @@ class NumberEmbedding(Embedding[float], HasLength):
         self._mode = mode
         self._negative_filter = negative_filter
         self._normalization = normalization
+        self.__default_vector = {
+            Mode.SIMILAR: [0.0, 0.0, 0.0],
+            Mode.MINIMUM: [0.0, 1.0, 1.0],
+            Mode.MAXIMUM: [1.0, 0.0, 1.0],
+        }[self._mode]
+
+    @property
+    @override
+    def default_vector(self) -> Vector:
+        return Vector(self.__default_vector)
+
+    def should_return_default(self, context: ExecutionContext) -> bool:
+        return context.should_load_default_node_input or (
+            context.is_query_context
+            and self._mode
+            in {
+                Mode.MINIMUM,
+                Mode.MAXIMUM,
+            }
+        )
 
     @override
     def embed(

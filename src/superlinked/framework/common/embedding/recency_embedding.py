@@ -171,7 +171,7 @@ class RecencyEmbedding(Embedding[int], HasLength):
         out_of_time_scope: bool,
     ) -> float | None:
         if period_time.period_time == self.__max_period_time.period_time:
-            if context.is_query_context():
+            if context.is_query_context:
                 z_value = 1.0
             elif out_of_time_scope:
                 z_value = self.__negative_filter

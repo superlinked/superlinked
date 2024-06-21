@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 import numpy as np
 from beartype.typing import Sequence
 from typing_extensions import override
@@ -19,6 +20,7 @@ from typing_extensions import override
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import NPArray, Vector
 from superlinked.framework.common.embedding.embedding import Embedding
+from superlinked.framework.common.interface.has_default_vector import HasDefaultVector
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.space.normalization import Normalization
 
@@ -37,7 +39,7 @@ class CategoricalSimilarityParams:
         self.negative_filter: float = negative_filter
 
 
-class CategoricalSimilarityEmbedding(Embedding[list[str]], HasLength):
+class CategoricalSimilarityEmbedding(Embedding[list[str]], HasLength, HasDefaultVector):
     def __init__(
         self,
         categorical_similarity_param: CategoricalSimilarityParams,
@@ -64,7 +66,7 @@ class CategoricalSimilarityEmbedding(Embedding[list[str]], HasLength):
     def embed(self, input_: list[str] | str, context: ExecutionContext) -> Vector:
         inputs: list[str] = input_ if isinstance(input_, list) else [input_]
         one_hot_encoding: NPArray = self.__n_hot_encode(
-            inputs, context.is_query_context()
+            inputs, context.is_query_context
         )
         return Vector(one_hot_encoding)
 
@@ -104,6 +106,11 @@ class CategoricalSimilarityEmbedding(Embedding[list[str]], HasLength):
     @override
     def length(self) -> int:
         return self.__length
+
+    @property
+    @override
+    def default_vector(self) -> Vector:
+        return Vector([0.0] * self.length)
 
     @property
     def category_index_map(self) -> dict[str, int]:
