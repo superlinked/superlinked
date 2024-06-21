@@ -41,6 +41,7 @@ class DataFormat(Enum):
 class DataLoaderConfig:
     path: str
     format: DataFormat
+    name: str | None = None
     pandas_read_kwargs: dict[str, Any] | None = None
 
 
@@ -63,3 +64,7 @@ class DataLoaderSource(Source, Generic[SchemaObjectT, SourceTypeT]):
     @property
     def config(self) -> DataLoaderConfig:
         return self.__data_loader_config
+
+    @property
+    def name(self) -> str:
+        return self.config.name or self._online_source._schema._schema_name

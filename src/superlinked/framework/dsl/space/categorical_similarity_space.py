@@ -29,6 +29,7 @@ from superlinked.framework.common.schema.schema_object import (
     String,
     StringList,
 )
+from superlinked.framework.dsl.space.exception import InvalidSpaceParamException
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
@@ -100,10 +101,11 @@ class CategoricalSimilaritySpace(Space):
             InvalidSchemaException: If a schema object does not have a corresponding node in the similarity space,
             indicating a configuration or implementation error.
         """
-        if isinstance(category_input, StringList):
-            super().__init__(category_input, StringList)
-        elif isinstance(category_input, String):
-            super().__init__(category_input, String)
+        super().__init__(
+            # TODO FAI-1988 remove this type ignore
+            category_input,  # type: ignore[misc]
+            self.__get_input_type(category_input),
+        )
         self.categorical_similarity_param: CategoricalSimilarityParams = (
             CategoricalSimilarityParams(
                 categories=categories,
@@ -123,6 +125,15 @@ class CategoricalSimilaritySpace(Space):
             schema_field.schema_obj: node
             for schema_field, node in unchecked_category_node_map.items()
         }
+
+    def __get_input_type(
+        self, category_input: StringList | list[StringList] | String | list[String]
+    ) -> type[StringList] | type[String]:
+        if isinstance(category_input, list):
+            if not category_input:
+                raise InvalidSpaceParamException("Category input must not be empty.")
+            return type(category_input[0])
+        return type(category_input)
 
     @property
     def _node_by_schema(self) -> Mapping[SchemaObject, Node[Vector]]:
