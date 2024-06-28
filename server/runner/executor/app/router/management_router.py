@@ -21,13 +21,19 @@ from pydantic import BaseModel
 from starlette import status
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 9035a87 (server/1.12.1)
 from executor.app.exception.exception import (
     DataLoaderAlreadyRunningException,
     DataLoaderNotFoundException,
     DataLoaderTaskNotFoundException,
 )
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
+=======
+>>>>>>> 9035a87 (server/1.12.1)
 from executor.app.service.data_loader import DataLoader
 from executor.app.service.supervisor_service import SupervisorService
 
@@ -61,6 +67,7 @@ class ManagementRouter:
         return JSONResponse(content={"result": restart_result}, status_code=status.HTTP_200_OK)
 
     @router.post(
+<<<<<<< HEAD
 <<<<<<< HEAD
         "/data-loader/run",
         summary=(
@@ -101,6 +108,8 @@ class ManagementRouter:
         return JSONResponse(
             content={"result": f"Task not found with id: {task_id}"}, status_code=status.HTTP_404_NOT_FOUND
 =======
+=======
+>>>>>>> 9035a87 (server/1.12.1)
         "/data-loader/{name}/run",
         summary=(
             "Returns with 202 ACCEPTED if the data loader found and started in the background. "
@@ -152,5 +161,8 @@ class ManagementRouter:
         loaders = self.__data_loader.get_data_loaders()  # pylint: disable=no-member
         return JSONResponse(
             content={"result": {name: str(config) for name, config in loaders.items()}}, status_code=status.HTTP_200_OK
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
+=======
+>>>>>>> 9035a87 (server/1.12.1)
         )

@@ -15,10 +15,14 @@
 import os
 from abc import ABC, abstractmethod
 <<<<<<< HEAD
+<<<<<<< HEAD
 from datetime import UTC, datetime
 =======
 from datetime import datetime, timezone
 >>>>>>> 6749add (server/1.12.0)
+=======
+from datetime import datetime, timezone
+>>>>>>> 9035a87 (server/1.12.1)
 
 import requests
 from botocore.exceptions import ClientError
@@ -32,10 +36,14 @@ class ResourceHandler(ABC):
     def __init__(self, app_location: AppLocation) -> None:
         self.app_location = app_location
 <<<<<<< HEAD
+<<<<<<< HEAD
         self.start_time = datetime.now(tz=UTC)
 =======
         self.start_time = datetime.now(tz=timezone.utc)
 >>>>>>> 6749add (server/1.12.0)
+=======
+        self.start_time = datetime.now(tz=timezone.utc)
+>>>>>>> 9035a87 (server/1.12.1)
         self.first_run = True
         self.poller_config = PollerConfig()
         self.logger = self.poller_config.setup_logger(__name__)
@@ -60,12 +68,17 @@ class ResourceHandler(ABC):
         """
         if dt.tzinfo is None:
 <<<<<<< HEAD
+<<<<<<< HEAD
             dt = dt.replace(tzinfo=UTC)
         return dt.astimezone(UTC)
 =======
             dt = dt.replace(tzinfo=timezone.utc)
         return dt.astimezone(timezone.utc)
 >>>>>>> 6749add (server/1.12.0)
+=======
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc)
+>>>>>>> 9035a87 (server/1.12.1)
 
     def check_and_download(self, object_time: datetime, object_name: str) -> None:
         """
@@ -85,20 +98,28 @@ class ResourceHandler(ABC):
                 self.logger.info("Downloaded %s to %s", object_name, download_path)
                 self.notify_executor(object_name)
 <<<<<<< HEAD
+<<<<<<< HEAD
                 self.start_time = datetime.now(tz=UTC)
 =======
                 self.start_time = datetime.now(tz=timezone.utc)
 >>>>>>> 6749add (server/1.12.0)
+=======
+                self.start_time = datetime.now(tz=timezone.utc)
+>>>>>>> 9035a87 (server/1.12.1)
             except (OSError, ClientError, GoogleCloudError):
                 self.logger.exception("Failed to download %s", object_name)
 
         if self.first_run:
             self.first_run = False
 <<<<<<< HEAD
+<<<<<<< HEAD
             self.start_time = datetime.now(tz=UTC)
 =======
             self.start_time = datetime.now(tz=timezone.utc)
 >>>>>>> 6749add (server/1.12.0)
+=======
+            self.start_time = datetime.now(tz=timezone.utc)
+>>>>>>> 9035a87 (server/1.12.1)
 
     def notify_executor(self, object_name: str) -> None:
         """

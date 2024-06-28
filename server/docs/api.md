@@ -34,6 +34,7 @@ This request will search for entities that match the query text.
 ## Load data from file(s)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ### Trigger the data load
 
 To initiate the data load, invoke it's endpoint. This will spawn one asynchronous task for each `DataLoaderSource` that you defined in your `app.py`. To trigger the endpoint, simply send a request with `curl` shown below. The response should be 202 Accepted and it will contain the task id(s).
@@ -41,17 +42,23 @@ To initiate the data load, invoke it's endpoint. This will spawn one asynchronou
 ```bash
 curl -X POST 'http://localhost:8080/data-loader/run'
 =======
+=======
+>>>>>>> 9035a87 (server/1.12.1)
 ### See available data loaders
 
 To see what data loaders are available, send a request to the endpoint below:
 
 ```bash
 curl 'http://localhost:8080/data-loader/'
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
+=======
+>>>>>>> 9035a87 (server/1.12.1)
 ```
 Successful response (200 OK):
 ```JSON
 {
+<<<<<<< HEAD
 <<<<<<< HEAD
     "result": "Background task(s) successfully started. For status, check: `/data-loader/<task_id>`",
     "task_ids": ["<TASK_ID>", "<TASK_ID>"]
@@ -67,6 +74,8 @@ To check if your data is still loaded to the system, you can trigger the status 
 ```bash
 curl -X GET 'http://localhost:8080/data-loader/<TASK_ID>/status
 =======
+=======
+>>>>>>> 9035a87 (server/1.12.1)
     "result": [
         "<NAME_OF_YOUR_DATA_LOADER>": "DataLoaderConfig(path='https://path-to-your-file.csv', format=<DataFormat.CSV: 2>, name=None, pandas_read_kwargs='{sep: ;}')"
     ]
@@ -96,7 +105,10 @@ To check if your data is still being loaded to the system, you can trigger the s
 
 ```bash
 curl -X GET 'http://localhost:8080/data-loader/<NAME_OF_YOUR_DATA_LOADER>/status
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
+=======
+>>>>>>> 9035a87 (server/1.12.1)
 ```
 Successful response (200 OK):
 ```JSON
@@ -105,15 +117,21 @@ Successful response (200 OK):
 }
 ```
 <<<<<<< HEAD
+<<<<<<< HEAD
 If the task id not found in the system (404 Not found):
 ```JSON
 {
     "result": "Task not found with id: <TASK_ID>",
 =======
+=======
+>>>>>>> 9035a87 (server/1.12.1)
 If the data loader is not found by its name in the system (404 Not found):
 ```JSON
 {
     "result": "Task not found with name: <NAME_OF_YOUR_DATA_LOADER>",
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
+=======
+>>>>>>> 9035a87 (server/1.12.1)
 }
 ```

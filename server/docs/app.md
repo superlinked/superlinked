@@ -106,15 +106,21 @@ Create a specific source that can point to a local or a remote file. This file c
 ```python
 # The path can be a local file, a remote. The available DataFormats are: [JSON, CSV, PARQUET, ORC, XML, FWF]
 <<<<<<< HEAD
+<<<<<<< HEAD
 # The last argument is a pass through argument that pandas should be able to use so use the format that is compatible with pandas.
 # Note: the pandas_read_kwargs is an optional parameter, if you don't need any customization, it will use the defaults.
 config = DataLoaderConfig("https://path-to-your-file.csv", DataFormat.CSV, pandas_read_kwargs={"sep": ";"})
 =======
+=======
+>>>>>>> 9035a87 (server/1.12.1)
 # The `name_of_your_loader` is an optional parameter, which is the identifier of your loader. Read more about it below the code block.
 # The last argument is a pass through argument that pandas should be able to use so use the format that is compatible with pandas.
 # Note: the pandas_read_kwargs is an optional parameter, if you don't need any customization, it will use the defaults.
 config = DataLoaderConfig("https://path-to-your-file.csv", DataFormat.CSV, "name_of_your_loader", pandas_read_kwargs={"sep": ";"})
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
+=======
+>>>>>>> 9035a87 (server/1.12.1)
 data_loader_source = DataLoaderSource(your_schema, config) # Add your config to the source. This is mandatory.
 
 executor = RestExecutor(
@@ -126,13 +132,19 @@ executor = RestExecutor(
 ```
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 > The data loader is now configured but **it only runs if you send a request to the data loader endpoint!** To see how to trigger it, check the API documentation [here](api.md#trigger-the-data-load)
 =======
+=======
+>>>>>>> 9035a87 (server/1.12.1)
 > Name of your data loader: The `name` parameter in `DataLoaderConfig` is optional. By default, it adopts the snake_case version of your schema's name used in `DataLoaderSource`. If you have multiple data loaders for the same schema or prefer a different name, simply set the `name` parameter accordingly.
 > Note that the name will always be converted to snake_case. To see the configured data loaders in your system, refer to the [API documentation](api.md#see-available-data-loaders).
 
 The data loader is now configured but **it only runs if you send a request to the data loader endpoint!** To see how to trigger it, check the API documentation [here](api.md#trigger-the-data-load)
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
+=======
+>>>>>>> 9035a87 (server/1.12.1)
 
 ## Optional steps
 

@@ -20,7 +20,10 @@ class UnsupportedProtocolException(Exception):
 class FilesNotFoundException(Exception):
     pass
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 9035a87 (server/1.12.1)
 
 
 class DataLoaderNotFoundException(Exception):
@@ -33,4 +36,7 @@ class DataLoaderAlreadyRunningException(Exception):
 
 class DataLoaderTaskNotFoundException(Exception):
     pass
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
+=======
+>>>>>>> 9035a87 (server/1.12.1)

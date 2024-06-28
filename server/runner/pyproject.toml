@@ -8,10 +8,14 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 <<<<<<< HEAD
+<<<<<<< HEAD
 python = "<=3.12,>=3.11"
 =======
 python = ">=3.10.3,<=3.12.3"
 >>>>>>> 6749add (server/1.12.0)
+=======
+python = ">=3.10.3,<=3.12.3"
+>>>>>>> 9035a87 (server/1.12.1)
 pandas = "^2.0.3"
 
 [tool.poetry.group.poller]
@@ -67,9 +71,13 @@ typing-protocol-intersection = "^0.4.0"
 ruff = "^0.4.2"
 pylint = "^3.1.0"
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 vermin = "^1.6.0"
 >>>>>>> 6749add (server/1.12.0)
+=======
+vermin = "^1.6.0"
+>>>>>>> 9035a87 (server/1.12.1)
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -119,10 +127,14 @@ extend-exclude = ["test"]
 line-length = 120
 indent-width = 4
 <<<<<<< HEAD
+<<<<<<< HEAD
 target-version = "py311"
 =======
 target-version = "py310"
 >>>>>>> 6749add (server/1.12.0)
+=======
+target-version = "py310"
+>>>>>>> 9035a87 (server/1.12.1)
 
 [tool.ruff.lint]
 select = ["ALL"]
