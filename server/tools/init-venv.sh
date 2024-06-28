@@ -21,6 +21,7 @@ poetry env use $(pyenv local ${python_version} && pyenv which python)
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 poetry cache list | awk '{print $1}' | xargs -I {} poetry cache clear {} --all
 
@@ -29,6 +30,10 @@ poetry cache list | awk '{print $1}' | xargs -I {} poetry cache clear {} --all
 poetry cache list | awk '{print $1}' | xargs -I {} poetry cache clear {} --all
 
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+poetry cache list | awk '{print $1}' | xargs -I {} poetry cache clear {} --all
+
+>>>>>>> aead773 (server/1.12.2)
 poetry install --no-root --with poller,executor,dev
 
 source "$(poetry env info --path)/bin/activate"

@@ -17,11 +17,14 @@ import logging
 import traceback
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import uuid
 =======
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 from collections.abc import Sequence
 from typing import Any
 
@@ -30,12 +33,15 @@ from pandas.io.json._json import JsonReader
 from pandas.io.parsers import TextFileReader
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 from superlinked.framework.dsl.source.data_loader_source import DataFormat, DataLoaderSource
 
 from executor.app.configuration.app_config import AppConfig
 =======
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 from pydantic.alias_generators import to_snake
 from superlinked.framework.dsl.source.data_loader_source import DataFormat, DataLoaderConfig, DataLoaderSource
 
@@ -46,15 +52,19 @@ from executor.app.exception.exception import (
     DataLoaderTaskNotFoundException,
 )
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 
 logger = logging.getLogger(__name__)
 
 
 class DataLoader:
     def __init__(self, app_config: AppConfig) -> None:
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         self._data_loader_sources: set[DataLoaderSource] = set()
@@ -89,6 +99,8 @@ class DataLoader:
 =======
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
         self._app_config = app_config
         self._data_loader_sources: dict[str, DataLoaderSource] = {}
         self._data_loader_tasks: dict[str, asyncio.Task] = {}
@@ -124,13 +136,17 @@ class DataLoader:
             msg = "Data loader task not found with name: %s"
             raise DataLoaderTaskNotFoundException(msg, name)
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 
         if not task.done():
             return "Task is still running"
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         if task.cancelled():
@@ -140,6 +156,8 @@ class DataLoader:
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
         if task.exception() is not None:
             if exc := task.exception():
                 logger.error(traceback.format_exception(type(exc), exc, exc.__traceback__))

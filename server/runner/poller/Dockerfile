@@ -2,6 +2,7 @@
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 FROM python:3.11.5 AS python-base
 =======
 FROM python:3.11.9 AS python-base
@@ -9,6 +10,9 @@ FROM python:3.11.9 AS python-base
 =======
 FROM python:3.11.9 AS python-base
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+FROM python:3.11.9 AS python-base
+>>>>>>> aead773 (server/1.12.2)
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \

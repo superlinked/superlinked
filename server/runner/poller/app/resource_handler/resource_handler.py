@@ -16,6 +16,7 @@ import os
 from abc import ABC, abstractmethod
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 from datetime import UTC, datetime
 =======
 from datetime import datetime, timezone
@@ -23,6 +24,9 @@ from datetime import datetime, timezone
 =======
 from datetime import datetime, timezone
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+from datetime import datetime, timezone
+>>>>>>> aead773 (server/1.12.2)
 
 import requests
 from botocore.exceptions import ClientError
@@ -37,6 +41,7 @@ class ResourceHandler(ABC):
         self.app_location = app_location
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         self.start_time = datetime.now(tz=UTC)
 =======
         self.start_time = datetime.now(tz=timezone.utc)
@@ -44,6 +49,9 @@ class ResourceHandler(ABC):
 =======
         self.start_time = datetime.now(tz=timezone.utc)
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+        self.start_time = datetime.now(tz=timezone.utc)
+>>>>>>> aead773 (server/1.12.2)
         self.first_run = True
         self.poller_config = PollerConfig()
         self.logger = self.poller_config.setup_logger(__name__)
@@ -69,6 +77,7 @@ class ResourceHandler(ABC):
         if dt.tzinfo is None:
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             dt = dt.replace(tzinfo=UTC)
         return dt.astimezone(UTC)
 =======
@@ -79,6 +88,10 @@ class ResourceHandler(ABC):
             dt = dt.replace(tzinfo=timezone.utc)
         return dt.astimezone(timezone.utc)
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc)
+>>>>>>> aead773 (server/1.12.2)
 
     def check_and_download(self, object_time: datetime, object_name: str) -> None:
         """
@@ -99,6 +112,7 @@ class ResourceHandler(ABC):
                 self.notify_executor(object_name)
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                 self.start_time = datetime.now(tz=UTC)
 =======
                 self.start_time = datetime.now(tz=timezone.utc)
@@ -106,11 +120,15 @@ class ResourceHandler(ABC):
 =======
                 self.start_time = datetime.now(tz=timezone.utc)
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+                self.start_time = datetime.now(tz=timezone.utc)
+>>>>>>> aead773 (server/1.12.2)
             except (OSError, ClientError, GoogleCloudError):
                 self.logger.exception("Failed to download %s", object_name)
 
         if self.first_run:
             self.first_run = False
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             self.start_time = datetime.now(tz=UTC)
@@ -120,6 +138,9 @@ class ResourceHandler(ABC):
 =======
             self.start_time = datetime.now(tz=timezone.utc)
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+            self.start_time = datetime.now(tz=timezone.utc)
+>>>>>>> aead773 (server/1.12.2)
 
     def notify_executor(self, object_name: str) -> None:
         """

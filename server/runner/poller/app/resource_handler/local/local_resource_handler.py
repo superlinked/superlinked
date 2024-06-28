@@ -16,6 +16,7 @@ import os
 import shutil
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 from datetime import UTC, datetime
 =======
 from datetime import datetime, timezone
@@ -23,6 +24,9 @@ from datetime import datetime, timezone
 =======
 from datetime import datetime, timezone
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+from datetime import datetime, timezone
+>>>>>>> aead773 (server/1.12.2)
 
 from poller.app.resource_handler.resource_handler import ResourceHandler
 
@@ -68,6 +72,7 @@ class LocalResourceHandler(ResourceHandler):
         self.logger.info("Found file: %s", file_path)
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         file_time = datetime.fromtimestamp(os.path.getmtime(file_path), tz=UTC)
 =======
         file_time = datetime.fromtimestamp(os.path.getmtime(file_path), tz=timezone.utc)
@@ -75,6 +80,9 @@ class LocalResourceHandler(ResourceHandler):
 =======
         file_time = datetime.fromtimestamp(os.path.getmtime(file_path), tz=timezone.utc)
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+        file_time = datetime.fromtimestamp(os.path.getmtime(file_path), tz=timezone.utc)
+>>>>>>> aead773 (server/1.12.2)
         try:
             self.check_and_download(file_time, self.app_location.path)
         except (FileNotFoundError, PermissionError):

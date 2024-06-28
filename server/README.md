@@ -35,17 +35,36 @@ Although if the AWS or GCP instance or your local setup has access to the target
 
 ### Checking the Status of the Services
 
+<<<<<<< HEAD
 Once the application is deployed, you can check the status of the services by inspecting the Docker containers. Use the `docker ps` command to list all running containers. This will show you the status of each service, including whether it's up and running.
+=======
+Once the application is deployed, you can check the status of the services by inspecting the Docker containers. The easiest way to look for logs is to use the built-in command provided by docker compose:
+```bash
+docker compose logs -f
+```
+
+If you would like to check the individual containers, use the `docker ps` command to list all running containers. This will show you the status of each service, including whether it's up and running.
+>>>>>>> aead773 (server/1.12.2)
 
 If you need more detailed information about a specific service, you can check its logs using the `docker logs <container-id>` command. Replace `<container-id>` with the ID of the container you're interested in. This will display the logs for that container, which can be useful for troubleshooting.
 
 ### Resetting the Environment
 
+<<<<<<< HEAD
 If something goes wrong and you need to reset the entire environment, you can do so with the following command:
 ```bash
 python tools/deploy.py down && rm -rf cache/ && docker image rm -f superlinked-deployment-executor superlinked-deployment-poller
 ```
 
+=======
+If something goes wrong and you need to reset the entire environment, you can do so with the following command from the `server/` directory:
+```bash
+python tools/deploy.py down && rm -rf cache/ && docker image rm -f server-executor server-poller
+```
+
+> Please note that that the name of the images may be different in your specific scenario, please adjust them according to your needs.
+
+>>>>>>> aead773 (server/1.12.2)
 This command will stop the application, remove the cache directory, and remove the Docker containers for the executor and the poller. After running this command, you can start the application again by following the steps in the [How to start the application](#how-to-start-the-application) section.
 
 ## Usage

@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 from datetime import UTC, datetime, timedelta
 =======
 from datetime import datetime, timedelta, timezone
@@ -7,6 +8,9 @@ from datetime import datetime, timedelta, timezone
 =======
 from datetime import datetime, timedelta, timezone
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+from datetime import datetime, timedelta, timezone
+>>>>>>> aead773 (server/1.12.2)
 
 from superlinked.framework.common.dag.context import CONTEXT_COMMON, CONTEXT_COMMON_NOW
 from superlinked.framework.common.dag.period_time import PeriodTime
@@ -34,6 +38,7 @@ from superlinked.framework.dsl.storage.in_memory_vector_database import InMemory
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 START_OF_2024_TS = int(datetime(2024, 1, 2, tzinfo=UTC).timestamp())
 =======
 START_OF_2024_TS = int(datetime(2024, 1, 2, tzinfo=timezone.utc).timestamp())
@@ -41,6 +46,9 @@ START_OF_2024_TS = int(datetime(2024, 1, 2, tzinfo=timezone.utc).timestamp())
 =======
 START_OF_2024_TS = int(datetime(2024, 1, 2, tzinfo=timezone.utc).timestamp())
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+START_OF_2024_TS = int(datetime(2024, 1, 2, tzinfo=timezone.utc).timestamp())
+>>>>>>> aead773 (server/1.12.2)
 EXECUTOR_DATA = {CONTEXT_COMMON: {CONTEXT_COMMON_NOW: START_OF_2024_TS}}
 
 

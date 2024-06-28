@@ -64,10 +64,13 @@ def setup_application(app: FastAPI) -> None:
                     raise ValueError(msg)
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                 rest_app = executor.run()
 =======
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
                 try:
                     rest_app = executor.run()
                 except Exception:  # pylint: disable=broad-exception-caught
@@ -75,9 +78,12 @@ def setup_application(app: FastAPI) -> None:
                     logger.exception(msg)
                     return
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
                 if rest_app.data_loader_sources:
                     data_loader.register_data_loader_sources(rest_app.data_loader_sources)
                 if isinstance(rest_app.online_app.storage_manager._vdb_connector, InMemoryVDB):

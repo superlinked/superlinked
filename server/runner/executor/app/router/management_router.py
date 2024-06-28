@@ -22,18 +22,24 @@ from starlette import status
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 from executor.app.exception.exception import (
     DataLoaderAlreadyRunningException,
     DataLoaderNotFoundException,
     DataLoaderTaskNotFoundException,
 )
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 from executor.app.service.data_loader import DataLoader
 from executor.app.service.supervisor_service import SupervisorService
 
@@ -67,6 +73,7 @@ class ManagementRouter:
         return JSONResponse(content={"result": restart_result}, status_code=status.HTTP_200_OK)
 
     @router.post(
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         "/data-loader/run",
@@ -110,6 +117,8 @@ class ManagementRouter:
 =======
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
         "/data-loader/{name}/run",
         summary=(
             "Returns with 202 ACCEPTED if the data loader found and started in the background. "
@@ -162,7 +171,10 @@ class ManagementRouter:
         return JSONResponse(
             content={"result": {name: str(config) for name, config in loaders.items()}}, status_code=status.HTTP_200_OK
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
         )

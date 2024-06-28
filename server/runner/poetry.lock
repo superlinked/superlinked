@@ -27,6 +27,7 @@ tests = ["arrow", "dask[dataframe]", "docker", "pytest", "pytest-mock"]
 name = "aiobotocore"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 version = "2.13.0"
 =======
 version = "2.13.1"
@@ -34,10 +35,14 @@ version = "2.13.1"
 =======
 version = "2.13.1"
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+version = "2.13.1"
+>>>>>>> aead773 (server/1.12.2)
 description = "Async client for aws services using botocore and aiohttp"
 optional = false
 python-versions = ">=3.8"
 files = [
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     {file = "aiobotocore-2.13.0-py3-none-any.whl", hash = "sha256:f812afc678d71b0038fd1ce712ff111ab7f47bab81ce5b4c7d222d4b83bc0cb2"},
@@ -50,11 +55,16 @@ files = [
     {file = "aiobotocore-2.13.1-py3-none-any.whl", hash = "sha256:1bef121b99841ee3cc788e4ed97c332ba32353b1f00e886d1beb3aae95520858"},
     {file = "aiobotocore-2.13.1.tar.gz", hash = "sha256:134f9606c2f91abde38cbc61c3241113e26ff244633e0c31abb7e09da3581c9b"},
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+    {file = "aiobotocore-2.13.1-py3-none-any.whl", hash = "sha256:1bef121b99841ee3cc788e4ed97c332ba32353b1f00e886d1beb3aae95520858"},
+    {file = "aiobotocore-2.13.1.tar.gz", hash = "sha256:134f9606c2f91abde38cbc61c3241113e26ff244633e0c31abb7e09da3581c9b"},
+>>>>>>> aead773 (server/1.12.2)
 ]
 
 [package.dependencies]
 aiohttp = ">=3.9.2,<4.0.0"
 aioitertools = ">=0.5.1,<1.0.0"
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 botocore = ">=1.34.70,<1.34.107"
@@ -66,6 +76,8 @@ boto3 = ["boto3 (>=1.34.70,<1.34.107)"]
 =======
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 botocore = ">=1.34.70,<1.34.132"
 wrapt = ">=1.10.10,<2.0.0"
 
@@ -73,9 +85,12 @@ wrapt = ">=1.10.10,<2.0.0"
 awscli = ["awscli (>=1.32.70,<1.33.14)"]
 boto3 = ["boto3 (>=1.34.70,<1.34.132)"]
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 
 [[package]]
 name = "aiohttp"
@@ -166,12 +181,16 @@ files = [
 aiosignal = ">=1.1.2"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 async-timeout = {version = ">=4.0,<5.0", markers = "python_version < \"3.11\""}
 >>>>>>> 6749add (server/1.12.0)
 =======
 async-timeout = {version = ">=4.0,<5.0", markers = "python_version < \"3.11\""}
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+async-timeout = {version = ">=4.0,<5.0", markers = "python_version < \"3.11\""}
+>>>>>>> aead773 (server/1.12.2)
 attrs = ">=17.3.0"
 frozenlist = ">=1.1.1"
 multidict = ">=4.5,<7.0"
@@ -241,19 +260,25 @@ files = [
 [package.dependencies]
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 idna = ">=2.8"
 sniffio = ">=1.1"
 =======
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 exceptiongroup = {version = ">=1.0.2", markers = "python_version < \"3.11\""}
 idna = ">=2.8"
 sniffio = ">=1.1"
 typing-extensions = {version = ">=4.1", markers = "python_version < \"3.11\""}
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 
 [package.extras]
 doc = ["Sphinx (>=7)", "packaging", "sphinx-autodoc-typehints (>=1.2.0)", "sphinx-rtd-theme"]
@@ -273,6 +298,7 @@ files = [
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 [package.dependencies]
 typing-extensions = {version = ">=4", markers = "python_version < \"3.11\""}
@@ -283,6 +309,11 @@ typing-extensions = {version = ">=4", markers = "python_version < \"3.11\""}
 typing-extensions = {version = ">=4", markers = "python_version < \"3.11\""}
 
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+[package.dependencies]
+typing-extensions = {version = ">=4", markers = "python_version < \"3.11\""}
+
+>>>>>>> aead773 (server/1.12.2)
 [package.extras]
 tests = ["mypy (>=0.800)", "pytest", "pytest-asyncio"]
 
@@ -299,6 +330,7 @@ files = [
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 [package.dependencies]
 typing-extensions = {version = ">=4.0.0", markers = "python_version < \"3.11\""}
@@ -309,6 +341,11 @@ typing-extensions = {version = ">=4.0.0", markers = "python_version < \"3.11\""}
 typing-extensions = {version = ">=4.0.0", markers = "python_version < \"3.11\""}
 
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+[package.dependencies]
+typing-extensions = {version = ">=4.0.0", markers = "python_version < \"3.11\""}
+
+>>>>>>> aead773 (server/1.12.2)
 [[package]]
 name = "async-timeout"
 version = "4.0.3"
@@ -469,6 +506,7 @@ test-tox-coverage = ["coverage (>=5.5)"]
 name = "boto3"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 version = "1.34.106"
 =======
 version = "1.34.131"
@@ -476,10 +514,14 @@ version = "1.34.131"
 =======
 version = "1.34.131"
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+version = "1.34.131"
+>>>>>>> aead773 (server/1.12.2)
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     {file = "boto3-1.34.106-py3-none-any.whl", hash = "sha256:d3be4e1dd5d546a001cd4da805816934cbde9d395316546e9411fec341ade5cf"},
@@ -491,6 +533,8 @@ botocore = ">=1.34.106,<1.35.0"
 =======
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
     {file = "boto3-1.34.131-py3-none-any.whl", hash = "sha256:05e388cb937e82be70bfd7eb0c84cf8011ff35cf582a593873ac21675268683b"},
     {file = "boto3-1.34.131.tar.gz", hash = "sha256:dab8f72a6c4e62b4fd70da09e08a6b2a65ea2115b27dd63737142005776ef216"},
 ]
@@ -498,9 +542,12 @@ botocore = ">=1.34.106,<1.35.0"
 [package.dependencies]
 botocore = ">=1.34.131,<1.35.0"
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.10.0,<0.11.0"
 
@@ -509,6 +556,7 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "boto3-stubs"
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 version = "1.34.131"
@@ -521,6 +569,8 @@ files = [
 =======
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 version = "1.34.133"
 description = "Type annotations for boto3 1.34.133 generated with mypy-boto3-builder 7.24.0"
 optional = false
@@ -529,9 +579,12 @@ files = [
     {file = "boto3_stubs-1.34.133-py3-none-any.whl", hash = "sha256:1c01a5cadd7701ddd2f3d23f4d03d1a4816835b44dcecb3d69583e1afce2cb1f"},
     {file = "boto3_stubs-1.34.133.tar.gz", hash = "sha256:03f6e49b10f3ca82d713d3b532a00c133551a61991db20f4a505014fed18f7bb"},
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 ]
 
 [package.dependencies]
@@ -585,6 +638,7 @@ bedrock-runtime = ["mypy-boto3-bedrock-runtime (>=1.34.0,<1.35.0)"]
 billingconductor = ["mypy-boto3-billingconductor (>=1.34.0,<1.35.0)"]
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 boto3 = ["boto3 (==1.34.131)", "botocore (==1.34.131)"]
 =======
 boto3 = ["boto3 (==1.34.133)", "botocore (==1.34.133)"]
@@ -592,6 +646,9 @@ boto3 = ["boto3 (==1.34.133)", "botocore (==1.34.133)"]
 =======
 boto3 = ["boto3 (==1.34.133)", "botocore (==1.34.133)"]
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+boto3 = ["boto3 (==1.34.133)", "botocore (==1.34.133)"]
+>>>>>>> aead773 (server/1.12.2)
 braket = ["mypy-boto3-braket (>=1.34.0,<1.35.0)"]
 budgets = ["mypy-boto3-budgets (>=1.34.0,<1.35.0)"]
 ce = ["mypy-boto3-ce (>=1.34.0,<1.35.0)"]
@@ -942,6 +999,7 @@ xray = ["mypy-boto3-xray (>=1.34.0,<1.35.0)"]
 name = "botocore"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 version = "1.34.106"
 =======
 version = "1.34.131"
@@ -949,10 +1007,14 @@ version = "1.34.131"
 =======
 version = "1.34.131"
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+version = "1.34.131"
+>>>>>>> aead773 (server/1.12.2)
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.8"
 files = [
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     {file = "botocore-1.34.106-py3-none-any.whl", hash = "sha256:4baf0e27c2dfc4f4d0dee7c217c716e0782f9b30e8e1fff983fce237d88f73ae"},
@@ -965,6 +1027,10 @@ files = [
     {file = "botocore-1.34.131-py3-none-any.whl", hash = "sha256:13b011d7b206ce00727dcee26548fa3b550db9046d5a0e90ac25a6e6c8fde6ef"},
     {file = "botocore-1.34.131.tar.gz", hash = "sha256:502ddafe1d627fcf1e4c007c86454e5dd011dba7c58bd8e8a5368a79f3e387dc"},
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+    {file = "botocore-1.34.131-py3-none-any.whl", hash = "sha256:13b011d7b206ce00727dcee26548fa3b550db9046d5a0e90ac25a6e6c8fde6ef"},
+    {file = "botocore-1.34.131.tar.gz", hash = "sha256:502ddafe1d627fcf1e4c007c86454e5dd011dba7c58bd8e8a5368a79f3e387dc"},
+>>>>>>> aead773 (server/1.12.2)
 ]
 
 [package.dependencies]
@@ -975,6 +1041,7 @@ urllib3 = {version = ">=1.25.4,<2.2.0 || >2.2.0,<3", markers = "python_version >
 [package.extras]
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 crt = ["awscrt (==0.20.9)"]
 
 [[package]]
@@ -983,19 +1050,25 @@ version = "1.34.131"
 =======
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 crt = ["awscrt (==0.20.11)"]
 
 [[package]]
 name = "botocore-stubs"
 version = "1.34.132"
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 description = "Type annotations and code completion for botocore"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     {file = "botocore_stubs-1.34.131-py3-none-any.whl", hash = "sha256:cf0727e128aa1195e50564cc51e8daf0a7552cc98790c9d2b85f58e57bd8129b"},
@@ -1008,6 +1081,10 @@ files = [
     {file = "botocore_stubs-1.34.132-py3-none-any.whl", hash = "sha256:4054c0b702c9af1aeb6e1dbc5550ef7b51f4337645b5bf5855b7d833de1f2236"},
     {file = "botocore_stubs-1.34.132.tar.gz", hash = "sha256:2c2a9a9b77982277889546e44534492ba207f15ba41feef36339e079ff3dac72"},
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+    {file = "botocore_stubs-1.34.132-py3-none-any.whl", hash = "sha256:4054c0b702c9af1aeb6e1dbc5550ef7b51f4337645b5bf5855b7d833de1f2236"},
+    {file = "botocore_stubs-1.34.132.tar.gz", hash = "sha256:2c2a9a9b77982277889546e44534492ba207f15ba41feef36339e079ff3dac72"},
+>>>>>>> aead773 (server/1.12.2)
 ]
 
 [package.dependencies]
@@ -1117,6 +1194,7 @@ pycparser = "*"
 name = "cfn-lint"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 version = "1.3.3"
 =======
 version = "1.3.6"
@@ -1124,10 +1202,14 @@ version = "1.3.6"
 =======
 version = "1.3.6"
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+version = "1.3.6"
+>>>>>>> aead773 (server/1.12.2)
 description = "Checks CloudFormation templates for practices and behaviour that could potentially be improved"
 optional = false
 python-versions = ">=3.8"
 files = [
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     {file = "cfn_lint-1.3.3-py3-none-any.whl", hash = "sha256:84a4f221275d8e84e170be0b8e8dd12e1757c52a74da33cf88bc987848a25f4c"},
@@ -1140,6 +1222,10 @@ files = [
     {file = "cfn_lint-1.3.6-py3-none-any.whl", hash = "sha256:895bcf51a8c275736fcc3014e91f1091d27eeb142b3a0bcda8df3a8c6eb9a1c4"},
     {file = "cfn_lint-1.3.6.tar.gz", hash = "sha256:8cb8d0763d3f5db66f815ebcaab6bf46819ce50e0606c027c13ae3141a16bf4b"},
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+    {file = "cfn_lint-1.3.6-py3-none-any.whl", hash = "sha256:895bcf51a8c275736fcc3014e91f1091d27eeb142b3a0bcda8df3a8c6eb9a1c4"},
+    {file = "cfn_lint-1.3.6.tar.gz", hash = "sha256:8cb8d0763d3f5db66f815ebcaab6bf46819ce50e0606c027c13ae3141a16bf4b"},
+>>>>>>> aead773 (server/1.12.2)
 ]
 
 [package.dependencies]
@@ -1440,9 +1526,12 @@ websockets = ["websocket-client (>=1.3.0)"]
 [[package]]
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 name = "exceptiongroup"
 version = "1.2.1"
 description = "Backport of PEP 654 (exception groups)"
@@ -1458,9 +1547,12 @@ test = ["pytest (>=6)"]
 
 [[package]]
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 name = "fastapi"
 version = "0.109.2"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
@@ -1679,6 +1771,7 @@ gcsfuse = ["fusepy"]
 name = "google-api-core"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 version = "2.19.0"
 =======
 version = "2.19.1"
@@ -1686,10 +1779,14 @@ version = "2.19.1"
 =======
 version = "2.19.1"
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+version = "2.19.1"
+>>>>>>> aead773 (server/1.12.2)
 description = "Google API client core library"
 optional = false
 python-versions = ">=3.7"
 files = [
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     {file = "google-api-core-2.19.0.tar.gz", hash = "sha256:cf1b7c2694047886d2af1128a03ae99e391108a08804f87cfd35970e49c9cd10"},
@@ -1702,12 +1799,17 @@ files = [
     {file = "google-api-core-2.19.1.tar.gz", hash = "sha256:f4695f1e3650b316a795108a76a1c416e6afb036199d1c1f1f110916df479ffd"},
     {file = "google_api_core-2.19.1-py3-none-any.whl", hash = "sha256:f12a9b8309b5e21d92483bbd47ce2c445861ec7d269ef6784ecc0ea8c1fa6125"},
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+    {file = "google-api-core-2.19.1.tar.gz", hash = "sha256:f4695f1e3650b316a795108a76a1c416e6afb036199d1c1f1f110916df479ffd"},
+    {file = "google_api_core-2.19.1-py3-none-any.whl", hash = "sha256:f12a9b8309b5e21d92483bbd47ce2c445861ec7d269ef6784ecc0ea8c1fa6125"},
+>>>>>>> aead773 (server/1.12.2)
 ]
 
 [package.dependencies]
 google-auth = ">=2.14.1,<3.0.dev0"
 googleapis-common-protos = ">=1.56.2,<2.0.dev0"
 proto-plus = ">=1.22.3,<2.0.0dev"
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 protobuf = ">=3.19.5,<3.20.0 || >3.20.0,<3.20.1 || >3.20.1,<4.21.0 || >4.21.0,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<5.0.0.dev0"
@@ -1717,6 +1819,9 @@ protobuf = ">=3.19.5,<3.20.0 || >3.20.0,<3.20.1 || >3.20.1,<4.21.0 || >4.21.0,<4
 =======
 protobuf = ">=3.19.5,<3.20.0 || >3.20.0,<3.20.1 || >3.20.1,<4.21.0 || >4.21.0,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<6.0.0.dev0"
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+protobuf = ">=3.19.5,<3.20.0 || >3.20.0,<3.20.1 || >3.20.1,<4.21.0 || >4.21.0,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<6.0.0.dev0"
+>>>>>>> aead773 (server/1.12.2)
 requests = ">=2.18.0,<3.0.0.dev0"
 
 [package.extras]
@@ -1907,6 +2012,7 @@ requests = ["requests (>=2.18.0,<3.0.0dev)"]
 name = "googleapis-common-protos"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 version = "1.63.1"
 =======
 version = "1.63.2"
@@ -1914,10 +2020,14 @@ version = "1.63.2"
 =======
 version = "1.63.2"
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+version = "1.63.2"
+>>>>>>> aead773 (server/1.12.2)
 description = "Common protobufs used in Google APIs"
 optional = false
 python-versions = ">=3.7"
 files = [
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     {file = "googleapis-common-protos-1.63.1.tar.gz", hash = "sha256:c6442f7a0a6b2a80369457d79e6672bb7dcbaab88e0848302497e3ec80780a6a"},
@@ -1929,6 +2039,8 @@ protobuf = ">=3.19.5,<3.20.0 || >3.20.0,<3.20.1 || >3.20.1,<4.21.1 || >4.21.1,<4
 =======
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
     {file = "googleapis-common-protos-1.63.2.tar.gz", hash = "sha256:27c5abdffc4911f28101e635de1533fb4cfd2c37fbaa9174587c799fac90aa87"},
     {file = "googleapis_common_protos-1.63.2-py2.py3-none-any.whl", hash = "sha256:27a2499c7e8aff199665b22741997e485eccc8645aa9176c7c988e6fae507945"},
 ]
@@ -1936,9 +2048,12 @@ protobuf = ">=3.19.5,<3.20.0 || >3.20.0,<3.20.1 || >3.20.1,<4.21.1 || >4.21.1,<4
 [package.dependencies]
 protobuf = ">=3.20.2,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<6.0.0.dev0"
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 
 [package.extras]
 grpc = ["grpcio (>=1.44.0,<2.0.0.dev0)"]
@@ -2249,6 +2364,7 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 [[package]]
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 name = "jsonschema-spec"
 version = "0.1.3"
 description = "JSONSchema Spec with object-oriented paths"
@@ -2267,6 +2383,8 @@ typing-extensions = ">=4.3.0,<5.0.0"
 =======
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 name = "jsonschema-path"
 version = "0.3.3"
 description = "JSONSchema Spec with object-oriented paths"
@@ -2283,9 +2401,12 @@ PyYAML = ">=5.1"
 referencing = ">=0.28.0,<0.36.0"
 requests = ">=2.31.0,<3.0.0"
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 
 [[package]]
 name = "jsonschema-specifications"
@@ -2715,12 +2836,16 @@ files = [
 mypy-extensions = ">=1.0.0"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 tomli = {version = ">=1.1.0", markers = "python_version < \"3.11\""}
 >>>>>>> 6749add (server/1.12.0)
 =======
 tomli = {version = ">=1.1.0", markers = "python_version < \"3.11\""}
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+tomli = {version = ">=1.1.0", markers = "python_version < \"3.11\""}
+>>>>>>> aead773 (server/1.12.2)
 typing-extensions = ">=4.1.0"
 
 [package.extras]
@@ -2730,6 +2855,7 @@ reports = ["lxml"]
 
 [[package]]
 name = "mypy-boto3"
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 version = "1.34.131"
@@ -2742,6 +2868,8 @@ files = [
 =======
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 version = "1.34.133"
 description = "Type annotations for boto3 1.34.133 master module generated with mypy-boto3-builder 7.24.0"
 optional = false
@@ -2750,9 +2878,12 @@ files = [
     {file = "mypy_boto3-1.34.133-py3-none-any.whl", hash = "sha256:dc99d4af4a2a477be9be1b2313a2158fbad5f9a49a45a18a88e96fa3a81b67ec"},
     {file = "mypy_boto3-1.34.133.tar.gz", hash = "sha256:20dc26acc595ed6a2ca1664324c8c8fe4972662b26b5758ac35729af65239d78"},
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 ]
 
 [package.dependencies]
@@ -3001,12 +3132,16 @@ python-versions = ">=3"
 files = [
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     {file = "nvidia_nvjitlink_cu12-12.5.40-py3-none-manylinux2014_aarch64.whl", hash = "sha256:004186d5ea6a57758fd6d57052a123c73a4815adf365eb8dd6a85c9eaa7535ff"},
 >>>>>>> 6749add (server/1.12.0)
 =======
     {file = "nvidia_nvjitlink_cu12-12.5.40-py3-none-manylinux2014_aarch64.whl", hash = "sha256:004186d5ea6a57758fd6d57052a123c73a4815adf365eb8dd6a85c9eaa7535ff"},
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+    {file = "nvidia_nvjitlink_cu12-12.5.40-py3-none-manylinux2014_aarch64.whl", hash = "sha256:004186d5ea6a57758fd6d57052a123c73a4815adf365eb8dd6a85c9eaa7535ff"},
+>>>>>>> aead773 (server/1.12.2)
     {file = "nvidia_nvjitlink_cu12-12.5.40-py3-none-manylinux2014_x86_64.whl", hash = "sha256:d9714f27c1d0f0895cd8915c07a87a1d0029a0aa36acaf9156952ec2a8a12189"},
     {file = "nvidia_nvjitlink_cu12-12.5.40-py3-none-win_amd64.whl", hash = "sha256:c3401dc8543b52d3a8158007a0c1ab4e9c768fcbd24153a48c86972102197ddd"},
 ]
@@ -3042,6 +3177,7 @@ signedtoken = ["cryptography (>=3.0.0)", "pyjwt (>=2.0.0,<3)"]
 name = "openapi-schema-validator"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 version = "0.4.3"
 description = "OpenAPI schema validation for Python"
 optional = false
@@ -3056,6 +3192,8 @@ jsonschema = ">=4.0.0,<5.0.0"
 =======
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 version = "0.6.2"
 description = "OpenAPI schema validation for Python"
 optional = false
@@ -3069,13 +3207,17 @@ files = [
 jsonschema = ">=4.19.1,<5.0.0"
 jsonschema-specifications = ">=2023.5.2,<2024.0.0"
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 rfc3339-validator = "*"
 
 [[package]]
 name = "openapi-spec-validator"
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 version = "0.5.5"
@@ -3098,6 +3240,8 @@ requests = ["requests"]
 =======
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 version = "0.7.1"
 description = "OpenAPI 2.0 (aka Swagger) and OpenAPI 3 spec validator"
 optional = false
@@ -3113,9 +3257,12 @@ jsonschema-path = ">=0.3.1,<0.4.0"
 lazy-object-proxy = ">=1.7.1,<2.0.0"
 openapi-schema-validator = ">=0.6.0,<0.7.0"
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 
 [[package]]
 name = "orderedmultidict"
@@ -3179,18 +3326,24 @@ files = [
 [package.dependencies]
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 numpy = {version = ">=1.23.2", markers = "python_version >= \"3.11\""}
 =======
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 numpy = [
     {version = ">=1.21.0", markers = "python_version >= \"3.10\" and python_version < \"3.11\""},
     {version = ">=1.23.2", markers = "python_version >= \"3.11\""},
 ]
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
 tzdata = ">=2022.1"
@@ -3397,6 +3550,7 @@ testing = ["google-api-core (>=1.31.5)"]
 name = "protobuf"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 version = "4.25.3"
 =======
 version = "5.27.2"
@@ -3404,10 +3558,14 @@ version = "5.27.2"
 =======
 version = "5.27.2"
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+version = "5.27.2"
+>>>>>>> aead773 (server/1.12.2)
 description = ""
 optional = false
 python-versions = ">=3.8"
 files = [
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     {file = "protobuf-4.25.3-cp310-abi3-win32.whl", hash = "sha256:d4198877797a83cbfe9bffa3803602bbe1625dc30d8a097365dbc762e5790faa"},
@@ -3424,6 +3582,8 @@ files = [
 =======
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
     {file = "protobuf-5.27.2-cp310-abi3-win32.whl", hash = "sha256:354d84fac2b0d76062e9b3221f4abbbacdfd2a4d8af36bab0474f3a0bb30ab38"},
     {file = "protobuf-5.27.2-cp310-abi3-win_amd64.whl", hash = "sha256:0e341109c609749d501986b835f667c6e1e24531096cff9d34ae411595e26505"},
     {file = "protobuf-5.27.2-cp38-abi3-macosx_10_9_universal2.whl", hash = "sha256:a109916aaac42bff84702fb5187f3edadbc7c97fc2c99c5ff81dd15dcce0d1e5"},
@@ -3436,9 +3596,12 @@ files = [
     {file = "protobuf-5.27.2-py3-none-any.whl", hash = "sha256:54330f07e4949d09614707c48b06d1a22f8ffb5763c159efd5c0928326a91470"},
     {file = "protobuf-5.27.2.tar.gz", hash = "sha256:f3ecdef226b9af856075f28227ff2c90ce3a594d092c39bee5513573f25e2714"},
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 ]
 
 [[package]]
@@ -3692,6 +3855,7 @@ typing-extensions = ">=4.6.0,<4.7.0 || >4.7.0"
 name = "pydantic-settings"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 version = "2.3.3"
 =======
 version = "2.3.4"
@@ -3699,10 +3863,14 @@ version = "2.3.4"
 =======
 version = "2.3.4"
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+version = "2.3.4"
+>>>>>>> aead773 (server/1.12.2)
 description = "Settings management using Pydantic"
 optional = false
 python-versions = ">=3.8"
 files = [
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     {file = "pydantic_settings-2.3.3-py3-none-any.whl", hash = "sha256:e4ed62ad851670975ec11285141db888fd24947f9440bd4380d7d8788d4965de"},
@@ -3715,6 +3883,10 @@ files = [
     {file = "pydantic_settings-2.3.4-py3-none-any.whl", hash = "sha256:11ad8bacb68a045f00e4f862c7a718c8a9ec766aa8fd4c32e39a0594b207b53a"},
     {file = "pydantic_settings-2.3.4.tar.gz", hash = "sha256:c5802e3d62b78e82522319bbc9b8f8ffb28ad1c988a99311d04f2a6051fca0a7"},
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+    {file = "pydantic_settings-2.3.4-py3-none-any.whl", hash = "sha256:11ad8bacb68a045f00e4f862c7a718c8a9ec766aa8fd4c32e39a0594b207b53a"},
+    {file = "pydantic_settings-2.3.4.tar.gz", hash = "sha256:c5802e3d62b78e82522319bbc9b8f8ffb28ad1c988a99311d04f2a6051fca0a7"},
+>>>>>>> aead773 (server/1.12.2)
 ]
 
 [package.dependencies]
@@ -3749,6 +3921,7 @@ tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 name = "pylint"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 version = "3.2.3"
 =======
 version = "3.2.4"
@@ -3756,10 +3929,14 @@ version = "3.2.4"
 =======
 version = "3.2.4"
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+version = "3.2.4"
+>>>>>>> aead773 (server/1.12.2)
 description = "python code static checker"
 optional = false
 python-versions = ">=3.8.0"
 files = [
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     {file = "pylint-3.2.3-py3-none-any.whl", hash = "sha256:b3d7d2708a3e04b4679e02d99e72329a8b7ee8afb8d04110682278781f889fa8"},
@@ -3772,6 +3949,10 @@ files = [
     {file = "pylint-3.2.4-py3-none-any.whl", hash = "sha256:43b8ffdf1578e4e4439fa1f6ace402281f5dd61999192280fa12fe411bef2999"},
     {file = "pylint-3.2.4.tar.gz", hash = "sha256:5753d27e49a658b12a48c2883452751a2ecfc7f38594e0980beb03a6e77e6f86"},
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+    {file = "pylint-3.2.4-py3-none-any.whl", hash = "sha256:43b8ffdf1578e4e4439fa1f6ace402281f5dd61999192280fa12fe411bef2999"},
+    {file = "pylint-3.2.4.tar.gz", hash = "sha256:5753d27e49a658b12a48c2883452751a2ecfc7f38594e0980beb03a6e77e6f86"},
+>>>>>>> aead773 (server/1.12.2)
 ]
 
 [package.dependencies]
@@ -3780,12 +3961,16 @@ colorama = {version = ">=0.4.5", markers = "sys_platform == \"win32\""}
 dill = [
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     {version = ">=0.2", markers = "python_version < \"3.11\""},
 >>>>>>> 6749add (server/1.12.0)
 =======
     {version = ">=0.2", markers = "python_version < \"3.11\""},
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+    {version = ">=0.2", markers = "python_version < \"3.11\""},
+>>>>>>> aead773 (server/1.12.2)
     {version = ">=0.3.7", markers = "python_version >= \"3.12\""},
     {version = ">=0.3.6", markers = "python_version >= \"3.11\" and python_version < \"3.12\""},
 ]
@@ -3794,12 +3979,16 @@ mccabe = ">=0.6,<0.8"
 platformdirs = ">=2.2.0"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 tomli = {version = ">=1.1.0", markers = "python_version < \"3.11\""}
 >>>>>>> 6749add (server/1.12.0)
 =======
 tomli = {version = ">=1.1.0", markers = "python_version < \"3.11\""}
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+tomli = {version = ">=1.1.0", markers = "python_version < \"3.11\""}
+>>>>>>> aead773 (server/1.12.2)
 tomlkit = ">=0.10.1"
 
 [package.extras]
@@ -3916,21 +4105,27 @@ files = [
 colorama = {version = "*", markers = "sys_platform == \"win32\""}
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 iniconfig = "*"
 packaging = "*"
 pluggy = ">=0.12,<2.0"
 =======
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 exceptiongroup = {version = ">=1.0.0rc8", markers = "python_version < \"3.11\""}
 iniconfig = "*"
 packaging = "*"
 pluggy = ">=0.12,<2.0"
 tomli = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 
 [package.extras]
 testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
@@ -4485,6 +4680,7 @@ boto3 = ["aiobotocore[boto3] (>=2.5.4,<3.0.0)"]
 name = "s3transfer"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 version = "0.10.1"
 description = "An Amazon S3 Transfer Manager"
 optional = false
@@ -4495,6 +4691,8 @@ files = [
 =======
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 version = "0.10.2"
 description = "An Amazon S3 Transfer Manager"
 optional = false
@@ -4503,9 +4701,12 @@ files = [
     {file = "s3transfer-0.10.2-py3-none-any.whl", hash = "sha256:eca1c20de70a39daee580aef4986996620f365c4e0fda6a86100231d62f1bf69"},
     {file = "s3transfer-0.10.2.tar.gz", hash = "sha256:0711534e9356d3cc692fdde846b4a1e4b0cb6519971860796e6bc4c7aea00ef6"},
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 ]
 
 [package.dependencies]
@@ -4685,6 +4886,7 @@ tests = ["black (>=24.3.0)", "matplotlib (>=3.3.4)", "mypy (>=1.9)", "numpydoc (
 name = "scipy"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 version = "1.13.1"
 description = "Fundamental algorithms for scientific computing in Python"
 optional = false
@@ -4727,6 +4929,8 @@ test = ["array-api-strict", "asv", "gmpy2", "hypothesis (>=6.30)", "mpmath", "po
 =======
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 version = "1.14.0"
 description = "Fundamental algorithms for scientific computing in Python"
 optional = false
@@ -4767,9 +4971,12 @@ dev = ["cython-lint (>=0.12.2)", "doit (>=0.36.0)", "mypy (==1.10.0)", "pycodest
 doc = ["jupyterlite-pyodide-kernel", "jupyterlite-sphinx (>=0.13.1)", "jupytext", "matplotlib (>=3.5)", "myst-nb", "numpydoc", "pooch", "pydata-sphinx-theme (>=0.15.2)", "sphinx (>=5.0.0)", "sphinx-design (>=0.4.0)"]
 test = ["Cython", "array-api-strict", "asv", "gmpy2", "hypothesis (>=6.30)", "meson", "mpmath", "ninja", "pooch", "pytest", "pytest-cov", "pytest-timeout", "pytest-xdist", "scikit-umfpack", "threadpoolctl"]
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 
 [[package]]
 name = "sentence-transformers"
@@ -4859,6 +5066,7 @@ files = [
 name = "setuptools"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 version = "70.1.0"
 =======
 version = "70.1.1"
@@ -4866,10 +5074,14 @@ version = "70.1.1"
 =======
 version = "70.1.1"
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+version = "70.1.1"
+>>>>>>> aead773 (server/1.12.2)
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.8"
 files = [
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     {file = "setuptools-70.1.0-py3-none-any.whl", hash = "sha256:d9b8b771455a97c8a9f3ab3448ebe0b29b5e105f1228bba41028be116985a267"},
@@ -4882,6 +5094,10 @@ files = [
     {file = "setuptools-70.1.1-py3-none-any.whl", hash = "sha256:a58a8fde0541dab0419750bcc521fbdf8585f6e5cb41909df3a472ef7b81ca95"},
     {file = "setuptools-70.1.1.tar.gz", hash = "sha256:937a48c7cdb7a21eb53cd7f9b59e525503aa8abaf3584c730dc5f7a5bec3a650"},
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+    {file = "setuptools-70.1.1-py3-none-any.whl", hash = "sha256:a58a8fde0541dab0419750bcc521fbdf8585f6e5cb41909df3a472ef7b81ca95"},
+    {file = "setuptools-70.1.1.tar.gz", hash = "sha256:937a48c7cdb7a21eb53cd7f9b59e525503aa8abaf3584c730dc5f7a5bec3a650"},
+>>>>>>> aead773 (server/1.12.2)
 ]
 
 [package.extras]
@@ -5115,9 +5331,12 @@ testing = ["black (==22.3)", "datasets", "numpy", "pytest", "requests", "ruff"]
 [[package]]
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 name = "tomli"
 version = "2.0.1"
 description = "A lil' TOML parser"
@@ -5130,9 +5349,12 @@ files = [
 
 [[package]]
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 name = "tomlkit"
 version = "0.12.5"
 description = "Style preserving TOML library"
@@ -5499,9 +5721,12 @@ standard = ["PyYAML (>=5.1)", "colorama (>=0.4)", "httptools (==0.2.*)", "python
 [[package]]
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 name = "vermin"
 version = "1.6.0"
 description = "Concurrently detect the minimum Python versions needed to run code"
@@ -5514,9 +5739,12 @@ files = [
 
 [[package]]
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 6749add (server/1.12.0)
 =======
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+>>>>>>> aead773 (server/1.12.2)
 name = "werkzeug"
 version = "3.0.3"
 description = "The comprehensive WSGI web application library."
@@ -5730,6 +5958,7 @@ multidict = ">=4.0"
 lock-version = "2.0"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 python-versions = "<=3.12,>=3.11"
 content-hash = "cb14b6b70d48b309931629849666e51d498af296f537272c8cd38c8780feace1"
 =======
@@ -5740,3 +5969,7 @@ content-hash = "b460406639e6feab0fc35f96ffd4fa8e4b376cb55e1ce5f82f4ea72baabc330c
 python-versions = ">=3.10.3,<=3.12.3"
 content-hash = "b460406639e6feab0fc35f96ffd4fa8e4b376cb55e1ce5f82f4ea72baabc330c"
 >>>>>>> 9035a87 (server/1.12.1)
+=======
+python-versions = ">=3.10.3,<=3.12.3"
+content-hash = "b460406639e6feab0fc35f96ffd4fa8e4b376cb55e1ce5f82f4ea72baabc330c"
+>>>>>>> aead773 (server/1.12.2)
