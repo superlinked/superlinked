@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 from datetime import UTC, datetime, timedelta
+=======
+from datetime import datetime, timedelta, timezone
+>>>>>>> 6749add (server/1.12.0)
 
 from superlinked.framework.common.dag.context import CONTEXT_COMMON, CONTEXT_COMMON_NOW
 from superlinked.framework.common.dag.period_time import PeriodTime
@@ -24,7 +28,11 @@ from superlinked.framework.dsl.space.recency_space import RecencySpace
 from superlinked.framework.dsl.space.text_similarity_space import TextSimilaritySpace
 from superlinked.framework.dsl.storage.in_memory_vector_database import InMemoryVectorDatabase
 
+<<<<<<< HEAD
 START_OF_2024_TS = int(datetime(2024, 1, 2, tzinfo=UTC).timestamp())
+=======
+START_OF_2024_TS = int(datetime(2024, 1, 2, tzinfo=timezone.utc).timestamp())
+>>>>>>> 6749add (server/1.12.0)
 EXECUTOR_DATA = {CONTEXT_COMMON: {CONTEXT_COMMON_NOW: START_OF_2024_TS}}
 
 

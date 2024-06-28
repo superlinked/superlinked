@@ -1,6 +1,10 @@
 # --- Python base ---
 
+<<<<<<< HEAD
 FROM python:3.11.5 AS python-base
+=======
+FROM python:3.11.9 AS python-base
+>>>>>>> 6749add (server/1.12.0)
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \

@@ -15,22 +15,38 @@
 import asyncio
 import logging
 import traceback
+<<<<<<< HEAD
 import uuid
+=======
+>>>>>>> 6749add (server/1.12.0)
 from collections.abc import Sequence
 from typing import Any
 
 import pandas as pd
 from pandas.io.json._json import JsonReader
 from pandas.io.parsers import TextFileReader
+<<<<<<< HEAD
 from superlinked.framework.dsl.source.data_loader_source import DataFormat, DataLoaderSource
 
 from executor.app.configuration.app_config import AppConfig
+=======
+from pydantic.alias_generators import to_snake
+from superlinked.framework.dsl.source.data_loader_source import DataFormat, DataLoaderConfig, DataLoaderSource
+
+from executor.app.configuration.app_config import AppConfig
+from executor.app.exception.exception import (
+    DataLoaderAlreadyRunningException,
+    DataLoaderNotFoundException,
+    DataLoaderTaskNotFoundException,
+)
+>>>>>>> 6749add (server/1.12.0)
 
 logger = logging.getLogger(__name__)
 
 
 class DataLoader:
     def __init__(self, app_config: AppConfig) -> None:
+<<<<<<< HEAD
         self._data_loader_sources: set[DataLoaderSource] = set()
         self._app_config = app_config
         self._data_loader_tasks: set[asyncio.Task] = set()
@@ -60,13 +76,52 @@ class DataLoader:
         task = next((task for task in self._data_loader_tasks if task.get_name() == task_id), None)
         if task is None:
             return None
+=======
+        self._app_config = app_config
+        self._data_loader_sources: dict[str, DataLoaderSource] = {}
+        self._data_loader_tasks: dict[str, asyncio.Task] = {}
+
+    def register_data_loader_sources(self, data_loader_sources: Sequence[DataLoaderSource]) -> None:
+        for source in data_loader_sources:
+            if source.name in self._data_loader_sources:
+                logger.warning(
+                    "Data loader source with the name '%s' is already registered. Skipping registration.", source.name
+                )
+                continue
+            self._data_loader_sources[to_snake(source.name)] = source
+
+    def get_data_loaders(self) -> dict[str, DataLoaderConfig]:
+        return {name: source.config for name, source in self._data_loader_sources.items()}
+
+    def load(self, name: str) -> None:
+        data_loader_source = self._data_loader_sources.get(name)
+        if not data_loader_source:
+            msg = f"Data loader with name: {name} not found"
+            raise DataLoaderNotFoundException(msg)
+        task = self._data_loader_tasks.get(name)
+        if task and not task.done():
+            msg = f"Data loader already running with name: {name}"
+            raise DataLoaderAlreadyRunningException(msg)
+        logger.info("Starting data load for source with the following configuration: %s", data_loader_source.config)
+        task = asyncio.create_task(asyncio.to_thread(self.__read_and_put_data, data_loader_source))
+        self._data_loader_tasks.update({name: task})
+
+    def get_task_status_by_name(self, name: str) -> str | None:
+        task = self._data_loader_tasks.get(name)
+        if task is None:
+            msg = "Data loader task not found with name: %s"
+            raise DataLoaderTaskNotFoundException(msg, name)
+>>>>>>> 6749add (server/1.12.0)
 
         if not task.done():
             return "Task is still running"
 
+<<<<<<< HEAD
         if task.cancelled():
             return "Task was cancelled"
 
+=======
+>>>>>>> 6749add (server/1.12.0)
         if task.exception() is not None:
             if exc := task.exception():
                 logger.error(traceback.format_exception(type(exc), exc, exc.__traceback__))

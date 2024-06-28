@@ -19,3 +19,18 @@ class UnsupportedProtocolException(Exception):
 
 class FilesNotFoundException(Exception):
     pass
+<<<<<<< HEAD
+=======
+
+
+class DataLoaderNotFoundException(Exception):
+    pass
+
+
+class DataLoaderAlreadyRunningException(Exception):
+    pass
+
+
+class DataLoaderTaskNotFoundException(Exception):
+    pass
+>>>>>>> 6749add (server/1.12.0)
