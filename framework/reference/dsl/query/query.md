@@ -4,6 +4,17 @@ Module superlinked.framework.dsl.query.query
 Classes
 -------
 
+`NaturalQueryInformation(natural_query: StringParamType, client_config: OpenAIClientConfig)`
+:   NaturalQueryInformation(natural_query: 'StringParamType', client_config: 'OpenAIClientConfig')
+
+    ### Class variables
+
+    `client_config: superlinked.framework.common.nlq.open_ai.OpenAIClientConfig`
+    :
+
+    `natural_query: str | superlinked.framework.dsl.query.param.Param`
+    :
+
 `Query(index: superlinked.framework.dsl.index.index.Index, weights: Optional[typing.Annotated[dict[superlinked.framework.dsl.space.space.Space, float | int | superlinked.framework.dsl.query.param.Param], Is[TypeValidator.dict_validator.validator]]] = None)`
 :   A class representing a query. Build queries using Params as placeholders for weights or query text,
     and supply their value later on when executing a query.
@@ -118,6 +129,15 @@ Classes
         Raises:
             QueryException: If the space is already bound in the query.
             InvalidSchemaException: If the schema is not in the similarity field's schema types.
+
+    `with_natural_query(self, natural_query: str | superlinked.framework.dsl.query.param.Param, client_config: superlinked.framework.common.nlq.open_ai.OpenAIClientConfig) ‑> superlinked.framework.dsl.query.query.QueryObj`
+    :   Sets a natural language query based on which empty Params will have values set.
+        
+        Args:
+            natural_query (StringParamType): Query containing desired characteristics.
+            client_config (OpenAIClientConfig): Client config to initialize the client with.
+        Returns:
+            Self: The query object itself.
 
     `with_vector(self, schema_obj: Union[superlinked.framework.common.schema.id_schema_object.IdSchemaObject, ~T], id_param: collections.abc.Sequence[str] | collections.abc.Sequence[float] | str | int | float | bool | None | superlinked.framework.dsl.query.param.Param, weight: float | int | superlinked.framework.dsl.query.param.Param = 1.0) ‑> superlinked.framework.dsl.query.query.QueryObj`
     :   Add a 'with_vector' clause to the query. This fetches an object with id_param
