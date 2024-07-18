@@ -40,5 +40,6 @@ ParamInputType: TypeAlias = (
     Sequence[str] | Sequence[float] | str | int | float | bool | None
 )
 ParamType: TypeAlias = ParamInputType | Param
+StringParamType: TypeAlias = str | Param
 NumericParamType: TypeAlias = float | int | Param
 IntParamType: TypeAlias = int | Param

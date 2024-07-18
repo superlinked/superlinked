@@ -14,6 +14,8 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from beartype.typing import Sequence, TypedDict, cast
 from typing_extensions import Annotated
 
@@ -28,6 +30,7 @@ from superlinked.framework.common.interface.comparison_operand import (
 from superlinked.framework.common.interface.comparison_operation_type import (
     ComparisonOperationType,
 )
+from superlinked.framework.common.nlq.open_ai import OpenAIClientConfig
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema import T
 from superlinked.framework.common.schema.schema_object import SchemaField
@@ -39,6 +42,7 @@ from superlinked.framework.dsl.query.param import (
     NumericParamType,
     Param,
     ParamType,
+    StringParamType,
 )
 from superlinked.framework.dsl.query.predicate.binary_predicate import (
     LooksLikePredicate,
@@ -58,11 +62,18 @@ VALID_HARD_FILTER_TYPES = [
 ]
 
 
+@dataclass
+class NaturalQueryInformation:
+    natural_query: StringParamType
+    client_config: OpenAIClientConfig
+
+
 class QueryObjInternalProperty(TypedDict, total=False):
     """Only intended for self initialization inside QueryObj functions, not for external initialization"""
 
     looks_like_filter: LooksLikePredicate | None
     similar_filters_by_space: dict[Space, Sequence[SimilarPredicate]]
+    natural_query_information: NaturalQueryInformation | None
     limit: IntParamType | None
     radius: NumericParamType | None
     hard_filters: Sequence[ComparisonOperation[SchemaField]]
@@ -102,6 +113,9 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
         self.looks_like_filter = internal_property.get("looks_like_filter")
         self.similar_filters_by_space = internal_property.get(
             "similar_filters_by_space", dict[Space, Sequence[SimilarPredicate]]()
+        )
+        self.natural_query_information = internal_property.get(
+            "natural_query_information"
         )
         self.hard_filters = internal_property.get("hard_filters", [])
         self.limit_ = internal_property.get("limit")
@@ -184,6 +198,26 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
             Self: The query object itself.
         """
         return self.__alter({"limit": limit})
+
+    def with_natural_query(
+        self, natural_query: StringParamType, client_config: OpenAIClientConfig
+    ) -> QueryObj:
+        """
+        Sets a natural language query based on which empty Params will have values set.
+
+        Args:
+            natural_query (StringParamType): Query containing desired characteristics.
+            client_config (OpenAIClientConfig): Client config to initialize the client with.
+        Returns:
+            Self: The query object itself.
+        """
+        return self.__alter(
+            {
+                "natural_query_information": NaturalQueryInformation(
+                    natural_query, client_config
+                )
+            }
+        )
 
     def radius(self, radius: NumericParamType | None) -> QueryObj:
         """
@@ -286,6 +320,7 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
         properties_use: QueryObjInternalProperty = {
             "looks_like_filter": self.looks_like_filter,
             "similar_filters_by_space": self.similar_filters_by_space,
+            "natural_query_information": self.natural_query_information,
             "limit": self.limit_,
             "radius": self.radius_,
             "hard_filters": self.hard_filters,
