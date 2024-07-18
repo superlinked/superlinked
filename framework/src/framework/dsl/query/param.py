@@ -12,7 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Sequence, TypeAlias
+from dataclasses import dataclass
+
+from beartype.typing import Generic, Sequence, TypeAlias, TypeVar
+
+# Exclude from documentation.
+__pdoc__ = {}
+__pdoc__["EvaluatedParam"] = False
+__pdoc__["WeightedEvaluatedParam"] = False
 
 
 class Param:
@@ -43,3 +50,18 @@ ParamType: TypeAlias = ParamInputType | Param
 StringParamType: TypeAlias = str | Param
 NumericParamType: TypeAlias = float | int | Param
 IntParamType: TypeAlias = int | Param
+
+PIT = TypeVar("PIT", bound=ParamInputType)
+
+
+@dataclass
+class EvaluatedParam(Generic[PIT]):
+    param_name: str
+    description: str | None
+    value: PIT
+
+
+@dataclass
+class WeightedEvaluatedParam:
+    value: EvaluatedParam[ParamInputType]
+    weight: EvaluatedParam[float]

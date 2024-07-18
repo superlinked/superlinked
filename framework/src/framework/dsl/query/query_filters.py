@@ -15,11 +15,10 @@
 from collections import defaultdict
 from functools import reduce
 
-from beartype.typing import Sequence, cast
+from beartype.typing import Mapping, Sequence, cast
 
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.exception import QueryException
-from superlinked.framework.dsl.query.param_evaluator import ParamEvaluator
 from superlinked.framework.dsl.query.predicate.binary_op import BinaryOp
 from superlinked.framework.dsl.query.predicate.binary_predicate import (
     EvaluatedBinaryPredicate,
@@ -38,22 +37,13 @@ SUPPORTED_BINARY_OPS = {BinaryOp.SIMILAR, BinaryOp.LOOKS_LIKE}
 class QueryFilters:
     def __init__(
         self,
-        looks_like_filter: LooksLikePredicate | None,
-        similar_filters_by_space: dict[Space, Sequence[SimilarPredicate]],
-        param_evaluator: ParamEvaluator,
+        looks_like_filter: EvaluatedBinaryPredicate[LooksLikePredicate] | None,
+        similar_filters_by_space: Mapping[
+            Space, Sequence[EvaluatedBinaryPredicate[SimilarPredicate]]
+        ],
     ) -> None:
-        self.__similar_filters_by_space = {
-            space: [
-                param_evaluator.evaluate_binary_predicate(similar_filter)
-                for similar_filter in similar_filters
-            ]
-            for space, similar_filters in similar_filters_by_space.items()
-        }
-        self.__looks_like_filter = (
-            param_evaluator.evaluate_binary_predicate(looks_like_filter)
-            if looks_like_filter
-            else None
-        )
+        self.__looks_like_filter = looks_like_filter
+        self.__similar_filters_by_space = similar_filters_by_space
         self.__space_by_similar_filter: (
             dict[EvaluatedBinaryPredicate[SimilarPredicate], Space] | None
         ) = None
@@ -61,9 +51,11 @@ class QueryFilters:
             dict[SchemaFieldNode, Sequence[EvaluatedBinaryPredicate[SimilarPredicate]]]
             | None
         ) = None
-        self.__similar_filters: list[EvaluatedBinaryPredicate[SimilarPredicate]] = (
+        self.__similar_filters: Sequence[EvaluatedBinaryPredicate[SimilarPredicate]] = (
             reduce(
-                lambda acc, ele: acc + ele, self.__similar_filters_by_space.values(), []
+                lambda acc, ele: list(acc) + list(ele),
+                self.__similar_filters_by_space.values(),
+                [],
             )
         )
         self._check_all_filter_weight_is_not_zero()

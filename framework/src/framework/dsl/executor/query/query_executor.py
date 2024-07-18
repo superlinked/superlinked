@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Mapping
+
 from beartype.typing import Any, Sequence
 
 from superlinked.framework.common.dag.context import (
@@ -24,6 +26,7 @@ from superlinked.framework.common.dag.context import (
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import QueryException
 from superlinked.framework.common.interface.comparison_operand import (
+    ComparisonOperand,
     ComparisonOperation,
 )
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
@@ -36,7 +39,21 @@ from superlinked.framework.common.storage_manager.search_result_item import (
 )
 from superlinked.framework.common.util import time_util
 from superlinked.framework.dsl.executor.executor import App
-from superlinked.framework.dsl.query.param_evaluator import ParamEvaluator
+from superlinked.framework.dsl.query.param import (
+    EvaluatedParam,
+    ParamInputType,
+    WeightedEvaluatedParam,
+)
+from superlinked.framework.dsl.query.param_evaluator import (
+    EvaluatedQueryParams,
+    ParamEvaluator,
+)
+from superlinked.framework.dsl.query.predicate.binary_predicate import (
+    BPT,
+    EvaluatedBinaryPredicate,
+    LooksLikePredicate,
+    SimilarPredicate,
+)
 from superlinked.framework.dsl.query.query import QueryObj
 from superlinked.framework.dsl.query.query_filters import QueryFilters
 from superlinked.framework.dsl.query.query_vector_factory import QueryVectorFactory
@@ -81,23 +98,29 @@ class QueryExecutor:
             QueryException: If the query index is not amongst the executor's indices.
         """
         self.__check_executor_has_index()
-        param_evaluator = ParamEvaluator(params)
-        limit = param_evaluator.evaluate_limit_param(self.query_obj.limit_)
-        radius = param_evaluator.evaluate_radius_param(self.query_obj.radius_)
-        hard_filters = param_evaluator.evaluate_hard_filters_param(
-            self.query_obj.hard_filters
+        param_evaluator = ParamEvaluator(
+            params,
         )
+        evaluated_query_params = param_evaluator.evaluate_params(self.query_obj)
+        hard_filters = self._calculate_evaluated_hard_filters(
+            self.query_obj.hard_filters,
+            evaluated_query_params.hard_filter_param_by_schema_field,
+        )
+        query_vector = self._get_query_vector(evaluated_query_params)
         entities: Sequence[SearchResultItem] = self._knn(
-            self._get_query_vector(param_evaluator), limit, radius, hard_filters
+            query_vector,
+            evaluated_query_params.limit,
+            evaluated_query_params.radius,
+            hard_filters,
         )
         return Result(
             self.query_obj.schema,
             self._map_entities_to_result_entries(self.query_obj.schema, entities),
         )
 
-    def _get_query_vector(self, param_evaluator: ParamEvaluator) -> Vector:
-        query_filters = self._create_query_filters(param_evaluator)
-        space_weight_map = self.__get_space_weight_map(param_evaluator)
+    def _get_query_vector(self, evaluated_query_params: EvaluatedQueryParams) -> Vector:
+        space_weight_map = self._get_space_weight_map(evaluated_query_params)
+        query_filters = self._create_query_filters(evaluated_query_params)
         return self.query_vector_factory.produce_vector(
             self.query_obj.index._node_id,
             query_filters,
@@ -106,11 +129,82 @@ class QueryExecutor:
             self._create_query_context_base(),
         )
 
-    def _create_query_filters(self, param_evaluator: ParamEvaluator) -> QueryFilters:
-        return QueryFilters(
-            self.query_obj.looks_like_filter,
+    def _create_query_filters(
+        self, evaluated_query_params: EvaluatedQueryParams
+    ) -> QueryFilters:
+        similar_filters_by_space = self._calculate_similar_filters_by_space(
             self.query_obj.similar_filters_by_space,
-            param_evaluator,
+            evaluated_query_params.similar_filter_by_space_by_schema_field,
+        )
+        looks_like_filter = self._calculate_looks_like_filter(
+            self.query_obj.looks_like_filter,
+            evaluated_query_params.looks_like_filter_param,
+        )
+        return QueryFilters(looks_like_filter, similar_filters_by_space)
+
+    def _calculate_evaluated_hard_filters(
+        self,
+        hard_filters: Sequence[ComparisonOperation[SchemaField]],
+        hard_filter_param_by_schema_field: dict[
+            ComparisonOperand[SchemaField], EvaluatedParam[ParamInputType]
+        ],
+    ) -> list[ComparisonOperation[SchemaField]]:
+        return [
+            ComparisonOperation(
+                hard_filter._op, hard_filter._operand, evaluated_param.value
+            )
+            for hard_filter in hard_filters
+            if (
+                evaluated_param := hard_filter_param_by_schema_field.get(
+                    hard_filter._operand
+                )
+            )
+            is not None
+        ]
+
+    def _calculate_similar_filters_by_space(
+        self,
+        similar_filters_by_space: Mapping[Space, Sequence[SimilarPredicate]],
+        similar_filter_by_space_by_schema_field: Mapping[
+            SchemaField, Mapping[Space, WeightedEvaluatedParam]
+        ],
+    ) -> dict[Space, list[EvaluatedBinaryPredicate[SimilarPredicate]]]:
+        return {
+            space: [
+                self._calculate_evaluated_binary_predicate(
+                    similar_filter,
+                    similar_filter_by_space_by_schema_field[similar_filter.left_param][
+                        space
+                    ],
+                )
+                for similar_filter in similar_filters
+            ]
+            for space, similar_filters in similar_filters_by_space.items()
+        }
+
+    def _calculate_looks_like_filter(
+        self,
+        looks_like_filter: LooksLikePredicate | None,
+        looks_like_filter_param: WeightedEvaluatedParam | None,
+    ) -> EvaluatedBinaryPredicate[LooksLikePredicate] | None:
+        if looks_like_filter is None or looks_like_filter_param is None:
+            if not (looks_like_filter is None and looks_like_filter_param is None):
+                raise ValueError(
+                    "If either of looks_like_filter or looks_like_filter_param is None,"
+                    "then the other must be None too."
+                )
+            return None
+        return self._calculate_evaluated_binary_predicate(
+            looks_like_filter, looks_like_filter_param
+        )
+
+    def _calculate_evaluated_binary_predicate(
+        self, predicate: BPT, weighted_evaluated_param: WeightedEvaluatedParam
+    ) -> EvaluatedBinaryPredicate[BPT]:
+        return EvaluatedBinaryPredicate(
+            predicate,
+            weighted_evaluated_param.weight.value,
+            weighted_evaluated_param.value.value,
         )
 
     def _create_query_context_base(self) -> ExecutionContext:
@@ -173,12 +267,12 @@ class QueryExecutor:
                 + f"the executor's indices {self.app._indices}"
             )
 
-    def __get_space_weight_map(
-        self, param_evaluator: ParamEvaluator
+    def _get_space_weight_map(
+        self, evaluated_query_params: EvaluatedQueryParams
     ) -> dict[Space, float]:
         return {
-            space: param_evaluator.evaluate_weight_param(weight_obj)
-            for space, weight_obj in self.query_obj.builder.space_weight_map.items()
+            space: param.value
+            for space, param in evaluated_query_params.weight_param_by_space.items()
         }
 
     def __check_now(
