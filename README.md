@@ -110,7 +110,7 @@ You can check a full list of examples [here](https://github.com/superlinked/supe
 6. Define your transformations with a [Parser](https://github.com/superlinked/superlinked/blob/main/framework/reference/common/parser) (e.g.: from [`pd.DataFrame`](https://github.com/superlinked/superlinked/blob/main/framework/reference/common/parser/dataframe_parser.md)). 
 7. Run your configuration with an [Executor](https://github.com/superlinked/superlinked/blob/main/framework/reference/dsl/executor/in_memory/in_memory_executor.md).
 
-You can check a list of our [features](https://github.com/superlinked/superlinked/tree/main/notebook/feature) or head to our [documentation](https://github.com/superlinked/superlinked/tree/main/docs).
+You can check a list of our [features](https://github.com/superlinked/superlinked/tree/main/notebook/feature) or head to our [documentation](https://github.com/superlinked/superlinked/tree/main/framework/reference).
   
 ## Articles
 
