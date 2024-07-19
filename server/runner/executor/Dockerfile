@@ -52,6 +52,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y supervisor && a
 COPY executor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY executor/.env /code/executor/
 COPY executor/app /code/executor/app
+COPY executor/openapi /code/executor/openapi
 
 EXPOSE 8080
 ENTRYPOINT ["/usr/bin/supervisord", "-n"]

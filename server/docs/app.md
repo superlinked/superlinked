@@ -39,7 +39,8 @@ class YourSchema:
 
 your_schema = YourSchema()
 
-text_space = TextSimilaritySpace(text=your_schema.attribute, model="model-name")
+model_name = "<your model name goes here>"  # Ensure that you replace this with a valid model name!
+text_space = TextSimilaritySpace(text=your_schema.attribute, model=model_name)
 
 index = Index(text_space)
 

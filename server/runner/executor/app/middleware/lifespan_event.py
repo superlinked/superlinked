@@ -20,7 +20,7 @@ from collections.abc import AsyncGenerator, Sequence
 from contextlib import asynccontextmanager
 
 import inject
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from superlinked.framework.dsl.executor.rest.rest_executor import RestExecutor
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.space.recency_space import RecencySpace
@@ -30,6 +30,7 @@ from executor.app.configuration.app_config import AppConfig
 from executor.app.service.data_loader import DataLoader
 from executor.app.service.persistence_service import PersistenceService
 from executor.app.util.fast_api_handler import FastApiHandler
+from executor.app.util.open_api_description_util import OpenApiDescriptionUtil
 from executor.app.util.registry_loader import RegistryLoader
 
 logger = logging.getLogger(__name__)
@@ -75,10 +76,21 @@ def setup_application(app: FastAPI) -> None:
                 fast_api_handler = FastApiHandler(rest_app.handler)
 
                 for path in rest_app.handler.ingest_paths:
-                    app.add_api_route(path=path, endpoint=fast_api_handler.ingest, methods=["POST"])
+                    app.add_api_route(
+                        path=path,
+                        endpoint=fast_api_handler.ingest,
+                        methods=["POST"],
+                        status_code=status.HTTP_202_ACCEPTED,
+                        openapi_extra=OpenApiDescriptionUtil.get_open_api_description_by_key("ingest"),
+                    )
 
                 for path in rest_app.handler.query_paths:
-                    app.add_api_route(path=path, endpoint=fast_api_handler.query, methods=["POST"])
+                    app.add_api_route(
+                        path=path,
+                        endpoint=fast_api_handler.query,
+                        methods=["POST"],
+                        openapi_extra=OpenApiDescriptionUtil.get_open_api_description_by_key("query"),
+                    )
     persistence_service.restore()
 
 
