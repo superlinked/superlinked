@@ -4,25 +4,28 @@ Module superlinked.framework.dsl.query.param_evaluator
 Classes
 -------
 
-`EvaluatedQueryParams(limit: int, radius: float | None, weight_param_by_space: dict[superlinked.framework.dsl.space.space.Space, superlinked.framework.dsl.query.param.EvaluatedParam[float]], hard_filter_param_by_schema_field: dict[superlinked.framework.common.interface.comparison_operand.ComparisonOperand[superlinked.framework.common.schema.schema_object.SchemaField], superlinked.framework.dsl.query.param.EvaluatedParam[collections.abc.Sequence[str] | collections.abc.Sequence[float] | str | int | float | bool | None]], similar_filter_by_space_by_schema_field: dict[superlinked.framework.common.schema.schema_object.SchemaField, dict[superlinked.framework.dsl.space.space.Space, superlinked.framework.dsl.query.param.WeightedEvaluatedParam]], looks_like_filter_param: superlinked.framework.dsl.query.param.WeightedEvaluatedParam | None)`
-:   EvaluatedQueryParams(limit: int, radius: float | None, weight_param_by_space: dict[superlinked.framework.dsl.space.space.Space, superlinked.framework.dsl.query.param.EvaluatedParam[float]], hard_filter_param_by_schema_field: dict[superlinked.framework.common.interface.comparison_operand.ComparisonOperand[superlinked.framework.common.schema.schema_object.SchemaField], superlinked.framework.dsl.query.param.EvaluatedParam[collections.abc.Sequence[str] | collections.abc.Sequence[float] | str | int | float | bool | None]], similar_filter_by_space_by_schema_field: dict[superlinked.framework.common.schema.schema_object.SchemaField, dict[superlinked.framework.dsl.space.space.Space, superlinked.framework.dsl.query.param.WeightedEvaluatedParam]], looks_like_filter_param: superlinked.framework.dsl.query.param.WeightedEvaluatedParam | None)
+`EvaluatedParamInfo(limit: int, radius: float | None, space_weight_map: dict[superlinked.framework.dsl.space.space.Space, float], hard_filters: list[superlinked.framework.common.interface.comparison_operand.ComparisonOperation[superlinked.framework.common.schema.schema_object.SchemaField]], similar_filters: dict[superlinked.framework.dsl.space.space.Space, list[superlinked.framework.dsl.query.predicate.binary_predicate.EvaluatedBinaryPredicate[superlinked.framework.dsl.query.predicate.binary_predicate.SimilarPredicate]]], looks_like_filter: Optional[superlinked.framework.dsl.query.predicate.binary_predicate.EvaluatedBinaryPredicate[superlinked.framework.dsl.query.predicate.binary_predicate.LooksLikePredicate]], natural_language_query_params: superlinked.framework.dsl.query.natural_language_query_param_handler.NaturalLanguageQueryParams)`
+:   EvaluatedParamInfo(limit: int, radius: float | None, space_weight_map: dict[superlinked.framework.dsl.space.space.Space, float], hard_filters: list[superlinked.framework.common.interface.comparison_operand.ComparisonOperation[superlinked.framework.common.schema.schema_object.SchemaField]], similar_filters: dict[superlinked.framework.dsl.space.space.Space, list[superlinked.framework.dsl.query.predicate.binary_predicate.EvaluatedBinaryPredicate[superlinked.framework.dsl.query.predicate.binary_predicate.SimilarPredicate]]], looks_like_filter: Optional[superlinked.framework.dsl.query.predicate.binary_predicate.EvaluatedBinaryPredicate[superlinked.framework.dsl.query.predicate.binary_predicate.LooksLikePredicate]], natural_language_query_params: superlinked.framework.dsl.query.natural_language_query_param_handler.NaturalLanguageQueryParams)
 
     ### Class variables
 
-    `hard_filter_param_by_schema_field: dict[superlinked.framework.common.interface.comparison_operand.ComparisonOperand[superlinked.framework.common.schema.schema_object.SchemaField], superlinked.framework.dsl.query.param.EvaluatedParam[collections.abc.Sequence[str] | collections.abc.Sequence[float] | str | int | float | bool | None]]`
+    `hard_filters: list[superlinked.framework.common.interface.comparison_operand.ComparisonOperation[superlinked.framework.common.schema.schema_object.SchemaField]]`
     :
 
     `limit: int`
     :
 
-    `looks_like_filter_param: superlinked.framework.dsl.query.param.WeightedEvaluatedParam | None`
+    `looks_like_filter: Optional[superlinked.framework.dsl.query.predicate.binary_predicate.EvaluatedBinaryPredicate[superlinked.framework.dsl.query.predicate.binary_predicate.LooksLikePredicate]]`
+    :
+
+    `natural_language_query_params: superlinked.framework.dsl.query.natural_language_query_param_handler.NaturalLanguageQueryParams`
     :
 
     `radius: float | None`
     :
 
-    `similar_filter_by_space_by_schema_field: dict[superlinked.framework.common.schema.schema_object.SchemaField, dict[superlinked.framework.dsl.space.space.Space, superlinked.framework.dsl.query.param.WeightedEvaluatedParam]]`
+    `similar_filters: dict[superlinked.framework.dsl.space.space.Space, list[superlinked.framework.dsl.query.predicate.binary_predicate.EvaluatedBinaryPredicate[superlinked.framework.dsl.query.predicate.binary_predicate.SimilarPredicate]]]`
     :
 
-    `weight_param_by_space: dict[superlinked.framework.dsl.space.space.Space, superlinked.framework.dsl.query.param.EvaluatedParam[float]]`
+    `space_weight_map: dict[superlinked.framework.dsl.space.space.Space, float]`
     :
