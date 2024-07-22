@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Mapping
-
-from beartype.typing import Any, Sequence
+from beartype.typing import Any, Mapping, Sequence
 
 from superlinked.framework.common.dag.context import (
     CONTEXT_COMMON,

@@ -15,7 +15,6 @@
 from __future__ import annotations
 
 from functools import reduce
-from math import sqrt
 
 from beartype.typing import Sequence, cast
 from typing_extensions import override
@@ -25,6 +24,7 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import ValidationException
 from superlinked.framework.common.interface.has_length import HasLength
+from superlinked.framework.common.space.normalization import L2Norm
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.util.weight_arithmetics import WeightArithmetics
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
@@ -70,13 +70,9 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
             )
             for parent_result in parent_results
         ]
-        weight_sum = WeightArithmetics.get_weight_abs_sum(
-            context, [parent.node_id for parent in self.parents]
-        )
-        return [
-            (vector if context.is_query_context else vector.normalize(sqrt(weight_sum)))
-            for vector in vectors
-        ]
+        if context.is_query_context:
+            return vectors
+        return [vector.normalize(L2Norm().norm(vector.value)) for vector in vectors]
 
     def re_weight_vector(
         self,
@@ -91,10 +87,7 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
                 for part, parent in zip(parts, self.parents)
             ),
         )
-        weight_sum = WeightArithmetics.get_weight_abs_sum(
-            context, [parent.node_id for parent in self.parents]
-        )
-        return vector.normalize(sqrt(weight_sum))
+        return vector.normalize(L2Norm().norm(vector.value))
 
     def __check_evaluation_inputs(
         self,
