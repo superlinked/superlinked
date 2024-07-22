@@ -142,6 +142,7 @@ class CategoricalSimilaritySpace(Space):
         It has to have a .similar clause in the Query corresponding to this space.
         Negative weights mean similarity to anything but that category,
         positive means similar to the categories in the .similar clause, 0 weight means insensitivity.
+        Accepts str or list[str] type input.
         """
 
     @property

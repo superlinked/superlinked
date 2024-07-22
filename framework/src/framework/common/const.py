@@ -17,5 +17,6 @@ import os
 # TODO: https://linear.app/superlinked/issue/FAI-1786/create-settings-mechanics-for-congig
 MAX_DAG_DEPTH = 20
 DEFAULT_WEIGHT = 1.0
+DEFAULT_NOT_AFFECTING_WEIGHT = 0.0
 DEFAULT_LIMIT = -1
 INMEMORY_PUT_CHUNK_SIZE: int = int(os.getenv("INMEMORY_PUT_CHUNK_SIZE", "6000"))

@@ -88,6 +88,7 @@ class TextSimilaritySpace(Space):
         return f"""
         The space encodes text using {self._model} embeddings.
         Negative weight would mean preferring text semantically dissimilar to the one present in the .similar clause corresponding to this space.
+        Accepts str type input.
         """
 
     @property

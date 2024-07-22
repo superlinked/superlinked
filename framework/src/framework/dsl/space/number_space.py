@@ -151,7 +151,7 @@ class NumberSpace(Space):
         It has Mode so it prefers the {mode_text} number{similar_first_text}.
         Values are linearly spaced in {self.embedding_params.min_value} and {self.embedding_params.max_value}.
         For this {mode_text} mode space, negative weights would mean preferring
-        the 'opposite of {end_text}.
+        the 'opposite of {end_text}. Accepts int or float type input.
         """
 
     @property

@@ -126,7 +126,7 @@ class CustomSpace(Space):
             self._description
             if self._description
             else f"The space uses already encoded {self._length} long vectors."
-        )
+        ) + " Accepts list[float] type input."
 
     @property
     @override
