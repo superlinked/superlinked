@@ -14,11 +14,11 @@ Due to the reasons above, an API key with the `Project Data Access Admin` role i
 
 ## Modifications in app.py
 
-To integrate MongoDB, you need to add the `MongoVectorDatabase` class and include it in the executor. Here’s how you can do it:
+To integrate MongoDB, you need to add the `MongoDBVectorDatabase` class and include it in the executor. Here’s how you can do it:
 ```python
-from superlinked.framework.dsl.storage.mongo_vector_database import MongoVectorDatabase
+from superlinked.framework.dsl.storage.mongo_db_vector_database import MongoDBVectorDatabase
 
-vector_database = MongoVectorDatabase(
+vector_database = MongoDBVectorDatabase(
     host="<USER>:<PASSWORD>@<HOST_URL>", # The DB's host URL with the username and password
     db_name="<DATABASE_NAME>", # Name of your database inside your cluster. You need to create it, the system won't do it automatically
     cluster_name="<CLUSTER_NAME>", # Name of your cluster inside your project
@@ -35,14 +35,14 @@ Alternative: Click on your project on Atlas and in the URL you will find the id:
 
 > Extra parameters: Extra params can be passed in to the PyMongo client called MongoClient. Please read the [documentation](https://pymongo.readthedocs.io/en/stable/api/pymongo/mongo_client.html#pymongo.mongo_client.MongoClient) for more information.
 
-Once you have configured the `MongoVectorDatabase`, set it as your `vector_database` in the `RestExecutor`:
+Once you have configured the `MongoDBVectorDatabase`, set it as your `vector_database` in the `RestExecutor`:
 ```python
 ...
 executor = RestExecutor(
     sources=[source],
     indices=[index],
     queries=[RestQuery(RestDescriptor("query"), query)],
-    vector_database=vector_database, # Or any variable that you assigned your `MongoVectorDatabase`
+    vector_database=vector_database, # Or any variable that you assigned your `MongoDBVectorDatabase`
 )
 ...
 ```

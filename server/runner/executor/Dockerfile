@@ -41,7 +41,7 @@ RUN poetry install --no-root --only executor
 
 # --- Executor ---
 
-FROM python:3.11.5-slim AS executor
+FROM python:3.11.9-slim AS executor
 
 COPY --from=executor-base /opt/pysetup/.venv/ /opt/pysetup/.venv/
 

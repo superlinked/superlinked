@@ -38,7 +38,7 @@ RUN poetry install --no-root --only poller
 
 # --- Poller ---
 
-FROM python:3.11.5-alpine AS poller
+FROM python:3.11.9-alpine AS poller
 
 COPY --from=builder-base /opt/pysetup/.venv /opt/pysetup/.venv
 

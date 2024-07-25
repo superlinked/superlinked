@@ -12,7 +12,7 @@ from superlinked.framework.dsl.query.query import Query
 from superlinked.framework.dsl.registry.superlinked_registry import SuperlinkedRegistry
 from superlinked.framework.dsl.source.rest_source import RestSource
 from superlinked.framework.dsl.space.text_similarity_space import TextSimilaritySpace
-from superlinked.framework.dsl.storage.mongo_vector_database import MongoVectorDatabase
+from superlinked.framework.dsl.storage.mongo_db_vector_database import MongoDBVectorDatabase
 
 
 @schema
@@ -39,7 +39,7 @@ query = (
 
 car_source: RestSource = RestSource(car_schema)
 
-mongo_vector_database = MongoVectorDatabase(
+mongo_db_vector_database = MongoDBVectorDatabase(
     "<USER>:<PASSWORD>@<HOST_URL>",
     "<DATABASE_NAME>",
     "<CLUSTER_NAME>",
@@ -52,7 +52,7 @@ executor = RestExecutor(
     sources=[car_source],
     indices=[index],
     queries=[RestQuery(RestDescriptor("query"), query)],
-    vector_database=mongo_vector_database,
+    vector_database=mongo_db_vector_database,
 )
 
 SuperlinkedRegistry.register(executor)

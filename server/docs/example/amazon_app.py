@@ -73,7 +73,7 @@ query = (
 config = DataLoaderConfig(
     "https://storage.googleapis.com/superlinked-preview-test-data/amazon_dataset_1000.jsonl",
     DataFormat.JSON,
-    pandas_read_kwargs={"lines": True, "chunksize": 100},
+    pandas_read_kwargs={"lines": True},
 )
 loader_source: DataLoaderSource = DataLoaderSource(review, config)
 
