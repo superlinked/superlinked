@@ -15,9 +15,10 @@
 from beartype.typing import Generic
 
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObjectT
+from superlinked.framework.common.schema.schema_object import SchemaObjectT
 from superlinked.framework.common.source.types import SourceTypeT
 
 
 class Source(Generic[IdSchemaObjectT, SourceTypeT]):
-    def __init__(self) -> None:
-        pass
+    def __init__(self, schema: SchemaObjectT) -> None:
+        self._schema = schema

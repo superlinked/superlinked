@@ -15,32 +15,33 @@
 
 from beartype.typing import Sequence
 
-from superlinked.framework.common.storage_manager.storage_manager import StorageManager
-from superlinked.framework.dsl.app.app import App
-from superlinked.framework.dsl.app.in_memory.in_memory_app import InMemoryApp
-from superlinked.framework.dsl.executor.in_memory.in_memory_executor import (
-    InMemoryExecutor,
-)
+from superlinked.framework.common.dag.context import ExecutionContext
+from superlinked.framework.dsl.app.online.online_app import OnlineApp
 from superlinked.framework.dsl.executor.rest.rest_configuration import (
     RestEndpointConfiguration,
     RestQuery,
 )
 from superlinked.framework.dsl.executor.rest.rest_handler import RestHandler
+from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.source.data_loader_source import DataLoaderSource
 from superlinked.framework.dsl.source.rest_source import RestSource
+from superlinked.framework.dsl.storage.vector_database import VectorDatabase
 
 
-class RestApp(App[RestSource | DataLoaderSource]):
+class RestApp(OnlineApp[RestSource | DataLoaderSource]):
     """
     Rest implementation of the App class.
     """
 
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         sources: Sequence[RestSource | DataLoaderSource],
+        indices: Sequence[Index],
         queries: Sequence[RestQuery],
+        vector_database: VectorDatabase,
+        context: ExecutionContext,
         endpoint_configuration: RestEndpointConfiguration,
-        online_executor: InMemoryExecutor,
     ):
         """
         Initialize the RestApp from a RestExecutor.
@@ -48,18 +49,13 @@ class RestApp(App[RestSource | DataLoaderSource]):
         Args:
             sources (Sequence[RestSource | DataLoaderSource]): The list of sources, which can be either
                 RestSource or DataLoaderSource.
+            indices (Sequence[Index]): The list of indices to be used by the RestApp.
             queries (Sequence[RestQuery]): The list of queries to be executed by the RestApp.
+            vector_database (VectorDatabase): The vector database instance to be used by the RestApp.
+            context (ExecutionContext): The execution context for the RestApp.
             endpoint_configuration (RestEndpointConfiguration): The configuration for the REST endpoints.
-            online_executor (InMemoryExecutor): The in-memory executor that will be used to run the app.
         """
-        self.__online_app = online_executor.run()
-        super().__init__(
-            sources,
-            self.online_app._indices,
-            self.online_app._vector_database,
-            self.online_app._context,
-        )
-        self._init_search_indices()
+        super().__init__(sources, indices, vector_database, context)
         self._endpoint_configuration = endpoint_configuration
         self._queries = queries
 
@@ -68,14 +64,11 @@ class RestApp(App[RestSource | DataLoaderSource]):
         ]
 
         self.__rest_handler = RestHandler(
-            self.__online_app,
+            self,
             [source for source in self._sources if isinstance(source, RestSource)],
             self._queries,
             self._endpoint_configuration,
         )
-
-    def _init_storage_manager(self) -> StorageManager:
-        return StorageManager(self._vector_database._vdb_connector)
 
     @property
     def data_loader_sources(self) -> Sequence[DataLoaderSource]:
@@ -86,16 +79,6 @@ class RestApp(App[RestSource | DataLoaderSource]):
             Sequence[DataLoaderSource]: A sequence of DataLoaderSource instances.
         """
         return self.__data_loader_sources
-
-    @property
-    def online_app(self) -> InMemoryApp:
-        """
-        Property that returns the InMemoryApp instance associated with the RestApp.
-
-        Returns:
-            InMemoryApp: An instance of InMemoryApp.
-        """
-        return self.__online_app
 
     @property
     def handler(self) -> RestHandler:

@@ -17,11 +17,11 @@ from furl import furl
 from pydantic.alias_generators import to_snake
 
 from superlinked.framework.dsl.executor.exception import DuplicateEndpointException
-from superlinked.framework.dsl.executor.in_memory.in_memory_executor import InMemoryApp
 from superlinked.framework.dsl.executor.rest.rest_configuration import (
     RestEndpointConfiguration,
     RestQuery,
 )
+from superlinked.framework.dsl.query.query_mixin import QueryMixin
 from superlinked.framework.dsl.query.result import Result
 from superlinked.framework.dsl.source.rest_source import RestSource
 
@@ -31,12 +31,12 @@ REST = TypeVar("REST", RestSource, RestQuery)
 class RestHandler:
     def __init__(
         self,
-        app: InMemoryApp,
+        query_mixin: QueryMixin,
         sources: Sequence[RestSource],
         queries: Sequence[RestQuery],
         endpoint_config: RestEndpointConfiguration,
     ) -> None:
-        self.__app = app
+        self.__query_mixin = query_mixin
         self.__path_to_source_map: dict[str, RestSource] = (
             self.__create_path_to_resource_mapping(
                 sources,
@@ -66,7 +66,7 @@ class RestHandler:
 
     def _query_handler(self, query_object: dict, path: str) -> Result:
         query = self.__path_to_query_map[path].query_obj
-        return self.__app.query(query, **query_object)
+        return self.__query_mixin.query(query, **query_object)
 
     def __create_path_to_resource_mapping(
         self,

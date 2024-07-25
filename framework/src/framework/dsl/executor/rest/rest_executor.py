@@ -16,12 +16,13 @@ from __future__ import annotations
 
 from beartype.typing import Mapping, Sequence
 
-from superlinked.framework.common.dag.context import ContextValue
+from superlinked.framework.common.dag.context import (
+    ContextValue,
+    ExecutionContext,
+    ExecutionEnvironment,
+)
 from superlinked.framework.dsl.app.rest.rest_app import RestApp
 from superlinked.framework.dsl.executor.executor import Executor
-from superlinked.framework.dsl.executor.in_memory.in_memory_executor import (
-    InMemoryExecutor,
-)
 from superlinked.framework.dsl.executor.rest.rest_configuration import (
     RestEndpointConfiguration,
     RestQuery,
@@ -34,8 +35,8 @@ from superlinked.framework.dsl.storage.vector_database import VectorDatabase
 
 class RestExecutor(Executor[RestSource | DataLoaderSource]):
     """
-    The RestExecutor is a subclass of the Executor base class. It encapsulates all the parameters required for
-    the REST application. It also instantiates an InMemoryExecutor for data storage purposes.
+    The RestExecutor is a specialized subclass of the Executor base class designed to handle REST applications.
+    It encapsulates all necessary parameters for configuring and running a REST-based application.
     """
 
     def __init__(  # pylint: disable=too-many-arguments
@@ -48,20 +49,24 @@ class RestExecutor(Executor[RestSource | DataLoaderSource]):
         context_data: Mapping[str, Mapping[str, ContextValue]] | None = None,
     ):
         """
-        Initialize the RestExecutor.
-        Attributes:
-            sources: Sequence[RestSource | DataLoaderSource]: A sequence of rest or data loader sources.
-            indices (Sequence[Index]): A sequence of indices.
-            queries (Sequence[RestQuery]): A sequence of executable queries.
-            vector_database (VectorDatabase) Vector database instance.
-            endpoint_configuration (RestEndpointConfiguration): Optional configuration for REST endpoints.
+        Initialize the RestExecutor with the provided parameters.
+
+        Args:
+            sources (Sequence[RestSource | DataLoaderSource]): Sources, either RestSource or DataLoaderSource.
+            indices (Sequence[Index]): Indices for the RestExecutor.
+            queries (Sequence[RestQuery]): Queries to execute.
+            vector_database (VectorDatabase): Vector database instance.
+            endpoint_configuration (RestEndpointConfiguration | None): REST endpoint configuration. Defaults to None.
+            context_data (Mapping[str, Mapping[str, ContextValue]] | None):
+                Context data for execution. Defaults to None.
         """
-        online_sources = [source._online_source for source in sources]
-        self._online_executor = InMemoryExecutor(
-            online_sources, indices, vector_database, context_data
-        )
         super().__init__(
-            sources, indices, vector_database, self._online_executor._context
+            sources,
+            indices,
+            vector_database,
+            ExecutionContext.from_context_data(
+                context_data, environment=ExecutionEnvironment.ONLINE
+            ),
         )
 
         self._queries = queries
@@ -78,7 +83,9 @@ class RestExecutor(Executor[RestSource | DataLoaderSource]):
         """
         return RestApp(
             self._sources,
+            self._indices,
             self._queries,
+            self._vector_database,
+            self._context,
             self._endpoint_configuration,
-            self._online_executor,
         )

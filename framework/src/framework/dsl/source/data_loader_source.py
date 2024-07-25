@@ -21,11 +21,8 @@ from superlinked.framework.common.parser.data_parser import DataParser
 from superlinked.framework.common.parser.dataframe_parser import DataFrameParser
 from superlinked.framework.common.schema.schema_object import SchemaObjectT
 from superlinked.framework.common.source.types import SourceTypeT
-from superlinked.framework.dsl.source.in_memory_source import InMemorySource
 from superlinked.framework.dsl.source.source import Source
-from superlinked.framework.online.source.in_memory_source import (
-    InMemorySource as CommonInMemorySource,
-)
+from superlinked.framework.online.source.online_source import OnlineSource
 
 
 class DataFormat(Enum):
@@ -52,14 +49,12 @@ class DataLoaderSource(Source, Generic[SchemaObjectT, SourceTypeT]):
         data_loader_config: DataLoaderConfig,
         parser: DataParser | None = None,
     ):
-        self._online_source: InMemorySource = InMemorySource(
-            schema, parser if parser is not None else DataFrameParser(schema)
-        )
+        self._online_source = OnlineSource(schema, parser or DataFrameParser(schema))
         self.__data_loader_config = data_loader_config
 
     @property
-    def _source(self) -> CommonInMemorySource:
-        return self._online_source._source
+    def _source(self) -> OnlineSource:
+        return self._online_source
 
     @property
     def config(self) -> DataLoaderConfig:

@@ -26,9 +26,7 @@ from superlinked.framework.common.schema.schema_object import (
 from superlinked.framework.common.source.types import SourceTypeT
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.source.source import Source
-from superlinked.framework.online.source.in_memory_source import (
-    InMemorySource as CommonInMemorySource,
-)
+from superlinked.framework.online.source.online_source import OnlineSource
 
 
 class InMemorySource(Source, Generic[SchemaObjectT, SourceTypeT]):
@@ -59,10 +57,10 @@ class InMemorySource(Source, Generic[SchemaObjectT, SourceTypeT]):
             )
         self._schema = schema
         self._parser = parser or JsonParser(schema)
-        self.__source = CommonInMemorySource(self._parser)
+        self.__source = OnlineSource(schema, self._parser)
 
     @property
-    def _source(self) -> CommonInMemorySource:
+    def _source(self) -> OnlineSource:
         return self.__source
 
     def put(self, data: list[SourceTypeT]) -> None:

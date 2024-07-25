@@ -37,9 +37,10 @@ SPACE_WEIGHT_PARAM_NAME = "weight"
 
 
 class ExecutionEnvironment(Enum):
-    IN_MEMORY = 1
-    QUERY = 2
-    BATCH = 3
+    IN_MEMORY = auto()
+    QUERY = auto()
+    BATCH = auto()
+    ONLINE = auto()
 
 
 class NowStrategy(Enum):

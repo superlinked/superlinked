@@ -15,14 +15,12 @@
 from beartype.typing import Generic
 
 from superlinked.framework.common.parser.data_parser import DataParser
+from superlinked.framework.common.parser.json_parser import JsonParser
 from superlinked.framework.common.schema.schema_object import SchemaObjectT
 from superlinked.framework.common.source.types import SourceTypeT
 from superlinked.framework.dsl.executor.rest.rest_descriptor import RestDescriptor
-from superlinked.framework.dsl.source.in_memory_source import InMemorySource
 from superlinked.framework.dsl.source.source import Source
-from superlinked.framework.online.source.in_memory_source import (
-    InMemorySource as CommonInMemorySource,
-)
+from superlinked.framework.online.source.online_source import OnlineSource
 
 
 class RestSource(Source, Generic[SchemaObjectT, SourceTypeT]):
@@ -33,10 +31,8 @@ class RestSource(Source, Generic[SchemaObjectT, SourceTypeT]):
         rest_descriptor: RestDescriptor | None = None,
     ):
         self.__schema = schema
-        self.__parser = parser
-        self._online_source: InMemorySource = InMemorySource(
-            self.__schema, self.__parser
-        )
+        self.__parser = parser or JsonParser(self.__schema)
+        self._online_source = OnlineSource(self.__schema, self.__parser)
         self.__rest_descriptor = rest_descriptor
         self.__path = (
             self.__rest_descriptor.source_path
@@ -45,8 +41,8 @@ class RestSource(Source, Generic[SchemaObjectT, SourceTypeT]):
         )
 
     @property
-    def _source(self) -> CommonInMemorySource:
-        return self._online_source._source
+    def _source(self) -> OnlineSource:
+        return self._online_source
 
     @property
     def path(self) -> str:
