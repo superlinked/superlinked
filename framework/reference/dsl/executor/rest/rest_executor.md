@@ -5,16 +5,19 @@ Classes
 -------
 
 `RestExecutor(sources: Sequence[RestSource | DataLoaderSource], indices: Sequence[Index], queries: Sequence[RestQuery], vector_database: VectorDatabase, endpoint_configuration: RestEndpointConfiguration | None = None, context_data: Mapping[str, Mapping[str, ContextValue]] | None = None)`
-:   The RestExecutor is a subclass of the Executor base class. It encapsulates all the parameters required for
-    the REST application. It also instantiates an InMemoryExecutor for data storage purposes.
+:   The RestExecutor is a specialized subclass of the Executor base class designed to handle REST applications.
+    It encapsulates all necessary parameters for configuring and running a REST-based application.
     
-    Initialize the RestExecutor.
-    Attributes:
-        sources: Sequence[RestSource | DataLoaderSource]: A sequence of rest or data loader sources.
-        indices (Sequence[Index]): A sequence of indices.
-        queries (Sequence[RestQuery]): A sequence of executable queries.
-        vector_database (VectorDatabase) Vector database instance.
-        endpoint_configuration (RestEndpointConfiguration): Optional configuration for REST endpoints.
+    Initialize the RestExecutor with the provided parameters.
+    
+    Args:
+        sources (Sequence[RestSource | DataLoaderSource]): Sources, either RestSource or DataLoaderSource.
+        indices (Sequence[Index]): Indices for the RestExecutor.
+        queries (Sequence[RestQuery]): Queries to execute.
+        vector_database (VectorDatabase): Vector database instance.
+        endpoint_configuration (RestEndpointConfiguration | None): REST endpoint configuration. Defaults to None.
+        context_data (Mapping[str, Mapping[str, ContextValue]] | None):
+            Context data for execution. Defaults to None.
 
     ### Ancestors (in MRO)
 

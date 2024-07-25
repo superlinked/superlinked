@@ -16,35 +16,8 @@ Classes
 
     ### Ancestors (in MRO)
 
+    * superlinked.framework.dsl.app.online.online_app.OnlineApp
     * superlinked.framework.dsl.app.app.App
     * abc.ABC
     * typing.Generic
-
-    ### Methods
-
-    `persist(self, serializer: superlinked.framework.storage.in_memory.object_serializer.ObjectSerializer) ‑> None`
-    :
-
-    `query(self, query_obj: superlinked.framework.dsl.query.query.QueryObj, **params: Any) ‑> superlinked.framework.dsl.query.result.Result`
-    :   Execute a query. Example:
-        ```
-        query = (
-            Query(relevance_index, weights=[{"relevance_space": Param("relevance_weight")}])
-            .find(paragraph)
-            .with_vector(user, Param("user_id"))
-            .similar(relevance_space.text, Param("query_text"), weight=Param("query_weight"))
-        )
-        result = app.query(
-            query, query_text="Pear", user_id="some_user", relevance_weight=1, query_weight=2
-        )
-        ```
-        Args:
-            query_obj (QueryObj): The query object.
-            **params: Additional parameters.
-        Returns:
-            Result:  The result of the query.
-        Raises:
-            QueryException: If the query index is not amongst the executor's indices.
-
-    `restore(self, serializer: superlinked.framework.storage.in_memory.object_serializer.ObjectSerializer) ‑> None`
-    :
+    * superlinked.framework.dsl.query.query_mixin.QueryMixin

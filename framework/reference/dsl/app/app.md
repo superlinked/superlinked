@@ -21,8 +21,7 @@ Classes
 
     ### Descendants
 
-    * superlinked.framework.dsl.app.in_memory.in_memory_app.InMemoryApp
-    * superlinked.framework.dsl.app.rest.rest_app.RestApp
+    * superlinked.framework.dsl.app.online.online_app.OnlineApp
 
     ### Instance variables
 

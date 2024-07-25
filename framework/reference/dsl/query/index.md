@@ -11,6 +11,7 @@ Sub-modules
 * superlinked.framework.dsl.query.predicate
 * superlinked.framework.dsl.query.query
 * superlinked.framework.dsl.query.query_filters
+* superlinked.framework.dsl.query.query_mixin
 * superlinked.framework.dsl.query.query_vector_factory
 * superlinked.framework.dsl.query.query_weighting
 * superlinked.framework.dsl.query.result
