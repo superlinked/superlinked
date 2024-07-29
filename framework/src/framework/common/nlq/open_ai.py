@@ -15,6 +15,7 @@
 from dataclasses import dataclass
 
 import instructor
+from beartype.typing import Any
 from openai import OpenAI
 from pydantic import BaseModel
 
@@ -32,16 +33,15 @@ class OpenAIClient:
         self._client = instructor.from_openai(open_ai)
         self._openai_model = config.model
 
-    def query(self, prompt: str) -> BaseModel:
-        response = self._client.chat.completions.create(
+    def query(
+        self, prompt: str, instructor_prompt: str, response_model: type[BaseModel]
+    ) -> dict[str, Any]:
+        response: BaseModel = self._client.chat.completions.create(
             model=self._openai_model,
-            response_model=BaseModel,
+            response_model=response_model,
             messages=[
-                {
-                    "role": "system",
-                    "content": "Your goal is to modify some or all null values based on the prompt.",
-                },
+                {"role": "system", "content": instructor_prompt},
                 {"role": "user", "content": prompt},
             ],
         )
-        return response
+        return response.model_dump()

@@ -14,7 +14,7 @@
 
 from dataclasses import dataclass
 
-from beartype.typing import Any, Sequence
+from beartype.typing import Any, Mapping, Sequence
 from pandas import DataFrame
 
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
@@ -52,6 +52,7 @@ class Result:
 
     schema: IdSchemaObject
     entries: Sequence[ResultEntry]
+    nlq_params: Mapping[str, Any] | None = None
 
     def to_pandas(self) -> DataFrame:
         """

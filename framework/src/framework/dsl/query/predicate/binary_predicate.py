@@ -15,12 +15,14 @@
 from dataclasses import dataclass, field
 from itertools import count
 
-from beartype.typing import Generic, TypeVar
+from beartype.typing import Generic, TypeVar, cast
 
 from superlinked.framework.common.dag.node import Node
+from superlinked.framework.common.exception import ValidationException
 from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.dsl.query.param import (
     NumericParamType,
+    Param,
     ParamInputType,
     ParamType,
 )
@@ -38,10 +40,26 @@ BPT = TypeVar("BPT", bound="BinaryPredicate")
 
 @dataclass(frozen=True, eq=True)
 class EvaluatedBinaryPredicate(Generic[BPT]):
-    predicate: BPT = field(compare=False)
-    weight: float = field(compare=False)
-    value: ParamInputType = field(compare=False)
     id: int = field(default_factory=count().__next__, init=False)
+    predicate: BPT = field(compare=False)
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.predicate.weight_param, float):
+            raise ValidationException(
+                f"{type(self.predicate).__name__} does not have a weight set."
+            )
+        if isinstance(self.predicate.params[1], Param):
+            raise ValidationException(
+                f"{type(self.predicate).__name__} does not have a value set."
+            )
+
+    @property
+    def weight(self) -> float:
+        return cast(float, self.predicate.weight_param)
+
+    @property
+    def value(self) -> ParamInputType:
+        return cast(ParamInputType, self.predicate.params[1])
 
 
 class BinaryPredicate(QueryPredicate[BinaryOp]):

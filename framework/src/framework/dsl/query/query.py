@@ -14,9 +14,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-
-from beartype.typing import Sequence, TypedDict, cast
+from beartype.typing import NamedTuple, cast
 from typing_extensions import Annotated
 
 from superlinked.framework.common.const import DEFAULT_WEIGHT
@@ -41,43 +39,49 @@ from superlinked.framework.dsl.query.param import (
     IntParamType,
     NumericParamType,
     Param,
+    ParamInputType,
     ParamType,
     StringParamType,
 )
-from superlinked.framework.dsl.query.predicate.binary_predicate import (
-    LooksLikePredicate,
-    SimilarPredicate,
+from superlinked.framework.dsl.query.query_filter_information import (
+    HardFilterInformation,
+    LooksLikeFilterInformation,
+    QueryFilterInformation,
+    SimilarFilterInformation,
+)
+from superlinked.framework.dsl.query.query_param_information import (
+    ParamGroup,
+    ParamInfo,
+    QueryParamInformation,
+    WeightedParamInfo,
 )
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
 # Exclude from documentation.
 __pdoc__ = {}
-__pdoc__["QueryObjInternalProperty"] = False
+__pdoc__["AlterParams"] = False
+
+
+class AlterParams(NamedTuple):
+    space_weight_params: list[ParamInfo] | None = None
+    hard_filter_params: list[ParamInfo] | None = None
+    similar_filter_params: list[WeightedParamInfo] | None = None
+    looks_like_filter_param: WeightedParamInfo | None = None
+    limit_param: ParamInfo | None = None
+    radius_param: ParamInfo | None = None
+    natural_query_param: ParamInfo | None = None
+    hard_filter_infos: list[HardFilterInformation] | None = None
+    similar_filter_infos: list[SimilarFilterInformation] | None = None
+    looks_like_filter_info: LooksLikeFilterInformation | None = None
+    natural_query_client_config: OpenAIClientConfig | None = None
+    override_now: int | None = None
 
 
 VALID_HARD_FILTER_TYPES = [
     ComparisonOperationType.EQUAL,
     ComparisonOperationType.NOT_EQUAL,
 ]
-
-
-@dataclass
-class NaturalQueryInformation:
-    natural_query: StringParamType
-    client_config: OpenAIClientConfig
-
-
-class QueryObjInternalProperty(TypedDict, total=False):
-    """Only intended for self initialization inside QueryObj functions, not for external initialization"""
-
-    looks_like_filter: LooksLikePredicate | None
-    similar_filters_by_space: dict[Space, Sequence[SimilarPredicate]]
-    natural_query_information: NaturalQueryInformation | None
-    limit: IntParamType | None
-    radius: NumericParamType | None
-    hard_filters: Sequence[ComparisonOperation[SchemaField]]
-    override_now: int | None
 
 
 @TypeValidator.wrap
@@ -93,11 +97,14 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
         schema (SchemaObject): The schema object.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
-        builder: Query,
+        index: Index,
         schema: IdSchemaObject,
-        internal_property: QueryObjInternalProperty | None = None,
+        query_param_info: QueryParamInformation | None = None,
+        query_filter_info: QueryFilterInformation | None = None,
+        override_now: int | None = None,
+        natural_query_client_config: OpenAIClientConfig | None = None,
     ) -> None:
         """
         Initialize the QueryObj.
@@ -106,32 +113,15 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
             builder (Query): The query builder.
             schema (IdSchemaObject): The schema object.
         """
-        self.builder = builder
+        self.index = index
         self.schema = schema
-        if not internal_property:
-            internal_property = {}
-        self.looks_like_filter = internal_property.get("looks_like_filter")
-        self.similar_filters_by_space = internal_property.get(
-            "similar_filters_by_space", dict[Space, Sequence[SimilarPredicate]]()
-        )
-        self.natural_query_information = internal_property.get(
-            "natural_query_information"
-        )
-        self.hard_filters = internal_property.get("hard_filters", [])
-        self.limit_ = internal_property.get("limit")
-        self.radius_ = internal_property.get("radius")
-        # by default now in queries is the system time, but it can be overridden for testing/reproducible notebooks
-        self._override_now = internal_property.get("override_now")
-
-    @property
-    def index(self) -> Index:
-        """
-        The index the query is executed on.
-        """
-        return self.builder.index
+        self._override_now = override_now
+        self.natural_query_client_config = natural_query_client_config
+        self.query_param_info = query_param_info or QueryParamInformation()
+        self.query_filter_info = query_filter_info or QueryFilterInformation()
 
     def override_now(self, now: int) -> QueryObj:
-        return self.__alter({"override_now": now})
+        return self.__alter(AlterParams(override_now=now))
 
     def similar(
         self,
@@ -163,28 +153,31 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
         if self.__is_space_bound(field_set.space):
             raise QueryException("Space attempted to bound in query multiple times.")
 
-        if relevant_field := field_set.get_field_for_schema(self.schema):
-            similar_filter = SimilarPredicate(
-                relevant_field,
-                param,
-                weight,
-                field_set.space._get_node(self.schema),
+        relevant_field = field_set.get_field_for_schema(self.schema)
+        if not relevant_field:
+            raise InvalidSchemaException(
+                f"'find' ({type(self.schema)}) is not in similarity field's schema types."
             )
-
-            similar_filters_by_space = self.similar_filters_by_space.copy()
-            if field_set.space not in similar_filters_by_space:
-                similar_filters_by_space[field_set.space] = []
-            similar_filters = list(similar_filters_by_space[field_set.space])
-            similar_filters.append(similar_filter)
-            similar_filters_by_space[field_set.space] = similar_filters
-
-            return self.__alter(
-                {
-                    "similar_filters_by_space": similar_filters_by_space,
-                }
+        similar_filter_param = WeightedParamInfo.init_with(
+            ParamGroup.SIMILAR_FILTER_VALUE,
+            ParamGroup.SIMILAR_FILTER_WEIGHT,
+            param,
+            weight,
+            relevant_field,
+            field_set.space,
+        )
+        similar_filter_information = SimilarFilterInformation(
+            field_set.space,
+            relevant_field,
+            similar_filter_param.value_param.name,
+        )
+        return self.__alter(
+            AlterParams(
+                similar_filter_params=self.query_param_info.similar_filter_params
+                + [similar_filter_param],
+                similar_filter_infos=self.query_filter_info.similar_filter_infos
+                + [similar_filter_information],
             )
-        raise InvalidSchemaException(
-            f"'find' ({type(self.schema)}) is not in similarity field's schema types."
         )
 
     def limit(self, limit: IntParamType | None) -> QueryObj:
@@ -197,7 +190,8 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
         Returns:
             Self: The query object itself.
         """
-        return self.__alter({"limit": limit})
+        limit_param = ParamInfo.init_with(ParamGroup.LIMIT, limit)
+        return self.__alter(AlterParams(limit_param=limit_param))
 
     def with_natural_query(
         self, natural_query: StringParamType, client_config: OpenAIClientConfig
@@ -211,12 +205,14 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
         Returns:
             Self: The query object itself.
         """
+        natural_query_param = ParamInfo.init_with(
+            ParamGroup.NATURAL_QUERY, natural_query
+        )
         return self.__alter(
-            {
-                "natural_query_information": NaturalQueryInformation(
-                    natural_query, client_config
-                )
-            }
+            AlterParams(
+                natural_query_param=natural_query_param,
+                natural_query_client_config=client_config,
+            )
         )
 
     def radius(self, radius: NumericParamType | None) -> QueryObj:
@@ -238,7 +234,8 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
         Raises:
             ValueError: If the radius is not between 0 and 1.
         """
-        return self.__alter({"radius": radius})
+        radius_param = ParamInfo.init_with(ParamGroup.RADIUS, radius)
+        return self.__alter(AlterParams(radius_param=radius_param))
 
     def with_vector(
         self,
@@ -266,16 +263,24 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
             raise InvalidSchemaException(
                 f"'with_vector': {type(self.schema)} is not a schema."
             )
-        if self.looks_like_filter is not None:
+        if self.query_filter_info.looks_like_filter_info is not None:
             raise QueryException(
                 "One query cannot have more than one 'with vector' filter."
             )
-        looks_like_filter = LooksLikePredicate(
-            left_param=schema_obj.id,
-            right_param=id_param,
-            weight=weight,
+        looks_like_filter_param = WeightedParamInfo.init_with(
+            ParamGroup.LOOKS_LIKE_FILTER_VALUE,
+            ParamGroup.LOOKS_LIKE_FILTER_WEIGHT,
+            id_param,
+            weight,
+            schema_obj.id,
         )
-        return self.__alter({"looks_like_filter": looks_like_filter})
+        looks_like_filter_information = LooksLikeFilterInformation(schema_obj.id)
+        return self.__alter(
+            AlterParams(
+                looks_like_filter_param=looks_like_filter_param,
+                looks_like_filter_info=looks_like_filter_information,
+            )
+        )
 
     def filter(
         self, comparison_operation: ComparisonOperation[SchemaField]
@@ -298,39 +303,61 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
             raise QueryException(
                 f"Unsupported filter operation: {comparison_operation._op}."
             )
-        allowed_types = [
+        if type(comparison_operation._other) not in [
             Param,
             GenericClassUtil.get_single_generic_type(comparison_operation._operand),
-        ]
-        if type(comparison_operation._other) not in allowed_types:
+        ]:
             raise QueryException(
-                f"Unsupported filter operand type: {comparison_operation._other.__class__.__name__}."
+                f"Unsupported filter operand type: {type(comparison_operation._other).__name__}."
             )
-        hard_filters = list(self.hard_filters)
-        hard_filters.append(comparison_operation)
-        return self.__alter({"hard_filters": hard_filters})
+        hard_filter_param = ParamInfo.init_with(
+            ParamGroup.HARD_FILTER,
+            cast(ParamInputType, comparison_operation._other),
+            cast(SchemaField, comparison_operation._operand),
+        )
+        hard_filter_info = HardFilterInformation(
+            comparison_operation._op,
+            comparison_operation._operand,
+            hard_filter_param.name,
+        )
+        return self.__alter(
+            AlterParams(
+                hard_filter_params=self.query_param_info.hard_filter_params
+                + [hard_filter_param],
+                hard_filter_infos=self.query_filter_info.hard_filter_infos
+                + [hard_filter_info],
+            )
+        )
 
     def __is_indexed_space(self, space: Space) -> bool:
-        return self.builder.index.has_space(space)
+        return self.index.has_space(space)
 
     def __is_space_bound(self, space: Space) -> bool:
-        return space in self.similar_filters_by_space.keys()
+        return any(
+            similar_filter_info.space == space
+            for similar_filter_info in self.query_filter_info.similar_filter_infos
+        )
 
-    def __alter(self, properties: QueryObjInternalProperty) -> QueryObj:
-        properties_use: QueryObjInternalProperty = {
-            "looks_like_filter": self.looks_like_filter,
-            "similar_filters_by_space": self.similar_filters_by_space,
-            "natural_query_information": self.natural_query_information,
-            "limit": self.limit_,
-            "radius": self.radius_,
-            "hard_filters": self.hard_filters,
-            "override_now": self._override_now,
-        }
-        properties_use.update(properties)
+    def __alter(self, params: AlterParams) -> QueryObj:
         return QueryObj(
-            builder=self.builder,
-            schema=self.schema,
-            internal_property=properties_use,
+            self.index,
+            self.schema,
+            self.query_param_info.alter(
+                params.space_weight_params,
+                params.hard_filter_params,
+                params.similar_filter_params,
+                params.looks_like_filter_param,
+                params.limit_param,
+                params.radius_param,
+                params.natural_query_param,
+            ),
+            self.query_filter_info.alter(
+                params.hard_filter_infos,
+                params.similar_filter_infos,
+                params.looks_like_filter_info,
+            ),
+            params.override_now or self._override_now,
+            params.natural_query_client_config or self.natural_query_client_config,
         )
 
 
@@ -365,9 +392,8 @@ class Query:
                 Defaults to None, which is equal weight for each space.
         """
         self.index = index
-
         self._queries: list[QueryObj] = []
-        self.space_weight_map = weights or {}
+        self.weight_by_space = weights or {}
 
     def find(self, schema: IdSchemaObject | T) -> QueryObj:
         """
@@ -383,17 +409,24 @@ class Query:
             InvalidSchemaException: If the schema is invalid.
             QueryException: If the index does not have the queried schema.
         """
-        self.__validate_find_input(schema)
-        query_obj = QueryObj(self, cast(IdSchemaObject, schema))
+        schema = self.__validate_and_cast_schema(schema)
+        query_param_info = QueryParamInformation(
+            space_weight_params=[
+                ParamInfo.init_with(ParamGroup.SPACE_WEIGHT, weight, None, space)
+                for space, weight in self.weight_by_space.items()
+            ]
+        )
+        query_obj = QueryObj(self.index, schema, query_param_info)
         self._queries.append(query_obj)
         return query_obj
 
-    def __validate_find_input(self, schema: IdSchemaObject | T) -> None:
+    def __validate_and_cast_schema(self, schema: IdSchemaObject | T) -> IdSchemaObject:
         if not isinstance(schema, IdSchemaObject):
             raise InvalidSchemaException(
-                f"Invalid schema ({schema.__class__.__name__}) for find in {self.__class__.__name__}"
+                f"Invalid schema ({type(schema).__name__}) for find in {type(self).__name__}"
             )
         if not self.index.has_schema(schema):
             raise QueryException(
                 f"Index doesn't have the queried schema ({schema._base_class_name})"
             )
+        return schema

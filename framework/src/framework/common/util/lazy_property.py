@@ -12,13 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
+import functools
 
-# TODO: https://linear.app/superlinked/issue/FAI-1786/create-settings-mechanics-for-congig
-MAX_DAG_DEPTH = 20
-DEFAULT_WEIGHT = 1.0
-DEFAULT_NOT_AFFECTING_WEIGHT = 0.0
-DEFAULT_LIMIT = -1
-RADIUS_MIN = 0
-RADIUS_MAX = 1
-ONLINE_PUT_CHUNK_SIZE: int = int(os.getenv("ONLINE_PUT_CHUNK_SIZE", "6000"))
+from beartype.typing import Any
+
+
+def lazy_property(fn) -> property:  # type: ignore
+    attr_name = "_lazy_" + fn.__name__
+
+    @property  # type: ignore
+    @functools.wraps(fn)
+    def _lazy_property(self) -> Any:
+        if not hasattr(self, attr_name):
+            object.__setattr__(self, attr_name, fn(self))
+        return getattr(self, attr_name)
+
+    return _lazy_property  # type: ignore

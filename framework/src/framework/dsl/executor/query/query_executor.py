@@ -24,11 +24,7 @@ from superlinked.framework.common.dag.context import (
 )
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import QueryException
-from superlinked.framework.common.interface.comparison_operand import (
-    ComparisonOperation,
-)
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
-from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.storage_manager.knn_search_params import (
     KNNSearchParams,
 )
@@ -37,12 +33,15 @@ from superlinked.framework.common.storage_manager.search_result_item import (
 )
 from superlinked.framework.common.util import time_util
 from superlinked.framework.dsl.executor.executor import App
-from superlinked.framework.dsl.query.param_evaluator import (
-    EvaluatedParamInfo,
-    ParamEvaluator,
-)
+from superlinked.framework.dsl.query.nlq_param_evaluator import NLQParamEvaluator
 from superlinked.framework.dsl.query.query import QueryObj
+from superlinked.framework.dsl.query.query_filter_information import (
+    QueryFilterInformation,
+)
 from superlinked.framework.dsl.query.query_filters import QueryFilters
+from superlinked.framework.dsl.query.query_param_information import (
+    QueryParamInformation,
+)
 from superlinked.framework.dsl.query.query_vector_factory import QueryVectorFactory
 from superlinked.framework.dsl.query.result import Result, ResultEntry
 
@@ -84,36 +83,76 @@ class QueryExecutor:
             QueryException: If the query index is not amongst the executor's indices.
         """
         self.__check_executor_has_index()
-        param_evaluator = ParamEvaluator(
-            params,
+        query_param_info, nlq_params = self._fill_query_param_info(
+            self.query_obj.query_param_info, params
         )
-        evaluated_query_params = param_evaluator.evaluate_params(self.query_obj)
-        # TODO FAI-2053
-        # nlq_param_handler = NaturalLanguageQueryParamHandler(evaluated_query_params.natural_language_query_params)
-        # model = nlq_param_handler.to_pydantic()
-        query_vector = self._get_query_vector(evaluated_query_params)
-        entities: Sequence[SearchResultItem] = self._knn(
-            query_vector,
-            evaluated_query_params.limit,
-            evaluated_query_params.radius,
-            evaluated_query_params.hard_filters,
+        knn_search_params = self._produce_knn_search_params(
+            self.query_obj.query_filter_info, query_param_info
         )
+        entities: Sequence[SearchResultItem] = self._knn_search(knn_search_params)
         return Result(
             self.query_obj.schema,
             self._map_entities_to_result_entries(self.query_obj.schema, entities),
+            nlq_params,
         )
 
-    def _get_query_vector(self, evaluated_query_params: EvaluatedParamInfo) -> Vector:
-        query_filters = QueryFilters(
-            evaluated_query_params.looks_like_filter,
-            evaluated_query_params.similar_filters,
+    def _produce_knn_search_params(
+        self,
+        query_filter_info: QueryFilterInformation,
+        query_param_info: QueryParamInformation,
+    ) -> KNNSearchParams:
+        limit = query_param_info.limit
+        radius = query_param_info.radius
+        hard_filters = query_filter_info.get_hard_filters(query_param_info)
+        query_vector = self._produce_query_vector(query_filter_info, query_param_info)
+        return KNNSearchParams(query_vector, limit, hard_filters, radius)
+
+    def _fill_query_param_info(
+        self, query_param_info: QueryParamInformation, params: dict[str, Any]
+    ) -> tuple[QueryParamInformation, dict[str, Any]]:
+        query_param_info = query_param_info.alter_with_values(
+            params, override_already_set=True
         )
+        nlq_params = self._calculate_nlq_params(query_param_info)
+        query_param_info = query_param_info.alter_with_values(
+            nlq_params, override_already_set=False
+        )
+        return query_param_info, nlq_params
+
+    def _calculate_nlq_params(
+        self,
+        query_param_info: QueryParamInformation,
+    ) -> dict[str, Any]:
+        nlq_param_infos = query_param_info.nlq_param_infos
+        param_evaluator = NLQParamEvaluator(nlq_param_infos)
+        natural_query = query_param_info.natural_query
+        client_config = self.query_obj.natural_query_client_config
+        nlq_values = param_evaluator.evaluate_param_infos(natural_query, client_config)
+        return nlq_values
+
+    def _produce_query_vector(
+        self,
+        query_filter_info: QueryFilterInformation,
+        query_param_info: QueryParamInformation,
+    ) -> Vector:
+        query_filters = self._get_query_filters(query_filter_info, query_param_info)
+        space_weight_map = query_param_info.space_weight_map
         return self.query_vector_factory.produce_vector(
             self.query_obj.index._node_id,
             query_filters,
-            evaluated_query_params.space_weight_map,
+            space_weight_map,
             self.query_obj.schema,
             self._create_query_context_base(),
+        )
+
+    def _get_query_filters(
+        self,
+        query_filter_info: QueryFilterInformation,
+        query_param_info: QueryParamInformation,
+    ) -> QueryFilters:
+        return QueryFilters(
+            query_filter_info.get_looks_like_filter(query_param_info),
+            query_filter_info.get_similar_filters(query_param_info),
         )
 
     def _create_query_context_base(self) -> ExecutionContext:
@@ -127,20 +166,12 @@ class QueryExecutor:
         )
         return eval_context
 
-    def _knn(
+    def _knn_search(
         self,
-        vector: Vector,
-        limit: int,
-        radius: float | None,
-        hard_filters: Sequence[ComparisonOperation[SchemaField]],
+        knn_search_params: KNNSearchParams,
     ) -> Sequence[SearchResultItem]:
         return self.app.storage_manager.knn_search(
-            self.query_obj.index._node,
-            self.query_obj.schema,
-            [],
-            KNNSearchParams(
-                vector=vector, limit=limit, filters=hard_filters, radius=radius
-            ),
+            self.query_obj.index._node, self.query_obj.schema, [], knn_search_params
         )
 
     def _map_entities_to_result_entries(
