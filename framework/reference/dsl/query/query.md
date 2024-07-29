@@ -4,17 +4,6 @@ Module superlinked.framework.dsl.query.query
 Classes
 -------
 
-`NaturalQueryInformation(natural_query: StringParamType, client_config: OpenAIClientConfig)`
-:   NaturalQueryInformation(natural_query: 'StringParamType', client_config: 'OpenAIClientConfig')
-
-    ### Class variables
-
-    `client_config: superlinked.framework.common.nlq.open_ai.OpenAIClientConfig`
-    :
-
-    `natural_query: str | superlinked.framework.dsl.query.param.Param`
-    :
-
 `Query(index: superlinked.framework.dsl.index.index.Index, weights: Optional[typing.Annotated[dict[superlinked.framework.dsl.space.space.Space, float | int | superlinked.framework.dsl.query.param.Param], Is[TypeValidator.dict_validator.validator]]] = None)`
 :   A class representing a query. Build queries using Params as placeholders for weights or query text,
     and supply their value later on when executing a query.
@@ -45,7 +34,7 @@ Classes
             InvalidSchemaException: If the schema is invalid.
             QueryException: If the index does not have the queried schema.
 
-`QueryObj(builder: superlinked.framework.dsl.query.query.Query, schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject, internal_property: superlinked.framework.dsl.query.query.QueryObjInternalProperty | None = None)`
+`QueryObj(index: superlinked.framework.dsl.index.index.Index, schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject, query_param_info: superlinked.framework.dsl.query.query_param_information.QueryParamInformation | None = None, query_filter_info: superlinked.framework.dsl.query.query_filter_information.QueryFilterInformation | None = None, override_now: int | None = None, natural_query_client_config: superlinked.framework.common.nlq.open_ai.OpenAIClientConfig | None = None)`
 :   A class representing a query object. Use .with_vector to run queries using a stored
     vector, or use .similar for queries where you supply the query at query-time. Or combine
     them, or even combine multiple .similar to supply different queries for each space in the
@@ -60,11 +49,6 @@ Classes
     Args:
         builder (Query): The query builder.
         schema (IdSchemaObject): The schema object.
-
-    ### Instance variables
-
-    `index: superlinked.framework.dsl.index.index.Index`
-    :   The index the query is executed on.
 
     ### Methods
 
