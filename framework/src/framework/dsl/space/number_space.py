@@ -133,26 +133,38 @@ class NumberSpace(Space):
     @override
     def annotation(self) -> str:
         mode_text = self.embedding_params.mode.value
+        mode_to_preference: dict[str, str] = {
+            "minimum": "lower",
+            "maximum": "higher",
+            "similar": "similar",
+        }
         similar_first_text = (
             """
             s to the one supplied in a .similar clause during a Query.
-            Values outside of the range in the opposite direction have negative_filter similarity to any other object
             """
             if self.embedding_params.mode == Mode.SIMILAR
             else ""
         )
-        end_text = (
-            "the values in the similar clause'. Similar mode needs a .similar clause"
+        negative_text: dict[str, str] = {
+            "similar": "the values further from the value in the corresponding mandatory similar clause.",
+            "minimum": "higher values",
+            "maximum": "lower values",
+        }
+        end_text: str = (
+            "Accepts int or float type input for a corresponding .similar clause input."
             if self.embedding_params.mode == Mode.SIMILAR
-            else f"{mode_text}"
+            else ""
         )
         return f"""
-        The space encodes numbers between {self.embedding_params.min_value} and {self.embedding_params.max_value}.
-        It has Mode so it prefers the {mode_text} number{similar_first_text}.
+        The space encodes numbers between {self.embedding_params.min_value} and {self.embedding_params.max_value},
+        being the domain of the space.
         Values are linearly spaced in {self.embedding_params.min_value} and {self.embedding_params.max_value}.
-        For this {mode_text} mode space, negative weights would mean preferring
-        the 'opposite of {end_text}. Accepts int or float type input.
-        """
+        It has {mode_text} Mode so it prefers the {mode_to_preference[mode_text]} number{similar_first_text}.
+        For this {mode_text} mode space, negative weights mean favoring
+        the {negative_text[mode_text]}. 0 weight means insensitivity.
+        Larger positive weights increase the effect on similarity compared to other spaces. Space weights do not matter
+        if there is only 1 space in the query.
+        {end_text}"""
 
     @property
     @override

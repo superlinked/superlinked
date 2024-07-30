@@ -133,10 +133,14 @@ class RecencySpace(Space):  # pylint: disable=too-many-instance-attributes
         Older timestamps will have negative_filter similarity (assuming weight = 1).
         There is no differentiation between items older than {self._max_period_time_days} days.
         We always query with now, so the similarity contribution of items will always be proportional to their recency.
-        Setting weight to 0 desensitizes the results to recency, negative weights prefer older items and positive weights will favour recent ones.
+        Setting weight to 0 desensitizes the results to recency, negative weights favor older items and positive
+        weights will favor recent ones.
         Also take into account that max_period_time is {self._max_period_time_days} days".
-        Preferring values from {self._max_period_time_days/2} days ago could best be achieved using positive weights lower than the other weights in the query.
-        Accepts int type input.
+        Preferring values from {self._max_period_time_days/2} days ago could best be achieved using positive weights
+        lower than the other weights in the query.
+        Larger positive weights increase the effect on similarity compared to other spaces. Space weights do not
+        matter if there is only 1 space in the query.
+        Does not have input as querying will always happen using the utc timestamp of the system's NOW.
         """
 
     @property

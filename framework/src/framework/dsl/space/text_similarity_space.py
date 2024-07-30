@@ -87,8 +87,11 @@ class TextSimilaritySpace(Space):
     def annotation(self) -> str:
         return f"""
         The space encodes text using {self._model} embeddings.
-        Negative weight would mean preferring text semantically dissimilar to the one present in the .similar clause corresponding to this space.
-        Accepts str type input.
+        Negative weight would mean preferring text semantically dissimilar to the one present in the .similar clause
+        corresponding to this space. Zero weight means insensitivity, positive weights mean preferring similar text.
+        Larger positive weights increase the effect on similarity compared to other spaces. Space weights do not matter
+        if there is only 1 space in the query.
+        Accepts str type input for a corresponding .similar clause input.
         """
 
     @property
