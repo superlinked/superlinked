@@ -31,18 +31,18 @@ class FileObjectSerializer(ObjectSerializer):
         super().__init__()
         self.__file_handler_service = file_handler_service
 
-    def write(self, field_identifier: str, serialized_object: str, app_identifier: str) -> None:
+    def write(self, serialized_object: str, key: str) -> None:
         self.__file_handler_service.ensure_folder()
 
-        logger.info("Persisting database with field id: %s and app id: %s", field_identifier, app_identifier)
-        file_with_path = self.__file_handler_service.generate_filename(field_identifier, app_identifier)
+        logger.info("Persisting database with id: %s", key)
+        file_with_path = self.__file_handler_service.generate_filename(key)
         with open(file_with_path, "w", encoding="utf-8") as file:
-            logger.debug("Writing field: %s and app: %s file to: %s", field_identifier, app_identifier, file_with_path)
+            logger.info("Writing id: %s to file: %s", key, file_with_path)
             json.dump(serialized_object, file)
 
-    def read(self, field_identifier: str, app_identifier: str) -> str:
-        logger.info("Restoring database using field id: %s and app id: %s", field_identifier, app_identifier)
-        file_with_path = self.__file_handler_service.generate_filename(field_identifier, app_identifier)
+    def read(self, key: str) -> str:
+        logger.info("Restoring database using id: %s", key)
+        file_with_path = self.__file_handler_service.generate_filename(key)
 
         result = "{}"
         try:
@@ -50,6 +50,7 @@ class FileObjectSerializer(ObjectSerializer):
                 with open(file_with_path, encoding="utf-8") as file:
                     if os.stat(file_with_path).st_size >= EMPTY_JSON_OBJECT_SIZE:
                         result = json.load(file)
+                        logger.info("Database successfully restored from file: %s", file_with_path)
         except json.JSONDecodeError:
             logger.exception("File is present but contains invalid data. File: %s", file_with_path)
         except Exception:  # pylint: disable=broad-exception-caught

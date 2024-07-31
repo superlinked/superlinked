@@ -14,8 +14,8 @@ class FileHandlerService:
         self.__hash_type = hash_type or HashType.MD5
         self.app_config = app_config
 
-    def generate_filename(self, field_id: str, app_id: str) -> str:
-        filename = self.__hash_type.value(f"{app_id}_{field_id}".encode()).hexdigest()
+    def generate_filename(self, app_id: str) -> str:
+        filename = self.__hash_type.value(f"{app_id}".encode()).hexdigest()
         return f"{self.app_config.PERSISTENCE_FOLDER_PATH}/{filename}.json"
 
     def ensure_folder(self) -> None:

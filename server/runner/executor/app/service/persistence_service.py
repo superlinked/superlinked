@@ -14,7 +14,8 @@
 
 import logging
 
-from superlinked.framework.dsl.executor.rest.rest_executor import RestApp
+from superlinked.framework.common.storage.vdb_connector import VDBConnector
+from superlinked.framework.storage.in_memory.in_memory_vdb import InMemoryVDB
 
 from executor.app.service.file_object_serializer import FileObjectSerializer
 
@@ -23,20 +24,21 @@ logger = logging.getLogger(__name__)
 
 class PersistenceService:
     def __init__(self, serializer: FileObjectSerializer) -> None:
-        self._applications: list[RestApp] = []
+        self._in_memory_vector_databases: list[InMemoryVDB] = []
         self._serializer = serializer
 
-    def register(self, rest_app: RestApp) -> None:
-        if rest_app in self._applications:
-            logger.warning("Application already exists: %s", rest_app)
+    def register(self, vdb_connector: VDBConnector) -> None:
+        if not isinstance(vdb_connector, InMemoryVDB):
             return
-        logger.info("Rest app registered: %s", rest_app)
-        self._applications.append(rest_app)
+        if vdb_connector in self._in_memory_vector_databases:
+            logger.warning("In memory VDB already exists: %s", vdb_connector)
+            return
+        self._in_memory_vector_databases.append(vdb_connector)
 
     def persist(self) -> None:
-        for app in self._applications:
-            app.online_app.persist(self._serializer)
+        for vector_database in self._in_memory_vector_databases:
+            vector_database.persist(self._serializer)
 
     def restore(self) -> None:
-        for app in self._applications:
-            app.online_app.restore(self._serializer)
+        for vector_database in self._in_memory_vector_databases:
+            vector_database.restore(self._serializer)
