@@ -136,7 +136,7 @@ class RecencySpace(Space):  # pylint: disable=too-many-instance-attributes
         Setting weight to 0 desensitizes the results to recency, negative weights favor older items and positive
         weights will favor recent ones.
         Also take into account that max_period_time is {self._max_period_time_days} days".
-        Preferring values from {self._max_period_time_days/2} days ago could best be achieved using positive weights
+        Favoring values from {self._max_period_time_days/2} days ago could best be achieved using positive weights
         lower than the other weights in the query.
         Larger positive weights increase the effect on similarity compared to other spaces. Space weights do not
         matter if there is only 1 space in the query.

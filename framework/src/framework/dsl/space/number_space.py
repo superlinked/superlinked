@@ -159,7 +159,7 @@ class NumberSpace(Space):
         The space encodes numbers between {self.embedding_params.min_value} and {self.embedding_params.max_value},
         being the domain of the space.
         Values are linearly spaced in {self.embedding_params.min_value} and {self.embedding_params.max_value}.
-        It has {mode_text} Mode so it prefers the {mode_to_preference[mode_text]} number{similar_first_text}.
+        It has {mode_text} Mode so it favors the {mode_to_preference[mode_text]} number{similar_first_text}.
         For this {mode_text} mode space, negative weights mean favoring
         the {negative_text[mode_text]}. 0 weight means insensitivity.
         Larger positive weights increase the effect on similarity compared to other spaces. Space weights do not matter
