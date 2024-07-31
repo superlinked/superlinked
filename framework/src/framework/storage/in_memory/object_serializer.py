@@ -17,24 +17,19 @@ from abc import ABC, abstractmethod
 
 class ObjectSerializer(ABC):
     """
-    This abstract base class outlines the interface for an object serializer.
+    This abstract base class defines the interface for an object serializer.
     """
 
     @abstractmethod
-    def read(self, field_identifier: str, app_identifier: str) -> str:
+    def read(self, key: str) -> str:
         """
-        The identifier represents the field name.
-        The method should return the object that corresponds to the field, that the writer previously written.
-        The app_identifier is a unique deterministic id specific to each application and its version.
+        Read the serialized object associated with the given key.
+        The method should return the serialized data as a string.
         """
 
     @abstractmethod
-    def write(
-        self, field_identifier: str, serialized_object: str, app_identifier: str
-    ) -> None:
+    def write(self, serialized_object: str, key: str) -> None:
         """
-        The object to be written is a dictionary.
-        The identifier represents a field name and the value is the string
-        representation of a dict, serialized using JSON.
-        The app_identifier is a unique deterministic id specific to each application and its version.
+        Write the serialized object under the specified key.
+        The serialized_object parameter should be a string representation of a serialized dictionary.
         """

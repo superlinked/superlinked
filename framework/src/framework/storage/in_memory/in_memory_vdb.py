@@ -131,17 +131,18 @@ class InMemoryVDB(VDBConnector):
             for row_id, score in sorted_scores
         ]
 
-    def persist(self, serialzer: ObjectSerializer, app_identifier: str) -> None:
-        serialzer.write(
-            self.__class__.__name__,
+    def persist(self, serializer: ObjectSerializer) -> None:
+        app_identifier = "_".join(self._index_configs.keys())
+        serializer.write(
             json.dumps(self._vdb, cls=JsonEncoder),
             app_identifier,
         )
 
-    def restore(self, serialzer: ObjectSerializer, app_identifier: str) -> None:
+    def restore(self, serializer: ObjectSerializer) -> None:
+        app_identifier = "_".join(self._index_configs.keys())
         self._vdb.update(
             json.loads(
-                serialzer.read(self.__class__.__name__, app_identifier),
+                serializer.read(app_identifier),
                 cls=JsonDecoder,
             )
         )

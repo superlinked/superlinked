@@ -62,7 +62,7 @@ class RestHandler:
 
     def _ingest_handler(self, input_schema: dict, path: str) -> None:
         source = self.__path_to_source_map[path]
-        source._online_source.put([input_schema])
+        source._online_source.put(input_schema)
 
     def _query_handler(self, query_object: dict, path: str) -> Result:
         query = self.__path_to_query_map[path].query_obj
