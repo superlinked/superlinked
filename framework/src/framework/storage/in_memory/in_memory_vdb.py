@@ -131,6 +131,7 @@ class InMemoryVDB(VDBConnector):
             for row_id, score in sorted_scores
         ]
 
+    @override
     def persist(self, serializer: ObjectSerializer) -> None:
         app_identifier = "_".join(self._index_configs.keys())
         serializer.write(
@@ -138,6 +139,7 @@ class InMemoryVDB(VDBConnector):
             app_identifier,
         )
 
+    @override
     def restore(self, serializer: ObjectSerializer) -> None:
         app_identifier = "_".join(self._index_configs.keys())
         self._vdb.update(

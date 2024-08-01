@@ -32,6 +32,7 @@ from superlinked.framework.common.storage.search_index_creation.search_algorithm
 from superlinked.framework.common.storage.search_index_creation.vector_component_precision import (
     VectorComponentPrecision,
 )
+from superlinked.framework.storage.in_memory.object_serializer import ObjectSerializer
 
 
 class VDBConnector(ABC):
@@ -61,6 +62,16 @@ class VDBConnector(ABC):
     @property
     def vector_coordinate_type(self) -> VectorComponentPrecision:
         return self._vector_coordinate_type
+
+    def persist(self, _: ObjectSerializer) -> None:
+        """
+        Persist the state of the VDB. Implement this method in subclasses if persistence is supported.
+        """
+
+    def restore(self, _: ObjectSerializer) -> None:
+        """
+        Restore the state of the VDB. Implement this method in subclasses if restoration is supported.
+        """
 
     @abstractmethod
     def close_connection(self) -> None:
