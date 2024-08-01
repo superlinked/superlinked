@@ -15,7 +15,6 @@
 import logging
 
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
-from superlinked.framework.storage.in_memory.in_memory_vdb import InMemoryVDB
 
 from executor.app.service.file_object_serializer import FileObjectSerializer
 
@@ -24,21 +23,19 @@ logger = logging.getLogger(__name__)
 
 class PersistenceService:
     def __init__(self, serializer: FileObjectSerializer) -> None:
-        self._in_memory_vector_databases: list[InMemoryVDB] = []
+        self._vdb_connectors: list[VDBConnector] = []
         self._serializer = serializer
 
     def register(self, vdb_connector: VDBConnector) -> None:
-        if not isinstance(vdb_connector, InMemoryVDB):
+        if vdb_connector in self._vdb_connectors:
+            logger.warning("VDB connector already exists: %s", vdb_connector)
             return
-        if vdb_connector in self._in_memory_vector_databases:
-            logger.warning("In memory VDB already exists: %s", vdb_connector)
-            return
-        self._in_memory_vector_databases.append(vdb_connector)
+        self._vdb_connectors.append(vdb_connector)
 
     def persist(self) -> None:
-        for vector_database in self._in_memory_vector_databases:
-            vector_database.persist(self._serializer)
+        for vdb_connector in self._vdb_connectors:
+            vdb_connector.persist(self._serializer)
 
     def restore(self) -> None:
-        for vector_database in self._in_memory_vector_databases:
-            vector_database.restore(self._serializer)
+        for vdb_connector in self._vdb_connectors:
+            vdb_connector.restore(self._serializer)
