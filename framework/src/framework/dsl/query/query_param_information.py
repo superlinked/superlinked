@@ -275,3 +275,23 @@ class QueryParamInformation:
             [looks_like.value_param, looks_like.weight_param] if looks_like else [],
         ]
         return [param for param_list in nested_params for param in param_list]
+
+    @lazy_property
+    def knn_params(self) -> dict[str, Any]:
+        similar_filter_params = self.similar_filter_params
+        looks_like = self.looks_like_filter_param
+        return {
+            param.name: param.value
+            for param_list in [
+                self.space_weight_params,
+                self.hard_filter_params,
+                [weighted.value_param for weighted in similar_filter_params],
+                [weighted.weight_param for weighted in similar_filter_params],
+                [looks_like.value_param, looks_like.weight_param] if looks_like else [],
+                [looks_like.value_param, looks_like.weight_param] if looks_like else [],
+                [self.limit_param] if self.limit_param else [],
+                [self.radius_param] if self.radius_param else [],
+                [self.natural_query_param] if self.natural_query_param else [],
+            ]
+            for param in param_list
+        }

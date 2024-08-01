@@ -52,7 +52,7 @@ class Result:
 
     schema: IdSchemaObject
     entries: Sequence[ResultEntry]
-    nlq_params: Mapping[str, Any] | None = None
+    knn_params: Mapping[str, Any] | None = None
 
     def to_pandas(self) -> DataFrame:
         """

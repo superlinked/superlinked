@@ -83,7 +83,7 @@ class QueryExecutor:
             QueryException: If the query index is not amongst the executor's indices.
         """
         self.__check_executor_has_index()
-        query_param_info, nlq_params = self._fill_query_param_info(
+        query_param_info: QueryParamInformation = self._fill_query_param_info(
             self.query_obj.query_param_info, params
         )
         knn_search_params = self._produce_knn_search_params(
@@ -93,7 +93,7 @@ class QueryExecutor:
         return Result(
             self.query_obj.schema,
             self._map_entities_to_result_entries(self.query_obj.schema, entities),
-            nlq_params,
+            query_param_info.knn_params,
         )
 
     def _produce_knn_search_params(
@@ -109,7 +109,7 @@ class QueryExecutor:
 
     def _fill_query_param_info(
         self, query_param_info: QueryParamInformation, params: dict[str, Any]
-    ) -> tuple[QueryParamInformation, dict[str, Any]]:
+    ) -> QueryParamInformation:
         query_param_info = query_param_info.alter_with_values(
             params, override_already_set=True
         )
@@ -117,14 +117,13 @@ class QueryExecutor:
         query_param_info = query_param_info.alter_with_values(
             nlq_params, override_already_set=False
         )
-        return query_param_info, nlq_params
+        return query_param_info
 
     def _calculate_nlq_params(
         self,
         query_param_info: QueryParamInformation,
     ) -> dict[str, Any]:
-        nlq_param_infos = query_param_info.nlq_param_infos
-        param_evaluator = NLQParamEvaluator(nlq_param_infos)
+        param_evaluator = NLQParamEvaluator(query_param_info.nlq_param_infos)
         natural_query = query_param_info.natural_query
         client_config = self.query_obj.natural_query_client_config
         nlq_values = param_evaluator.evaluate_param_infos(natural_query, client_config)
