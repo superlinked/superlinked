@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.query.result
 Classes
 -------
 
-`Result(schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject, entries: collections.abc.Sequence[superlinked.framework.dsl.query.result.ResultEntry], nlq_params: collections.abc.Mapping[str, typing.Any] | None = None)`
+`Result(schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject, entries: collections.abc.Sequence[superlinked.framework.dsl.query.result.ResultEntry], knn_params: collections.abc.Mapping[str, typing.Any] | None = None)`
 :   A class representing the result of a query.
     
     Attributes:
@@ -16,7 +16,7 @@ Classes
     `entries: collections.abc.Sequence[superlinked.framework.dsl.query.result.ResultEntry]`
     :
 
-    `nlq_params: collections.abc.Mapping[str, typing.Any] | None`
+    `knn_params: collections.abc.Mapping[str, typing.Any] | None`
     :
 
     `schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject`
