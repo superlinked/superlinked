@@ -45,8 +45,6 @@ class EventAggregator:
         event_metadata: EventMetadata,
         effect_modifier: EffectModifier,
     ) -> Vector:
-        if stored_result.is_empty:
-            return affecting_vector
         weighted_affecting_vector = Weighted(
             affecting_vector, affecting_weight * effect_modifier.temperature
         )
