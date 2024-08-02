@@ -75,13 +75,21 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
     def _map_event_parsed_schema_by_dag_effects(
         self, event_parsed_schema: EventParsedSchema
     ) -> dict[DagEffect, ParsedSchemaWithEvent]:
-        active_effects = [
+        effects_with_schema_matching = [
             effect
             for effect in self._dag_effects
             if effect.event_schema == event_parsed_schema.schema
         ]
+        effects_with_all_matching_except_multiplier = [
+            effect
+            for i, effect in enumerate(effects_with_schema_matching)
+            if not any(
+                effect.is_same_effect_except_for_multiplier(other_effect)
+                for other_effect in effects_with_schema_matching[:i]
+            )
+        ]
         effect_parsed_schema_map = dict[DagEffect, ParsedSchemaWithEvent]()
-        for effect in active_effects:
+        for effect in effects_with_all_matching_except_multiplier:
             affected_schema_ids = [
                 reference.value
                 for reference in event_parsed_schema.fields

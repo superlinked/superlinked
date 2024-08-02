@@ -14,6 +14,8 @@
 
 from dataclasses import dataclass
 
+from beartype.typing import Any
+
 from superlinked.framework.common.dag.resolved_schema_reference import (
     ResolvedSchemaReference,
 )
@@ -32,3 +34,16 @@ class DagEffect:
             f"resolved_affecting_schema_reference={self.resolved_affecting_schema_reference}, "
             f"event_schema={self.event_schema})"
         )
+
+    def is_same_effect_except_for_multiplier(self, other: Any) -> bool:
+        if isinstance(other, DagEffect):
+            return bool(
+                self.resolved_affected_schema_reference
+                == other.resolved_affected_schema_reference
+                and self.event_schema == other.event_schema
+                and self.resolved_affecting_schema_reference.reference_field
+                == other.resolved_affecting_schema_reference.reference_field
+                and self.resolved_affecting_schema_reference.schema
+                == other.resolved_affecting_schema_reference.schema
+            )
+        return False

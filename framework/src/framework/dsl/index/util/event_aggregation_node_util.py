@@ -46,7 +46,7 @@ class EventAggregationNodeUtil:
         return EventAggregationNode(
             EventAggregationNode.InitParams(
                 effect_group.key.space._get_node(
-                    effect_group.key.resolved_affecting_schema_reference.schema
+                    effect_group.key.resolved_affecting_schema
                 ),
                 effect_group.key.event_schema,
                 SchemaObjectReference(
@@ -54,42 +54,30 @@ class EventAggregationNodeUtil:
                     effect_group.key.resolved_affected_schema_reference.reference_field,
                 ),
                 SchemaObjectReference(
-                    effect_group.key.resolved_affecting_schema_reference.schema,
-                    effect_group.key.resolved_affecting_schema_reference.reference_field,
+                    effect_group.key.resolved_affecting_schema,
+                    effect_group.key.resolved_affecting_reference_field,
                 ),
-                EventAggregationNodeUtil.__create_filter_inputs(effect_group),
+                EventAggregationNodeUtil.__create_filter_nodes(effect_group.effects),
                 {effect.dag_effect for effect in effect_group.effects},
                 effect_modifier,
             )
         )
 
     @staticmethod
-    def __create_filter_inputs(
-        effect_group: EventAggregationEffectGroup,
-    ) -> list[Weighted[ComparisonFilterNode]]:
-        filter_nodes = EventAggregationNodeUtil.__create_filter_nodes(
-            effect_group.effects
-        )
-        return [
-            Weighted(
-                filter_node,
-                effect_group.key.resolved_affecting_schema_reference.multiplier,
-            )
-            for filter_node in filter_nodes
-        ]
-
-    @staticmethod
     def __create_filter_nodes(
         effects: list[EffectWithReferencedSchemaObject],
-    ) -> list[ComparisonFilterNode]:
+    ) -> list[Weighted[ComparisonFilterNode]]:
         return [
-            ComparisonFilterNode(
-                SchemaFieldNode(
-                    cast(SchemaField, effect.base_effect.filter_._operand),
+            Weighted(
+                ComparisonFilterNode(
+                    SchemaFieldNode(
+                        cast(SchemaField, effect.base_effect.filter_._operand),
+                        {effect.dag_effect for effect in effects},
+                    ),
+                    effect.base_effect.filter_,
                     {effect.dag_effect},
                 ),
-                effect.base_effect.filter_,
-                {effect.dag_effect},
+                effect.dag_effect.resolved_affecting_schema_reference.multiplier,
             )
             for effect in effects
         ]

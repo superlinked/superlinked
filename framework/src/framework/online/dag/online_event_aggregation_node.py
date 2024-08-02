@@ -14,6 +14,8 @@
 
 from __future__ import annotations
 
+import math
+
 from beartype.typing import Sequence
 from typing_extensions import override
 
@@ -58,6 +60,8 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
     ) -> None:
         super().__init__(node, parents, storage_manager)
         self.__init_named_parents()
+        # in case 2 effects are identical except for the multiplier
+        self._metadata_key = str(self.node.effect_modifier)
 
     def __init_named_parents(self) -> None:
         inputs_to_aggregate = [
@@ -130,9 +134,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
             parsed_schema.event_parsed_schema, context
         )
         avg_affecting_weight = (
-            (sum(weights) / len(weights) if weights else 1)
-            if not affecting_vector.is_empty
-            else 0
+            (sum(weights) / len(weights)) if not affecting_vector.is_empty else 0
         )
         event_metadata: EventMetadata = self._calculate_and_store_metadata(
             parsed_schema, len(weights)
@@ -206,7 +208,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
     ) -> EventMetadata:
         stored_by_key = self._read_stored_metadata(parsed_schema)
         recalculated_effect_count = (
-            stored_by_key.get(OnlineEventAggregationNode.EFFECT_OLDEST_AGE_KEY) or 0
+            stored_by_key.get(OnlineEventAggregationNode.EFFECT_COUNT_KEY) or 0
         ) + new_effect_count
         recalculated_avg_age = self._calculate_avg_age(
             stored_by_key, parsed_schema, recalculated_effect_count, new_effect_count
@@ -228,7 +230,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         return self.storage_manager.read_node_data(
             parsed_schema.schema,
             parsed_schema.id_,
-            self.node_id,
+            self._metadata_key,
             {
                 OnlineEventAggregationNode.EFFECT_COUNT_KEY: int,
                 OnlineEventAggregationNode.EFFECT_AVG_AGE_KEY: int,
@@ -244,10 +246,12 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         new_effect_count: int,
     ) -> int:
         previous_avg_age = stored_by_key.get(
-            OnlineEventAggregationNode.EFFECT_OLDEST_AGE_KEY
+            OnlineEventAggregationNode.EFFECT_AVG_AGE_KEY
         )
+        if previous_avg_age and new_effect_count == 0:
+            return previous_avg_age
         return (
-            int(
+            math.ceil(  # ceil is used in case they are 1s apart
                 (
                     previous_avg_age * (recalculated_effect_count - new_effect_count)
                     + parsed_schema.event_parsed_schema.created_at
@@ -280,7 +284,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         self.storage_manager.write_node_data(
             parsed_schema.schema,
             parsed_schema.id_,
-            self.node_id,
+            self._metadata_key,
             {
                 OnlineEventAggregationNode.EFFECT_COUNT_KEY: recalculated_effect_count,
                 OnlineEventAggregationNode.EFFECT_AVG_AGE_KEY: recalculated_avg_age,

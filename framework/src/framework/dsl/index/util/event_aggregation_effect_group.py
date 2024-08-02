@@ -20,7 +20,11 @@ from itertools import groupby
 from superlinked.framework.common.dag.resolved_schema_reference import (
     ResolvedSchemaReference,
 )
-from superlinked.framework.common.schema.event_schema_object import EventSchemaObject
+from superlinked.framework.common.schema.event_schema_object import (
+    EventSchemaObject,
+    SchemaReference,
+)
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.dsl.index.util.effect_with_referenced_schema_object import (
     EffectWithReferencedSchemaObject,
 )
@@ -38,7 +42,8 @@ class EventAggregationEffectGroup:
         space: Space
         event_schema: EventSchemaObject
         resolved_affected_schema_reference: ResolvedSchemaReference
-        resolved_affecting_schema_reference: ResolvedSchemaReference
+        resolved_affecting_schema: IdSchemaObject
+        resolved_affecting_reference_field: SchemaReference
 
     key: GroupKey
     effects: list[EffectWithReferencedSchemaObject]
@@ -64,7 +69,8 @@ class EventAggregationEffectGroup:
             effect_.base_effect.space,
             effect_.event_schema,
             effect_.resolved_affected_schema_reference,
-            effect_.resolved_affecting_schema_reference,
+            effect_.resolved_affecting_schema_reference.schema,
+            effect_.resolved_affecting_schema_reference.reference_field,
         )
 
     @staticmethod

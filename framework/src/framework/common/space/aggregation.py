@@ -85,10 +85,7 @@ class VectorAggregation(Aggregation):
         context: ExecutionContext,  # pylint: disable=unused-argument
     ) -> Vector:
         vector = self._reduce(weighted_vectors)
-        normalized = vector.normalize(
-            sum(weighted.weight for weighted in weighted_vectors)
-        )
-        return normalized.normalize(L2Norm().norm(normalized.value))
+        return vector.normalize(L2Norm().norm(vector.value))
 
     def _reduce(self, vectors: Sequence[Vector | Weighted[Vector]]) -> Vector:
         weighted_vectors = [

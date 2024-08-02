@@ -127,7 +127,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
         return self.__node.node_id
 
     @property
-    def _dag_effects(self) -> list[DagEffect]:
+    def _dag_effects(self) -> set[DagEffect]:
         return self.__dag_effects
 
     @property
@@ -247,8 +247,8 @@ class Index:  # pylint: disable=too-many-instance-attributes
 
     def __init_dag_effects(
         self, effects_with_schema: list[EffectWithReferencedSchemaObject]
-    ) -> list[DagEffect]:
-        return [effect.dag_effect for effect in effects_with_schema]
+    ) -> set[DagEffect]:
+        return {effect.dag_effect for effect in effects_with_schema}
 
     def __init_parent_for_index_or_aggregation(
         self,
@@ -284,7 +284,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
             and effect.resolved_affected_schema_reference.schema == schema
         ]
 
-    def __init_dag(self, node: IndexNode, dag_effects: list[DagEffect]) -> Dag:
+    def __init_dag(self, node: IndexNode, dag_effects: set[DagEffect]) -> Dag:
         def append_ancestors(node: Node, depth: int = 0) -> None:
             if depth > MAX_DAG_DEPTH:
                 raise RecursionException(f"Max DAG depth ({MAX_DAG_DEPTH}) exceeded.")

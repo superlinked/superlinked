@@ -29,12 +29,12 @@ from superlinked.framework.common.schema.schema_object import SchemaObject
 
 class Dag:
     def __init__(
-        self, nodes: list[Node], dag_effects: list[DagEffect] | None = None
+        self, nodes: list[Node], dag_effects: set[DagEffect] | None = None
     ) -> None:
         self.nodes = nodes
         self._index_node = self.__init_index_node(self.nodes)
         self.__check_for_node_id_duplication()
-        self.dag_effects = dag_effects or []
+        self.dag_effects = dag_effects or set()
         node_id_schema_map: dict[str, set[SchemaObject]] = (
             self.__init_node_id_schema_map(self.nodes)
         )
@@ -124,7 +124,7 @@ class Dag:
 
     def __init_dag_effect_schema_dag_map(
         self,
-        dag_effects: list[DagEffect],
+        dag_effects: set[DagEffect],
         node_id_dag_effect_map: dict[str, set[DagEffect]],
     ) -> dict[DagEffect, SchemaDag]:
         return {
