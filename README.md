@@ -60,39 +60,92 @@ Example on combining Text with Numerical encoders to get correct results with LL
 >First run will take slightly longer as it has to download the embedding model.  
 
 ```python
+import json
+
+from superlinked.framework.common.embedding.number_embedding import Mode
+from superlinked.framework.common.nlq.open_ai import OpenAIClientConfig
+from superlinked.framework.common.parser.dataframe_parser import DataFrameParser
 from superlinked.framework.common.schema.schema import schema
-from superlinked.framework.common.schema.schema_object import String
+from superlinked.framework.common.schema.schema_object import Integer, String
 from superlinked.framework.common.schema.id_schema_object import IdField
+from superlinked.framework.dsl.space.number_space import NumberSpace
 from superlinked.framework.dsl.space.text_similarity_space import TextSimilaritySpace
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.query.param import Param
 from superlinked.framework.dsl.query.query import Query
 from superlinked.framework.dsl.source.in_memory_source import InMemorySource
-from superlinked.framework.dsl.executor.in_memory.in_memory_executor import InMemoryExecutor
+from superlinked.framework.dsl.executor.in_memory.in_memory_executor import (
+    InMemoryExecutor,
+)
+
+@schema
+class Review:
+    id: IdField
+    review_text: String
+    rating: Integer
 
 
-@schema # Describe your schemas.
-class Document:
-    id: IdField  # Each schema should have exactly one `IdField`.
-    body: String # Use `String` for text fields.
+review = Review()
 
-document = Document()
+review_text_space = TextSimilaritySpace(
+    text=review.review_text, model="Alibaba-NLP/gte-large-en-v1.5"
+)
+rating_maximizer_space = NumberSpace(
+    number=review.rating, min_value=1, max_value=5, mode=Mode.MAXIMUM
+)
+index = Index([review_text_space, rating_maximizer_space], fields=[review.rating])
 
-relevance_space = TextSimilaritySpace(text=document.body, model="sentence-transformers/all-mpnet-base-v2") # Select your semantic embedding model.
-document_index = Index([relevance_space]) # Combine your spaces to a queryable index.
+# fill this with your API key - this will drive param extraction
+openai_config = OpenAIClientConfig(
+    api_key="YOUR_OPENAI_API_KEY", model="gpt-4o"
+)
 
-query = Query(document_index).find(document).similar(relevance_space.text, Param("query_text")) # Define your query with dynamic parameters.
+# it is possible now to add descriptions to a `Param` to aid the parsing of information from natural language queries.
+text_similar_param = Param(
+    "query_text",
+    description="The text in the user's query that is used to search in the reviews' body. Extract info that does apply to other spaces or params.",
+)
 
-source: InMemorySource = InMemorySource(document) # Connect a data source to your schema.
+# Define your query using dynamic parameters for query text and weights.
+# we will have our LLM fill them based on our natural language query
+query = (
+    Query(
+        index,
+        weights={
+            review_text_space: Param("review_text_weight"),
+            rating_maximizer_space: Param("rating_maximizer_weight"),
+        },
+    )
+    .find(review)
+    .similar(
+        review_text_space.text,
+        text_similar_param,
+    )
+    .limit(Param("limit"))
+    .with_natural_query(Param("natural_query"), openai_config)
+)
 
-executor = InMemoryExecutor(sources=[source], indices=[document_index]) # Tie it all together to run your configuration.
+# Run the app.
+source: InMemorySource = InMemorySource(review)
+executor = InMemoryExecutor(sources=[source], indices=[index])
 app = executor.run()
 
-source.put([{"id": "happy_dog", "body": "That is a happy dog"}])
-source.put([{"id": "happy_person", "body": "That is a very happy person"}])
-source.put([{"id": "sunny_day", "body": "Today is a sunny day"}])
+# Download dataset.
+data = [
+    {"id": 1, "review_text": "Useless product", "rating": 1},
+    {"id": 2, "review_text": "Great product I am so happy!", "rating": 5},
+    {"id": 3, "review_text": "Mediocre stuff fits the purpose", "rating": 3},
+]
 
-print(app.query(query, query_text="Who is a positive friend?")) # Run your query.
+# Ingest data to the framework.
+source.put(data)
+
+result = app.query(query, natural_query="Show me the best product", limit=1)
+
+# examine the extracted parameters from your query
+print(json.dumps(result.knn_params, indent=2))
+# the result is the 5 star rated product
+result.to_pandas()
 ```
 
 ## Run in production
