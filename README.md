@@ -11,7 +11,7 @@
 
 <div align="center">
 
-[Experiment in a notebook](#try-in-a-notebook)  | [Run in production](#run-in-production) | [Use-cases](#use-cases) | [Supported VDBs](#supported-vdbs) | [Resources](#resources)
+[Experiment in a notebook](#experiment-in-a-notebook)  | [Run in production](#run-in-production) | [Use-cases](#use-cases) | [Supported VDBs](#supported-vdbs) | [Resources](#resources)
 
 </div>
 
@@ -42,9 +42,9 @@ Dive deeper with our notebooks into how each use-case benefits from the Superlin
 - **RAG**: [HR Knowledgebase](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/rag_hr_knowledgebase.ipynb)
 - **Semantic Search**: [Movies](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/semantic_search_netflix_titles.ipynb), [Business News](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/semantic_search_news.ipynb)
 - **Recommendation Systems**: [E-commerce](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/recommendations_e_commerce.ipynb)
-- **Analytics**: [User Acquisition](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/analytics_user_acquisition.ipynb), [Keyword expansion](https://github.com/superlinked/superlinked/blob/main/notebook/analytics_keyword_expansion_ads.ipynb)
+- **Analytics**: [User Acquisition](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/analytics_user_acquisition.ipynb), [Keyword expansion](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/analytics_keyword_expansion_ads.ipynb)
 
-You can check a full list of examples [here](https://colab.research.google.com/github/superlinked/superlinked/tree/main/notebook).
+You can check a full list of examples [here](https://github.com/superlinked/superlinked/tree/main/notebook).
 
 ## Experiment in a notebook
 
@@ -152,7 +152,7 @@ result.to_pandas()
 
 [Superlinked Server](https://github.com/superlinked/superlinked/tree/main/server) allows you to leverage the power of Superlinked in deployable projects. With a single script, you can deploy a Superlinked-powered app instance that creates REST endpoints and connects to external Vector Databases. This makes it an ideal solution for those seeking an easy-to-deploy environment for their Superlinked projects.
 
-If your are interested in learning more about running at scale, [Book a demo](https://superlinked.typeform.com/to/LXMRzHWk) for an early access to our managed cloud.
+If your are interested in learning more about running at scale, [Book a demo](https://links.superlinked.com/sl-repo-readme-form) for an early access to our managed cloud.
 
 ### Supported VDBs
 
@@ -173,7 +173,7 @@ Missing your favorite VDB? [Tell us which vector database we should support next
 6.  Define your transformations with a [Parser](https://github.com/superlinked/superlinked/blob/main/framework/reference/common/parser) (e.g.: from [`pd.DataFrame`](https://github.com/superlinked/superlinked/blob/main/framework/reference/common/parser/dataframe_parser.md)). 
 7. Run your configuration with an [Executor](https://github.com/superlinked/superlinked/blob/main/framework/reference/dsl/executor/in_memory/in_memory_executor.md).
 
-You can check the full list [here](https://github.com/superlinked/superlinked/tree/main/framework/reference).
+You can check all references [here](https://github.com/superlinked/superlinked/tree/main/framework/reference).
 
 ## Resources
 
