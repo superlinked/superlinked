@@ -65,7 +65,9 @@ superlinked_query = (
 
 review_source: RestSource = RestSource(review)
 review_data_loader = DataLoaderConfig(
-    "https://storage.googleapis.com/superlinked-sample-datasets/amazon_dataset_ext_1000.jsonl", DataFormat.CSV
+    "https://storage.googleapis.com/superlinked-sample-datasets/amazon_dataset_ext_1000.jsonl",
+    DataFormat.JSON,
+    pandas_read_kwargs={"lines": True, "chunksize": 100},
 )
 review_loader_source: DataLoaderSource = DataLoaderSource(review, review_data_loader)
 mongo_db_vector_database = MongoDBVectorDatabase(
