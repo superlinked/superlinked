@@ -36,6 +36,9 @@ from superlinked.framework.storage.in_memory.exception import (
     VectorFieldTypeException,
 )
 
+# This is associated with the DEFAULT_LIMIT from superlinked.framework.common.const
+UNLIMITED_SEARCH_RESULTS = -1
+
 
 class InMemorySearch:
     def search(
@@ -74,7 +77,7 @@ class InMemorySearch:
         )
         return (
             sorted_similarities[: search_params.limit]
-            if search_params.limit != -1
+            if search_params.limit != UNLIMITED_SEARCH_RESULTS
             else sorted_similarities
         )
 

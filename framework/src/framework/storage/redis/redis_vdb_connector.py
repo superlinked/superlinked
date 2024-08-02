@@ -31,6 +31,7 @@ from superlinked.framework.common.storage.search_index_creation.search_algorithm
     SearchAlgorithm,
 )
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
+from superlinked.framework.storage.common.vdb_settings import VDBSettings
 from superlinked.framework.storage.redis.query.redis_query_builder import (
     VECTOR_SCORE_ALIAS,
 )
@@ -45,11 +46,14 @@ from superlinked.framework.storage.redis.redis_search import RedisSearch
 
 
 class RedisVDBConnector(VDBConnector):
-    def __init__(self, connection_params: RedisConnectionParams) -> None:
+    def __init__(
+        self, connection_params: RedisConnectionParams, vdb_settings: VDBSettings
+    ) -> None:
         super().__init__()
         self._client = redis.from_url(connection_params.connection_string, protocol=3)
         self._encoder = RedisFieldEncoder()
         self._search = RedisSearch(self._client, self._encoder)
+        self.__vdb_settings = vdb_settings
 
     @override
     def close_connection(self) -> None:
@@ -59,6 +63,11 @@ class RedisVDBConnector(VDBConnector):
     @property
     def supported_vector_indexing(self) -> Sequence[SearchAlgorithm]:
         return [SearchAlgorithm.FLAT, SearchAlgorithm.HNSW]
+
+    @override
+    @property
+    def _default_search_limit(self) -> int:
+        return self.__vdb_settings.default_query_limit
 
     @override
     def _list_search_index_names_from_vdb(self) -> Sequence[str]:
@@ -116,7 +125,7 @@ class RedisVDBConnector(VDBConnector):
         return [self._read_entity(entity) for entity in entities if entity.fields]
 
     @override
-    def knn_search(
+    def _knn_search(
         self,
         index_name: str,
         schema_name: str,

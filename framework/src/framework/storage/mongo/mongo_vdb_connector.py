@@ -30,6 +30,7 @@ from superlinked.framework.common.storage.search_index_creation.search_algorithm
     SearchAlgorithm,
 )
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
+from superlinked.framework.storage.common.vdb_settings import VDBSettings
 from superlinked.framework.storage.mongo.mongo_connection_params import (
     MongoConnectionParams,
 )
@@ -47,7 +48,9 @@ GENERAL_COLLECTION_NAME = "general_collection"
 
 
 class MongoVDBConnector(VDBConnector):
-    def __init__(self, connection_params: MongoConnectionParams) -> None:
+    def __init__(
+        self, connection_params: MongoConnectionParams, vdb_settings: VDBSettings
+    ) -> None:
         super().__init__()
         self._client = MongoClient(connection_params.connection_string)
         self._db = self._client[connection_params.db_name]
@@ -57,6 +60,7 @@ class MongoVDBConnector(VDBConnector):
             connection_params.admin_params
         )
         self._search = MongoSearch(self._db[self._collection_name], self._encoder)
+        self.__vdb_settings = vdb_settings
 
     @override
     def close_connection(self) -> None:
@@ -67,6 +71,11 @@ class MongoVDBConnector(VDBConnector):
     @property
     def supported_vector_indexing(self) -> Sequence[SearchAlgorithm]:
         return [SearchAlgorithm.FLAT]
+
+    @override
+    @property
+    def _default_search_limit(self) -> int:
+        return self.__vdb_settings.default_query_limit
 
     @override
     def _list_search_index_names_from_vdb(self) -> Sequence[str]:
@@ -134,7 +143,7 @@ class MongoVDBConnector(VDBConnector):
         ]
 
     @override
-    def knn_search(
+    def _knn_search(
         self,
         index_name: str,
         schema_name: str,

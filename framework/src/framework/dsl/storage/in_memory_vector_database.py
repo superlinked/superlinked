@@ -14,6 +14,7 @@
 
 
 from superlinked.framework.dsl.storage.vector_database import VectorDatabase
+from superlinked.framework.storage.common.vdb_settings import VDBSettings
 from superlinked.framework.storage.in_memory.in_memory_vdb import InMemoryVDB
 
 
@@ -25,14 +26,18 @@ class InMemoryVectorDatabase(VectorDatabase[InMemoryVDB]):
     and development purposes.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, default_query_limit: int = -1) -> None:
         """
         Initialize the InMemoryVectorDatabase.
 
-        This constructor initializes the in-memory vector database connector.
+        Args:
+            default_query_limit (int): The default limit for query results. A value of -1 indicates no limit.
+
+        Sets up an in-memory vector DB connector for testing and development.
         """
         super().__init__()
-        self.__vdb_connector = InMemoryVDB()
+        self.__settings = VDBSettings(default_query_limit)
+        self.__vdb_connector = InMemoryVDB(self.__settings)
 
     @property
     def _vdb_connector(self) -> InMemoryVDB:

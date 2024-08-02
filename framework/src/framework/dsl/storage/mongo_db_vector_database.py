@@ -16,6 +16,7 @@
 from beartype.typing import Any
 
 from superlinked.framework.dsl.storage.vector_database import VectorDatabase
+from superlinked.framework.storage.common.vdb_settings import VDBSettings
 from superlinked.framework.storage.mongo.mongo_connection_params import (
     MongoConnectionParams,
 )
@@ -40,6 +41,7 @@ class MongoDBVectorDatabase(VectorDatabase[MongoVDBConnector]):
         project_id: str,
         admin_api_user: str,
         admin_api_password: str,
+        default_query_limit: int = 10,
         **extra_params: Any
     ) -> None:
         """
@@ -52,6 +54,8 @@ class MongoDBVectorDatabase(VectorDatabase[MongoVDBConnector]):
             project_id (str): The project ID for MongoDB.
             admin_api_user (str): The admin API username.
             admin_api_password (str): The admin API password.
+            default_query_limit (int): Default vector search limit,
+                MongoDB does not have a default for it so setting it to a reasonable number of 10.
             **extra_params (Any): Additional parameters for the MongoDB connection.
         """
         super().__init__()
@@ -63,7 +67,10 @@ class MongoDBVectorDatabase(VectorDatabase[MongoVDBConnector]):
             ),
             **extra_params
         )
-        self.__vdb_connector = MongoVDBConnector(self.__connection_params)
+        self.__settings = VDBSettings(default_query_limit)
+        self.__vdb_connector = MongoVDBConnector(
+            self.__connection_params, self.__settings
+        )
 
     @property
     def _vdb_connector(self) -> MongoVDBConnector:

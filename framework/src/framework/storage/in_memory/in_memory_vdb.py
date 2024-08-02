@@ -35,16 +35,18 @@ from superlinked.framework.common.storage.search_index_creation.search_algorithm
     SearchAlgorithm,
 )
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
+from superlinked.framework.storage.common.vdb_settings import VDBSettings
 from superlinked.framework.storage.in_memory.in_memory_search import InMemorySearch
 from superlinked.framework.storage.in_memory.json_codec import JsonDecoder, JsonEncoder
 from superlinked.framework.storage.in_memory.object_serializer import ObjectSerializer
 
 
 class InMemoryVDB(VDBConnector):
-    def __init__(self) -> None:
+    def __init__(self, vdb_settings: VDBSettings) -> None:
         super().__init__()
         self._vdb = defaultdict[str, dict[str, Any]](dict)
         self._search = InMemorySearch()
+        self.__vdb_settings = vdb_settings
 
     @override
     def close_connection(self) -> None:
@@ -55,6 +57,11 @@ class InMemoryVDB(VDBConnector):
     @property
     def supported_vector_indexing(self) -> Sequence[SearchAlgorithm]:
         return [SearchAlgorithm.FLAT]
+
+    @override
+    @property
+    def _default_search_limit(self) -> int:
+        return self.__vdb_settings.default_query_limit
 
     def _list_search_index_names_from_vdb(self) -> Sequence[str]:
         return list(self._index_configs.keys())
@@ -114,7 +121,7 @@ class InMemoryVDB(VDBConnector):
         ]
 
     @override
-    def knn_search(
+    def _knn_search(
         self,
         index_name: str,
         schema_name: str,

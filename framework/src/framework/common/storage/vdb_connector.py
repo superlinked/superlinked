@@ -17,6 +17,7 @@ from abc import ABC, abstractmethod
 from beartype.typing import Any, Sequence
 
 from superlinked.framework.common.calculation.distance_metric import DistanceMetric
+from superlinked.framework.common.const import DEFAULT_LIMIT
 from superlinked.framework.common.exception import ValidationException
 from superlinked.framework.common.storage.entity import Entity
 from superlinked.framework.common.storage.entity_data import EntityData
@@ -63,16 +64,6 @@ class VDBConnector(ABC):
     def vector_coordinate_type(self) -> VectorComponentPrecision:
         return self._vector_coordinate_type
 
-    def persist(self, _: ObjectSerializer) -> None:
-        """
-        Persist the state of the VDB. Implement this method in subclasses if persistence is supported.
-        """
-
-    def restore(self, _: ObjectSerializer) -> None:
-        """
-        Restore the state of the VDB. Implement this method in subclasses if restoration is supported.
-        """
-
     @abstractmethod
     def close_connection(self) -> None:
         pass
@@ -82,9 +73,24 @@ class VDBConnector(ABC):
     def supported_vector_indexing(self) -> Sequence[SearchAlgorithm]:
         pass
 
+    @property
+    @abstractmethod
+    def _default_search_limit(self) -> int:
+        pass
+
     @abstractmethod
     def _list_search_index_names_from_vdb(self) -> Sequence[str]:
         pass
+
+    def persist(self, _: ObjectSerializer) -> None:
+        """
+        Persist the state of the VDB. Implement this method in subclasses if persistence is supported.
+        """
+
+    def restore(self, _: ObjectSerializer) -> None:
+        """
+        Restore the state of the VDB. Implement this method in subclasses if restoration is supported.
+        """
 
     def init_search_index_configs(
         self,
@@ -127,8 +133,32 @@ class VDBConnector(ABC):
     def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
         pass
 
-    @abstractmethod
     def knn_search(
+        self,
+        index_name: str,
+        schema_name: str,
+        returned_fields: Sequence[Field],
+        vdb_knn_search_params: VDBKNNSearchParams,
+        **params: Any,
+    ) -> Sequence[ResultEntityData]:
+        # If the limit is set to the default, assign it a database-specific default value
+        limit = (
+            self._default_search_limit
+            if vdb_knn_search_params.limit == DEFAULT_LIMIT
+            else vdb_knn_search_params.limit
+        )
+        search_params = VDBKNNSearchParams(
+            vector_field=vdb_knn_search_params.vector_field,
+            limit=limit,
+            filters=vdb_knn_search_params.filters,
+            radius=vdb_knn_search_params.radius,
+        )
+        return self._knn_search(
+            index_name, schema_name, returned_fields, search_params, **params
+        )
+
+    @abstractmethod
+    def _knn_search(
         self,
         index_name: str,
         schema_name: str,
