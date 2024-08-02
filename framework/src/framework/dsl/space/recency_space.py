@@ -38,7 +38,7 @@ DEFAULT_PERIOD_TIME = PeriodTime(period_time=timedelta(days=14))
 class RecencySpace(Space):  # pylint: disable=too-many-instance-attributes
     """
     Recency space encodes timestamp type data measured in seconds and in unix timestamp format.
-    Recency space is utilised to encode how recent items are. Use period_time_list
+    Recency space is utilized to encode how recent items are. Use period_time_list
     to mark the time periods of interest.
     Items older than the largest period_time are going to have uniform recency score. (0 or negative_filter if set)
     You can use multiple period_times to give additional emphasis to sub time periods.
@@ -128,8 +128,7 @@ class RecencySpace(Space):  # pylint: disable=too-many-instance-attributes
     @property
     @override
     def annotation(self) -> str:
-        return f"""
-        The space encodes timestamps between now and now - {self._max_period_time_days} days.
+        return f"""The space encodes timestamps between now and now - {self._max_period_time_days} days.
         Older timestamps will have negative_filter similarity (assuming weight = 1).
         There is no differentiation between items older than {self._max_period_time_days} days.
         We always query with now, so the similarity contribution of items will always be proportional to their recency.
@@ -140,8 +139,7 @@ class RecencySpace(Space):  # pylint: disable=too-many-instance-attributes
         lower than the other weights in the query.
         Larger positive weights increase the effect on similarity compared to other spaces. Space weights do not
         matter if there is only 1 space in the query.
-        Does not have input as querying will always happen using the utc timestamp of the system's NOW.
-        """
+        Does not have input as querying will always happen using the utc timestamp of the system's NOW."""
 
     @property
     @override

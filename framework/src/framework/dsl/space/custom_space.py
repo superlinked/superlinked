@@ -126,8 +126,7 @@ class CustomSpace(Space):
         return f"""{self._description + " " if self._description else ""}Larger positive weights increase the effect on
         similarity compared to other spaces.
         Space weights do not matter if there is only 1 space in the query. The space uses already encoded {self._length}
-        long vectors. Accepts list[float] type input for a corresponding .similar clause input.
-        """
+        long vectors. Accepts list[float] type input for a corresponding .similar clause input."""
 
     @property
     @override

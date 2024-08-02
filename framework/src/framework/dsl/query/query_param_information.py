@@ -26,6 +26,9 @@ from superlinked.framework.common.const import (
     RADIUS_MIN,
 )
 from superlinked.framework.common.exception import QueryException
+from superlinked.framework.common.interface.comparison_operation_type import (
+    ComparisonOperationType,
+)
 from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.util.lazy_property import lazy_property
 from superlinked.framework.dsl.query.param import Param, ParamInputType, ParamType
@@ -80,6 +83,7 @@ class ParamInfo:
     is_weight: bool
     schema_field: SchemaField | None = None
     space: Space | None = None
+    op: ComparisonOperationType | None = None
 
     def copy_with_new_value(self, value: ParamInputType) -> ParamInfo:
         return ParamInfo(
@@ -89,6 +93,7 @@ class ParamInfo:
             self.is_weight,
             self.schema_field,
             self.space,
+            self.op,
         )
 
     @classmethod
@@ -98,6 +103,7 @@ class ParamInfo:
         param: ParamType,
         schema_field: SchemaField | None = None,
         space: Space | None = None,
+        op: ComparisonOperationType | None = None,
     ) -> ParamInfo:
         schema_field_name = schema_field.name if schema_field else None
         is_weight = param_group in [
@@ -109,10 +115,14 @@ class ParamInfo:
             name, description, value = (param.name, param.description, None)
         else:
             default_name = cls._get_default_name(
-                param_group, is_weight, space, schema_field_name
+                param_group,
+                is_weight,
+                space,
+                schema_field_name,
+                op,
             )
             name, description, value = (default_name, None, cast(ParamInputType, param))
-        return cls(name, description, value, is_weight, schema_field, space)
+        return cls(name, description, value, is_weight, schema_field, space, op)
 
     @classmethod
     def _get_default_name(
@@ -121,12 +131,14 @@ class ParamInfo:
         is_weight: bool,
         space: Space | None,
         schema_field_name: str | None,
+        op: ComparisonOperationType | None,
     ) -> str:
         parts = [
             type(space).__name__ if space else None,
             str(hash(space)) if space else None,
             schema_field_name,
             param_group.value,
+            op.value if op else None,
             "weight" if is_weight else "value",
         ]
         return "_".join(part for part in parts if part is not None)

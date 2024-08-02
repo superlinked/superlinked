@@ -135,8 +135,7 @@ class CategoricalSimilaritySpace(Space):
             if self.categorical_similarity_param.uncategorized_as_category
             else " not"
         )
-        return f"""
-        The space creates a one-hot encoding where its value can be one or more
+        return f"""The space creates a one-hot encoding where its value can be one or more
         of {str(self.categorical_similarity_param.categories)}.
         Other values do{not_text_for_uncategorized} have a separate other category,
         so these are{not_text_for_uncategorized} similar to each other.
@@ -147,8 +146,7 @@ class CategoricalSimilaritySpace(Space):
         positive weights mean similar to the categories in the .similar clause, 0 weight means insensitivity.
         Larger positive weights increase the effect on similarity compared to other spaces. Space weights do not
         matter if there is only 1 space in the query.
-        Accepts str or list[str] type input for a corresponding .similar clause input.
-        """
+        Accepts str or list[str] type input for a corresponding .similar clause input."""
 
     @property
     @override

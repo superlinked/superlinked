@@ -13,12 +13,13 @@
 # limitations under the License.
 
 from beartype.typing import Any, Sequence
-from pydantic import BaseModel, Field, create_model
+from pydantic import BaseModel, Field, create_model, model_validator
 
 from superlinked.framework.common.exception import QueryException
 from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.util.generic_class_util import GenericClassUtil
 from superlinked.framework.dsl.query.query_param_information import ParamInfo
+from superlinked.framework.dsl.space.space import Space
 
 # Exclude from documentation.
 __pdoc__ = {}
@@ -34,8 +35,50 @@ class NLQPydanticModelBuilder:
 
     def build(self) -> type[BaseModel]:
         field_info_by_name: dict[str, Any] = self._calculate_field_infos()
+        field_info_by_name.update(self._get_model_validators_dict())
         model = create_model(QUERY_MODEL_NAME, **field_info_by_name)
         return model
+
+    def _get_model_validators_dict(self) -> dict[str, dict[str, Any]]:
+        similar_and_space_weight_param_names = (
+            self._calculate_similar_and_space_weight_param_names()
+        )
+
+        @model_validator(mode="after")
+        def check_space_weights_filled_when_similar_weight_filled(data: Any) -> Any:
+            if isinstance(data, dict):
+                for similar, space in similar_and_space_weight_param_names:
+                    if not (
+                        data.get(similar, 0.0) == 0.0 or data.get(space, 0.0) != 0.0
+                    ):
+                        raise ValueError(
+                            f"If {similar} is not 0.0/None, then {space} must not be 0.0/None too."
+                        )
+            return data
+
+        return {
+            "__validators__": {
+                "check_weights": check_space_weights_filled_when_similar_weight_filled
+            }
+        }
+
+    def _calculate_similar_and_space_weight_param_names(self) -> list[tuple[str, str]]:
+        space_weight_by_space: dict[Space, str] = {
+            param_info.space: param_info.name
+            for param_info in self.param_infos
+            if param_info.is_weight
+            and param_info.space is not None
+            and param_info.schema_field is None
+        }
+        similar_and_space_weight_param_names: list[tuple[str, str]] = [
+            (param_info.name, space_weight_by_space[param_info.space])
+            for param_info in self.param_infos
+            if param_info.is_weight
+            and param_info.space is not None
+            and param_info.schema_field is not None
+            and param_info.space in space_weight_by_space
+        ]
+        return similar_and_space_weight_param_names
 
     def _calculate_field_infos(self) -> dict[str, tuple[type, Any]]:
         return {

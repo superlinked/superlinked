@@ -314,6 +314,8 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
             ParamGroup.HARD_FILTER,
             cast(ParamInputType, comparison_operation._other),
             cast(SchemaField, comparison_operation._operand),
+            None,
+            comparison_operation._op,
         )
         hard_filter_info = HardFilterInformation(
             comparison_operation._op,

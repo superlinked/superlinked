@@ -39,6 +39,7 @@ class OpenAIClient:
         response: BaseModel = self._client.chat.completions.create(
             model=self._openai_model,
             response_model=response_model,
+            max_retries=3,
             messages=[
                 {"role": "system", "content": instructor_prompt},
                 {"role": "user", "content": prompt},
