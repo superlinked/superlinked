@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.executor.in_memory.in_memory_executor
 Classes
 -------
 
-`InMemoryExecutor(sources: Sequence[InMemorySource], indices: Sequence[Index], vector_database: VectorDatabase | None = None, context_data: Mapping[str, Mapping[str, ContextValue]] | None = None)`
+`InMemoryExecutor(sources: Sequence[InMemorySource], indices: Sequence[Index], context_data: Mapping[str, Mapping[str, ContextValue]] | None = None)`
 :   In-memory implementation of the Executor class. Supply it with the sources through which
     your data is received, and the indices indicating the desired vector spaces, and the executor will
     create the spaces optimized for search.
