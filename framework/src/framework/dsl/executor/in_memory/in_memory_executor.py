@@ -28,7 +28,6 @@ from superlinked.framework.dsl.source.in_memory_source import InMemorySource
 from superlinked.framework.dsl.storage.in_memory_vector_database import (
     InMemoryVectorDatabase,
 )
-from superlinked.framework.dsl.storage.vector_database import VectorDatabase
 
 
 class InMemoryExecutor(Executor[InMemorySource]):
@@ -46,7 +45,6 @@ class InMemoryExecutor(Executor[InMemorySource]):
         self,
         sources: Sequence[InMemorySource],
         indices: Sequence[Index],
-        vector_database: VectorDatabase | None = None,
         context_data: Mapping[str, Mapping[str, ContextValue]] | None = None,
     ) -> None:
         """
@@ -60,7 +58,7 @@ class InMemoryExecutor(Executor[InMemorySource]):
         super().__init__(
             sources,
             indices,
-            vector_database or InMemoryVectorDatabase(),
+            InMemoryVectorDatabase(),
             ExecutionContext.from_context_data(
                 context_data, environment=ExecutionEnvironment.IN_MEMORY
             ),
