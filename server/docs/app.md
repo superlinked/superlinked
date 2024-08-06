@@ -183,7 +183,7 @@ executor = RestExecutor(
 
 Recency Space has two current limitations:
 - Recency embeddings become outdated over time as they are not recalculated periodically. Our encoder only needs a constant number of updates for this to work correctly, but that update mechanism has not been open-sourced yet - coming soon!
-- At server startup, the application captures the server's current UTC timestamp as `now`. During development, each modification and restart of the application will result in a new timestamp, which makes results irreproducible within restarts.
+- At server startup, the application captures the server's current UTC timestamp as `now`. Each modification and restart of the application will result in a new timestamp, which does not dynamically update during runtime.
 
 The first one is a known limitation that will be fixed in the near future. The second one can be solved with setting the timestamp to a fixed value.
 ```python

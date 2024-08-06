@@ -21,6 +21,7 @@ vector_database = RedisVectorDatabase(
     12315, # (Mandatory) This is the port and it should be an integer
     # These params must be in a form of kwarg params. Here you can specify anything that the official python client 
     # enables. The params can be found here: https://redis.readthedocs.io/en/stable/connections.html. Below you can see a very basic user-pass authentication as an example.
+    default_query_limit=10, # This optional parameter specifies the maximum number of query results returned. If not set, it defaults to 10.
     username="test",
     password="password"
 )
