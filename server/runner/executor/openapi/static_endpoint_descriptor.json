@@ -83,6 +83,9 @@
                                                     "id": {
                                                         "type": "string"
                                                     },
+                                                    "score": {
+                                                        "type": "integer"
+                                                    },
                                                     "origin": {
                                                         "type": "object",
                                                         "properties": {

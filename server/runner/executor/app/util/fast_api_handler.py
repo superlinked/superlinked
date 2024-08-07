@@ -46,6 +46,7 @@ class FastApiHandler:
                 {
                     "entity": {
                         "id": entry.entity.header.object_id,
+                        "score": entry.entity.score,
                         "origin": (
                             {
                                 "id": entry.entity.header.object_id,
