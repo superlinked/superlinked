@@ -23,6 +23,7 @@ from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.number_embedding import (
     Mode,
     NumberEmbedding,
+    Scale,
 )
 from superlinked.framework.common.interface.has_aggregation import HasAggregation
 from superlinked.framework.common.interface.has_length import HasLength
@@ -39,6 +40,7 @@ class NumberEmbeddingParams:
     min_value: float
     max_value: float
     mode: Mode
+    scale: Scale
     negative_filter: float
 
 
@@ -55,6 +57,7 @@ class NumberEmbeddingNode(Node[Vector], HasLength, HasAggregation):
             embedding_params.min_value,
             embedding_params.max_value,
             embedding_params.mode,
+            embedding_params.scale,
             embedding_params.negative_filter,
             normalization,
         )
@@ -78,6 +81,7 @@ class NumberEmbeddingNode(Node[Vector], HasLength, HasAggregation):
             "min_value": self.embedding._min_value,
             "max_value": self.embedding._max_value,
             "mode": self.embedding._mode,
+            "scale": self.embedding._scale,
             "negative_filter": self.embedding._negative_filter,
             "aggregation": self.__aggregation,
         }

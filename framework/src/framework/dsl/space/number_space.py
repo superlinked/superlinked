@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import math
+
 from beartype.typing import Mapping, cast
 from typing_extensions import override
 
@@ -23,7 +25,12 @@ from superlinked.framework.common.dag.number_embedding_node import (
 )
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.embedding.number_embedding import Mode
+from superlinked.framework.common.embedding.number_embedding import (
+    LinearScale,
+    LogarithmicScale,
+    Mode,
+    Scale,
+)
 from superlinked.framework.common.schema.schema_object import Number, SchemaObject
 from superlinked.framework.common.space.aggregation import InputAggregationMode
 from superlinked.framework.dsl.space.exception import (
@@ -47,12 +54,17 @@ class NumberSpace(Space):
             It is a SchemaFieldObject not regular python ints or floats.
         min_value (float | int): This represents the minimum boundary. Any number lower than
             this will be considered as this minimum value. It can be either a float or an integer.
+            It must larger or equal to 0 in case of scale=LogarithmicScale(base).
         max_value (float | int): This represents the maximum boundary. Any number higher than
             this will be considered as this maximum value. It can be either a float or an integer.
+            It cannot be 0 in case of scale=LogarithmicScale(base).
         mode (Mode): The mode of the number embedding. Possible values are: maximum, minimum and similar.
             Similar mode expects a .similar on the query, otherwise it will default to maximum.
+        scale (Scale): The scaling of the number embedding.
+            Possible values are: LinearScale(), and LogarithmicScale(base).
+            LogarithmicScale base must be larger than 1. It defaults to LinearScale().
         aggregation_mode (InputAggregationMode): The  aggregation mode of the number embedding.
-                Possible values are: maximum, minimum and average.
+            Possible values are: maximum, minimum and average.
         negative_filter (float): This is a value that will be set for everything that is equal or
             lower than the min_value. It can be a float. It defaults to 0 (No effect)
 
@@ -69,6 +81,7 @@ class NumberSpace(Space):
         min_value: float | int,
         max_value: float | int,
         mode: Mode,
+        scale: Scale = LinearScale(),
         aggregation_mode: InputAggregationMode = InputAggregationMode.INPUT_AVERAGE,
         negative_filter: float = 0.0,
     ) -> None:
@@ -77,13 +90,18 @@ class NumberSpace(Space):
 
         Attributes:
             number (SpaceFieldSet): A set of Number objects.
-                These are SchemaFieldObjects not regular python ints or floats.
+                It is a SchemaFieldObject not regular python ints or floats.
             min_value (float | int): This represents the minimum boundary. Any number lower than
                 this will be considered as this minimum value. It can be either a float or an integer.
+                It must larger or equal to 0 in case of scale=LogarithmicScale(base).
             max_value (float | int): This represents the maximum boundary. Any number higher than
                 this will be considered as this maximum value. It can be either a float or an integer.
+                It cannot be 0 in case of scale=LogarithmicScale(base).
             mode (Mode): The mode of the number embedding. Possible values are: maximum, minimum and similar.
                 Similar mode expects a .similar on the query, otherwise it will default to maximum.
+            scale (Scale): The scaling of the number embedding.
+                Possible values are: LinearScale(), and LogarithmicScale(base).
+                LogarithmicScale base must be larger than 1. It defaults to LinearScale().
             aggregation_mode (InputAggregationMode): The  aggregation mode of the number embedding.
                 Possible values are: maximum, minimum and average.
             negative_filter (float): This is a value that will be set for everything that is equal or
@@ -101,6 +119,7 @@ class NumberSpace(Space):
             min_value=float(min_value),
             max_value=float(max_value),
             mode=mode,
+            scale=scale,
             negative_filter=negative_filter,
         )
         self.default_constant_node_input: int | float | None
@@ -155,9 +174,30 @@ class NumberSpace(Space):
             if self.embedding_params.mode == Mode.SIMILAR
             else ""
         )
-        return f"""The space encodes numbers between {self.embedding_params.min_value}
-        and {self.embedding_params.max_value}, being the domain of the space.
-        Values are linearly spaced in {self.embedding_params.min_value} and {self.embedding_params.max_value}.
+        scaling_text = (
+            f"logarithmically with the base of {self.embedding_params.scale.base}"
+            if isinstance(self.embedding_params.scale, LogarithmicScale)
+            else "linearly"
+        )
+        min_value = (
+            math.log(
+                1 + self.embedding_params.min_value,
+                self.embedding_params.scale.base,
+            )
+            if isinstance(self.embedding_params.scale, LogarithmicScale)
+            else self.embedding_params.min_value
+        )
+        max_value = (
+            math.log(
+                1 + self.embedding_params.max_value,
+                self.embedding_params.scale.base,
+            )
+            if isinstance(self.embedding_params.scale, LogarithmicScale)
+            else self.embedding_params.max_value
+        )
+        return f"""The space encodes numbers between {min_value}
+        and {max_value}, being the domain of the space.
+        Values are {scaling_text} spaced in {min_value} and {max_value}.
         It has {mode_text} Mode so it favors the {mode_to_preference[mode_text]} number{similar_first_text}.
         For this {mode_text} mode space, negative weights mean favoring
         the {negative_text[mode_text]}. 0 weight means insensitivity.

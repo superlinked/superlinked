@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import math
+from dataclasses import dataclass
 from enum import Enum
 
 import numpy as np
@@ -33,22 +34,49 @@ class Mode(Enum):
     SIMILAR = "similar"
 
 
+@dataclass(frozen=True)
+class Scale:
+    pass
+
+
+@dataclass(frozen=True)
+class LinearScale(Scale):
+    pass
+
+
+@dataclass(frozen=True)
+class LogarithmicScale(Scale):
+    base: float = 10
+
+    def __post_init__(self) -> None:
+        if self.base <= 1:
+            raise ValueError("Logarithmic function base must larger than 1.")
+
+
 class NumberEmbedding(
     Embedding[float], HasLength, HasDefaultVector
-):  # pylint: disable=too-many-instance-attributes
+):  # pylint: disable=too-many-instance-attributes,too-many-arguments
     def __init__(
         self,
         min_value: float,
         max_value: float,
         mode: Mode,
+        scale: Scale,
         negative_filter: float,
         normalization: Normalization,
     ) -> None:
+        if isinstance(scale, LogarithmicScale) and min_value < 0:
+            raise ValueError(
+                "Min value must be 0 or higher when using logarithmic scale."
+            )
+        if isinstance(scale, LogarithmicScale) and max_value < 0:
+            raise ValueError("Max value cannot be 0 when using logarithmic scale.")
         self.__circle_size_in_rad = math.pi / 2
         self.__length = 3
         self._min_value = min_value
         self._max_value = max_value
         self._mode = mode
+        self._scale = scale
         self._negative_filter = negative_filter
         self._normalization = normalization
         self.__default_vector = {
@@ -94,9 +122,14 @@ class NumberEmbedding(
             }
         ):
             return Vector(list(self._value_when_out_of_bounds), {2})
-        constrained_input: float = min(max(self._min_value, input_), self._max_value)
-        normalized_input = (constrained_input - self._min_value) / (
-            self._max_value - self._min_value
+        transformed_input = self._transform_to_log_if_logarithmic(input_)
+        transformed_min = self._transform_to_log_if_logarithmic(self._min_value)
+        transformed_max = self._transform_to_log_if_logarithmic(self._max_value)
+        constrained_input: float = min(
+            max(transformed_min, transformed_input), transformed_max
+        )
+        normalized_input = (constrained_input - transformed_min) / (
+            transformed_max - transformed_min
         )
         angle_in_radians = normalized_input * self.__circle_size_in_rad
         vector_input = np.array(
@@ -124,13 +157,32 @@ class NumberEmbedding(
                 return self._min_value - out_of_bounds_bias
             # INFO: for similar it doesn't matter, which direction is it out of bounds
             return self._max_value + out_of_bounds_bias
-
         angle_in_radians = math.atan2(denormalized.value[0], denormalized.value[1])
         transformed_number = angle_in_radians / self.__circle_size_in_rad
-        transformed_number = (
-            transformed_number * (self._max_value - self._min_value) + self._min_value
+        transformed_max = self._transform_to_log_if_logarithmic(self._max_value)
+        transformed_min = self._transform_to_log_if_logarithmic(self._min_value)
+        transformed_input_ = (
+            transformed_number * (transformed_max - transformed_min) + transformed_min
         )
-        return transformed_number
+        input_ = self._transform_from_log_if_logarithmic(transformed_input_)
+        return input_
+
+    def _transform_to_log_if_logarithmic(self, value: float) -> float:
+        return (
+            math.log(1 + value, self._scale.base)
+            if isinstance(self._scale, LogarithmicScale)
+            else value
+        )
+
+    def _transform_from_log_if_logarithmic(self, value: float) -> float:
+        return round(
+            (
+                self._scale.base**value - 1
+                if isinstance(self._scale, LogarithmicScale)
+                else value
+            ),
+            10,
+        )
 
     @property
     def _value_when_out_of_bounds(self) -> Sequence[float]:
