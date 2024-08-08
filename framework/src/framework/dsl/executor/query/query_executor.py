@@ -31,7 +31,6 @@ from superlinked.framework.common.storage_manager.knn_search_params import (
 from superlinked.framework.common.storage_manager.search_result_item import (
     SearchResultItem,
 )
-from superlinked.framework.common.util import time_util
 from superlinked.framework.dsl.executor.executor import App
 from superlinked.framework.dsl.query.nlq_param_evaluator import NLQParamEvaluator
 from superlinked.framework.dsl.query.query import QueryObj
@@ -160,9 +159,8 @@ class QueryExecutor:
             data=self.app._context.data,
             now_strategy=NowStrategy.CONTEXT_TIME,
         )
-        eval_context.update_data(
-            {CONTEXT_COMMON: {CONTEXT_COMMON_NOW: self.__query_now()}}
-        )
+        context_time = self.query_obj._override_now or self.app._context.now()
+        eval_context.update_data({CONTEXT_COMMON: {CONTEXT_COMMON_NOW: context_time}})
         return eval_context
 
     def _knn_search(
@@ -202,19 +200,3 @@ class QueryExecutor:
                 f"Query index {self.query_obj.index} is not amongst "
                 + f"the executor's indices {self.app._indices}"
             )
-
-    def __check_now(
-        self,
-    ) -> int:
-        return self.query_obj._override_now or time_util.now()
-
-    def __query_now(self) -> int:
-        now_ = self.__check_now()
-        if now_ is not None:
-            return now_
-        raise QueryException(
-            (
-                f"Environment's '{CONTEXT_COMMON}.{CONTEXT_COMMON_NOW}' ",
-                "property should always be initialized for query contexts",
-            )
-        )

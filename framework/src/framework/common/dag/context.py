@@ -78,8 +78,8 @@ class ExecutionContext:
                 if now is None:
                     raise QueryException(
                         (
-                            f"Environment's '{CONTEXT_COMMON}.{CONTEXT_COMMON_NOW}' ",
-                            "property should always be initialized for query contexts",
+                            f"Environment's '{CONTEXT_COMMON}.{CONTEXT_COMMON_NOW}' "
+                            + "property should always be initialized for query contexts",
                         )
                     )
                 return now
