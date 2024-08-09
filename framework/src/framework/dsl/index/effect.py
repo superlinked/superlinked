@@ -65,8 +65,8 @@ class EffectModifier:
     def __post_init__(self) -> None:
         if not 0 <= self.temperature <= 1:
             raise ValueError("temperature must be between 0 and 1.")
-        if self.max_age is not None and self.max_age.seconds == 0:
-            raise ValueError("max_age seconds cannot be 0.")
+        if self.max_age is not None and self.max_age.total_seconds() == 0:
+            raise ValueError("max_age cannot be 0 seconds.")
         if self.max_count is not None and self.max_count < 0:
             raise ValueError("max_count cannot be smaller than 0.")
 
