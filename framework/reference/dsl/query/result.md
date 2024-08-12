@@ -28,11 +28,13 @@ Classes
     :   Converts the query result entries into a pandas DataFrame.
         
         Each row in the DataFrame corresponds to a single entity in the result, with
-        columns representing the fields of the stored objects.
+        columns representing the fields of the stored objects. An additional score column
+        is present which shows similarity to the query vector.
         
         Returns:
             DataFrame: A pandas DataFrame where each row represents a result entity, and
-                each column corresponds to the fields of the stored objects.
+                each column corresponds to the fields of the stored objects. Additionally,
+                it contains the above-mentioned score column.
 
 `ResultEntry(entity: superlinked.framework.common.storage_manager.search_result_item.SearchResultItem, stored_object: dict[str, typing.Any])`
 :   Represents a single entry in a Result, encapsulating the entity and its associated data.
