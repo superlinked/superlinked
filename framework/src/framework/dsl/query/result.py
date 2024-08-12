@@ -59,13 +59,21 @@ class Result:
         Converts the query result entries into a pandas DataFrame.
 
         Each row in the DataFrame corresponds to a single entity in the result, with
-        columns representing the fields of the stored objects.
+        columns representing the fields of the stored objects. An additional score column
+        is present which shows similarity to the query vector.
 
         Returns:
             DataFrame: A pandas DataFrame where each row represents a result entity, and
-                each column corresponds to the fields of the stored objects.
+                each column corresponds to the fields of the stored objects. Additionally,
+                it contains the above-mentioned score column.
         """
-        return DataFrame([entry.stored_object for entry in self.entries])
+        dataframe_rows: list[dict[str, Any]] = []
+        for entry in self.entries:
+            dataframe_row = entry.stored_object
+            dataframe_row["similarity_score"] = entry.entity.score
+            dataframe_rows.append(dataframe_row)
+
+        return DataFrame(dataframe_rows)
 
     def __str__(self) -> str:
         return "\n".join(
