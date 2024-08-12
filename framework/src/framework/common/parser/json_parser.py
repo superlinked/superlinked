@@ -45,7 +45,7 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, Json]):
     it transforms the `Json` to a desired schema.
     """
 
-    def unmarshal(self, data: Json) -> list[ParsedSchema]:
+    def unmarshal(self, data: Json | list[Json]) -> list[ParsedSchema]:
         """
         Parses the given Json into a list of ParsedSchema objects according to the defined schema and mapping.
 
@@ -56,25 +56,29 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, Json]):
             list[ParsedSchema]: A list of ParsedSchema objects that will be processed by the spaces.
         """
 
-        id_ = self.__ensure_id(data)
+        if not isinstance(data, list):
+            data = [data]
+        return [self._unmarshal_single(json_data) for json_data in data]
+
+    def _unmarshal_single(self, json_data: Json) -> EventParsedSchema | ParsedSchema:
+        id_ = self.__ensure_id(json_data)
         parsed_fields: list[ParsedSchemaField] = [
             ParsedSchemaField.from_schema_field(field, parsed_value)
             for field, parsed_value in [
-                (field, self._parse_schema_field_value(field, data))
+                (field, self._parse_schema_field_value(field, json_data))
                 for field in self._schema._get_schema_fields()
             ]
             if parsed_value is not None
         ]
         if self._is_event_data_parser:
-            return [
-                EventParsedSchema(
-                    self._schema,
-                    id_,
-                    parsed_fields,
-                    self.__ensure_created_at(data),
-                )
-            ]
-        return [ParsedSchema(self._schema, id_, parsed_fields)]
+            return EventParsedSchema(
+                self._schema,
+                id_,
+                parsed_fields,
+                self.__ensure_created_at(json_data),
+            )
+
+        return ParsedSchema(self._schema, id_, parsed_fields)
 
     def _marshal(
         self,
