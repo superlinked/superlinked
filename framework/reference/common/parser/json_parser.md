@@ -29,7 +29,7 @@ Classes
 
     ### Methods
 
-    `unmarshal(self, data: Json) ‑> list[superlinked.framework.common.parser.parsed_schema.ParsedSchema]`
+    `unmarshal(self, data: Json | list[Json]) ‑> list[superlinked.framework.common.parser.parsed_schema.ParsedSchema]`
     :   Parses the given Json into a list of ParsedSchema objects according to the defined schema and mapping.
         
         Args:
