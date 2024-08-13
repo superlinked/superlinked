@@ -15,7 +15,7 @@
 from dataclasses import dataclass, field
 from datetime import timedelta
 
-from superlinked.framework.common.const import DEFAULT_WEIGHT
+from superlinked.framework.common.const import constants
 
 
 @dataclass(frozen=True)
@@ -29,7 +29,7 @@ class PeriodTime:
     """
 
     period_time: timedelta = field(init=True)
-    weight: float = field(default=DEFAULT_WEIGHT, init=True)
+    weight: float = field(default=constants.DEFAULT_WEIGHT, init=True)
 
     def __post_init__(self) -> None:
         """

@@ -19,7 +19,7 @@ import math
 from beartype.typing import Sequence
 from typing_extensions import override
 
-from superlinked.framework.common.const import DEFAULT_WEIGHT
+from superlinked.framework.common.const import constants
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.event_aggregation_node import EventAggregationNode
 from superlinked.framework.common.dag.exception import ParentCountException
@@ -89,7 +89,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
                 for filter_ in self.node.filters
                 if filter_.item == parent.node
             ),
-            DEFAULT_WEIGHT,
+            constants.DEFAULT_WEIGHT,
         )
 
     @property

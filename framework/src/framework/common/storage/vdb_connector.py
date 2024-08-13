@@ -17,7 +17,7 @@ from abc import ABC, abstractmethod
 from beartype.typing import Any, Sequence
 
 from superlinked.framework.common.calculation.distance_metric import DistanceMetric
-from superlinked.framework.common.const import DEFAULT_LIMIT
+from superlinked.framework.common.const import constants
 from superlinked.framework.common.exception import ValidationException
 from superlinked.framework.common.storage.entity import Entity
 from superlinked.framework.common.storage.entity_data import EntityData
@@ -144,7 +144,7 @@ class VDBConnector(ABC):
         # If the limit is set to the default, assign it a database-specific default value
         limit = (
             self._default_search_limit
-            if vdb_knn_search_params.limit == DEFAULT_LIMIT
+            if vdb_knn_search_params.limit == constants.DEFAULT_LIMIT
             else vdb_knn_search_params.limit
         )
         search_params = VDBKNNSearchParams(

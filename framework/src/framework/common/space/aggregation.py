@@ -22,7 +22,7 @@ import numpy as np
 from beartype.typing import Any, Generic, Mapping, Sequence, TypeVar
 from typing_extensions import override
 
-from superlinked.framework.common.const import DEFAULT_NOT_AFFECTING_WEIGHT
+from superlinked.framework.common.const import constants
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.embedding import Embedding
@@ -96,7 +96,7 @@ class VectorAggregation(Aggregation):
                 for vector in vectors
             ]
             if not weighted.item.is_empty
-            and weighted.weight is not DEFAULT_NOT_AFFECTING_WEIGHT
+            and weighted.weight is not constants.DEFAULT_NOT_AFFECTING_WEIGHT
         ]
         vectors_with_negative_filters_replaced = (
             weighted.item.replace_negative_filters(VALUE_UNAFFECTING_AGGREGATION)
@@ -171,7 +171,7 @@ class InputAggregation(Aggregation, Generic[AIT]):
             weighted
             for weighted in weighted_vectors
             if not weighted.item.is_empty
-            and weighted.weight is not DEFAULT_NOT_AFFECTING_WEIGHT
+            and weighted.weight is not constants.DEFAULT_NOT_AFFECTING_WEIGHT
         ]
         if len(weighted_vectors) == 1:
             return weighted_vectors[0].item

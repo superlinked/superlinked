@@ -28,7 +28,9 @@ from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.embedding import Embedding
 from superlinked.framework.common.interface.has_default_vector import HasDefaultVector
 from superlinked.framework.common.interface.has_length import HasLength
+from superlinked.framework.common.settings import Settings
 from superlinked.framework.common.space.normalization import Normalization
+from superlinked.framework.common.util.gpu_embedding_util import GpuEmbeddingUtil
 
 SENTENCE_TRANSFORMERS_ORG_NAME = "sentence-transformers"
 SENTENCE_TRANSFORMERS_MODEL_DIR: Path = (
@@ -39,16 +41,26 @@ SENTENCE_TRANSFORMERS_MODEL_DIR: Path = (
 class SentenceTransformerEmbedding(Embedding[str], HasLength, HasDefaultVector):
     def __init__(self, model_name: str, normalization: Normalization) -> None:
         local_files_only = self._model_is_downloaded(model_name)
-        self.model = SentenceTransformer(
+        self._gpu_embedding_util = GpuEmbeddingUtil(Settings().GPU_EMBEDDING_THRESHOLD)
+        self._embedding_model = SentenceTransformer(
             model_name,
             trust_remote_code=True,
             local_files_only=local_files_only,
-            # device="cpu",
+            device="cpu",
             cache_folder=str(SENTENCE_TRANSFORMERS_MODEL_DIR),
         )
-        # albert-base-v1
+        self._bulk_embedding_model = None
+        if self._gpu_embedding_util.is_gpu_embedding_enabled:
+            self._bulk_embedding_model = SentenceTransformer(
+                model_name,
+                trust_remote_code=True,
+                local_files_only=local_files_only,
+                device=self._gpu_embedding_util.gpu_device_type,
+                cache_folder=str(SENTENCE_TRANSFORMERS_MODEL_DIR),
+            )
+
         self.__normalization = normalization
-        self.__length = self.model.get_sentence_embedding_dimension() or 0
+        self.__length = self._embedding_model.get_sentence_embedding_dimension() or 0
 
     def _model_is_downloaded(self, model_name: str) -> bool:
         return bool(model_name) and (
@@ -67,8 +79,22 @@ class SentenceTransformerEmbedding(Embedding[str], HasLength, HasDefaultVector):
         )
 
     def embed_multiple(self, inputs: list[str]) -> list[Vector]:
-        embeddings = self.model.encode(inputs) if inputs else []
+        inputs_count = len(inputs)
+        if not inputs_count:
+            return []
+        embedding_model = self._get_embedding_model(inputs_count)
+        embeddings = embedding_model.encode(inputs)
         return [self.__to_vector(embedding) for embedding in embeddings]
+
+    def _get_embedding_model(self, number_of_inputs: int) -> SentenceTransformer:
+        return (
+            self._bulk_embedding_model
+            if self._bulk_embedding_model
+            and self._gpu_embedding_util.is_above_gpu_embedding_threshold(
+                number_of_inputs
+            )
+            else self._embedding_model
+        )
 
     @override
     def embed(

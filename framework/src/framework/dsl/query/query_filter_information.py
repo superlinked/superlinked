@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 
 from beartype.typing import Sequence
 
-from superlinked.framework.common.const import DEFAULT_NOT_AFFECTING_WEIGHT
+from superlinked.framework.common.const import constants
 from superlinked.framework.common.exception import QueryException
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperand,
@@ -124,7 +124,7 @@ class LooksLikeFilterInformation:
             )
         value = looks_like_filter_param.value_param.value
         weight = get_weight(looks_like_filter_param.weight_param)
-        if value is None or weight == DEFAULT_NOT_AFFECTING_WEIGHT:
+        if value is None or weight == constants.DEFAULT_NOT_AFFECTING_WEIGHT:
             return None
         expected_type = GenericClassUtil.get_single_generic_type(self.schema_field)
         if not isinstance(value, expected_type):
@@ -193,7 +193,7 @@ def get_weight(weight_param: ParamInfo) -> float:
     weight = (
         weight_param.value
         if weight_param.value is not None
-        else DEFAULT_NOT_AFFECTING_WEIGHT
+        else constants.DEFAULT_NOT_AFFECTING_WEIGHT
     )
     if not isinstance(weight, (int, float)):
         raise QueryException(

@@ -16,12 +16,12 @@ from __future__ import annotations
 
 from beartype.typing import Generic
 
-from superlinked.framework.common.const import ONLINE_PUT_CHUNK_SIZE
 from superlinked.framework.common.observable import Publisher
 from superlinked.framework.common.parser.data_parser import DataParser
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObjectT
 from superlinked.framework.common.schema.schema_object import SchemaObjectT
+from superlinked.framework.common.settings import Settings
 from superlinked.framework.common.source.source import Source
 from superlinked.framework.common.source.types import SourceTypeT
 from superlinked.framework.common.util.collection_util import chunk_list
@@ -41,5 +41,7 @@ class OnlineSource(
 
     def put(self, data: SourceTypeT) -> None:
         parsed_schemas: list[ParsedSchema] = self.parser.unmarshal(data)
-        for batch in chunk_list(data=parsed_schemas, chunk_size=ONLINE_PUT_CHUNK_SIZE):
+        for batch in chunk_list(
+            data=parsed_schemas, chunk_size=Settings().ONLINE_PUT_CHUNK_SIZE
+        ):
             self._dispatch(batch)

@@ -19,12 +19,7 @@ from enum import Enum
 
 from beartype.typing import Any, cast
 
-from superlinked.framework.common.const import (
-    DEFAULT_LIMIT,
-    DEFAULT_NOT_AFFECTING_WEIGHT,
-    RADIUS_MAX,
-    RADIUS_MIN,
-)
+from superlinked.framework.common.const import constants
 from superlinked.framework.common.exception import QueryException
 from superlinked.framework.common.interface.comparison_operation_type import (
     ComparisonOperationType,
@@ -235,7 +230,11 @@ class QueryParamInformation:
     def space_weight_map(self) -> dict[Space, float]:
         space_weight_map = {}
         for param in self.space_weight_params:
-            value = DEFAULT_NOT_AFFECTING_WEIGHT if param.value is None else param.value
+            value = (
+                constants.DEFAULT_NOT_AFFECTING_WEIGHT
+                if param.value is None
+                else param.value
+            )
             if not isinstance(value, (int, float)):
                 raise QueryException(
                     f"Space weight should be numeric, got {type(value).__name__}."
@@ -255,7 +254,7 @@ class QueryParamInformation:
     def limit(self) -> int:
         value = self.limit_param.value if self.limit_param else None
         if value is None:
-            return DEFAULT_LIMIT
+            return constants.DEFAULT_LIMIT
         if not isinstance(value, int):
             raise QueryException(f"Limit should be int, got {type(value).__name__}")
         return value
@@ -269,9 +268,10 @@ class QueryParamInformation:
             raise QueryException(
                 f"Radius should be numeric, got {type(value).__name__}"
             )
-        if value > RADIUS_MAX or value < RADIUS_MIN:
+        if value > constants.RADIUS_MAX or value < constants.RADIUS_MIN:
             raise ValueError(
-                f"Not a valid Radius value ({value}). It should be between {RADIUS_MAX} and {RADIUS_MIN}."
+                f"Not a valid Radius value ({value}). It should be between "
+                f"{constants.RADIUS_MAX} and {constants.RADIUS_MIN}."
             )
         return float(value)
 

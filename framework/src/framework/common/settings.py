@@ -12,19 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from dataclasses import dataclass
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from beartype.typing import Generic, TypeVar
-
-from superlinked.framework.common.const import constants
-
-WT = TypeVar("WT")
+from superlinked.framework.common.util.singleton_decorator import singleton
 
 
-@dataclass
-class Weighted(Generic[WT]):
-    item: WT
-    weight: float = constants.DEFAULT_WEIGHT
+@singleton
+class Settings(BaseSettings):
+    ONLINE_PUT_CHUNK_SIZE: int = 10000
+    GPU_EMBEDDING_THRESHOLD: int = 0
 
-    def __str__(self) -> str:
-        return f"{self.__class__.__name__}(item={self.item}, weight={self.weight})"
+    model_config = SettingsConfigDict(env_file=".env")

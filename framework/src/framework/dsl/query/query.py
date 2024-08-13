@@ -17,7 +17,7 @@ from __future__ import annotations
 from beartype.typing import NamedTuple, cast
 from typing_extensions import Annotated
 
-from superlinked.framework.common.const import DEFAULT_WEIGHT
+from superlinked.framework.common.const import constants
 from superlinked.framework.common.exception import (
     InvalidSchemaException,
     QueryException,
@@ -127,7 +127,7 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
         self,
         field_set: SpaceFieldSet,
         param: ParamType,
-        weight: NumericParamType = DEFAULT_WEIGHT,
+        weight: NumericParamType = constants.DEFAULT_WEIGHT,
     ) -> QueryObj:
         """
         Add a 'similar' clause to the query. Similar queries compile query inputs (like query text) into vectors
@@ -241,7 +241,7 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
         self,
         schema_obj: IdSchemaObject | T,
         id_param: ParamType,
-        weight: NumericParamType = DEFAULT_WEIGHT,
+        weight: NumericParamType = constants.DEFAULT_WEIGHT,
     ) -> QueryObj:
         """
         Add a 'with_vector' clause to the query. This fetches an object with id_param

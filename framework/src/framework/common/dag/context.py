@@ -20,7 +20,7 @@ from enum import Enum, auto
 from beartype.typing import Mapping, TypeVar, cast
 from typing_extensions import Self, TypeAlias
 
-from superlinked.framework.common.const import DEFAULT_WEIGHT
+from superlinked.framework.common.const import constants
 from superlinked.framework.common.exception import (
     NotImplementedException,
     QueryException,
@@ -114,7 +114,9 @@ class ExecutionContext:
         weight_param = self.get_node_context_value(
             node_id, SPACE_WEIGHT_PARAM_NAME, float
         )
-        return float(weight_param if weight_param is not None else DEFAULT_WEIGHT)
+        return float(
+            weight_param if weight_param is not None else constants.DEFAULT_WEIGHT
+        )
 
     def set_node_context_value(
         self, node_id: str, key: str, value: ContextValue | None

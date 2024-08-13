@@ -15,7 +15,7 @@
 from beartype.typing import Any, Sequence, cast
 from typing_extensions import override
 
-from superlinked.framework.common.const import DEFAULT_WEIGHT
+from superlinked.framework.common.const import constants
 from superlinked.framework.common.dag.dag_effect import DagEffect
 from superlinked.framework.common.dag.exception import ParentCountException
 from superlinked.framework.common.dag.node import Node
@@ -29,7 +29,7 @@ class ConcatenationNode(Node[Vector], HasLength):
     def __init__(
         self,
         parents: list[Node[Vector]],
-        default_weight: float = DEFAULT_WEIGHT,
+        default_weight: float = constants.DEFAULT_WEIGHT,
     ) -> None:
         # Since events can change only a part of the whole result, we
         # must persist the rest of the parts.

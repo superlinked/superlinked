@@ -12,13 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
+from attr import dataclass
 
-# TODO: https://linear.app/superlinked/issue/FAI-1786/create-settings-mechanics-for-congig
-MAX_DAG_DEPTH = 20
-DEFAULT_WEIGHT = 1.0
-DEFAULT_NOT_AFFECTING_WEIGHT = 0.0
-DEFAULT_LIMIT = -1
-RADIUS_MIN = 0
-RADIUS_MAX = 1
-ONLINE_PUT_CHUNK_SIZE: int = int(os.getenv("ONLINE_PUT_CHUNK_SIZE", "6000"))
+
+@dataclass(frozen=True)
+class Constants:
+    MAX_DAG_DEPTH: int = 20
+    DEFAULT_WEIGHT: float = 1.0
+    DEFAULT_NOT_AFFECTING_WEIGHT: float = 0.0
+    DEFAULT_LIMIT: int = -1
+    RADIUS_MIN: int = 0
+    RADIUS_MAX: int = 1
+
+
+constants = Constants()

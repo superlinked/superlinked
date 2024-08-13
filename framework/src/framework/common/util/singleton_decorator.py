@@ -12,19 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from dataclasses import dataclass
+import threading
+from functools import wraps
 
-from beartype.typing import Generic, TypeVar
+from beartype.typing import Any, Callable, Type, TypeVar
 
-from superlinked.framework.common.const import constants
-
-WT = TypeVar("WT")
+T = TypeVar("T")
 
 
-@dataclass
-class Weighted(Generic[WT]):
-    item: WT
-    weight: float = constants.DEFAULT_WEIGHT
+def singleton(cls: Type[T]) -> Callable[..., T]:
+    instances: dict[Type[T], T] = {}
+    lock = threading.Lock()
 
-    def __str__(self) -> str:
-        return f"{self.__class__.__name__}(item={self.item}, weight={self.weight})"
+    @wraps(cls)
+    def wrapper(*args: Any, **kwargs: Any) -> T:
+        if cls not in instances:
+            with lock:
+                if cls not in instances:
+                    instances[cls] = cls(*args, **kwargs)
+        return instances[cls]
+
+    return wrapper

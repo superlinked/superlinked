@@ -17,7 +17,7 @@ import datetime
 from beartype.typing import Sequence
 from typing_extensions import Annotated
 
-from superlinked.framework.common.const import MAX_DAG_DEPTH
+from superlinked.framework.common.const import constants
 from superlinked.framework.common.dag.concatenation_node import ConcatenationNode
 from superlinked.framework.common.dag.dag import Dag
 from superlinked.framework.common.dag.dag_effect import DagEffect
@@ -286,8 +286,10 @@ class Index:  # pylint: disable=too-many-instance-attributes
 
     def __init_dag(self, node: IndexNode, dag_effects: set[DagEffect]) -> Dag:
         def append_ancestors(node: Node, depth: int = 0) -> None:
-            if depth > MAX_DAG_DEPTH:
-                raise RecursionException(f"Max DAG depth ({MAX_DAG_DEPTH}) exceeded.")
+            if depth > constants.MAX_DAG_DEPTH:
+                raise RecursionException(
+                    f"Max DAG depth ({constants.MAX_DAG_DEPTH}) exceeded."
+                )
             dag_dict[node.node_id] = node
             for parent in node.parents:
                 append_ancestors(parent, depth + 1)
