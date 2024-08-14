@@ -25,9 +25,6 @@ from superlinked.framework.common.exception import (
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
 )
-from superlinked.framework.common.interface.comparison_operation_type import (
-    ComparisonOperationType,
-)
 from superlinked.framework.common.nlq.open_ai import OpenAIClientConfig
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema import T
@@ -76,12 +73,6 @@ class AlterParams(NamedTuple):
     looks_like_filter_info: LooksLikeFilterInformation | None = None
     natural_query_client_config: OpenAIClientConfig | None = None
     override_now: int | None = None
-
-
-VALID_HARD_FILTER_TYPES = [
-    ComparisonOperationType.EQUAL,
-    ComparisonOperationType.NOT_EQUAL,
-]
 
 
 @TypeValidator.wrap
@@ -299,10 +290,6 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
         Returns:
             Self: The query object itself.
         """
-        if comparison_operation._op not in VALID_HARD_FILTER_TYPES:
-            raise QueryException(
-                f"Unsupported filter operation: {comparison_operation._op}."
-            )
         if type(comparison_operation._other) not in [
             Param,
             GenericClassUtil.get_single_generic_type(comparison_operation._operand),

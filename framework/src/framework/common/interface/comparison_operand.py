@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from beartype.typing import Any, Callable, Generic, TypeVar
+from beartype.typing import Any, Callable, Generic, Iterable, TypeVar
 
 from superlinked.framework.common.interface.comparison_operation_type import (
     ComparisonOperationType,
@@ -37,7 +37,15 @@ class ComparisonOperand(ABC, Generic[COT]):
             ComparisonOperationType.LESS_THAN: self._built_in_less_than,
             ComparisonOperationType.GREATER_EQUAL: self._built_in_greater_equal,
             ComparisonOperationType.LESS_EQUAL: self._built_in_less_equal,
+            ComparisonOperationType.IN: self._built_in_in,
+            ComparisonOperationType.NOT_IN: self._built_in_not_in,
         }
+
+    def in_(self, __value: object) -> ComparisonOperation[COT]:
+        return ComparisonOperation(ComparisonOperationType.IN, self, __value)
+
+    def not_in_(self, __value: object) -> ComparisonOperation[COT]:
+        return ComparisonOperation(ComparisonOperationType.NOT_IN, self, __value)
 
     @property
     def _built_in_operation_mapping(
@@ -108,6 +116,18 @@ class ComparisonOperand(ABC, Generic[COT]):
     ) -> bool:
         raise NotImplementedError()
 
+    @staticmethod
+    def _built_in_in(
+        left_operand: ComparisonOperand[COT], right_operand: object
+    ) -> bool:
+        raise NotImplementedError()
+
+    @staticmethod
+    def _built_in_not_in(
+        left_operand: ComparisonOperand[COT], right_operand: object
+    ) -> bool:
+        raise NotImplementedError()
+
 
 class ComparisonOperation(Generic[COT]):
     def __init__(
@@ -131,22 +151,24 @@ class ComparisonOperation(Generic[COT]):
     def evaluate(self, value: Any) -> bool:
         match self._op:
             case ComparisonOperationType.EQUAL:
-                return self.__evaluate_eq(value)
-
+                result = self.__evaluate_eq(value)
             case ComparisonOperationType.NOT_EQUAL:
-                return self.__evaluate_ne(value)
-
+                result = self.__evaluate_ne(value)
             case ComparisonOperationType.GREATER_THAN:
-                return self.__evaluate_gt(value)
-
+                result = self.__evaluate_gt(value)
             case ComparisonOperationType.LESS_THAN:
-                return self.__evaluate_lt(value)
-
+                result = self.__evaluate_lt(value)
             case ComparisonOperationType.GREATER_EQUAL:
-                return self.__evaluate_ge(value)
-
+                result = self.__evaluate_ge(value)
             case ComparisonOperationType.LESS_EQUAL:
-                return self.__evaluate_le(value)
+                result = self.__evaluate_le(value)
+            case ComparisonOperationType.IN:
+                result = self.__evaluate_in(value)
+            case ComparisonOperationType.NOT_IN:
+                result = self.__evaluate_not_in(value)
+            case _:
+                raise ValueError(f"Unsupported operation type: {self._op}")
+        return result
 
     def __evaluate_eq(self, value: Any) -> bool:
         return value == self._other
@@ -165,3 +187,13 @@ class ComparisonOperation(Generic[COT]):
 
     def __evaluate_le(self, value: Any) -> bool:
         return value <= self._other
+
+    def __evaluate_in(self, value: Any) -> bool:
+        if not isinstance(self._other, Iterable):
+            raise ValueError("Operand must be iterable.")
+        return value in self._other
+
+    def __evaluate_not_in(self, value: Any) -> bool:
+        if not isinstance(self._other, Iterable):
+            raise ValueError("Operand must be iterable.")
+        return value not in self._other

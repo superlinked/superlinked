@@ -14,24 +14,26 @@
 
 from dataclasses import dataclass
 
-from beartype.typing import Any, Sequence, cast
+from beartype.typing import Any, Iterable, Sequence, cast
 from redis.commands.search.query import Query
 
 from superlinked.framework.common.interface.comparison_operand import (
+    ComparisonOperand,
     ComparisonOperation,
 )
 from superlinked.framework.common.interface.comparison_operation_type import (
-    ComparisonOperationType,
+    ITERABLE_COMPARISON_OPERATION_TYPES,
 )
 from superlinked.framework.common.storage.field import Field
 from superlinked.framework.common.storage.field_data import FieldData, VectorFieldData
 from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
-from superlinked.framework.storage.redis.query.redis_equality_filter import (
-    RedisEqualityFilter,
+from superlinked.framework.storage.redis.query.redis_filter import RedisFilter
+from superlinked.framework.storage.redis.redis_field_encoder import (
+    RedisEncodedTypes,
+    RedisFieldEncoder,
 )
-from superlinked.framework.storage.redis.redis_field_encoder import RedisFieldEncoder
 
 RANGE_DISTANCE_PARAM_NAME = "__range_dist"
 VECTOR_SCORE_ALIAS = "__vector_score"
@@ -59,28 +61,40 @@ class RedisQueryBuilder:
             redis_filters, search_params, vector_field_param_name
         )
         query = self._init_query(query_string, search_params.limit, returned_fields)
-        query_params = self._get_query_params(
-            redis_filters, search_params.vector_field, vector_field_param_name
-        )
+        query_vector = self._encoder.encode_field(search_params.vector_field)
+        query_params = {vector_field_param_name: query_vector}
         return RedisQuery(query, query_params)
 
     def _compile_filters_to_redis_filters(
         self, filters: Sequence[ComparisonOperation[Field]]
-    ) -> Sequence[RedisEqualityFilter]:
-        return [
-            RedisEqualityFilter(
-                cast(Field, filter_._operand).name,
-                self._encoder.encode_field(
-                    FieldData.from_field(cast(Field, filter_._operand), filter_._other)
-                ),
-                filter_._op != ComparisonOperationType.EQUAL,
-            )
-            for filter_ in filters
-        ]
+    ) -> Sequence[RedisFilter]:
+        return [self._compile_filter(filter_) for filter_ in filters]
+
+    def _compile_filter(self, filter_: ComparisonOperation[Field]) -> RedisFilter:
+        field_value = (
+            self._encode_iterable_field(filter_._operand, filter_._other)
+            if filter_._op in ITERABLE_COMPARISON_OPERATION_TYPES
+            else self._encode_field(filter_._operand, filter_._other)
+        )
+        return RedisFilter(cast(Field, filter_._operand), field_value, filter_._op)
+
+    def _encode_iterable_field(
+        self, operand: ComparisonOperand, other: Any
+    ) -> list[RedisEncodedTypes]:
+        if not isinstance(other, Iterable):
+            raise ValueError("Operand must be iterable.")
+        return [self._encode_field(operand, item) for item in other]
+
+    def _encode_field(
+        self, operand: ComparisonOperand, other: object
+    ) -> RedisEncodedTypes:
+        return self._encoder.encode_field(
+            FieldData.from_field(cast(Field, operand), other)
+        )
 
     def _create_query_string(
         self,
-        redis_filters: Sequence[RedisEqualityFilter],
+        redis_filters: Sequence[RedisFilter],
         search_params: VDBKNNSearchParams,
         vector_field_param_name: str,
     ) -> str:
@@ -113,23 +127,6 @@ class RedisQueryBuilder:
             )
             .dialect(2)
         )
-
-    def _get_query_params(
-        self,
-        redis_filters: Sequence[RedisEqualityFilter],
-        vector_field: VectorFieldData,
-        vector_field_param_name: str,
-    ) -> dict[str, Any]:
-        query_params: dict[str, Any] = dict(
-            {
-                param
-                for redis_filter in redis_filters
-                for param in redis_filter.get_params()
-            }
-        )
-        query_vector = self._encoder.encode_field(vector_field)
-        query_params.update({vector_field_param_name: query_vector})
-        return query_params
 
     def _create_radius_filter_str(
         self,

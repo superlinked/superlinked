@@ -21,9 +21,6 @@ from superlinked.framework.common.exception import ValidationException
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
 )
-from superlinked.framework.common.interface.comparison_operation_type import (
-    ComparisonOperationType,
-)
 from superlinked.framework.common.storage.field import Field
 from superlinked.framework.common.storage.field_data import VectorFieldData
 from superlinked.framework.common.storage.index_config import IndexConfig
@@ -84,13 +81,3 @@ class Search(ABC, Generic[SearchParamsT, QuertT, KNNReturnT]):
             not in index_config.indexed_field_names
         ]:
             raise ValidationException(f"Unindexed filters found: {unindexed_filters}")
-
-        if non_equality_filters := [
-            filter_
-            for filter_ in filters
-            if filter_._op
-            not in [ComparisonOperationType.EQUAL, ComparisonOperationType.NOT_EQUAL]
-        ]:
-            raise ValidationException(
-                f"Unsupported filters found: {non_equality_filters}"
-            )

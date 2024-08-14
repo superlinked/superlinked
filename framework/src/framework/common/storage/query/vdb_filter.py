@@ -12,21 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from enum import Enum
+from dataclasses import dataclass
+
+from beartype.typing import Any
+
+from superlinked.framework.common.interface.comparison_operation_type import (
+    ComparisonOperationType,
+)
+from superlinked.framework.common.storage.field import Field
 
 
-class ComparisonOperationType(Enum):
-    EQUAL = "equal"
-    NOT_EQUAL = "not_equal"
-    GREATER_THAN = "greater_than"
-    LESS_THAN = "less_than"
-    GREATER_EQUAL = "greater_than_or_equal_to"
-    LESS_EQUAL = "less_than_or_equal_to"
-    IN = "in"
-    NOT_IN = "not_in"
-
-
-ITERABLE_COMPARISON_OPERATION_TYPES = [
-    ComparisonOperationType.IN,
-    ComparisonOperationType.NOT_IN,
-]
+@dataclass(frozen=True)
+class VDBFilter:
+    field: Field
+    field_value: Any
+    op: ComparisonOperationType
