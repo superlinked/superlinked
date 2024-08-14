@@ -75,9 +75,9 @@ class Index:  # pylint: disable=too-many-instance-attributes
             fields (SchemaField | list[SchemaField]): The field or list of fields to be indexed.
             effects (list[Effect]): A list of conditional interactions within a `Space`.
             Defaults to None.
-            max_age (datetime.timedelta | None): Restricts events to be considered
+            max_age (datetime.timedelta | None): Only affects the batch system! Restricts events to be considered
             only within the given timeframe, if specified. Defaults to None meaning no restriction.
-            max_count (int | None): Restricts how many events should be considered,
+            max_count (int | None): Only affects the batch system! Restricts how many events should be considered,
             based on their age. Defaults to None meaning no restriction.
             temperature (float): Has to be between 0 and 1. Controls how sensitive the system is to events.
             With 0.5 being default and representing a balanced setting, values closer to 0 decrease,
