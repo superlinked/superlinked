@@ -17,6 +17,7 @@ from abc import ABC, abstractmethod
 from beartype.typing import Generic, TypeVar
 
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
+from superlinked.framework.common.util.lazy_property import lazy_property
 
 VDBConnectorT = TypeVar("VDBConnectorT", bound=VDBConnector)
 
@@ -32,7 +33,7 @@ class VectorDatabase(ABC, Generic[VDBConnectorT]):
         _vdb_connector (VDBConnectorT): An abstract property that should return an instance of a VDBConnector.
     """
 
-    @property
+    @lazy_property
     @abstractmethod
     def _vdb_connector(self) -> VDBConnectorT:
         """

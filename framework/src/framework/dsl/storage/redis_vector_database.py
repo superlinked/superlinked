@@ -15,6 +15,7 @@
 
 from beartype.typing import Any
 
+from superlinked.framework.common.util.lazy_property import lazy_property
 from superlinked.framework.dsl.storage.vector_database import VectorDatabase
 from superlinked.framework.storage.common.vdb_settings import VDBSettings
 from superlinked.framework.storage.redis.redis_connection_params import (
@@ -45,11 +46,8 @@ class RedisVectorDatabase(VectorDatabase[RedisVDBConnector]):
         super().__init__()
         self.__connection_params = RedisConnectionParams(host, port, **extra_params)
         self.__settings = VDBSettings(default_query_limit)
-        self.__vdb_connector = RedisVDBConnector(
-            self.__connection_params, self.__settings
-        )
 
-    @property
+    @lazy_property
     def _vdb_connector(self) -> RedisVDBConnector:
         """
         Get the Redis vector database connector.
@@ -57,4 +55,4 @@ class RedisVectorDatabase(VectorDatabase[RedisVDBConnector]):
         Returns:
             RedisVDBConnector: The Redis vector database connector instance.
         """
-        return self.__vdb_connector
+        return RedisVDBConnector(self.__connection_params, self.__settings)

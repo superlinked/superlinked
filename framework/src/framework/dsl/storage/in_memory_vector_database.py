@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+from superlinked.framework.common.util.lazy_property import lazy_property
 from superlinked.framework.dsl.storage.vector_database import VectorDatabase
 from superlinked.framework.storage.common.vdb_settings import VDBSettings
 from superlinked.framework.storage.in_memory.in_memory_vdb import InMemoryVDB
@@ -37,9 +37,8 @@ class InMemoryVectorDatabase(VectorDatabase[InMemoryVDB]):
         """
         super().__init__()
         self.__settings = VDBSettings(default_query_limit)
-        self.__vdb_connector = InMemoryVDB(self.__settings)
 
-    @property
+    @lazy_property
     def _vdb_connector(self) -> InMemoryVDB:
         """
         Get the in-memory vector database connector.
@@ -47,4 +46,4 @@ class InMemoryVectorDatabase(VectorDatabase[InMemoryVDB]):
         Returns:
             InMemoryVDB: The in-memory vector database connector instance.
         """
-        return self.__vdb_connector
+        return InMemoryVDB(self.__settings)
