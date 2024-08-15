@@ -153,7 +153,7 @@ config = DataLoaderConfig("https://path-to-your-file.jsonl", DataFormat.JSON, pa
 ```
 
 The Superlinked library performs internal batching for embeddings, with a default batch size of 10000. If you are utilizing a chunk size different from 10000, it is advisable to adjust this batch size to match your chunk size.
-To modify this, alter the `INMEMORY_PUT_CHUNK_SIZE` value [in this file](../runner/executor/.env)
+To modify this, alter the `ONLINE_PUT_CHUNK_SIZE` value [in this file](../runner/executor/.env)
 
 ### Customize your API
 
@@ -203,4 +203,35 @@ executor = RestExecutor(
 ```
 
 Finally, you need to set a flag to prevent exceptions when utilizing Recency Space. Set the `DISABLE_RECENCY_SPACE` flag to `false` in the [.env config file](../runner/executor/.env)
+
+### GPU acceleration
+
+If your system's host machine is equipped with a GPU, this documentation provides guidance on leveraging it for computational tasks. GPU acceleration is available exclusively for text embedding processes and depends on explicit activation. It is most effective when processing large batches of data, specifically within the context of the data loading feature.
+
+> Ensure that your system has a GPU compatible with PyTorch and that the GPU drivers are up to date. This documentation is specifically tailored for configurations running within Docker, not natively, due to Docker's limitation of only supporting NVidia GPUs as of now.
+
+The following change will be needed in the `compose.yaml` file:
+```dockerfile
+version: "3"
+services:
+  poller:
+    ...
+  executor:
+    depends_on:
+      - poller
+    build:
+      context: runner
+      dockerfile: executor/Dockerfile
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    ...
+```
+
+To activate GPU support in Superlinked, configure the `GPU_EMBEDDING_THRESHOLD` environment variable within the [.env](../runner/executor/.env) file for the executor service. Ensure that this value does not exceed the `ONLINE_PUT_CHUNK_SIZE` specified in the same configuration file. The appropriate threshold value is contingent upon the computational capabilities of the server's GPU and CPU; however, it is recommended to set a minimum threshold of 10000. This parameter determines the minimum size of data batches for which GPU acceleration is employed, thereby enhancing the performance of bulk embedding operations. A value of 0 indicates that GPU acceleration is disabled during the embedding process.
+
 
