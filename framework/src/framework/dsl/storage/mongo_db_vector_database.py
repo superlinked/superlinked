@@ -14,7 +14,6 @@
 
 from beartype.typing import Any
 
-from superlinked.framework.common.util.lazy_property import lazy_property
 from superlinked.framework.dsl.storage.vector_database import VectorDatabase
 from superlinked.framework.storage.common.vdb_settings import VDBSettings
 from superlinked.framework.storage.mongo.mongo_connection_params import (
@@ -69,7 +68,7 @@ class MongoDBVectorDatabase(VectorDatabase[MongoVDBConnector]):
         )
         self.__settings = VDBSettings(default_query_limit)
 
-    @lazy_property
+    @property
     def _vdb_connector(self) -> MongoVDBConnector:
         """
         Get the MongoDB vector database connector.
