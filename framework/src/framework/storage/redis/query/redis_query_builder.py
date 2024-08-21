@@ -117,7 +117,7 @@ class RedisQueryBuilder:
     ) -> Query:
         return (
             Query(query_string)
-            .sort_by(VECTOR_SCORE_ALIAS, asc=True)
+            .sort_by(VECTOR_SCORE_ALIAS, asc=False)
             .paging(0, limit)
             .return_fields(
                 *(
