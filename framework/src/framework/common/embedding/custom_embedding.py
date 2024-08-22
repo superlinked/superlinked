@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
@@ -33,7 +32,7 @@ class CustomEmbedding(Embedding[list[float]], HasLength):
         input_: list[float],
         context: ExecutionContext,  # pylint: disable=unused-argument
     ) -> Vector:
-        return Vector(input_).normalize(self._normalization.norm(np.array(input_)))
+        return self._normalization.normalize(Vector(input_))
 
     @property
     def length(self) -> int:

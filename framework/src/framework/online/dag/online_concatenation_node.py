@@ -72,7 +72,8 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
         ]
         if context.is_query_context:
             return vectors
-        return [vector.normalize(L2Norm().norm(vector.value)) for vector in vectors]
+        l2_norm = L2Norm()
+        return [l2_norm.normalize(vector) for vector in vectors]
 
     def re_weight_vector(
         self,
@@ -87,7 +88,7 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
                 for part, parent in zip(parts, self.parents)
             ),
         )
-        return vector.normalize(L2Norm().norm(vector.value))
+        return L2Norm().normalize(vector)
 
     def __check_evaluation_inputs(
         self,

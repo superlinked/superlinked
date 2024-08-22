@@ -23,6 +23,9 @@ from superlinked.framework.common.data_types import NPArray, Vector
 
 class Normalization(ABC):
 
+    def normalize(self, vector: Vector) -> Vector:
+        return vector.normalize(self.norm(vector.without_negative_filter.value))
+
     @abstractmethod
     def norm(self, value: NPArray) -> float: ...
 
@@ -38,6 +41,7 @@ class Normalization(ABC):
 class L2Norm(Normalization):
     @override
     def norm(self, value: NPArray) -> float:
+        """Must be called with value that has no negative filter"""
         return linalg.norm(value)
 
     @override

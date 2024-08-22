@@ -68,7 +68,13 @@ class CategoricalSimilarityEmbedding(Embedding[list[str]], HasLength, HasDefault
         one_hot_encoding: NPArray = self.__n_hot_encode(
             inputs, context.is_query_context
         )
-        return Vector(one_hot_encoding)
+        negative_filter_indices = set(
+            ind
+            for ind in range(self.__length)
+            if ind not in self.__get_category_indices(inputs)
+        )
+        vector = Vector(one_hot_encoding, negative_filter_indices)
+        return self.normalization.normalize(vector)
 
     def __n_hot_encode(self, category_list: list[str], is_query: bool) -> NPArray:
         n_hot_encoding: NPArray = np.full(
@@ -78,13 +84,8 @@ class CategoricalSimilarityEmbedding(Embedding[list[str]], HasLength, HasDefault
         )
         category_indices: Sequence[int] = self.__get_category_indices(category_list)
         if category_indices:
-            n_hot_encoding[category_indices] = self.__get_normalized_vector_input()
+            n_hot_encoding[category_indices] = CATEGORICAL_ENCODING_VALUE
         return n_hot_encoding
-
-    def __get_normalized_vector_input(self) -> float:
-        vector_input = np.array([CATEGORICAL_ENCODING_VALUE])
-        vector = Vector(vector_input).normalize(self.normalization.norm(vector_input))
-        return vector.value[0]
 
     def __get_category_indices(self, text_input: list[str]) -> list[int]:
         return list(

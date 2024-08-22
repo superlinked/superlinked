@@ -192,10 +192,8 @@ class RecencyEmbedding(Embedding[int], HasLength):
         if z_value is not None:
             vector_input = np.append(vector_input, [z_value])
             negative_filter_indices.add(2)
-        recency_vector: Vector = Vector(
-            vector_input, negative_filter_indices
-        ).normalize(self.__normalization.norm(vector_input))
-        return recency_vector
+        recency_vector: Vector = Vector(vector_input, negative_filter_indices)
+        return self.__normalization.normalize(recency_vector)
 
     def __calculate_time_period_start(
         self,
