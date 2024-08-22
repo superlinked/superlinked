@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 from pathlib import Path
 
 import numpy as np
-from beartype.typing import cast
+from beartype.typing import Any, cast
 from huggingface_hub.file_download import (  # type:ignore[import-untyped]
     repo_folder_name,
 )
@@ -40,7 +41,7 @@ SENTENCE_TRANSFORMERS_MODEL_DIR: Path = (
 
 class SentenceTransformerEmbedding(Embedding[str], HasLength, HasDefaultVector):
     def __init__(self, model_name: str, normalization: Normalization) -> None:
-        local_files_only = self._model_is_downloaded(model_name)
+        local_files_only = self._is_model_downloaded(model_name)
         self._gpu_embedding_util = GpuEmbeddingUtil(Settings().GPU_EMBEDDING_THRESHOLD)
         self._embedding_model = SentenceTransformer(
             model_name,
@@ -62,11 +63,27 @@ class SentenceTransformerEmbedding(Embedding[str], HasLength, HasDefaultVector):
         self.__normalization = normalization
         self.__length = self._embedding_model.get_sentence_embedding_dimension() or 0
 
-    def _model_is_downloaded(self, model_name: str) -> bool:
+    def _is_model_downloaded(self, model_name: str) -> bool:
         return bool(model_name) and (
-            (SENTENCE_TRANSFORMERS_MODEL_DIR / model_name).exists()
-            or self._get_model_folder_path(model_name).exists()
+            any(
+                self._is_valid_model_directory(model_dir)
+                for model_dir in [
+                    SENTENCE_TRANSFORMERS_MODEL_DIR / model_name,
+                    self._get_model_folder_path(model_name),
+                ]
+            )
         )
+
+    def _is_valid_model_directory(self, directory: Path) -> bool:
+        if not directory.exists():
+            return False
+        incomplete_downloads = list(directory.glob("*.incomplete"))
+        self._delete_incomplete_downloads(incomplete_downloads)
+        return not incomplete_downloads
+
+    def _delete_incomplete_downloads(self, incomplete_downloads: list[Any]) -> None:
+        for incomplete_download in incomplete_downloads:
+            os.remove(incomplete_download)
 
     def _get_model_folder_path(self, model_name: str) -> Path:
         repo_id = (

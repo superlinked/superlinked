@@ -93,11 +93,9 @@ class NLQPydanticModelBuilder:
             param_info.schema_field,
             param_info.value,
         )
-        field_attrs: dict[str, Any] = {
-            "description": param_info.description,
-            "json_schema_extra": cls._create_json_schema_extra(param_info),
-        }
-        if param_info.value is not None or param_info.is_weight:
+        field_attrs: dict[str, Any] = {"description": param_info.description}
+        is_filter_value = param_info.op is not None
+        if is_filter_value or param_info.value is not None or param_info.is_weight:
             field_attrs["default"] = param_info.value
         field = Field(**field_attrs)  # type: ignore [pydantic-field]
         return field_type, field

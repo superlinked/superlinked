@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import annotations
 
-from beartype.typing import Sequence
+from beartype.typing import Sequence, cast
 from typing_extensions import Self
 
 from superlinked.framework.common.schema.event_schema_object import (
@@ -28,20 +27,21 @@ from superlinked.framework.common.schema.schema_object import (
     SchemaFieldDescriptor,
 )
 from superlinked.framework.common.schema.schema_type import SchemaType
-from superlinked.framework.common.schema.schema_validator import SchemaValidator
 
 # Exclude from documentation.
 __pdoc__ = {}
 __pdoc__["EventSchema"] = False
 
 
-def event_schema(cls: type[T]) -> type[T] | type[EventSchema]:
+def event_schema(cls: type[T]) -> type[T] | type[EventSchemaObject]:
     """
     Use this decorator to annotate your class as an event schema
     that can be used to represent events between other schemas.
     """
-    SchemaValidator(SchemaType.EVENT_SCHEMA).check_unannotated_members(cls)
-    return type(cls.__name__, (cls, EventSchema), dict(cls.__dict__))
+    return cast(
+        type[T] | type[EventSchemaObject],
+        SchemaFactory.decorate(cls, SchemaType.EVENT_SCHEMA),
+    )
 
 
 class EventSchema(EventSchemaObject):

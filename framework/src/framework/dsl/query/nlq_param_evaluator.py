@@ -86,10 +86,7 @@ class NLQParamEvaluator:
         the corresponding parameters you can set to express user intent best.
         """
         affected_spaces_text = self._generate_affected_spaces_text(model_class)
-        action_text = (
-            "Fill up the weights and values based on the user prompt if the default"
-            "value is None/null."
-        )
+        action_text = "Fill up the weights and values based on the user prompt if the default value is None/null."
         instructor_prompt = "\n####\n".join(
             (
                 self._without_line_breaks(persona_description),
@@ -211,7 +208,10 @@ class NLQParamEvaluator:
         field_detail_parts = [
             f" - {param_info.name} is a {is_weight_text}",
             (
-                f" that has to be {param_info.op.value.replace('_', ' ')}"
+                (
+                    " that should only be filled if the user wants to explicitly filter"
+                    f" to be {param_info.op.value.replace('_', ' ')}"
+                )
                 if param_info.op
                 else ""
             ),
@@ -227,7 +227,8 @@ class NLQParamEvaluator:
                 else ""
             ),
         ]
-        return "".join(part for part in field_detail_parts if part)
+        field_details_text = "".join(part for part in field_detail_parts if part)
+        return field_details_text
 
     def _without_line_breaks(self, text: str) -> str:
         python_multiline_string_delimiter = "\n        "
