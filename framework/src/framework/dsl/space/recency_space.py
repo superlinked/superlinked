@@ -156,7 +156,7 @@ class RecencySpace(Space):  # pylint: disable=too-many-instance-attributes
             max_period_time_str = (
                 f"{max_period_time.days} days"
                 if max_period_time.days
-                else f"{round(max_period_time.seconds / 3600, 2)} hours"
+                else f"{round(max_period_time.total_seconds() / 3600, 2)} hours"
             )
             logger.warning(
                 "Positive negative_filter value supplied (%s). This will lead to "

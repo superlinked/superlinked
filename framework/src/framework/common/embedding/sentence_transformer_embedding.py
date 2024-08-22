@@ -43,25 +43,27 @@ class SentenceTransformerEmbedding(Embedding[str], HasLength, HasDefaultVector):
     def __init__(self, model_name: str, normalization: Normalization) -> None:
         local_files_only = self._is_model_downloaded(model_name)
         self._gpu_embedding_util = GpuEmbeddingUtil(Settings().GPU_EMBEDDING_THRESHOLD)
-        self._embedding_model = SentenceTransformer(
-            model_name,
-            trust_remote_code=True,
-            local_files_only=local_files_only,
-            device="cpu",
-            cache_folder=str(SENTENCE_TRANSFORMERS_MODEL_DIR),
+        self._embedding_model = self._initialize_model(
+            model_name, local_files_only, "cpu"
         )
         self._bulk_embedding_model = None
         if self._gpu_embedding_util.is_gpu_embedding_enabled:
-            self._bulk_embedding_model = SentenceTransformer(
-                model_name,
-                trust_remote_code=True,
-                local_files_only=local_files_only,
-                device=self._gpu_embedding_util.gpu_device_type,
-                cache_folder=str(SENTENCE_TRANSFORMERS_MODEL_DIR),
+            self._bulk_embedding_model = self._initialize_model(
+                model_name, local_files_only, self._gpu_embedding_util.gpu_device_type
             )
-
         self.__normalization = normalization
         self.__length = self._embedding_model.get_sentence_embedding_dimension() or 0
+
+    def _initialize_model(
+        self, model_name: str, local_files_only: bool, device: str
+    ) -> SentenceTransformer:
+        return SentenceTransformer(
+            model_name,
+            trust_remote_code=True,
+            local_files_only=local_files_only,
+            device=device,
+            cache_folder=str(SENTENCE_TRANSFORMERS_MODEL_DIR),
+        )
 
     def _is_model_downloaded(self, model_name: str) -> bool:
         return bool(model_name) and (

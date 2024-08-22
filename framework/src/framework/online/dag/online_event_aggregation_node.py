@@ -49,8 +49,8 @@ from superlinked.framework.online.dag.online_node import OnlineNode
 
 class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLength):
     EFFECT_COUNT_KEY = "effect_count"
-    EFFECT_OLDEST_AGE_KEY = "effect_oldest_age"
-    EFFECT_AVG_AGE_KEY = "average_age"
+    EFFECT_OLDEST_TS_KEY = "effect_oldest_age"
+    EFFECT_AVG_TS_KEY = "average_age"
 
     def __init__(
         self,
@@ -210,20 +210,20 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         recalculated_effect_count = (
             stored_by_key.get(OnlineEventAggregationNode.EFFECT_COUNT_KEY) or 0
         ) + new_effect_count
-        recalculated_avg_age = self._calculate_avg_age(
+        recalculated_avg_ts = self._calculate_avg_ts(
             stored_by_key, parsed_schema, recalculated_effect_count, new_effect_count
         )
-        recalculated_oldest_effect = self._calculate_oldest_effect(
-            stored_by_key, parsed_schema
-        )
+        recalculated_oldest_ts = self._calculate_oldest_ts(stored_by_key, parsed_schema)
         self._write_updated_metadata(
             parsed_schema,
             recalculated_effect_count,
-            recalculated_avg_age,
-            recalculated_oldest_effect,
+            recalculated_avg_ts,
+            recalculated_oldest_ts,
         )
         return EventMetadata(
-            recalculated_effect_count, recalculated_avg_age, recalculated_oldest_effect
+            recalculated_effect_count,
+            recalculated_avg_ts,
+            recalculated_oldest_ts,
         )
 
     def _read_stored_metadata(self, parsed_schema: ParsedSchemaWithEvent) -> dict:
@@ -233,44 +233,44 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
             self._metadata_key,
             {
                 OnlineEventAggregationNode.EFFECT_COUNT_KEY: int,
-                OnlineEventAggregationNode.EFFECT_AVG_AGE_KEY: int,
-                OnlineEventAggregationNode.EFFECT_OLDEST_AGE_KEY: int,
+                OnlineEventAggregationNode.EFFECT_AVG_TS_KEY: int,
+                OnlineEventAggregationNode.EFFECT_OLDEST_TS_KEY: int,
             },
         )
 
-    def _calculate_avg_age(
+    def _calculate_avg_ts(
         self,
         stored_by_key: dict,
         parsed_schema: ParsedSchemaWithEvent,
         recalculated_effect_count: int,
         new_effect_count: int,
     ) -> int:
-        previous_avg_age = stored_by_key.get(
-            OnlineEventAggregationNode.EFFECT_AVG_AGE_KEY
+        previous_avg_ts = stored_by_key.get(
+            OnlineEventAggregationNode.EFFECT_AVG_TS_KEY
         )
-        if previous_avg_age and new_effect_count == 0:
-            return previous_avg_age
+        if previous_avg_ts and new_effect_count == 0:
+            return previous_avg_ts
         return (
             math.ceil(  # ceil is used in case they are 1s apart
                 (
-                    previous_avg_age * (recalculated_effect_count - new_effect_count)
+                    previous_avg_ts * (recalculated_effect_count - new_effect_count)
                     + parsed_schema.event_parsed_schema.created_at
                 )
                 / recalculated_effect_count
             )
-            if previous_avg_age
+            if previous_avg_ts
             else parsed_schema.event_parsed_schema.created_at
         )
 
-    def _calculate_oldest_effect(
+    def _calculate_oldest_ts(
         self, stored_by_key: dict, parsed_schema: ParsedSchemaWithEvent
     ) -> int:
-        previous_oldest_effect = stored_by_key.get(
-            OnlineEventAggregationNode.EFFECT_OLDEST_AGE_KEY
+        previous_oldest_ts = stored_by_key.get(
+            OnlineEventAggregationNode.EFFECT_OLDEST_TS_KEY
         )
         return (
-            min(previous_oldest_effect, parsed_schema.event_parsed_schema.created_at)
-            if previous_oldest_effect
+            min(previous_oldest_ts, parsed_schema.event_parsed_schema.created_at)
+            if previous_oldest_ts
             else parsed_schema.event_parsed_schema.created_at
         )
 
@@ -278,8 +278,8 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         self,
         parsed_schema: ParsedSchemaWithEvent,
         recalculated_effect_count: int,
-        recalculated_avg_age: int,
-        recalculated_oldest_effect: int,
+        recalculated_avg_ts: int,
+        recalculated_oldest_ts: int,
     ) -> None:
         self.storage_manager.write_node_data(
             parsed_schema.schema,
@@ -287,7 +287,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
             self._metadata_key,
             {
                 OnlineEventAggregationNode.EFFECT_COUNT_KEY: recalculated_effect_count,
-                OnlineEventAggregationNode.EFFECT_AVG_AGE_KEY: recalculated_avg_age,
-                OnlineEventAggregationNode.EFFECT_OLDEST_AGE_KEY: recalculated_oldest_effect,
+                OnlineEventAggregationNode.EFFECT_AVG_TS_KEY: recalculated_avg_ts,
+                OnlineEventAggregationNode.EFFECT_OLDEST_TS_KEY: recalculated_oldest_ts,
             },
         )

@@ -23,12 +23,14 @@ from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.space.aggregation import Aggregation
 from superlinked.framework.dsl.index.effect import EffectModifier
 
+WARP = 0.2  # ensures that the time modifier does not become too extreme, cannot be 1.0
+
 
 @dataclass
 class EventMetadata:
     effect_count: int
-    effect_avg_age: int
-    oldest_effect_age: int
+    effect_avg_ts: int
+    effect_oldest_ts: int
 
 
 class EventAggregator:
@@ -68,9 +70,9 @@ class EventAggregator:
         return (
             cls._calculate_time_modifier(
                 now,
-                event_metadata.oldest_effect_age,
-                event_metadata.effect_avg_age,
-                effect_modifier.max_age,
+                event_metadata.effect_oldest_ts,
+                event_metadata.effect_avg_ts,
+                effect_modifier.max_age_delta,
             )
             * event_metadata.effect_count
             * (1 - effect_modifier.temperature)
@@ -80,14 +82,18 @@ class EventAggregator:
     def _calculate_time_modifier(
         cls,
         now: int,
-        oldest_effect_age: int,
-        effect_avg_age: int,
-        max_age: timedelta | None,
+        effect_oldest_ts: int,
+        effect_avg_ts: int,
+        max_age_delta: timedelta | None,
     ) -> float:
-        if max_age and now == max_age.seconds:
-            return 1.0
-        lower_bound = now - max_age.seconds if max_age else oldest_effect_age
-        if lower_bound >= effect_avg_age:
+        max_age_delta_seconds = (
+            int(max_age_delta.total_seconds())
+            if max_age_delta
+            else now - effect_oldest_ts
+        )
+        avg_effect_delta = now - effect_avg_ts
+        if max_age_delta_seconds < avg_effect_delta:
             return 0.0
-        time_modifier = abs(effect_avg_age - lower_bound) / abs(now - lower_bound)
+        normalized_age = avg_effect_delta / max_age_delta_seconds
+        time_modifier = (1 - normalized_age) * (1 - WARP) + WARP
         return time_modifier

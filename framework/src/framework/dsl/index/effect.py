@@ -58,21 +58,21 @@ class Effect:
 @TypeValidator.wrap
 @dataclass
 class EffectModifier:
-    max_age: datetime.timedelta | None = None
+    max_age_delta: datetime.timedelta | None = None
     max_count: int | None = None
     temperature: float = 0.5
 
     def __post_init__(self) -> None:
         if not 0 <= self.temperature <= 1:
             raise ValueError("temperature must be between 0 and 1.")
-        if self.max_age is not None and self.max_age.total_seconds() == 0:
+        if self.max_age_delta is not None and self.max_age_delta.total_seconds() == 0:
             raise ValueError("max_age cannot be 0 seconds.")
         if self.max_count is not None and self.max_count < 0:
             raise ValueError("max_count cannot be smaller than 0.")
 
     def __str__(self) -> str:
         return (
-            f"{self.__class__.__name__}(max_age={self.max_age},"
+            f"{self.__class__.__name__}(max_age={self.max_age_delta},"
             f"max_count={self.max_count}, "
             f"temperature={self.temperature})"
         )
