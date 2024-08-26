@@ -55,6 +55,7 @@ __pdoc__["QueryFilterInformation"] = False
 class HardFilterInformation:
     op: ComparisonOperationType
     operand: ComparisonOperand[SchemaField]
+    group_key: int | None
     param_name: str
 
     def evaluate(
@@ -85,7 +86,7 @@ class HardFilterInformation:
                     f"Unsupported filter operand type: {type(value).__name__}, expected {expected_type.__name__}."
                 )
 
-        return ComparisonOperation(self.op, self.operand, value)
+        return ComparisonOperation(self.op, self.operand, value, self.group_key)
 
 
 @dataclass(frozen=True)

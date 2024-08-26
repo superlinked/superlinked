@@ -109,16 +109,27 @@ class MongoQuery:
     def _get_filters_dict(
         self, filters: Sequence[ComparisonOperation[Field]] | None
     ) -> dict[str, Any]:
-        vdb_filters = self._compile_filters(filters or [])
-        if len(vdb_filters) > 1:
-            return {
-                "$and": [
-                    MongoQuery._vdb_filters_to_dict(filter_) for filter_ in vdb_filters
-                ]
-            }
-        if vdb_filters:
-            return MongoQuery._vdb_filters_to_dict(vdb_filters[0])
-        return {}
+        if not filters:
+            return {}
+        grouped_filters = ComparisonOperation._group_filters_by_group_key(filters)
+        filter_dicts_by_group = {
+            group_key: [
+                self._vdb_filters_to_dict(filter_)
+                for filter_ in self._compile_filters(filters)
+            ]
+            for group_key, filters in grouped_filters.items()
+        }
+        if len(filter_dicts_by_group) == 1:
+            filter_dicts: list[dict[str, Any]] = next(
+                iter(filter_dicts_by_group.values())
+            )
+            return filter_dicts[0] if len(filter_dicts) == 1 else {"$and": filter_dicts}
+        return {
+            "$and": [
+                {("$and" if key is None else "$or"): filter_dicts}
+                for key, filter_dicts in filter_dicts_by_group.items()
+            ]
+        }
 
     def _compile_filters(
         self, filters: Sequence[ComparisonOperation[Field]]

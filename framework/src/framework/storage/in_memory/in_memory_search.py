@@ -156,13 +156,43 @@ class InMemorySearch:
         has_fields: Sequence[Field] | None = None,
     ) -> bool:
         """
-        Return true, if all filters are True to the entity.
+        Return true if all filters are True for the entity.
         """
         if not (filters or has_fields):
             return True
-        return all(
-            filter_.evaluate(raw_entity.get(cast(Field, filter_._operand).name))
-            for filter_ in filters
-        ) and all(
-            raw_entity.get(filter_.name) is not None for filter_ in has_fields or []
+        grouped_filters = ComparisonOperation._group_filters_by_group_key(filters)
+        filters_evaluation = InMemorySearch._evaluate_grouped_filters(
+            grouped_filters, raw_entity
         )
+        has_fields_evaluation = InMemorySearch._evaluate_has_fields(
+            has_fields, raw_entity
+        )
+        return filters_evaluation and has_fields_evaluation
+
+    @staticmethod
+    def _evaluate_grouped_filters(
+        grouped_filters: dict[int | None, list[ComparisonOperation[Field]]],
+        entity: dict[str, Any],
+    ) -> bool:
+        return all(
+            InMemorySearch.evaluate_group(group, group_key, entity)
+            for group_key, group in grouped_filters.items()
+        )
+
+    @staticmethod
+    def evaluate_group(
+        group: list[ComparisonOperation[Field]],
+        group_key: int | None,
+        entity: dict[str, Any],
+    ) -> bool:
+        evaluate_func = all if group_key is None else any
+        return evaluate_func(
+            filter_.evaluate(entity.get(cast(Field, filter_._operand).name))
+            for filter_ in group
+        )
+
+    @staticmethod
+    def _evaluate_has_fields(
+        has_fields: Sequence[Field] | None, entity: dict[str, Any]
+    ) -> bool:
+        return all(entity.get(field.name) is not None for field in has_fields or [])

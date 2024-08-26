@@ -15,8 +15,9 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections import defaultdict
 
-from beartype.typing import Any, Callable, Generic, Iterable, TypeVar
+from beartype.typing import Any, Callable, Generic, Iterable, Sequence, TypeVar
 
 from superlinked.framework.common.interface.comparison_operation_type import (
     ComparisonOperationType,
@@ -129,16 +130,74 @@ class ComparisonOperand(ABC, Generic[COT]):
         raise NotImplementedError()
 
 
+class _Or(Generic[COT]):
+    def __init__(
+        self,
+        operations: Sequence[ComparisonOperation[COT]],
+    ) -> None:
+        self.operations = [
+            ComparisonOperation(
+                operation._op,
+                operation._operand,
+                operation._other,
+                hash(self),
+            )
+            for operation in operations
+        ]
+
+    def __or__(self, other: COT) -> _Or:
+        return _Or.combine_operations(self, other)
+
+    def or_(self, other: COT) -> _Or:
+        return self | other
+
+    @staticmethod
+    def _built_in_equal(
+        left_operand: ComparisonOperand[COT], right_operand: object
+    ) -> bool:
+        if isinstance(left_operand, _Or) and isinstance(right_operand, _Or):
+            return right_operand.operations == left_operand.operations
+        return False
+
+    @staticmethod
+    def _built_in_not_equal(
+        left_operand: ComparisonOperand[COT], right_operand: object
+    ) -> bool:
+        return not _Or._built_in_equal(left_operand, right_operand)
+
+    @staticmethod
+    def combine_operations(first: COT | _Or, second: COT) -> _Or:
+        return _Or(_Or._extract_operations(first) + _Or._extract_operations(second))
+
+    @staticmethod
+    def _extract_operations(operation: COT | _Or) -> list[ComparisonOperation[COT]]:
+        if isinstance(operation, _Or):
+            return operation.operations
+        if isinstance(operation, ComparisonOperation):
+            return [operation]
+        raise ValueError(
+            f"operand of or clause must be {ComparisonOperation} or {_Or}, got {type(operation)}."
+        )
+
+
 class ComparisonOperation(Generic[COT]):
     def __init__(
         self,
         op: ComparisonOperationType,
         operand: ComparisonOperand[COT],
         other: object,
+        group_key: int | None = None,
     ) -> None:
         self._op = op
         self._operand = operand
         self._other = other
+        self._group_key = group_key
+
+    def __or__(self, other: Any) -> _Or:
+        return _Or([self]) | other
+
+    def or_(self, other: Any) -> _Or:
+        return self | other
 
     def __bool__(self) -> bool:
         return self._operand._get_built_in_operation(self._op)(
@@ -197,3 +256,12 @@ class ComparisonOperation(Generic[COT]):
         if not isinstance(self._other, Iterable):
             raise ValueError("Operand must be iterable.")
         return value not in self._other
+
+    @staticmethod
+    def _group_filters_by_group_key(
+        filters: Sequence[ComparisonOperation[COT]],
+    ) -> dict[int | None, list[ComparisonOperation[COT]]]:
+        grouped_filters = defaultdict(list)
+        for filter_ in filters:
+            grouped_filters[filter_._group_key].append(filter_)
+        return dict(grouped_filters)

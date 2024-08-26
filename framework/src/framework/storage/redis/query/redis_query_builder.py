@@ -52,14 +52,8 @@ class RedisQueryBuilder:
     def build_query(
         self, search_params: VDBKNNSearchParams, returned_fields: Sequence[Field]
     ) -> RedisQuery:
-        redis_filters = self._compile_filters_to_redis_filters(
-            search_params.filters or []
-        )
-
         vector_field_param_name = f"{search_params.vector_field.name}_param"
-        query_string = self._create_query_string(
-            redis_filters, search_params, vector_field_param_name
-        )
+        query_string = self._create_query_string(search_params, vector_field_param_name)
         query = self._init_query(query_string, search_params.limit, returned_fields)
         query_vector = self._encoder.encode_field(search_params.vector_field)
         query_params = {vector_field_param_name: query_vector}
@@ -94,23 +88,50 @@ class RedisQueryBuilder:
 
     def _create_query_string(
         self,
-        redis_filters: Sequence[RedisFilter],
         search_params: VDBKNNSearchParams,
         vector_field_param_name: str,
     ) -> str:
-        prefilters = [redis_filter.get_prefix() for redis_filter in redis_filters]
+        pre_filter_str = self.calculate_pre_filters_str(
+            search_params, vector_field_param_name
+        )
+        return (
+            f"{pre_filter_str}=>[KNN {search_params.limit} "
+            + f"@{search_params.vector_field.name} ${vector_field_param_name} AS {VECTOR_SCORE_ALIAS}]"
+        )
+
+    def calculate_pre_filters_str(
+        self,
+        search_params: VDBKNNSearchParams,
+        vector_field_param_name: str,
+    ) -> str:
+        grouped_filters = ComparisonOperation._group_filters_by_group_key(
+            search_params.filters or []
+        )
+        prefixes_by_group: dict[int | None, list[str]] = {
+            group_key: [
+                redis_filter.get_prefix()
+                for redis_filter in self._compile_filters_to_redis_filters(filters)
+            ]
+            for group_key, filters in grouped_filters.items()
+        }
         if search_params.radius is not None:
+            if None not in prefixes_by_group:
+                prefixes_by_group[None] = []
             radius_filter_str = self._create_radius_filter_str(
                 search_params.vector_field,
                 search_params.radius,
                 vector_field_param_name,
             )
-            prefilters.append(radius_filter_str)
-        prefilter_str = f"({' '.join(prefilters)})" if prefilters else "*"
-        return (
-            f"{prefilter_str}=>[KNN {search_params.limit} "
-            + f"@{search_params.vector_field.name} ${vector_field_param_name} AS {VECTOR_SCORE_ALIAS}]"
-        )
+            prefixes_by_group[None].append(radius_filter_str)
+        grouped_prefixes = [
+            f"({(' ' if group_key is None else '|').join(prefixes)})"
+            for group_key, prefixes in prefixes_by_group.items()
+        ]
+        if not grouped_prefixes:
+            return "*"
+        if len(grouped_prefixes) == 1:
+            return grouped_prefixes[0]
+        return f"({' '.join(grouped_prefixes)})"
 
     def _init_query(
         self, query_string: str, limit: int, returned_fields: Sequence[Field]

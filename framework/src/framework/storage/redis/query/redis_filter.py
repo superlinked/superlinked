@@ -84,4 +84,4 @@ class RedisFilter(VDBFilter):
             if operator_map == NUMBER_OPERATOR_MAP and op in three_member_ops
             else (self.field.name, value)
         )
-        return operator_map[op] % template_args
+        return f"({operator_map[op] % template_args})"

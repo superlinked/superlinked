@@ -24,6 +24,7 @@ from superlinked.framework.common.exception import (
 )
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
+    _Or,
 )
 from superlinked.framework.common.nlq.open_ai import OpenAIClientConfig
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
@@ -274,7 +275,8 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
         )
 
     def filter(
-        self, comparison_operation: ComparisonOperation[SchemaField]
+        self,
+        comparison_operation: ComparisonOperation[SchemaField] | _Or,
     ) -> QueryObj:
         """
         Add a 'filter' clause to the query. This filters the results from the db
@@ -283,6 +285,11 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
         filter(color_schema.color == "blue")
         filter(color_schema.color == Param("color_param"))
         filter(color_schema.color != "red")
+        filter(color_schema.rating > 3)
+        filter(color_schema.rating >= 3)
+        filter(color_schema.rating < 3)
+        filter(color_schema.rating <= 3)
+        filter((color_schema.color == "blue") | (color_schema.color == "red"))
 
         Args:
             comparison_operation ComparisonOperation[SchemaField]: The comparison operation.
@@ -290,33 +297,48 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
         Returns:
             Self: The query object itself.
         """
-        if type(comparison_operation._other) not in [
-            Param,
-            GenericClassUtil.get_single_generic_type(comparison_operation._operand),
-        ]:
-            raise QueryException(
-                f"Unsupported filter operand type: {type(comparison_operation._other).__name__}."
-            )
-        hard_filter_param = ParamInfo.init_with(
-            ParamGroup.HARD_FILTER,
-            cast(ParamInputType, comparison_operation._other),
-            cast(SchemaField, comparison_operation._operand),
-            None,
-            comparison_operation._op,
+        comparison_operations = (
+            comparison_operation.operations
+            if isinstance(comparison_operation, _Or)
+            else [comparison_operation]
         )
-        hard_filter_info = HardFilterInformation(
-            comparison_operation._op,
-            comparison_operation._operand,
-            hard_filter_param.name,
-        )
+        hard_filter_params_infos = [
+            self._create_hard_filter_param_and_info(operation)
+            for operation in comparison_operations
+        ]
+        hard_filter_params, hard_filter_infos = zip(*hard_filter_params_infos)
         return self.__alter(
             AlterParams(
                 hard_filter_params=self.query_param_info.hard_filter_params
-                + [hard_filter_param],
+                + list(hard_filter_params),
                 hard_filter_infos=self.query_filter_info.hard_filter_infos
-                + [hard_filter_info],
+                + list(hard_filter_infos),
             )
         )
+
+    def _create_hard_filter_param_and_info(
+        self, operation: ComparisonOperation
+    ) -> tuple[ParamInfo, HardFilterInformation]:
+        operand_type = type(operation._other)
+        expected_type = GenericClassUtil.get_single_generic_type(operation._operand)
+        if operand_type not in [Param, expected_type]:
+            raise QueryException(
+                f"Unsupported filter operand type: {operand_type.__name__}."
+            )
+        hard_filter_param = ParamInfo.init_with(
+            ParamGroup.HARD_FILTER,
+            cast(ParamInputType, operation._other),
+            cast(SchemaField, operation._operand),
+            None,
+            operation._op,
+        )
+        hard_filter_info = HardFilterInformation(
+            operation._op,
+            operation._operand,
+            operation._group_key,
+            hard_filter_param.name,
+        )
+        return hard_filter_param, hard_filter_info
 
     def __is_indexed_space(self, space: Space) -> bool:
         return self.index.has_space(space)

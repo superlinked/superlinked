@@ -196,6 +196,7 @@ class StorageManager:
                     cast(SchemaField, filter_._operand)
                 ),
                 filter_._other,
+                filter_._group_key,
             )
             for filter_ in filters
         ] + [self._entity_builder._admin_fields.schema_id.field == schema._schema_name]
