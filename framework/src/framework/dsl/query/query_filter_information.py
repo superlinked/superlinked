@@ -75,6 +75,8 @@ class HardFilterInformation:
         if value is None:
             return None
         expected_type = GenericClassUtil.get_single_generic_type(self.operand)
+        if expected_type in [list[str], list[float]]:
+            expected_type = list
         values_to_check = (
             value if self.op in ITERABLE_COMPARISON_OPERATION_TYPES else [value]
         )

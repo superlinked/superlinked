@@ -24,6 +24,8 @@ class ComparisonOperationType(Enum):
     LESS_EQUAL = "less_than_or_equal_to"
     IN = "in"
     NOT_IN = "not_in"
+    CONTAINS = "contains"
+    NOT_CONTAINS = "not_contains"
 
 
 ITERABLE_COMPARISON_OPERATION_TYPES = [

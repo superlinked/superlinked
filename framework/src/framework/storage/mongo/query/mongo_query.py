@@ -49,6 +49,8 @@ SUPPORTED_FILTER_DICT = {
     ComparisonOperationType.LESS_EQUAL: "$lte",
     ComparisonOperationType.IN: "$in",
     ComparisonOperationType.NOT_IN: "$nin",
+    ComparisonOperationType.CONTAINS: "$in",
+    ComparisonOperationType.NOT_CONTAINS: "$nin",
 }
 
 

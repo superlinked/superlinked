@@ -39,6 +39,11 @@ TEXT_OPERATOR_MAP: dict[ComparisonOperationType, str] = {
     ComparisonOperationType.NOT_EQUAL: '-@%s:"%s"',
 }
 
+STRING_LIST_OPERATOR_MAP: dict[ComparisonOperationType, str] = {
+    ComparisonOperationType.CONTAINS: "@%s:{%s}",
+    ComparisonOperationType.NOT_CONTAINS: "-@%s:{%s}",
+}
+
 
 @dataclass(frozen=True)
 class RedisFilter(VDBFilter):
@@ -52,6 +57,12 @@ class RedisFilter(VDBFilter):
             return self._join_operator(
                 operator_map, ComparisonOperationType.NOT_EQUAL, AND_OPERATOR
             )
+        if self.op in [
+            ComparisonOperationType.CONTAINS,
+            ComparisonOperationType.NOT_CONTAINS,
+        ]:
+            value = " | ".join(self.field_value.decode("utf-8").split(", "))
+            return self._fill_template(operator_map, self.op, value)
         if self.op in operator_map:
             return self._fill_template(operator_map, self.op, self.field_value)
         raise NotImplementedError(f"Unsupported comparison operation: {self.op}")
@@ -61,6 +72,8 @@ class RedisFilter(VDBFilter):
             return TEXT_OPERATOR_MAP
         if self.field.data_type in [FieldDataType.INT, FieldDataType.DOUBLE]:
             return NUMBER_OPERATOR_MAP
+        if self.field.data_type == FieldDataType.STRING_LIST:
+            return STRING_LIST_OPERATOR_MAP
         raise NotImplementedError(
             f"Unsupported filter field type: {self.field.data_type}"
         )

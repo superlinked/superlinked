@@ -290,7 +290,10 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
         filter(color_schema.rating < 3)
         filter(color_schema.rating <= 3)
         filter((color_schema.color == "blue") | (color_schema.color == "red"))
-
+        filter(color_schema.categories.contains(["bright", "matte"]))
+            - returns both bright and matte colors
+        filter(color_schema.categories.not_contains(["bright", "matte"]))
+            - returns colors that are non-bright and non-matte
         Args:
             comparison_operation ComparisonOperation[SchemaField]: The comparison operation.
 

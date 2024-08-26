@@ -175,12 +175,12 @@ class InMemorySearch:
         entity: dict[str, Any],
     ) -> bool:
         return all(
-            InMemorySearch.evaluate_group(group, group_key, entity)
+            InMemorySearch._evaluate_group(group, group_key, entity)
             for group_key, group in grouped_filters.items()
         )
 
     @staticmethod
-    def evaluate_group(
+    def _evaluate_group(
         group: list[ComparisonOperation[Field]],
         group_key: int | None,
         entity: dict[str, Any],

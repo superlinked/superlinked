@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 
 import numpy as np
 from beartype.typing import Any, Callable, cast
@@ -79,10 +78,10 @@ class RedisFieldEncoder:
         return string.decode("utf-8")
 
     def _encode_string_list(self, string_list: list[str]) -> bytes:
-        return str.encode(json.dumps(string_list))
+        return str.encode(", ".join(string_list), "utf-8")
 
     def _decode_string_list(self, string_list: bytes) -> list[str]:
-        return json.loads(string_list.decode("utf-8"))
+        return string_list.decode("utf-8").split(", ")
 
     def _encode_vector(self, vector: Vector) -> bytes:
         np_vector: np.ndarray
