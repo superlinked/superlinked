@@ -44,5 +44,6 @@ class OpenAIClient:
                 {"role": "system", "content": instructor_prompt},
                 {"role": "user", "content": prompt},
             ],
+            temperature=0.0,
         )
         return response.model_dump()
