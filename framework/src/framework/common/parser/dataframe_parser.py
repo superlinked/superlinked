@@ -93,8 +93,7 @@ class DataFrameParser(
                 schema_field=schema_cols[key], value=value
             )
             for key, value in record.items()
-            if key not in admin_field_names
-            and (bool(value) if isinstance(value, list) else not pd.isnull(value))
+            if key not in admin_field_names and self._field_has_non_null_value(value)
         ]
         id_: str = cast(str, record[self._id_name])
         if self._is_event_data_parser:
@@ -105,6 +104,10 @@ class DataFrameParser(
                 cast(int, record[self._created_at_name]),
             )
         return ParsedSchema(self._schema, id_, other_fields)
+
+    def _field_has_non_null_value(self, value: Any) -> bool:
+        values_to_check = value if isinstance(value, list) else [value]
+        return not value or not all(pd.isnull(v) for v in values_to_check)
 
     def _marshal(
         self,
