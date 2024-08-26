@@ -52,13 +52,18 @@ Classes
 
     ### Methods
 
-    `filter(self, comparison_operation: superlinked.framework.common.interface.comparison_operand.ComparisonOperation[superlinked.framework.common.schema.schema_object.SchemaField]) ‑> superlinked.framework.dsl.query.query.QueryObj`
+    `filter(self, comparison_operation: Union[superlinked.framework.common.interface.comparison_operand.ComparisonOperation[superlinked.framework.common.schema.schema_object.SchemaField], superlinked.framework.common.interface.comparison_operand._Or]) ‑> superlinked.framework.dsl.query.query.QueryObj`
     :   Add a 'filter' clause to the query. This filters the results from the db
         to only contain items based on the filtering input.
         E.g:
         filter(color_schema.color == "blue")
         filter(color_schema.color == Param("color_param"))
         filter(color_schema.color != "red")
+        filter(color_schema.rating > 3)
+        filter(color_schema.rating >= 3)
+        filter(color_schema.rating < 3)
+        filter(color_schema.rating <= 3)
+        filter((color_schema.color == "blue") | (color_schema.color == "red"))
         
         Args:
             comparison_operation ComparisonOperation[SchemaField]: The comparison operation.
