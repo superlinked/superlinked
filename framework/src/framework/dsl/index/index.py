@@ -65,7 +65,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
         effects: ValidatedEffectList | None = None,
         max_age: datetime.timedelta | None = None,
         max_count: int | None = None,
-        temperature: float = 0.5,
+        temperature: int | float = 0.5,
     ) -> None:
         """
         Initialize the Index.

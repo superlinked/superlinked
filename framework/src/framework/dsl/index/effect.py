@@ -60,7 +60,7 @@ class Effect:
 class EffectModifier:
     max_age_delta: datetime.timedelta | None = None
     max_count: int | None = None
-    temperature: float = 0.5
+    temperature: int | float = 0.5
 
     def __post_init__(self) -> None:
         if not 0 <= self.temperature <= 1:

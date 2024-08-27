@@ -85,7 +85,12 @@ class OnlineAggregationNode(DefaultOnlineNode[AggregationNode, Vector], HasLengt
     ) -> Vector:
         self._check_evaluation_inputs(parent_results)
         weighted_vectors = self._get_weighted_vectors(parent_results)
+        if self._no_event_present(weighted_vectors):
+            return weighted_vectors[0].item
         return self.node.aggregation.aggregate_weighted(weighted_vectors, context)
+
+    def _no_event_present(self, weighted_vectors: Sequence[Weighted[Vector]]) -> bool:
+        return len(weighted_vectors) == 1
 
     def _check_evaluation_inputs(
         self,
