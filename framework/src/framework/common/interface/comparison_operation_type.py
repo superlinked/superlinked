@@ -32,3 +32,8 @@ ITERABLE_COMPARISON_OPERATION_TYPES = [
     ComparisonOperationType.IN,
     ComparisonOperationType.NOT_IN,
 ]
+
+LIST_TYPE_COMPATIBLE_TYPES = ITERABLE_COMPARISON_OPERATION_TYPES + [
+    ComparisonOperationType.CONTAINS,
+    ComparisonOperationType.NOT_CONTAINS,
+]

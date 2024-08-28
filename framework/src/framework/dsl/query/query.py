@@ -30,13 +30,11 @@ from superlinked.framework.common.nlq.open_ai import OpenAIClientConfig
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema import T
 from superlinked.framework.common.schema.schema_object import SchemaField
-from superlinked.framework.common.util.generic_class_util import GenericClassUtil
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.query.param import (
     IntParamType,
     NumericParamType,
-    Param,
     ParamInputType,
     ParamType,
     StringParamType,
@@ -47,6 +45,7 @@ from superlinked.framework.dsl.query.query_filter_information import (
     QueryFilterInformation,
     SimilarFilterInformation,
 )
+from superlinked.framework.dsl.query.query_filter_validator import QueryFilterValidator
 from superlinked.framework.dsl.query.query_param_information import (
     ParamGroup,
     ParamInfo,
@@ -322,12 +321,9 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
     def _create_hard_filter_param_and_info(
         self, operation: ComparisonOperation
     ) -> tuple[ParamInfo, HardFilterInformation]:
-        operand_type = type(operation._other)
-        expected_type = GenericClassUtil.get_single_generic_type(operation._operand)
-        if operand_type not in [Param, expected_type]:
-            raise QueryException(
-                f"Unsupported filter operand type: {operand_type.__name__}."
-            )
+        QueryFilterValidator.validate_operation_operand_type(
+            operation, allow_param=True
+        )
         hard_filter_param = ParamInfo.init_with(
             ParamGroup.HARD_FILTER,
             cast(ParamInputType, operation._other),

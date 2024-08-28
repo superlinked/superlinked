@@ -17,7 +17,7 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass, field
 
-from beartype.typing import Iterable, Sequence
+from beartype.typing import Sequence
 
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.exception import QueryException
@@ -26,7 +26,6 @@ from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
 )
 from superlinked.framework.common.interface.comparison_operation_type import (
-    ITERABLE_COMPARISON_OPERATION_TYPES,
     ComparisonOperationType,
 )
 from superlinked.framework.common.schema.schema_object import SchemaField
@@ -36,6 +35,7 @@ from superlinked.framework.dsl.query.predicate.binary_predicate import (
     LooksLikePredicate,
     SimilarPredicate,
 )
+from superlinked.framework.dsl.query.query_filter_validator import QueryFilterValidator
 from superlinked.framework.dsl.query.query_param_information import (
     ParamInfo,
     QueryParamInformation,
@@ -74,21 +74,11 @@ class HardFilterInformation:
         value = hard_filter_param.value
         if value is None:
             return None
-        expected_type = GenericClassUtil.get_single_generic_type(self.operand)
-        if expected_type in [list[str], list[float]]:
-            expected_type = list
-        values_to_check = (
-            value if self.op in ITERABLE_COMPARISON_OPERATION_TYPES else [value]
+        operation = ComparisonOperation(self.op, self.operand, value, self.group_key)
+        QueryFilterValidator.validate_operation_operand_type(
+            operation, allow_param=False
         )
-        if not isinstance(values_to_check, Iterable):
-            raise QueryException("Filter operand must be iterable.")
-        for value_to_check in values_to_check:
-            if not isinstance(value_to_check, expected_type):
-                raise QueryException(
-                    f"Unsupported filter operand type: {type(value).__name__}, expected {expected_type.__name__}."
-                )
-
-        return ComparisonOperation(self.op, self.operand, value, self.group_key)
+        return operation
 
 
 @dataclass(frozen=True)
