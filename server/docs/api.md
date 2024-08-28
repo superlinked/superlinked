@@ -54,7 +54,7 @@ Successful response (200 OK):
 ### Trigger the data load
 
 To initiate the data load, invoke its endpoint. This will spawn an asynchronous task `DataLoaderSource` by its name as defined in your `app.py`. To trigger the endpoint, simply send a request with `curl` as shown below. The response should be 202 Accepted.
-If the name you provided is not found in the system, a 404 NOT FOUND will be returned. If you try to start it while it is already running, a 409 CONFLICT will be returned.
+If the name you provided is not found in the system, a 404 NOT FOUND will be returned. See the logs to check the result of that task.
 
 ```bash
 curl -X POST 'http://localhost:8080/data-loader/<NAME_OF_YOUR_DATA_LOADER>/run'
@@ -63,25 +63,5 @@ Successful response (200 OK):
 ```JSON
 {
     "result": "Background task successfully started with name: <NAME_OF_YOUR_DATA_LOADER>",
-}
-```
-
-### See the status of your tasks
-
-To check if your data is still being loaded to the system, you can trigger the status endpoint. The endpoint needs the name of your data loader. If you have multiple of them, you need to send one request for each task. The endpoint will return with 200 if the given task exists in the system and 404 if not. The response will be a JSON with a human readable explanation what happened. If it failed, you still get a 200 with details in the body.
-
-```bash
-curl -X GET 'http://localhost:8080/data-loader/<NAME_OF_YOUR_DATA_LOADER>/status
-```
-Successful response (200 OK):
-```JSON
-{
-    "result": "Task is still running",
-}
-```
-If the data loader is not found by its name in the system (404 Not found):
-```JSON
-{
-    "result": "Task not found with name: <NAME_OF_YOUR_DATA_LOADER>",
 }
 ```

@@ -21,6 +21,7 @@ services:
       - ./cache:/code/data
     environment:
       - APP_MODULE_PATH=data.src.app
+      - WORKER_COUNT=1
     ports:
       - 8080:8080
     env_file:

@@ -20,11 +20,7 @@ from fastapi_restful.cbv import cbv
 from pydantic import BaseModel
 from starlette import status
 
-from executor.app.exception.exception import (
-    DataLoaderAlreadyRunningException,
-    DataLoaderNotFoundException,
-    DataLoaderTaskNotFoundException,
-)
+from executor.app.exception.exception import DataLoaderNotFoundException
 from executor.app.service.data_loader import DataLoader
 from executor.app.service.supervisor_service import SupervisorService
 
@@ -76,28 +72,6 @@ class ManagementRouter:
             return JSONResponse(
                 content={"result": f"Data load initiation failed, no source found with name: {name}"},
                 status_code=status.HTTP_404_NOT_FOUND,
-            )
-        except DataLoaderAlreadyRunningException:
-            return JSONResponse(
-                content={"result": f"Data load already running with name: {name}"},
-                status_code=status.HTTP_409_CONFLICT,
-            )
-
-    @router.get(
-        "/data-loader/{name}/status",
-        summary=(
-            "Returns the status of a specific data loader task by its name. "
-            "200 OK with result if exists, otherwise 404 NOT FOUND."
-        ),
-        status_code=status.HTTP_200_OK,
-    )
-    async def get_data_loader_status(self, name: str) -> JSONResponse:
-        try:
-            task_status = self.__data_loader.get_task_status_by_name(name)  # pylint: disable=no-member
-            return JSONResponse(content={"result": task_status}, status_code=status.HTTP_200_OK)
-        except DataLoaderTaskNotFoundException:
-            return JSONResponse(
-                content={"result": f"Task not found with name: {name}"}, status_code=status.HTTP_404_NOT_FOUND
             )
 
     @router.get(

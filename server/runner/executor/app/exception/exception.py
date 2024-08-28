@@ -23,11 +23,3 @@ class FilesNotFoundException(Exception):
 
 class DataLoaderNotFoundException(Exception):
     pass
-
-
-class DataLoaderAlreadyRunningException(Exception):
-    pass
-
-
-class DataLoaderTaskNotFoundException(Exception):
-    pass

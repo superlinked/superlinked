@@ -2,7 +2,7 @@
 
 The application's main logic resides in the `app.py` file. This is where you define your application's structure and behavior using the Superlinked library.
 
-By default, all examples within this documentation utilize an in-memory database. This configuration is optimal for testing and initial experimentation with the Superlinked framework. For detailed instructions on configuring and employing alternative vector databases, please refer to the [vector databases documentation.](vector_databases.md)
+By default, all examples within this documentation utilize an in-memory database with a single worker. This configuration is optimal for testing and initial experimentation with the Superlinked framework. For detailed instructions on configuring and employing alternative vector databases, please refer to the [vector databases documentation.](vector_databases.md). For information on how to scale the server, read the [Scaling the Server with Concurrent Workers](#scaling-the-server-with-concurrent-workers) section.
 
 To start using the system, you can use the example application located [here](example/app.py).
 You can find more complex examples how to construct the spaces and the queries in the [Superlinked notebooks](https://github.com/superlinked/superlinked/tree/main)
@@ -234,4 +234,8 @@ services:
 
 To activate GPU support in Superlinked, configure the `GPU_EMBEDDING_THRESHOLD` environment variable within the [.env](../runner/executor/.env) file for the executor service. Ensure that this value does not exceed the `ONLINE_PUT_CHUNK_SIZE` specified in the same configuration file. The appropriate threshold value is contingent upon the computational capabilities of the server's GPU and CPU; however, it is recommended to set a minimum threshold of 10000. This parameter determines the minimum size of data batches for which GPU acceleration is employed, thereby enhancing the performance of bulk embedding operations. A value of 0 indicates that GPU acceleration is disabled during the embedding process.
 
+### Scaling the Server with Concurrent Workers
 
+To enhance the server's throughput, it is feasible to deploy multiple worker processes. This can be configured by modifying the `WORKER_COUNT` parameter in the [compose.yaml](../compose.yaml) file, initially set to `WORKER_COUNT=1`. For optimal configuration, empirical benchmarking is recommended, though a heuristic approach suggests allocating one worker per virtual CPU.
+
+> Important to note: When scaling to multiple workers, the utilization of an in-memory database becomes inaccessible. It is crucial to transition to a persistent vector database, as provided by the connectors available within the Superlinked ecosystem.

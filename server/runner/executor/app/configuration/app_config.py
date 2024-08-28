@@ -21,5 +21,6 @@ class AppConfig(BaseSettings):
     LOG_LEVEL: str
     PERSISTENCE_FOLDER_PATH: str
     DISABLE_RECENCY_SPACE: bool
+    WORKER_COUNT: int
 
     model_config = SettingsConfigDict(env_file="executor/.env", extra="ignore")

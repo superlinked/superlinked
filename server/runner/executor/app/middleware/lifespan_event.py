@@ -26,6 +26,7 @@ from superlinked.framework.dsl.executor.rest.rest_executor import RestExecutor
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.registry.superlinked_registry import SuperlinkedRegistry
 from superlinked.framework.dsl.space.recency_space import RecencySpace
+from superlinked.framework.dsl.storage.in_memory_vector_database import InMemoryVectorDatabase
 
 from executor.app.configuration.app_config import AppConfig
 from executor.app.service.data_loader import DataLoader
@@ -72,6 +73,7 @@ def _setup_executors(
         if isinstance(executor, RestExecutor):
             logger.info("Found an executor, registering the endpoints")
             _validate_recency_space(executor, app_config)
+            _validate_in_memory_with_multiple_workers(executor, app_config)
             try:
                 rest_app = executor.run()
             except Exception:  # pylint: disable=broad-exception-caught
@@ -80,6 +82,15 @@ def _setup_executors(
             data_loader.register_data_loader_sources(rest_app.data_loader_sources)
             persistence_service.register(rest_app.storage_manager._vdb_connector)
     _register_routes(app, rest_app)
+
+
+def _validate_in_memory_with_multiple_workers(executor: RestExecutor, app_config: AppConfig) -> None:
+    if isinstance(executor._vector_database, InMemoryVectorDatabase) and app_config.WORKER_COUNT > 1:
+        msg = (
+            "In-memory database is not compatible with configurations exceeding a single worker. "
+            "Reduce the worker count to one or employ a persistent vector database."
+        )
+        raise ValueError(msg)
 
 
 def _validate_recency_space(executor: RestExecutor, app_config: AppConfig) -> None:
