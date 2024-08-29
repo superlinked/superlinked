@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -57,12 +58,22 @@ class SentenceTransformerEmbedding(Embedding[str], HasLength, HasDefaultVector):
     def _initialize_model(
         self, model_name: str, local_files_only: bool, device: str
     ) -> SentenceTransformer:
-        return SentenceTransformer(
-            model_name,
-            trust_remote_code=True,
-            local_files_only=local_files_only,
-            device=device,
-            cache_folder=str(SENTENCE_TRANSFORMERS_MODEL_DIR),
+        with warnings.catch_warnings():
+            self._suppress_transformers_future_warning()
+            return SentenceTransformer(
+                model_name,
+                trust_remote_code=True,
+                local_files_only=local_files_only,
+                device=device,
+                cache_folder=str(SENTENCE_TRANSFORMERS_MODEL_DIR),
+            )
+
+    def _suppress_transformers_future_warning(self) -> None:
+        # TODO remove when transformers>=4.45
+        warnings.filterwarnings(
+            "ignore",
+            category=FutureWarning,
+            message=(".*`clean_up_tokenization_spaces` was not set..*"),
         )
 
     def _is_model_downloaded(self, model_name: str) -> bool:
