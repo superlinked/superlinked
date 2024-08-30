@@ -28,6 +28,9 @@ from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.space.normalization import ConstantNorm, Normalization
 from superlinked.framework.common.util import time_util
 
+MAX_PERIOD_TIME_X_COORDINATE: int = -3
+MAX_PERIOD_TIME_Y_COORDINATE: int = -2
+
 
 class RecencyEmbedding(Embedding[int], HasLength):
     def __init__(
@@ -37,7 +40,10 @@ class RecencyEmbedding(Embedding[int], HasLength):
         time_period_hour_offset: timedelta,
         negative_filter: float = 0.0,
     ) -> None:
-        self.__period_time_list: list[PeriodTime] = period_time_list
+        # sort period times to ensure the last vector part corresponds to the max period_time
+        self.__period_time_list: list[PeriodTime] = sorted(
+            period_time_list, key=lambda x: x.period_time.total_seconds()
+        )
         self.__negative_filter: float = float(negative_filter)
         self.__max_period_time: PeriodTime = max(
             self.__period_time_list, key=lambda p: p.period_time
@@ -110,10 +116,11 @@ class RecencyEmbedding(Embedding[int], HasLength):
         full_circle_period_time: float = period_time_in_secs * 4
 
         x_value, y_value = (
-            denormalized.value[0],
-            denormalized.value[1],
+            denormalized.value[MAX_PERIOD_TIME_X_COORDINATE],
+            denormalized.value[MAX_PERIOD_TIME_Y_COORDINATE],
         )
-        if x_value == 0 or y_value == 0:
+
+        if (x_value == 0) and (y_value == 0):
             created_at = time_period_start - period_time_in_secs - 1
             return int(created_at)
 
@@ -190,7 +197,7 @@ class RecencyEmbedding(Embedding[int], HasLength):
         vector_input = np.array([x_value, y_value])
         negative_filter_indices = set()
         if z_value is not None:
-            vector_input = np.append(vector_input, [z_value])
+            vector_input = np.append(vector_input, np.array([z_value]))
             negative_filter_indices.add(2)
         recency_vector: Vector = Vector(vector_input, negative_filter_indices)
         return self.__normalization.normalize(recency_vector)
