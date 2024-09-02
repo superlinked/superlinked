@@ -13,6 +13,7 @@
 # limitations under the License.
 
 
+import structlog
 from beartype.typing import Any, Sequence
 
 from superlinked.framework.common.dag.context import (
@@ -44,6 +45,8 @@ from superlinked.framework.dsl.query.query_param_information import (
 from superlinked.framework.dsl.query.query_vector_factory import QueryVectorFactory
 from superlinked.framework.dsl.query.result import Result, ResultEntry
 
+logger = structlog.getLogger()
+
 
 class QueryExecutor:
     """
@@ -67,6 +70,9 @@ class QueryExecutor:
         self.app = app
         self.query_obj = query_obj
         self.query_vector_factory = query_vector_factory
+        self._logger = logger.bind(
+            schema=self.query_obj.schema._schema_name,
+        )
 
     def query(self, **params: Any) -> Result:
         """
@@ -89,6 +95,10 @@ class QueryExecutor:
             self.query_obj.query_filter_info, query_param_info
         )
         entities: Sequence[SearchResultItem] = self._knn_search(knn_search_params)
+        self._logger.info(
+            "query executed",
+            number_of_results=len(entities),
+        )
         return Result(
             self.query_obj.schema,
             self._map_entities_to_result_entries(self.query_obj.schema, entities),

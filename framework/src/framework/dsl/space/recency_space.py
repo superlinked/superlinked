@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 from datetime import timedelta
 
+import structlog
 from beartype.typing import Mapping
 from typing_extensions import override
 
@@ -30,7 +30,7 @@ from superlinked.framework.common.util.named_function_evaluator import NamedFunc
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
-logger = logging.getLogger()
+logger = structlog.getLogger()
 
 DEFAULT_PERIOD_TIME = PeriodTime(period_time=timedelta(days=14))
 
@@ -159,21 +159,19 @@ class RecencySpace(Space):  # pylint: disable=too-many-instance-attributes
                 else f"{round(max_period_time.total_seconds() / 3600, 2)} hours"
             )
             logger.warning(
-                "Positive negative_filter value supplied (%s). This will lead to "
-                "old items (older than %s) having recency scores of "
-                "%s.\nMeanwhile the largest recency score possible for the most "
-                "recent items is around %s, and the score at %s will be 0. "
+                "Positive negative_filter value was supplied. This will lead to "
+                "old items (older than max_period_time) having recency scores of "
+                "negative_filter.\nMeanwhile the largest recency score possible for the most "
+                "recent items is around the sum of weights, and the score at max_period_time will be 0. "
                 "\nUse with caution.",
-                self.negative_filter,
-                max_period_time_str,
-                self.negative_filter,
-                sum_weights,
-                max_period_time_str,
+                negative_filter=self.negative_filter,
+                max_period_time=max_period_time_str,
+                sum_of_weights=sum_weights,
             )
 
         if any(param.weight < 0 for param in self.period_time_list):
             logger.warning(
-                "Negative weight supplied for some period_time_param. This can lead to very strange "
+                "Negative weight was supplied for some period_time_param. This can lead to very strange "
                 "recency score curves. Use with caution. \n"
                 "To better understand your recency scores use RecencyPlotter."
                 "It can be imported from `superlinked.evaluation.charts.recency_plotter`. \n"

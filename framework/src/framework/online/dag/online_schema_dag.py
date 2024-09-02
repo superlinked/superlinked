@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import structlog
 from beartype.typing import cast
 
 from superlinked.framework.common.dag.context import ExecutionContext
@@ -32,6 +33,8 @@ from superlinked.framework.online.dag.online_schema_field_node import (
     OnlineSchemaFieldNode,
 )
 
+logger = structlog.getLogger()
+
 
 class OnlineSchemaDag:
     """
@@ -47,6 +50,9 @@ class OnlineSchemaDag:
             OnlineIndexNode,
             [node for node in self.__nodes if len(node.children) == 0][0],
         )
+        self._logger = logger.bind(
+            schema=schema._schema_name,
+        )
 
     @property
     def nodes(self) -> list[OnlineNode]:
@@ -61,7 +67,12 @@ class OnlineSchemaDag:
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
     ) -> list[EvaluationResult[Vector]]:
-        return self.leaf_node.evaluate_next(parsed_schemas, context)
+        result = self.leaf_node.evaluate_next(parsed_schemas, context)
+        self._logger.info(
+            "online schema dag evaluated",
+            number_of_parsed_schemas=len(parsed_schemas),
+        )
+        return result
 
     def __validate(self, schema: SchemaObject, nodes: list[OnlineNode]) -> None:
         class_name = self.__class__.__name__
