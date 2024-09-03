@@ -51,6 +51,8 @@ class FileObjectSerializer(ObjectSerializer):
                     if os.stat(file_with_path).st_size >= EMPTY_JSON_OBJECT_SIZE:
                         result = json.load(file)
                         logger.info("Database successfully restored from file: %s", file_with_path)
+            else:
+                logger.info("No file available for database restoration at path: %s", file_with_path)
         except json.JSONDecodeError:
             logger.exception("File is present but contains invalid data. File: %s", file_with_path)
         except Exception:  # pylint: disable=broad-exception-caught

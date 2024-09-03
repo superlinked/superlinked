@@ -8,7 +8,7 @@ To use Superlinked with Redis, you will need several Redis modules. The simplest
 
 Once your Redis instance is up and running, ensure it is accessible from the server that will use it. Additionally, configure the necessary authentication settings as described below.
 
-## Modifications in app.py
+## Modifications in your configuration
 
 To integrate Redis, you need to add the `RedisVectorDatabase` class and include it in the executor. Here’s how you can do it:
 

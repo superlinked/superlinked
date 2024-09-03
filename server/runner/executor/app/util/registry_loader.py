@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import logging
+import pkgutil
 from importlib import import_module
 
 from superlinked.framework.dsl.registry.superlinked_registry import SuperlinkedRegistry
@@ -23,12 +24,21 @@ logger = logging.getLogger(__name__)
 class RegistryLoader:
     @staticmethod
     def get_registry(app_module_path: str) -> SuperlinkedRegistry | None:
+        superlinked_registry = None
         try:
-            return import_module(app_module_path).SuperlinkedRegistry
+            package = import_module(app_module_path)
+            for _, module_name, is_pkg in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
+                if not is_pkg:
+                    try:
+                        module = import_module(module_name)
+                        if hasattr(module, "SuperlinkedRegistry"):
+                            superlinked_registry = module.SuperlinkedRegistry
+                    except AttributeError:
+                        logger.exception("SuperlinkedRegistry not found in module: %s", module_name)
+                    except Exception:  # pylint: disable=broad-except
+                        logger.exception("Error loading SuperlinkedRegistry from %s", module_name)
         except ImportError:
-            logger.exception("Module not found at: %s", app_module_path)
-        except AttributeError:
-            logger.exception("SuperlinkedRegistry not found in module: %s", app_module_path)
-        except Exception:  # pylint: disable=broad-exception-caught
-            logger.exception("An unexpected error occurred while loading the module at: %s", app_module_path)
-        return None
+            logger.exception("Package not found at: %s", app_module_path)
+        except Exception:  # pylint: disable=broad-except
+            logger.exception("An unexpected error occurred while loading the package at: %s", app_module_path)
+        return superlinked_registry

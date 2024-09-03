@@ -60,16 +60,16 @@ class S3ResourceHandler(ResourceHandler):
             return client
 
     def poll(self) -> None:
-        """
-        Poll files from an S3 bucket and download new or modified files.
-        """
-        bucket = self.resource.Bucket(self.get_bucket())
+        notification_needed = False
+        bucket_name = self.get_bucket()
+        bucket = self.resource.Bucket(bucket_name)
         for obj in bucket.objects.filter(Prefix=self.app_location.path):
-            self.check_and_download(obj.last_modified, obj.key)
+            if self.is_object_outdated(obj.last_modified, obj.key):
+                self.download_file(bucket_name, obj.key, self.get_destination_path(obj.key))
+                notification_needed = True
 
-    def download_file(self, _: str | None, object_name: str, download_path: str) -> None:
-        """
-        Download a file from S3 to the specified path.
-        """
-        bucket = self.get_bucket()
-        self.client.download_file(Bucket=bucket, Key=object_name, Filename=download_path)
+        if notification_needed:
+            self.notify_executor()
+
+    def _download_file(self, bucket_name: str, object_name: str, download_path: str) -> None:
+        self.client.download_file(Bucket=bucket_name, Key=object_name, Filename=download_path)

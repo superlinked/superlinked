@@ -1,7 +1,6 @@
-version: "3"
-
 services:
   poller:
+    image: poller
     build:
       context: runner
       dockerfile: poller/Dockerfile
@@ -14,13 +13,14 @@ services:
   executor:
     depends_on:
       - poller
+    image: executor
     build:
       context: runner
       dockerfile: executor/Dockerfile
     volumes:
       - ./cache:/code/data
     environment:
-      - APP_MODULE_PATH=data.src.app
+      - APP_MODULE_PATH=data.src
       - WORKER_COUNT=1
     ports:
       - 8080:8080

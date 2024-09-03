@@ -10,7 +10,7 @@ Before you can use this environment, you need to ensure that you have the follow
 - Python 3.11 or higher. You can download it from [here](https://www.python.org/downloads/).
 - Docker with the Compose plugin. You can download Docker from [here](https://www.docker.com/products/docker-desktop) and learn how to use the Compose plugin from [here](https://docs.docker.com/compose/).
 - `Poetry` and `pyenv` installed on the machine. Installation steps for `Poetry` can be found [here](https://python-poetry.org/docs/#installation). For `pyenv` installation, please follow [these instructions](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation).
-- An S3 bucket if you are using AWS or a GCS bucket if you are using GCP. This bucket is needed to store the `app.py` file, which contains your application's code. This setup allows you to make changes to your application without needing to SSH into the server and edit the `app.py` file in the directory with each change. You can learn how to create an S3 bucket from [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) and a GCS bucket from [here](https://cloud.google.com/storage/docs/creating-buckets). Or take a look at our simplified [docs](docs/bucket.md).
+- An S3 bucket if you are using AWS or a GCS bucket if you are using GCP. This bucket is needed to store the configuration files, which contains your application's code. This setup allows you to make changes to your application without needing to SSH into the server and edit the files in the directory with each change. You can learn how to create an S3 bucket from [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) and a GCS bucket from [here](https://cloud.google.com/storage/docs/creating-buckets). Or take a look at our simplified [docs](docs/bucket.md).
 
 ## How to start the application
 
@@ -24,10 +24,10 @@ Once you have all the prerequisites, you can set up and deploy the environment b
 
 1. **Activate the Virtual Environment**: Source the environment that was just created by the `init-venv.sh` script. Enter the `runner/` directory and use the command `source "$(poetry env info --path)/bin/activate"` to activate the environment.
 
-1. **Configure the Application**: Edit the `config/config.yaml` file to include the bucket URI for `app.py`. The URI should end with `app.py`. This configuration allows the application to know where to find the `app.py` file in your bucket.
-    > **Note**: The default value is `local`. If this is set, the `app.py` location is automatically set to the `src/app.py` location inside the repository's directory.
+2. **Configure the Application**: Edit the `config/config.yaml` file to include the bucket URI for your superlinked configuration file(s). The URI should end with the name of your directory where the files are located. This configuration allows the application to know where to find your files in the bucket.
+    > **Note**: The default value is `local`. If this is set, the location is automatically set to the `src/` location inside the repository's directory.
 
-1. **Deploy the Application**: Finally, start the application by running the `deploy.py` script in the `tools/` directory with the `python tools/deploy.py up` command. This will deploy the application based on the configuration you provided in the previous step.
+3. **Deploy the Application**: Finally, start the application by running the `deploy.py` script in the `tools/` directory with the `python tools/deploy.py up` command. This will deploy the application based on the configuration you provided in the previous step.
 
 This will start the environment and make it ready for use.
 
@@ -58,7 +58,7 @@ This command will stop the application, remove the cache directory, and remove t
 ## Usage
 
 There are two main parts of the system which you can interact with:
-- [Constructing the app.py](docs/app.md)
+- [Configuring your application](docs/app.md)
 - [Interacting with the application via the API](docs/api.md)
 
 To see the detailed description for each, click on the bullet points.

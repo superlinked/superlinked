@@ -23,43 +23,31 @@ class LocalResourceHandler(ResourceHandler):
     def get_bucket(self) -> str:
         return "local"
 
-    def download_file(self, _: str | None, object_name: str, download_path: str) -> None:
-        """
-        'Download' a file from local storage to the specified path.
-        In this case, it's just copying the file.
-        """
-        self.logger.info("Copy file from %s to %s", object_name, download_path)
-        shutil.copy2(object_name, download_path)
+    def _download_file(self, _: str | None, object_name: str, download_path: str) -> None:
+        shutil.copy(object_name, download_path)
 
     def poll(self) -> None:
-        """
-        Poll files from a local directory and notify about new or modified files.
-        """
-        self.logger.info("Polling files from: %s", self.app_location.path)
-        if not self._path_exists():
+        if not os.path.exists(self.app_location.path):
             self.logger.error("Path does not exist: %s", self.app_location.path)
             return
-        self._process_path()
 
-    def _path_exists(self) -> bool:
-        return os.path.exists(self.app_location.path)
-
-    def _process_path(self) -> None:
-        if os.path.isfile(self.app_location.path):
-            self._process_file(self.app_location.path)
-        else:
-            self._process_directory()
-
-    def _process_directory(self) -> None:
+        notification_needed = False
         for root, _, files in os.walk(self.app_location.path):
             for file in files:
                 file_path = os.path.join(root, file)
-                self._process_file(file_path)
+                notification_needed |= self._process_file(file_path)
+        if notification_needed:
+            self.notify_executor()
 
-    def _process_file(self, file_path: str) -> None:
-        self.logger.info("Found file: %s", file_path)
+    def _process_file(self, file_path: str) -> bool:
         file_time = datetime.fromtimestamp(os.path.getmtime(file_path), tz=timezone.utc)
+        file_changed = False
         try:
-            self.check_and_download(file_time, self.app_location.path)
+            if self.is_object_outdated(file_time, file_path):
+                destination_path = self.get_destination_path(file_path)
+                self.download_file(self.get_bucket(), file_path, destination_path)
+                self.logger.info("File %s was successfully downloaded to %s", file_path, destination_path)
+                file_changed = True
         except (FileNotFoundError, PermissionError):
-            self.logger.exception("Failed to download and notify new version")
+            self.logger.exception("Failed to download a new version of %s", file_path)
+        return file_changed

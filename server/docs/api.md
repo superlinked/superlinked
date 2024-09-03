@@ -53,7 +53,7 @@ Successful response (200 OK):
 
 ### Trigger the data load
 
-To initiate the data load, invoke its endpoint. This will spawn an asynchronous task `DataLoaderSource` by its name as defined in your `app.py`. To trigger the endpoint, simply send a request with `curl` as shown below. The response should be 202 Accepted.
+To initiate the data load, invoke its endpoint. This will spawn an asynchronous task `DataLoaderSource` by its name as defined in your `api.py`. To trigger the endpoint, simply send a request with `curl` as shown below. The response should be 202 Accepted.
 If the name you provided is not found in the system, a 404 NOT FOUND will be returned. See the logs to check the result of that task.
 
 ```bash

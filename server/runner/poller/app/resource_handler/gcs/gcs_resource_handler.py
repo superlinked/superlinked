@@ -47,18 +47,19 @@ class GCSResourceHandler(ResourceHandler):
             return client
 
     def poll(self) -> None:
-        """
-        Poll files from a Google Cloud Storage bucket and download new or modified files.
-        """
-        bucket = self.client.get_bucket(self.get_bucket())
+        bucket_name = self.get_bucket()
+        bucket = self.client.get_bucket(bucket_name)
         blobs = bucket.list_blobs(prefix=self.app_location.path)
+        notification_needed = False
         for blob in blobs:
-            self.check_and_download(blob.updated, blob.name)
+            if self.is_object_outdated(blob.updated, blob.name):
+                self.download_file(bucket_name, blob.name, self.get_destination_path(blob.name))
+                notification_needed = True
 
-    def download_file(self, bucket_name: str | None, object_name: str, download_path: str) -> None:
-        """
-        Download a file from GCS to the specified path.
-        """
+            if notification_needed:
+                self.notify_executor()
+
+    def _download_file(self, bucket_name: str | None, object_name: str, download_path: str) -> None:
         bucket = self.client.get_bucket(bucket_name)
         blob = bucket.blob(object_name)
         blob.download_to_filename(download_path)

@@ -36,7 +36,7 @@
                                 },
                                 "detail": {
                                     "type": "string",
-                                    "example": "(\"The SchemaField CarSchema.make doesn't have a default value and was not provided in the ParsedSchema.\",)"
+                                    "example": "(\"The SchemaField YourSchema.field doesn't have a default value and was not provided in the ParsedSchema.\",)"
                                 }
                             },
                             "required": [

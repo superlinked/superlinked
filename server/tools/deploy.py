@@ -63,7 +63,7 @@ def validate_config(config_path: str) -> bool:
         config = yaml.safe_load(fd)
     if validator.validate(config):
         return True
-    logging.error("There was an error with the provided app.py location configuration.")
+    logging.error("There was an error with the provided location in the configuration.")
     logging.error("Please make sure to use the full file URI in the configuration file (config/config.yaml)!")
     logging.error("The following error(s) were found while validating the passed config file:")
     logging.error(validator.errors)

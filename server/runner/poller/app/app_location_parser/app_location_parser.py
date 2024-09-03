@@ -77,7 +77,7 @@ class AppLocationParser:
             case app_location if app_location == "local":
                 type_ = StorageType.LOCAL
                 bucket = None
-                path = "/src/app.py"
+                path = "/src"
             case app_location if app_location.startswith("/"):
                 type_ = StorageType.LOCAL
                 bucket = None

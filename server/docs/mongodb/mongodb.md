@@ -12,7 +12,7 @@ Due to the reasons above, an API key with the `Project Data Access Admin` role i
 
 > Note: When using that API, you will need `project_id` and `cluster_name`, which are also described [below](#start-a-managed-mongo-db-instance) on how to find this information.
 
-## Modifications in app.py
+## Modifications in your configuration
 
 To integrate MongoDB, you need to add the `MongoDBVectorDatabase` class and include it in the executor. Here’s how you can do it:
 ```python

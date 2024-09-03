@@ -24,7 +24,6 @@ from fastapi import FastAPI, status
 from superlinked.framework.dsl.app.rest.rest_app import RestApp
 from superlinked.framework.dsl.executor.rest.rest_executor import RestExecutor
 from superlinked.framework.dsl.index.index import Index
-from superlinked.framework.dsl.registry.superlinked_registry import SuperlinkedRegistry
 from superlinked.framework.dsl.space.recency_space import RecencySpace
 from superlinked.framework.dsl.storage.in_memory_vector_database import InMemoryVectorDatabase
 
@@ -51,7 +50,8 @@ def setup_application(app: FastAPI) -> None:
     app_config: AppConfig = inject.instance(AppConfig)
 
     if registry := RegistryLoader.get_registry(app_config.APP_MODULE_PATH):
-        _setup_executors(app, registry, persistence_service, data_loader, app_config)
+        rest_executors = [executor for executor in registry.get_executors() if isinstance(executor, RestExecutor)]
+        _setup_executors(app, rest_executors, persistence_service, data_loader, app_config)
 
     persistence_service.restore()
 
@@ -64,24 +64,23 @@ def teardown_application(_: FastAPI) -> None:
 
 def _setup_executors(
     app: FastAPI,
-    registry: SuperlinkedRegistry,
+    rest_executors: Sequence[RestExecutor],
     persistence_service: PersistenceService,
     data_loader: DataLoader,
     app_config: AppConfig,
 ) -> None:
-    for executor in registry.get_executors():
-        if isinstance(executor, RestExecutor):
-            logger.info("Found an executor, registering the endpoints")
-            _validate_recency_space(executor, app_config)
-            _validate_in_memory_with_multiple_workers(executor, app_config)
-            try:
-                rest_app = executor.run()
-            except Exception:  # pylint: disable=broad-exception-caught
-                logger.exception("An error occurred during app execution")
-                return
-            data_loader.register_data_loader_sources(rest_app.data_loader_sources)
-            persistence_service.register(rest_app.storage_manager._vdb_connector)
-    _register_routes(app, rest_app)
+    for executor in rest_executors:
+        logger.info("Found an executor, registering the endpoints")
+        _validate_recency_space(executor, app_config)
+        _validate_in_memory_with_multiple_workers(executor, app_config)
+        try:
+            rest_app = executor.run()
+        except Exception:  # pylint: disable=broad-exception-caught
+            logger.exception("An error occurred during app execution")
+            return
+        data_loader.register_data_loader_sources(rest_app.data_loader_sources)
+        persistence_service.register(rest_app.storage_manager._vdb_connector)
+        _register_routes(app, rest_app)
 
 
 def _validate_in_memory_with_multiple_workers(executor: RestExecutor, app_config: AppConfig) -> None:

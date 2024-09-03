@@ -1,11 +1,13 @@
-# How to construct the app.py file
+# Server Configuration Guidelines
 
-The application's main logic resides in the `app.py` file. This is where you define your application's structure and behavior using the Superlinked library.
+The application's main logic resides in the Superlinked configuration files. These are where you define your application's structure and behavior using the Superlinked library.
 
 By default, all examples within this documentation utilize an in-memory database with a single worker. This configuration is optimal for testing and initial experimentation with the Superlinked framework. For detailed instructions on configuring and employing alternative vector databases, please refer to the [vector databases documentation.](vector_databases.md). For information on how to scale the server, read the [Scaling the Server with Concurrent Workers](#scaling-the-server-with-concurrent-workers) section.
 
-To start using the system, you can use the example application located [here](example/app.py).
-You can find more complex examples how to construct the spaces and the queries in the [Superlinked notebooks](https://github.com/superlinked/superlinked/tree/main)
+To begin interacting with the system, you may start with the basic example application found [here](example/simple/api.py).
+For a more complex yet approachable example, refer to the Amazon case study [here](example/amazon/api.py).
+
+For advanced examples on constructing spaces and queries, please explore the [Superlinked notebooks](https://github.com/superlinked/superlinked/tree/main).
 
 > Important Note: The `RecencySpace` feature is turned off by default due to the constraints of this release. For a detailed explanation and instructions on enabling it, refer to the [Using Recency Space](#using-recency-space) section of the documentation.
 
@@ -13,22 +15,19 @@ You can find more complex examples how to construct the spaces and the queries i
 
 ## Understanding the building blocks of the application
 
-Here is a basic structure of an `app.py` file:
+A functional application is structured around three core components:
+- `index.py` - Defines schemas, spaces, and indexes
+- `query.py` - Specifies the queries
+- `api.py` - Configures the executor that integrates the aforementioned components and other crucial configurations
+
+### index.py
 ```python
-# linked-file:dummy_app.py
+# linked-file:example/dummy/index.py
 from superlinked.framework.common.schema.id_schema_object import IdField
 from superlinked.framework.common.schema.schema import schema
 from superlinked.framework.common.schema.schema_object import String
-from superlinked.framework.dsl.executor.rest.rest_configuration import RestQuery
-from superlinked.framework.dsl.executor.rest.rest_descriptor import RestDescriptor
-from superlinked.framework.dsl.executor.rest.rest_executor import RestExecutor
 from superlinked.framework.dsl.index.index import Index
-from superlinked.framework.dsl.query.param import Param
-from superlinked.framework.dsl.query.query import Query
-from superlinked.framework.dsl.registry.superlinked_registry import SuperlinkedRegistry
-from superlinked.framework.dsl.source.rest_source import RestSource
 from superlinked.framework.dsl.space.text_similarity_space import TextSimilaritySpace
-from superlinked.framework.dsl.storage.in_memory_vector_database import InMemoryVectorDatabase
 
 
 @schema
@@ -43,6 +42,20 @@ model_name = "<your model name goes here>"  # Ensure that you replace this with 
 text_space = TextSimilaritySpace(text=your_schema.attribute, model=model_name)
 
 index = Index(text_space)
+```
+
+In this file, a schema is defined to structure your input data. Additionally, a space is specified, which must include at least one attribute from your schema, and an index is created to aggregate and integrate these spaces.
+
+> It is crucial to understand that all definitions in this file determine the vectors of your elements. Any modifications to this file, such as adding a new space or altering the schema, will render the previously ingested data invalid, necessitating re-ingestion.
+
+### query.py
+
+```python
+# linked-file:example/dummy/query.py
+from superlinked.framework.dsl.query.param import Param
+from superlinked.framework.dsl.query.query import Query
+
+from .index import index, text_space, your_schema
 
 query = (
     Query(index)
@@ -52,43 +65,46 @@ query = (
         Param("query_text"),
     )
 )
+```
+
+In the `query.py` file, you should define your queries. These queries are designed to search within your data by configuring weights, limits, radius, and other critical parameters to optimize the retrieval of desired results.
+
+### api.py
+
+```python
+# linked-file:example/dummy/api.py
+from superlinked.framework.dsl.executor.rest.rest_configuration import RestQuery
+from superlinked.framework.dsl.executor.rest.rest_descriptor import RestDescriptor
+from superlinked.framework.dsl.executor.rest.rest_executor import RestExecutor
+from superlinked.framework.dsl.registry.superlinked_registry import SuperlinkedRegistry
+from superlinked.framework.dsl.source.rest_source import RestSource
+from superlinked.framework.dsl.storage.in_memory_vector_database import InMemoryVectorDatabase
+
+from .index import index, your_schema
+from .query import query
 
 your_source: RestSource = RestSource(your_schema)
+your_query = RestQuery(RestDescriptor("query"), query)
 
 executor = RestExecutor(
     sources=[your_source],
     indices=[index],
-    queries=[RestQuery(RestDescriptor("query"), query)],
+    queries=[your_query],
     vector_database=InMemoryVectorDatabase(),
 )
 
 SuperlinkedRegistry.register(executor)
 ```
 
-In this example, we define a schema for our data, create a text similarity space, define an index, and set up a query. We then create a REST source and an executor that uses this source, the index, and the query.
+In this document, you set up your source, which acts as the entry point for your schema into the application. The `RestSource` can use a `RestDescriptor` to specify the path for adding data to your system. The `RestQuery` function wraps your query in a `RestDescriptor`, giving your query a name that makes it callable through the REST API. In the example shown, the path is set to `/api/v1/search/query`. Here, you assign a name to the last part of the path, assuming you stick with the default settings. [More detailed API info](#customize-your-api)
 
+The executor acts as the heart of your application, needing all the necessary information to function. It requires your sources to bring in data, indices to understand the data structure, queries to help you search effectively, and finally, the vector database where all the data is stored.
+
+This configuration eliminates the need for manual computation setup, enabling you to focus on defining the structure and behavior of your application. The Superlinked library manages the execution of your queries and the retrieval of results when the application is executed. This method also simplifies application updates, as it removes the necessity to SSH into the server for editing files directly.
 
 You can find more detailed information and examples of various features in the [Superlinked feature notebooks](https://github.com/superlinked/superlinked/tree/main/notebook/feature). The [basic_building_blocks.ipynb](https://github.com/superlinked/superlinked/blob/main/notebook/feature/basic_building_blocks.ipynb) notebook provides a comprehensive guide on the basic structure and how to use it, while the other notebooks cover various features of the Superlinked library.
 
 In this deployment setup, you are not required to define any computations as you would in the [basic_building_blocks.ipynb](https://github.com/superlinked/superlinked/blob/main/notebook/feature/basic_building_blocks.ipynb) notebook. Instead, your focus will be on defining the schema, the text similarity space, the index, the query, the REST source, and the executor.
-
-The `app.py` file ends with adding the executor to the `SuperlinkedRegistry`. Use SuperlinkedRegistry to register your components for production, this is not required when experimenting with InMemoryExecutor. If you've got more than one executor, you can add them all at once, separated by commas, like this: `SuperlinkedRegistry.register(executor1, executor2, executor3)`. 
-The executor is the component that executes the queries defined in your application, utilizing the sources, indices, and queries you have established. Here's an example of how to define an executor:
-```python
-executor = RestExecutor(
-    sources=[your_source],
-    indices=[index],
-    queries=[RestQuery(RestDescriptor("query"), query)],
-    vector_database=InMemoryVectorDatabase(),
-)
-
-SuperlinkedRegistry.register(executor)
-```
-In this example, `your_source` is the REST source you've defined, `index` is the index you've created, and `query` is the query you've set up. The `RestQuery` function wraps your query with a `RestDescriptor`, which provides a name for your query that can be used to call it from the REST API. In the preceding example, the path is set to `/api/v1/search/query`. This is where you assign a name to the final segment of the path, assuming you are using the default settings. [More detailed API info](#customize-your-api)
-
-This setup abstracts away the need for explicit computation definition, allowing you to concentrate on defining your application's structure and behavior. The Superlinked library handles the rest, executing your queries and returning the results when the application is run. This approach allows you to make changes to your application without needing to SSH into the server and edit the `app.py` file in the directory with each change.
-
-Remember to replace the placeholders in the example with your actual data and requirements. The `app.py` file should be stored in an S3 bucket (if you're using AWS) or a GCS bucket (if you're using GCP). This setup allows you to make changes to your application without needing to SSH into the server and edit the `app.py` file in the directory with each change. 
 
 ## Configuring the data loader
 
