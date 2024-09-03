@@ -26,6 +26,8 @@ from superlinked.framework.common.settings import Settings
 
 PACKAGE_NAME = "superlinked"
 
+settings = Settings()
+
 
 class LoggerConfigurator:
 
@@ -43,9 +45,9 @@ class LoggerConfigurator:
 
     @staticmethod
     def configure_structlog_logger(
-        is_dev: bool = sys.stderr.isatty(),
-        log_level: int | None = Settings().SUPERLINKED_LOG_LEVEL,
-        log_file_path: str | None = Settings().LOG_FILE_PATH,
+        log_as_json: bool = settings.SUPERLINKED_LOG_AS_JSON,
+        log_level: int | None = settings.SUPERLINKED_LOG_LEVEL,
+        log_file_path: str | None = settings.SUPERLINKED_LOG_FILE_PATH,
     ) -> None:
         if log_level is None:
             log_level = logging.root.level
@@ -62,7 +64,7 @@ class LoggerConfigurator:
             wrapper_class=structlog.make_filtering_bound_logger(log_level),
             logger_factory=structlog.stdlib.LoggerFactory(),
             processors=LoggerConfigurator._get_structlog_processors(
-                is_dev, log_file_path
+                log_as_json, log_file_path
             ),
         )
 
@@ -78,12 +80,12 @@ class LoggerConfigurator:
         return set_event_arg
 
     @staticmethod
-    def add_json_file_renderer(path: str) -> Processor:
+    def _get_json_file_renderer(log_file_path: str) -> Processor:
         def render_to_json_file(
             _: WrappedLogger, __: str, event_dict: EventDict
         ) -> EventDict:
             line = json.dumps(event_dict)
-            with open(path, "a", encoding="utf-8") as log_file:
+            with open(log_file_path, "a", encoding="utf-8") as log_file:
                 log_file.write(line + "\n")
             return event_dict
 
@@ -91,22 +93,22 @@ class LoggerConfigurator:
 
     @staticmethod
     def _get_structlog_processors(
-        is_dev: bool, log_file_path: str | None
+        log_as_json: bool, log_file_path: str | None
     ) -> list[Processor]:
-        additional_processors = (
-            [LoggerConfigurator.add_json_file_renderer(log_file_path)]
+        json_file_processors = (
+            [LoggerConfigurator._get_json_file_renderer(log_file_path)]
             if log_file_path is not None
             else []
         )
-        env_based_processors: list[Processor] = (
-            LoggerConfigurator._get_dev_processors()
-            if is_dev
-            else LoggerConfigurator._get_prod_processors()
+        console_processors: list[Processor] = (
+            LoggerConfigurator._get_json_console_processors()
+            if log_as_json
+            else LoggerConfigurator._get_pretty_print_console_processors()
         )
         return (
             LoggerConfigurator._get_shared_processors()
-            + additional_processors
-            + env_based_processors
+            + json_file_processors
+            + console_processors
         )
 
     @staticmethod
@@ -124,12 +126,11 @@ class LoggerConfigurator:
         ]
 
     @staticmethod
-    def _get_dev_processors() -> list[Processor]:
-        """Pretty printing when we run in a terminal session."""
+    def _get_pretty_print_console_processors() -> list[Processor]:
         return [structlog.dev.ConsoleRenderer()]
 
     @staticmethod
-    def _get_prod_processors() -> list[Processor]:
+    def _get_json_console_processors() -> list[Processor]:
         """
         Print JSON when we run, e.g., in a Docker container.
         Also print structured tracebacks.

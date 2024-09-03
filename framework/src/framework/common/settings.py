@@ -23,8 +23,9 @@ from superlinked.framework.common.util.singleton_decorator import singleton
 class Settings(BaseSettings):
     ONLINE_PUT_CHUNK_SIZE: int = 10000
     GPU_EMBEDDING_THRESHOLD: int = 0
-    DISABLE_RICH_TRACEBACK: int = 0
+    DISABLE_RICH_TRACEBACK: bool = False
     SUPERLINKED_LOG_LEVEL: int = logging.INFO
-    LOG_FILE_PATH: str | None = None
+    SUPERLINKED_LOG_AS_JSON: bool = False
+    SUPERLINKED_LOG_FILE_PATH: str | None = None
 
     model_config = SettingsConfigDict(env_file=".env")
