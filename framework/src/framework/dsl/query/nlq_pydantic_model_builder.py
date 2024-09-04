@@ -16,6 +16,10 @@ from beartype.typing import Any, Sequence
 from pydantic import BaseModel, Field, create_model, model_validator
 
 from superlinked.framework.common.exception import QueryException
+from superlinked.framework.common.interface.comparison_operation_type import (
+    LIST_TYPE_COMPATIBLE_TYPES,
+    ComparisonOperationType,
+)
 from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.util.generic_class_util import GenericClassUtil
 from superlinked.framework.dsl.query.query_param_information import ParamInfo
@@ -89,6 +93,7 @@ class NLQPydanticModelBuilder:
     @classmethod
     def _create_field(cls, param_info: ParamInfo) -> tuple[type, Any]:
         field_type = cls._determine_type(
+            param_info.op,
             param_info.is_weight,
             param_info.schema_field,
             param_info.value,
@@ -112,12 +117,18 @@ class NLQPydanticModelBuilder:
 
     @classmethod
     def _determine_type(
-        cls, is_weight: bool, schema_field: SchemaField | None, value: Any
+        cls,
+        op: ComparisonOperationType | None,
+        is_weight: bool,
+        schema_field: SchemaField | None,
+        value: Any,
     ) -> type:
         if is_weight:
             return float
         if schema_field:
-            return GenericClassUtil.get_single_generic_type(schema_field)
+            type_should_be_list = op is not None and op in LIST_TYPE_COMPATIBLE_TYPES
+            type_ = GenericClassUtil.get_single_generic_type(schema_field)
+            return list[type_] if type_should_be_list else type_  # type: ignore[valid-type]
         if value is not None:
             return type(value)
         raise QueryException("NLQ field type cannot be determined.")

@@ -16,16 +16,16 @@ from enum import Enum
 
 
 class ComparisonOperationType(Enum):
-    EQUAL = "equal"
-    NOT_EQUAL = "not_equal"
-    GREATER_THAN = "greater_than"
-    LESS_THAN = "less_than"
-    GREATER_EQUAL = "greater_than_or_equal_to"
-    LESS_EQUAL = "less_than_or_equal_to"
-    IN = "in"
-    NOT_IN = "not_in"
-    CONTAINS = "contains"
-    NOT_CONTAINS = "not_contains"
+    EQUAL = "be_equal_to"
+    NOT_EQUAL = "not_be_equal_to"
+    GREATER_THAN = "be_greater_than"
+    LESS_THAN = "be_less_than"
+    GREATER_EQUAL = "be_greater_than_or_equal_to"
+    LESS_EQUAL = "be_less_than_or_equal_to"
+    IN = "be_in"
+    NOT_IN = "not_be_in"
+    CONTAINS = "contain"
+    NOT_CONTAINS = "not_contain"
 
 
 ITERABLE_COMPARISON_OPERATION_TYPES = [

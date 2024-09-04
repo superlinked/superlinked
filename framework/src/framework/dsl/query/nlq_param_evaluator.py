@@ -16,6 +16,7 @@ from collections import defaultdict
 
 from beartype.typing import Any, Sequence
 from pydantic import BaseModel
+from pydantic.fields import FieldInfo
 
 from superlinked.framework.common.exception import QueryException
 from superlinked.framework.common.nlq.open_ai import OpenAIClient, OpenAIClientConfig
@@ -199,23 +200,18 @@ class NLQParamEvaluator:
         self, model_class: type[BaseModel], param_info: ParamInfo
     ) -> str:
         model_field_info = model_class.model_fields[param_info.name]
-        field_type = (
-            model_field_info.annotation.__name__
-            if model_field_info.annotation
-            else "any"
-        )
         is_weight_text = "weight" if param_info.is_weight else "value"
         field_detail_parts = [
             f" - {param_info.name} is a {is_weight_text}",
             (
                 (
-                    " that should only be filled if the user wants to explicitly filter"
-                    f" to be {param_info.op.value.replace('_', ' ')}"
+                    " that should only be filled if the user wants to explicitly filter to"
+                    f" {param_info.op.value.replace('_', ' ')}"
                 )
                 if param_info.op
-                else ""
+                else " to"
             ),
-            f" to {field_type} type",
+            f" {self._get_field_annotation(model_field_info)} type",
             (
                 f" for the field named {param_info.schema_field.name}"
                 if param_info.schema_field
@@ -229,6 +225,12 @@ class NLQParamEvaluator:
         ]
         field_details_text = "".join(part for part in field_detail_parts if part)
         return field_details_text
+
+    def _get_field_annotation(self, model_field_info: FieldInfo) -> str:
+        if not model_field_info.annotation:
+            return "any"
+        annotation = str(model_field_info.annotation.__name__)
+        return str(model_field_info.annotation) if annotation == "list" else annotation
 
     def _without_line_breaks(self, text: str) -> str:
         python_multiline_string_delimiter = "\n        "
