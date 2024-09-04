@@ -25,7 +25,6 @@ from poller.app.config.poller_config import PollerConfig
 class ResourceHandler(ABC):
     def __init__(self, app_location: AppLocation) -> None:
         self.app_location = app_location
-        self.first_run = True
         self.poller_config = PollerConfig()
         self.logger = self.poller_config.setup_logger(__name__)
 
@@ -87,15 +86,16 @@ class ResourceHandler(ABC):
         except requests.RequestException:
             self.logger.exception("Notification of file change failed due to a network-related error.")
 
-    def check_api_health(self) -> bool:
+    def check_api_health(self, *, verbose: bool = True) -> bool:
         """
         Check the health of the API and return True if it's healthy, False otherwise.
         """
         api_endpoint = f"{self.poller_config.executor_url}:{self.poller_config.executor_port}/health"
         try:
-            response = requests.get(api_endpoint, timeout=10)
+            response = requests.get(api_endpoint, timeout=5)
             response.raise_for_status()
         except (requests.HTTPError, requests.RequestException) as e:
-            self.logger.warning("API is not healthy! Error: %s", e)
+            if verbose:
+                self.logger.warning("Executor is unreachable, possibly restarting. Reason: %s.", e)
             return False
         return True

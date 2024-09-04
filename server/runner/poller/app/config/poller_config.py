@@ -35,5 +35,5 @@ class PollerConfig:
         self.logging_config = logging_config_path
 
     def setup_logger(self, name: str) -> logging.Logger:
-        logging.config.fileConfig(self.logging_config)
+        logging.config.fileConfig(self.logging_config, disable_existing_loggers=False)
         return logging.getLogger(name)

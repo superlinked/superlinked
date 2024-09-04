@@ -5,7 +5,6 @@ services:
       context: runner
       dockerfile: poller/Dockerfile
     mem_limit: 256m
-    cpus: '0.5'
     volumes:
       - ./cache:/code/data
       - ./config:/code/config
