@@ -23,9 +23,9 @@ ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 FROM python-base AS builder-base
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
-    curl \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+    curl=7.88.1-10+deb12u7 \
+    build-essential=12.9 \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN curl -sSL https://install.python-poetry.org | python -
@@ -47,7 +47,7 @@ COPY --from=executor-base /opt/pysetup/.venv/ /opt/pysetup/.venv/
 
 WORKDIR /code
 
-RUN apt-get update && apt-get install --no-install-recommends -y supervisor && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install --no-install-recommends -y supervisor=4.2.5-1 && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY executor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY executor/.env /code/executor/
