@@ -260,16 +260,16 @@ class ComparisonOperation(Generic[COT]):
         return value != self._other
 
     def __evaluate_gt(self, value: Any) -> bool:
-        return value > self._other
+        return value is not None and value > self._other
 
     def __evaluate_lt(self, value: Any) -> bool:
-        return value < self._other
+        return value is not None and value < self._other
 
     def __evaluate_ge(self, value: Any) -> bool:
-        return value >= self._other
+        return value is not None and value >= self._other
 
     def __evaluate_le(self, value: Any) -> bool:
-        return value <= self._other
+        return value is not None and value <= self._other
 
     def __evaluate_in(self, value: Any) -> bool:
         if not isinstance(self._other, Iterable):
@@ -285,11 +285,11 @@ class ComparisonOperation(Generic[COT]):
         """Checks if Iterable self contains any of the values in `value`"""
         if not isinstance(self._other, Iterable):
             raise ValueError("Operand must be iterable.")
-        return any(other in value for other in self._other)
+        return value is not None and any(other in value for other in self._other)
 
     def __evaluate_not_contains(self, value: Any) -> bool:
         """Checks if Iterable self contains none of the values in `value`"""
-        return not self.__evaluate_contains(value)
+        return value is not None and not self.__evaluate_contains(value)
 
     @staticmethod
     def _group_filters_by_group_key(
