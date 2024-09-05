@@ -19,6 +19,8 @@ from beartype.typing import Any
 from openai import OpenAI
 from pydantic import BaseModel
 
+TEMPERATURE_VALUE: float = 0.0
+
 
 @dataclass
 class OpenAIClientConfig:
@@ -44,6 +46,6 @@ class OpenAIClient:
                 {"role": "system", "content": instructor_prompt},
                 {"role": "user", "content": prompt},
             ],
-            temperature=0.0,
+            temperature=TEMPERATURE_VALUE,
         )
         return response.model_dump()
