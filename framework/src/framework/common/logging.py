@@ -25,6 +25,7 @@ from structlog.typing import EventDict, Processor, WrappedLogger
 from superlinked.framework.common.settings import Settings
 
 PACKAGE_NAME = "superlinked"
+PII_PREFIX = "pii_"
 
 settings = Settings()
 
@@ -92,6 +93,13 @@ class LoggerConfigurator:
         return render_to_json_file
 
     @staticmethod
+    def filter_pii(_: WrappedLogger, __: str, event_dict: EventDict) -> EventDict:
+        for k in list(event_dict.keys()):
+            if k.startswith(PII_PREFIX):
+                del event_dict[k]
+        return event_dict
+
+    @staticmethod
     def _get_structlog_processors(
         log_as_json: bool, log_file_path: str | None
     ) -> list[Processor]:
@@ -113,7 +121,7 @@ class LoggerConfigurator:
 
     @staticmethod
     def _get_shared_processors() -> list[Processor]:
-        return [
+        shared_processors: list[Processor] = [
             merge_contextvars,
             structlog.processors.add_log_level,
             structlog.processors.TimeStamper(fmt="iso"),
@@ -124,6 +132,9 @@ class LoggerConfigurator:
             structlog.processors.UnicodeDecoder(),
             structlog.stdlib.PositionalArgumentsFormatter(),
         ]
+        if not settings.SUPERLINKED_EXPOSE_PII:
+            shared_processors.append(LoggerConfigurator.filter_pii)
+        return shared_processors
 
     @staticmethod
     def _get_pretty_print_console_processors() -> list[Processor]:
@@ -135,8 +146,12 @@ class LoggerConfigurator:
         Print JSON when we run, e.g., in a Docker container.
         Also print structured tracebacks.
         """
-        return [
-            structlog.processors.dict_tracebacks,
+        pii_sensitive_renderers: list[Processor] = (
+            [structlog.processors.dict_tracebacks]
+            if settings.SUPERLINKED_EXPOSE_PII
+            else []
+        )
+        return pii_sensitive_renderers + [
             structlog.processors.EventRenamer("message"),  # renames event to message
             structlog.processors.JSONRenderer(),
         ]

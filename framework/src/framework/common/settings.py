@@ -27,5 +27,6 @@ class Settings(BaseSettings):
     SUPERLINKED_LOG_LEVEL: int = logging.INFO
     SUPERLINKED_LOG_AS_JSON: bool = False
     SUPERLINKED_LOG_FILE_PATH: str | None = None
+    SUPERLINKED_EXPOSE_PII: bool = False
 
     model_config = SettingsConfigDict(env_file=".env")
