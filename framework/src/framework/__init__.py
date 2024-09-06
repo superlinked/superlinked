@@ -17,5 +17,6 @@ import logging
 from superlinked.framework.common.logging import PACKAGE_NAME, LoggerConfigurator
 from superlinked.framework.common.settings import Settings
 
-logging.getLogger(PACKAGE_NAME).setLevel(Settings().SUPERLINKED_LOG_LEVEL)
 LoggerConfigurator.configure_default_logger()
+if superlinked_log_level := Settings().SUPERLINKED_LOG_LEVEL:
+    logging.getLogger(PACKAGE_NAME).setLevel(superlinked_log_level)

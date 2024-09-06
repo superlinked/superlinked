@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -24,7 +23,7 @@ class Settings(BaseSettings):
     ONLINE_PUT_CHUNK_SIZE: int = 10000
     GPU_EMBEDDING_THRESHOLD: int = 0
     DISABLE_RICH_TRACEBACK: bool = False
-    SUPERLINKED_LOG_LEVEL: int = logging.INFO
+    SUPERLINKED_LOG_LEVEL: int | None = None
     SUPERLINKED_LOG_AS_JSON: bool = False
     SUPERLINKED_LOG_FILE_PATH: str | None = None
     SUPERLINKED_EXPOSE_PII: bool = False
