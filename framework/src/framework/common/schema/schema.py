@@ -46,6 +46,14 @@ def schema(cls: type[T]) -> type[T] | type[IdSchemaObject]:
 
 
 class Schema(IdSchemaObject):
+    """
+    Inherit your schema class from this class to use as a schema
+    that can be used to represent your structured data.
+
+    Schemas translate to entities in the embedding space
+    that you can search by or search for.
+    """
+
     _id_field_name: str
     _schema_field_descriptors: list[SchemaFieldDescriptor]
 

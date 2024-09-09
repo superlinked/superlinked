@@ -79,7 +79,8 @@ class DataFrameParser(
             if isinstance(value, SchemaReference)
         ]
         data_copy[schema_ref_cols] = data_copy[schema_ref_cols].astype(str)
-        records = data_copy[list(schema_cols.keys())].to_dict(orient="records")
+        schema_data = cast(pd.DataFrame, data_copy[list(schema_cols.keys())])
+        records = cast(list[dict[str, Any]], schema_data.to_dict(orient="records"))
         return [self.__create_parsed_schema(record, schema_cols) for record in records]
 
     def __create_parsed_schema(
@@ -118,7 +119,7 @@ class DataFrameParser(
         You can use this functionality to check, if your mapping was defined properly.
         Args:
             parsed_schemas (list[ParsedSchema]): A list of ParsedSchema objects that you get
-                after unmarshaling your `DataFrame`.
+                after unmarshalling your `DataFrame`.
         Returns:
             list[pd.DataFrame]: A list of DataFrame representation of the parsed schemas.
         """
@@ -185,4 +186,4 @@ class DataFrameParser(
     def _find_duplicate_ids(self, data: pd.DataFrame) -> list[str]:
         mask = data[self._id_name]
         duplicate_mask = mask.duplicated()
-        return mask[duplicate_mask].unique().tolist()
+        return list(mask[duplicate_mask].unique())
