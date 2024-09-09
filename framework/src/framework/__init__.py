@@ -12,11 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
+from superlinked.framework.common.superlinked_logging import (
+    SuperlinkedLoggerConfigurator,
+)
 
-from superlinked.framework.common.logging import PACKAGE_NAME, LoggerConfigurator
-from superlinked.framework.common.settings import Settings
-
-LoggerConfigurator.configure_default_logger()
-if superlinked_log_level := Settings().SUPERLINKED_LOG_LEVEL:
-    logging.getLogger(PACKAGE_NAME).setLevel(superlinked_log_level)
+SuperlinkedLoggerConfigurator.configure_default_logger()
