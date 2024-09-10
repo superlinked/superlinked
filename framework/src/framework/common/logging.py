@@ -49,11 +49,11 @@ class LoggerConfigurator:
         expose_pii: bool = False,
     ) -> None:
         if not processors:
-            shared_processors = LoggerConfigurator._get_structlog_processors(
+            processors = LoggerConfigurator._get_structlog_processors(
                 json_log_file_path, expose_pii
             )
         structlog.configure(
-            processors=shared_processors
+            processors=processors
             + [
                 # Prepare event dict for `ProcessorFormatter`.
                 structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
@@ -72,7 +72,7 @@ class LoggerConfigurator:
         )
 
         LoggerConfigurator._format_standard_logs_with_structlog(
-            log_renderer, shared_processors
+            log_renderer, processors
         )
 
     @staticmethod

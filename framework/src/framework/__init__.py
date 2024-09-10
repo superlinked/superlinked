@@ -16,4 +16,10 @@ from superlinked.framework.common.superlinked_logging import (
     SuperlinkedLoggerConfigurator,
 )
 
+__version__ = "0.0.0"  # This will be updated by semantic-release
+
 SuperlinkedLoggerConfigurator.configure_default_logger()
+
+
+def get_version() -> str:
+    return __version__

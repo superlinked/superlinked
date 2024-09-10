@@ -22,6 +22,11 @@ from superlinked.framework.common.storage_manager.search_result_item import (
     SearchResultItem,
 )
 
+DEFAULT_SCORE_FIELD_NAME = "similarity_score"
+DEFAULT_RANK_FIELD_NAME = "rank"
+FALLBACK_SCORE_FIELD_NAME = f"superlinked_{DEFAULT_SCORE_FIELD_NAME}"
+FALLBACK_RANK_FIELD_NAME = f"superlinked_{DEFAULT_RANK_FIELD_NAME}"
+
 
 @dataclass(frozen=True)
 class ResultEntry:
@@ -66,14 +71,33 @@ class Result:
             DataFrame: A pandas DataFrame where each row represents a result entity, and
                 each column corresponds to the fields of the stored objects. Additionally,
                 it contains the above-mentioned score column.
+            ValueError: If both 'similarity_score' and 'superlinked_similarity_score' fields are present.
         """
-        dataframe_rows: list[dict[str, Any]] = []
-        for entry in self.entries:
-            dataframe_row = entry.stored_object
-            dataframe_row["similarity_score"] = entry.entity.score
-            dataframe_rows.append(dataframe_row)
-
+        dataframe_rows = [
+            self._create_dataframe_row(i, entry) for i, entry in enumerate(self.entries)
+        ]
         return DataFrame(dataframe_rows)
+
+    def _create_dataframe_row(self, index: int, entry: ResultEntry) -> dict[str, Any]:
+        dataframe_row = entry.stored_object.copy()
+        score_field = self._determine_field_name(
+            dataframe_row, DEFAULT_SCORE_FIELD_NAME, FALLBACK_SCORE_FIELD_NAME
+        )
+        rank_field = self._determine_field_name(
+            dataframe_row, DEFAULT_RANK_FIELD_NAME, FALLBACK_RANK_FIELD_NAME
+        )
+        dataframe_row[score_field] = entry.entity.score
+        dataframe_row[rank_field] = index
+        return dataframe_row
+
+    def _determine_field_name(
+        self, dataframe_row: dict[str, Any], default_field: str, fallback_field: str
+    ) -> str:
+        if default_field not in dataframe_row:
+            return default_field
+        if fallback_field not in dataframe_row:
+            return fallback_field
+        raise ValueError(f"Data must not contain field named {fallback_field}")
 
     def __str__(self) -> str:
         return "\n".join(
