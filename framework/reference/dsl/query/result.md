@@ -35,6 +35,7 @@ Classes
             DataFrame: A pandas DataFrame where each row represents a result entity, and
                 each column corresponds to the fields of the stored objects. Additionally,
                 it contains the above-mentioned score column.
+            ValueError: If both 'similarity_score' and 'superlinked_similarity_score' fields are present.
 
 `ResultEntry(entity: superlinked.framework.common.storage_manager.search_result_item.SearchResultItem, stored_object: dict[str, typing.Any])`
 :   Represents a single entry in a Result, encapsulating the entity and its associated data.
