@@ -176,6 +176,10 @@ Missing your favorite VDB? [Tell us which vector database we should support next
 
 You can check all references [here](https://github.com/superlinked/superlinked/tree/main/framework/reference).
 
+## Logging
+
+Contextual information is automatically included in log messages, such as the process ID and package scope. Personally Identifiable Information (PII) is filtered out by default but can be exposed with the `SUPERLINKED_EXPOSE_PII` environment variable to `true`.
+
 ## Resources
 
 - [Vector DB Comparison](https://superlinked.com/vector-db-comparison/): Open-source collaborative comparison of vector databases by Superlinked.
