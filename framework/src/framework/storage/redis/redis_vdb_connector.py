@@ -171,5 +171,5 @@ class RedisVDBConnector(VDBConnector):
 
     @staticmethod
     def _get_entity_id_from_redis_id(redis_id: str) -> EntityId:
-        schema_id, object_id = redis_id.split(":")
+        schema_id, object_id = redis_id.split(":", 1)
         return EntityId(schema_id=schema_id, object_id=object_id)

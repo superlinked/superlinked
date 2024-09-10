@@ -171,5 +171,5 @@ class InMemoryVDB(VDBConnector):
 
     @staticmethod
     def _get_entity_id_from_row_id(row_id: str) -> EntityId:
-        schema_id, object_id = row_id.split(":")
+        schema_id, object_id = row_id.split(":", 1)
         return EntityId(schema_id=schema_id, object_id=object_id)
