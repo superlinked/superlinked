@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import os
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
@@ -21,19 +22,20 @@ import requests
 from poller.app.app_location_parser.app_location_parser import AppLocation
 from poller.app.config.poller_config import PollerConfig
 
+logger = logging.getLogger(__name__)
+
 
 class ResourceHandler(ABC):
     def __init__(self, app_location: AppLocation) -> None:
         self.app_location = app_location
         self.poller_config = PollerConfig()
-        self.logger = self.poller_config.setup_logger(__name__)
 
     @abstractmethod
     def poll(self) -> None:
         pass
 
     def download_file(self, bucket_name: str, object_name: str, download_path: str) -> None:
-        self.logger.info("Copy file from %s to %s", object_name, download_path)
+        logger.info("Copy file from %s to %s", object_name, download_path)
         os.makedirs(os.path.dirname(download_path), exist_ok=True)
         self._download_file(bucket_name, object_name, download_path)
 
@@ -77,14 +79,14 @@ class ResourceHandler(ABC):
         try:
             response = requests.post(api_url, timeout=10)
             response.raise_for_status()
-            self.logger.info("Executor successfully notified of file change.")
+            logger.info("Executor successfully notified of file change.")
         except requests.HTTPError:
-            self.logger.exception(
+            logger.exception(
                 "Notification of file change failed with HTTP status code: %s",
                 response.status_code if response else "No response received.",
             )
         except requests.RequestException:
-            self.logger.exception("Notification of file change failed due to a network-related error.")
+            logger.exception("Notification of file change failed due to a network-related error.")
 
     def check_api_health(self, *, verbose: bool = True) -> bool:
         """
@@ -96,6 +98,6 @@ class ResourceHandler(ABC):
             response.raise_for_status()
         except (requests.HTTPError, requests.RequestException) as e:
             if verbose:
-                self.logger.warning("Executor is unreachable, possibly restarting. Reason: %s.", e)
+                logger.warning("Executor is unreachable, possibly restarting. Reason: %s.", e)
             return False
         return True

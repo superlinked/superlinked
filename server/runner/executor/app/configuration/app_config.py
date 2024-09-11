@@ -23,4 +23,7 @@ class AppConfig(BaseSettings):
     DISABLE_RECENCY_SPACE: bool
     WORKER_COUNT: int
 
+    JSON_LOG_FILE: str | None = None
+    EXPOSE_PII: bool = False
+
     model_config = SettingsConfigDict(env_file="executor/.env", extra="ignore")

@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import re
 from dataclasses import dataclass
 from enum import Enum
 
-from poller.app.config.poller_config import PollerConfig
+logger = logging.getLogger(__name__)
 
 
 class StorageType(Enum):
@@ -33,10 +34,6 @@ class AppLocation:
 
 
 class AppLocationParser:
-    def __init__(self) -> None:
-        self.config = PollerConfig()
-        self.logger = self.config.setup_logger(__name__)
-
     def _get_bucket_and_path_or_raise(self, pattern: str, app_location: str) -> tuple[str, str]:
         match = re.search(pattern, app_location)
         if not match:
@@ -53,7 +50,7 @@ class AppLocationParser:
         """
         Parse the application location URL to extract the storage type, bucket, and path.
         """
-        self.logger.info("App location received: %s", app_location)
+        logger.info("App location received: %s", app_location)
         bucket: str | None
         pattern: str
 

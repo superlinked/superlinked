@@ -13,15 +13,19 @@
 # limitations under the License.
 
 import configparser
-import logging
-import logging.config
+
+import structlog
+
+from poller.app.logging import LoggerConfigurator
 
 
+# pylint: disable=too-many-instance-attributes
 class PollerConfig:
+    is_logger_configured = False
+
     def __init__(self) -> None:
         poller_dir = "poller"
         poller_config_path = f"{poller_dir}/poller_config.ini"
-        logging_config_path = f"{poller_dir}/logging_config.ini"
 
         config = configparser.ConfigParser()
         config.read(poller_config_path)
@@ -32,8 +36,15 @@ class PollerConfig:
         self.aws_credentials = config.get("POLLER", "AWS_CREDENTIALS")
         self.gcp_credentials = config.get("POLLER", "GCP_CREDENTIALS")
         self.download_location = config.get("POLLER", "DOWNLOAD_LOCATION")
-        self.logging_config = logging_config_path
+        self.log_level = config.get("POLLER", "LOG_LEVEL")
+        self.json_log_file = config.get("POLLER", "JSON_LOG_FILE", fallback=None)
+        self._setup_logger()
 
-    def setup_logger(self, name: str) -> logging.Logger:
-        logging.config.fileConfig(self.logging_config, disable_existing_loggers=False)
-        return logging.getLogger(name)
+    def _setup_logger(self) -> None:
+        # structlog.is_configured works incorrectly so use a local state
+        if PollerConfig.is_logger_configured:
+            return
+        LoggerConfigurator.configure_structlog_logger(self.json_log_file)
+        configured_logger = structlog.getLogger("")
+        configured_logger.setLevel(self.log_level.upper())
+        PollerConfig.is_logger_configured = True

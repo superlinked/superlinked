@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import sys
 import time
 from threading import Thread
@@ -26,6 +27,8 @@ from poller.app.config.poller_config import PollerConfig
 from poller.app.resource_handler.resource_handler import ResourceHandler
 from poller.app.resource_handler.resource_handler_factory import ResourceHandlerFactory
 
+logger = logging.getLogger(__name__)
+
 
 class Poller(Thread):
     """
@@ -35,10 +38,9 @@ class Poller(Thread):
 
     def __init__(self, config_path: str) -> None:
         Thread.__init__(self)
+        self.poller_config = PollerConfig()
         self.app_location_config_path = config_path
         self.app_location_config = self.parse_app_location_config()
-        self.poller_config = PollerConfig()
-        self.logger = self.poller_config.setup_logger(__name__)
 
     def parse_app_location_config(self) -> AppLocation:
         """
@@ -68,12 +70,12 @@ class Poller(Thread):
         100 seconds, the application will shut down.
         """
         for _ in range(10):
-            self.logger.info("Waiting for executor to start up.")
+            logger.info("Waiting for executor to start up.")
             if resource_handler.check_api_health(verbose=False):
                 break
             time.sleep(5)
         else:
-            self.logger.error(
+            logger.error(
                 "Executor failed to start within 5 minutes. Please check the system configuration and restart."
             )
             sys.exit(1)

@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 from json import JSONDecodeError
 
 import uvicorn
+from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import FastAPI
-from fastapi_restful.timing import add_timing_middleware
 from superlinked.framework.common.parser.exception import MissingIdException
 from superlinked.framework.online.dag.exception import ValueNotProvidedException
 
@@ -27,14 +26,15 @@ from executor.app.exception.exception_handler import (
     handle_bad_request,
     handle_generic_exception,
 )
+from executor.app.logger import ServerLoggerConfigurator
 from executor.app.middleware.lifespan_event import lifespan
+from executor.app.middleware.timing_middleware import add_timing_middleware
 from executor.app.router.management_router import router as management_router
 
 app_config = AppConfig()
 
-logging.basicConfig(level=app_config.LOG_LEVEL)
-logger = logging.getLogger(__name__)
-logging.getLogger("sentence_transformers").setLevel(logging.WARNING)
+logs_to_suppress = ["sentence_transformers"]
+ServerLoggerConfigurator.setup_logger(app_config, logs_to_suppress)
 
 app = FastAPI(lifespan=lifespan)
 
@@ -44,10 +44,10 @@ app.add_exception_handler(JSONDecodeError, handle_bad_request)
 app.add_exception_handler(Exception, handle_generic_exception)
 
 app.include_router(management_router)
-
-add_timing_middleware(app, record=logger.info)
+add_timing_middleware(app)
+app.add_middleware(CorrelationIdMiddleware)  # This must be the last middleware
 
 register_dependencies()
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8080)  # noqa: S104 hardcoded-bind-all-interfaces
+    uvicorn.run(app, host="0.0.0.0", port=8080, log_config=None)  # noqa: S104 hardcoded-bind-all-interfaces
