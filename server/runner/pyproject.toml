@@ -112,6 +112,7 @@ exclude = [
     "build",
     "dist",
     "**logging.py", # Temp, until FAI-2280 resolved.
+    "**custom_structlog_processor.py", # Temp, until FAI-2280 resolved.
 ]
 extend-exclude = ["test"]
 line-length = 120

@@ -46,6 +46,6 @@ WORKDIR /code
 
 #COPY config /code/config
 COPY poller/app /code/poller/app
-COPY poller/logging_config.ini poller/poller_config.ini /code/poller/
+COPY poller/poller_config.ini /code/poller/
 
 ENTRYPOINT ["/opt/pysetup/.venv/bin/python", "-m", "poller.app.main", "--config_path", "/code/config/config.yaml"]

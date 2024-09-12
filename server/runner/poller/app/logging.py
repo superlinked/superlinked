@@ -19,9 +19,8 @@ from typing import cast
 import structlog
 from structlog.contextvars import merge_contextvars
 from structlog.typing import Processor
-from superlinked.framework.common.util.custom_structlog_processor import (
-    CustomStructlogProcessor,
-)
+
+from poller.app.custom_structlog_processor import CustomStructlogProcessor
 
 
 # TODO: Copied from Superlinked logging.py, FAI-2280 to remove it

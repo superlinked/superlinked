@@ -13,8 +13,7 @@
 # limitations under the License.
 
 import configparser
-
-import structlog
+import logging
 
 from poller.app.logging import LoggerConfigurator
 
@@ -45,6 +44,6 @@ class PollerConfig:
         if PollerConfig.is_logger_configured:
             return
         LoggerConfigurator.configure_structlog_logger(self.json_log_file)
-        configured_logger = structlog.getLogger("")
+        configured_logger = logging.getLogger("")
         configured_logger.setLevel(self.log_level.upper())
         PollerConfig.is_logger_configured = True
