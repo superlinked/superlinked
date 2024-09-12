@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 import sys
 import time
 from threading import Thread
 
+import structlog
 import yaml
 
 from poller.app.app_location_parser.app_location_parser import (
@@ -27,7 +27,7 @@ from poller.app.config.poller_config import PollerConfig
 from poller.app.resource_handler.resource_handler import ResourceHandler
 from poller.app.resource_handler.resource_handler_factory import ResourceHandlerFactory
 
-logger = logging.getLogger(__name__)
+logger = structlog.getLogger(__name__)
 
 
 class Poller(Thread):
@@ -69,13 +69,11 @@ class Poller(Thread):
         immediately. If the server cannot be reached within 10 retries, which totals between 50 and
         100 seconds, the application will shut down.
         """
-        for _ in range(10):
-            logger.info("Waiting for executor to start up.")
+        for i in range(10):
+            logger.info("waiting for executor", retries=i + 1)
             if resource_handler.check_api_health(verbose=False):
                 break
             time.sleep(5)
         else:
-            logger.error(
-                "Executor failed to start within 5 minutes. Please check the system configuration and restart."
-            )
+            logger.error("executor failed to start, check the configuration files", retries=i + 1)
             sys.exit(1)

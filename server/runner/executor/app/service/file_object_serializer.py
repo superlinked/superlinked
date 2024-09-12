@@ -13,14 +13,14 @@
 # limitations under the License.
 
 import json
-import logging
 import os
 
+import structlog
 from superlinked.framework.storage.in_memory.object_serializer import ObjectSerializer
 
 from executor.app.service.file_handler_service import FileHandlerService
 
-logger = logging.getLogger(__name__)
+logger = structlog.getLogger(__name__)
 
 
 EMPTY_JSON_OBJECT_SIZE = 4  # 4 characters: "{}"
@@ -34,14 +34,13 @@ class FileObjectSerializer(ObjectSerializer):
     def write(self, serialized_object: str, key: str) -> None:
         self.__file_handler_service.ensure_folder()
 
-        logger.info("Persisting database with id: %s", key)
+        logger.info("persist database", id=key)
         file_with_path = self.__file_handler_service.generate_filename(key)
         with open(file_with_path, "w", encoding="utf-8") as file:
-            logger.info("Writing id: %s to file: %s", key, file_with_path)
+            logger.info("write file", id=key, path=file_with_path)
             json.dump(serialized_object, file)
 
     def read(self, key: str) -> str:
-        logger.info("Restoring database using id: %s", key)
         file_with_path = self.__file_handler_service.generate_filename(key)
 
         result = "{}"
@@ -50,11 +49,11 @@ class FileObjectSerializer(ObjectSerializer):
                 with open(file_with_path, encoding="utf-8") as file:
                     if os.stat(file_with_path).st_size >= EMPTY_JSON_OBJECT_SIZE:
                         result = json.load(file)
-                        logger.info("Database successfully restored from file: %s", file_with_path)
+                        logger.info("restored database", id=key, path=file_with_path)
             else:
-                logger.info("No file available for database restoration at path: %s", file_with_path)
+                logger.info("no file available", path=file_with_path)
         except json.JSONDecodeError:
-            logger.exception("File is present but contains invalid data. File: %s", file_with_path)
+            logger.exception("invalid data found in file", path=file_with_path)
         except Exception:  # pylint: disable=broad-exception-caught
-            logger.exception("An error occurred during the file read operation. File: %s", file_with_path)
+            logger.exception("error occurred during file read operation", path=file_with_path)
         return result

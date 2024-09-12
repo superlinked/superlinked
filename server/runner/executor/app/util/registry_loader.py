@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 import pkgutil
 from importlib import import_module
 
+import structlog
 from superlinked.framework.dsl.registry.superlinked_registry import SuperlinkedRegistry
 
-logger = logging.getLogger(__name__)
+logger = structlog.getLogger(__name__)
 
 
 class RegistryLoader:
@@ -34,11 +34,11 @@ class RegistryLoader:
                         if hasattr(module, "SuperlinkedRegistry"):
                             superlinked_registry = module.SuperlinkedRegistry
                     except AttributeError:
-                        logger.exception("SuperlinkedRegistry not found in module: %s", module_name)
+                        logger.exception("superlinked registry was not found in module", module_name=module_name)
                     except Exception:  # pylint: disable=broad-except
-                        logger.exception("Error loading SuperlinkedRegistry from %s", module_name)
+                        logger.exception("error while loading SuperlinkedRegistry from module", module_name=module_name)
         except ImportError:
-            logger.exception("Package not found at: %s", app_module_path)
+            logger.exception("not found the package at the specified path", app_module_path=app_module_path)
         except Exception:  # pylint: disable=broad-except
-            logger.exception("An unexpected error occurred while loading the package at: %s", app_module_path)
+            logger.exception("error occurred while loading the package", app_module_path=app_module_path)
         return superlinked_registry

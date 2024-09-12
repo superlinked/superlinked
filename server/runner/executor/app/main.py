@@ -44,6 +44,7 @@ app.add_exception_handler(JSONDecodeError, handle_bad_request)
 app.add_exception_handler(Exception, handle_generic_exception)
 
 app.include_router(management_router)
+
 add_timing_middleware(app)
 app.add_middleware(CorrelationIdMiddleware)  # This must be the last middleware
 

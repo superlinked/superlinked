@@ -12,31 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
-
+import structlog
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
 
-logger = logging.getLogger(__name__)
+logger = structlog.getLogger(__name__)
 
 
 async def handle_bad_request(_: Request, exception: Exception) -> JSONResponse:
-    logger.exception("Bad request")
-    return JSONResponse(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        content={
-            "exception": str(exception.__class__.__name__),
-            "detail": str(exception),
-        },
-    )
+    error_details = {
+        "exception": str(exception.__class__.__name__),
+        "detail": str(exception),
+    }
+    logger.exception("bad request", **error_details)
+    return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content=error_details)
 
 
 async def handle_generic_exception(_: Request, exception: Exception) -> JSONResponse:
-    logger.exception("Unexpected exception happened")
-    return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={
-            "exception": str(exception.__class__.__name__),
-            "detail": str(exception),
-        },
-    )
+    error_details = {
+        "exception": str(exception.__class__.__name__),
+        "detail": str(exception),
+    }
+    logger.exception("unexpected exception happened", **error_details)
+    return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content=error_details)

@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 import re
 from dataclasses import dataclass
 from enum import Enum
 
-logger = logging.getLogger(__name__)
+import structlog
+
+logger = structlog.getLogger(__name__)
 
 
 class StorageType(Enum):
@@ -50,7 +51,6 @@ class AppLocationParser:
         """
         Parse the application location URL to extract the storage type, bucket, and path.
         """
-        logger.info("App location received: %s", app_location)
         bucket: str | None
         pattern: str
 
@@ -82,4 +82,5 @@ class AppLocationParser:
             case _:
                 msg = "Unsupported storage location"
                 raise ValueError(msg)
+        logger.info("parsed app location", app_type=type_, bucket=bucket, path=path)
         return AppLocation(type_=type_, bucket=bucket, path=path)

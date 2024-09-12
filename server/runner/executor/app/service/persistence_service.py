@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 
+import structlog
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
 
 from executor.app.service.file_object_serializer import FileObjectSerializer
 
-logger = logging.getLogger(__name__)
+logger = structlog.getLogger(__name__)
 
 
 class PersistenceService:
@@ -28,7 +28,7 @@ class PersistenceService:
 
     def register(self, vdb_connector: VDBConnector) -> None:
         if vdb_connector in self._vdb_connectors:
-            logger.warning("VDB connector already exists: %s", vdb_connector)
+            logger.warning("vdb connector already registered", vdb_connector=vdb_connector)
             return
         self._vdb_connectors.append(vdb_connector)
 

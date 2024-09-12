@@ -12,17 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 import os
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
 
 import requests
+import structlog
 
 from poller.app.app_location_parser.app_location_parser import AppLocation
 from poller.app.config.poller_config import PollerConfig
 
-logger = logging.getLogger(__name__)
+logger = structlog.getLogger(__name__)
 
 
 class ResourceHandler(ABC):
@@ -35,7 +35,7 @@ class ResourceHandler(ABC):
         pass
 
     def download_file(self, bucket_name: str, object_name: str, download_path: str) -> None:
-        logger.info("Copy file from %s to %s", object_name, download_path)
+        logger.info("copied file", source=object_name, destination=download_path)
         os.makedirs(os.path.dirname(download_path), exist_ok=True)
         self._download_file(bucket_name, object_name, download_path)
 
@@ -79,14 +79,15 @@ class ResourceHandler(ABC):
         try:
             response = requests.post(api_url, timeout=10)
             response.raise_for_status()
-            logger.info("Executor successfully notified of file change.")
-        except requests.HTTPError:
+            logger.info("notified executor", notification_event="file_change", url=api_url)
+        except requests.HTTPError as http_err:
             logger.exception(
-                "Notification of file change failed with HTTP status code: %s",
-                response.status_code if response else "No response received.",
+                "failed to notify executor",
+                status_code=http_err.response.status_code,
+                error_message=http_err.response.text,
             )
-        except requests.RequestException:
-            logger.exception("Notification of file change failed due to a network-related error.")
+        except requests.RequestException as req_err:
+            logger.exception("failed to notify executor", error_type=type(req_err).__name__, error_message=str(req_err))
 
     def check_api_health(self, *, verbose: bool = True) -> bool:
         """
@@ -98,6 +99,10 @@ class ResourceHandler(ABC):
             response.raise_for_status()
         except (requests.HTTPError, requests.RequestException) as e:
             if verbose:
-                logger.warning("Executor is unreachable, possibly restarting. Reason: %s.", e)
+                logger.warning(
+                    "executor is unreachable, possibly restarting",
+                    reason=str(e),
+                    status_code=getattr(e.response, "status_code", "No status code available"),
+                )
             return False
         return True

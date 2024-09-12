@@ -18,6 +18,7 @@ from collections.abc import Sequence
 from typing import Any
 
 import pandas as pd
+import structlog
 from pandas.io.json._json import JsonReader
 from pandas.io.parsers import TextFileReader
 from pydantic.alias_generators import to_snake
@@ -26,7 +27,7 @@ from superlinked.framework.dsl.source.data_loader_source import DataFormat, Data
 from executor.app.configuration.app_config import AppConfig
 from executor.app.exception.exception import DataLoaderNotFoundException
 
-logger = logging.getLogger(__name__)
+logger = structlog.getLogger(__name__)
 
 
 class DataLoader:
@@ -37,9 +38,7 @@ class DataLoader:
     def register_data_loader_sources(self, data_loader_sources: Sequence[DataLoaderSource]) -> None:
         for source in data_loader_sources:
             if source.name in self._data_loader_sources:
-                logger.warning(
-                    "Data loader source with the name '%s' is already registered. Skipping registration.", source.name
-                )
+                logger.warning("skipped registration", reason="already registered", source_name=source.name)
                 continue
             self._data_loader_sources[to_snake(source.name)] = source
 
@@ -53,28 +52,20 @@ class DataLoader:
             raise DataLoaderNotFoundException(msg)
         task = asyncio.create_task(asyncio.to_thread(self.__read_and_put_data, data_loader_source))
         task.add_done_callback(self._task_done_callback)
-        logger.info(
-            "Data load successfully initiated for source with the following configuration: %s, task ID: %s",
-            data_loader_source.config,
-            task.get_name(),
-        )
+        logger.info("started data load", configuration=data_loader_source.config, task_name=task.get_name())
 
     def __read_and_put_data(self, source: DataLoaderSource) -> None:
         data = self.__read_data(source.config.path, source.config.format, source.config.pandas_read_kwargs)
         if isinstance(data, pd.DataFrame):
             if logger.isEnabledFor(logging.DEBUG):
                 data.info(memory_usage=True)
-            logger.debug(
-                "Data frame of size: %s has been loaded into memory. Beginning persistence process.", len(data)
-            )
+            logger.debug("loaded data frame to memory", chunked=False, size=len(data))
             source._source.put(data)  # noqa: SLF001 private-member-access
         elif isinstance(data, TextFileReader | JsonReader):
             for chunk in data:
                 if logger.isEnabledFor(logging.DEBUG):
                     chunk.info(memory_usage=True)
-                logger.debug(
-                    "Chunk of size: %s has been loaded into memory. Beginning persistence process.", len(chunk)
-                )
+                logger.debug("loaded data frame to memory", chunked=True, size=len(chunk))
                 source._source.put(chunk)  # noqa: SLF001 private-member-access
         else:
             error_message = (
@@ -82,13 +73,13 @@ class DataLoader:
                 f"expected type. Actual type: {type(data)}"
             )
             raise TypeError(error_message)
-        logger.info("Finished the data load for source with the following configuration: %s", source.config)
+        logger.info("finished data load", source_name=source.name)
 
     def _task_done_callback(self, task: asyncio.Task) -> None:
         try:
             task.result()
         except Exception:  # pylint: disable=broad-except
-            logger.exception("An error occurred during task execution")
+            logger.exception("failed task", task_name=task.get_name())
 
     def __read_data(
         self, path: str, data_format: DataFormat, pandas_read_kwargs: dict[str, Any] | None

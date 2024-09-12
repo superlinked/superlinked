@@ -1,9 +1,10 @@
 import json
-import logging
 import os
 from typing import Any
 
-logger = logging.getLogger(__name__)
+import structlog
+
+logger = structlog.getLogger(__name__)
 
 
 class OpenApiDescriptionUtil:
@@ -15,5 +16,5 @@ class OpenApiDescriptionUtil:
             data = json.load(file)
             open_api_description = data.get(key)
             if open_api_description is None:
-                logger.warning("No OpenAPI description found for key: %s", key)
+                logger.warning("no OpenAPI description was found for the provided key", key=key)
             return open_api_description

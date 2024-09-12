@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 import os
 import shutil
 from datetime import datetime, timezone
 
+import structlog
+
 from poller.app.resource_handler.resource_handler import ResourceHandler
 
-logger = logging.getLogger(__name__)
+logger = structlog.getLogger(__name__)
 
 
 class LocalResourceHandler(ResourceHandler):
@@ -31,7 +32,7 @@ class LocalResourceHandler(ResourceHandler):
 
     def poll(self) -> None:
         if not os.path.exists(self.app_location.path):
-            logger.error("Path does not exist: %s", self.app_location.path)
+            logger.error("path does not exist", path=self.app_location.path)
             return
 
         notification_needed = False
@@ -49,8 +50,8 @@ class LocalResourceHandler(ResourceHandler):
             if self.is_object_outdated(file_time, file_path):
                 destination_path = self.get_destination_path(file_path)
                 self.download_file(self.get_bucket(), file_path, destination_path)
-                logger.info("File %s was successfully downloaded to %s", file_path, destination_path)
+                logger.info("downloaded file", source=file_path, destination=destination_path)
                 file_changed = True
         except (FileNotFoundError, PermissionError):
-            logger.exception("Failed to download a new version of %s", file_path)
+            logger.exception("failed to download file", path=file_path)
         return file_changed

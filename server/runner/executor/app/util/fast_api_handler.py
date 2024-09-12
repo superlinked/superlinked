@@ -14,6 +14,7 @@
 
 from typing import Any
 
+import structlog
 from fastapi import Request, Response, status
 from fastapi.responses import JSONResponse
 from pydantic import Field
@@ -21,6 +22,8 @@ from superlinked.framework.common.util.immutable_model import ImmutableBaseModel
 from superlinked.framework.dsl.executor.rest.rest_handler import RestHandler
 
 # TODO: resolve the noqa comments [ENG-1767]
+
+logger = structlog.getLogger(__name__)
 
 
 class QueryResponse(ImmutableBaseModel):
@@ -35,11 +38,19 @@ class FastApiHandler:
     async def ingest(self, request: Request) -> Response:
         payload = await request.json()
         self.__rest_handler._ingest_handler(payload, request.url.path)  # noqa: SLF001 private-member-access
+        logger.debug("ingested data", path=request.url.path, pii_payload=payload)
         return Response(status_code=status.HTTP_202_ACCEPTED)
 
     async def query(self, request: Request) -> Response:
         payload = await request.json()
         result = self.__rest_handler._query_handler(payload, request.url.path)  # noqa: SLF001 private-member-access
+        logger.debug(
+            "queried data",
+            path=request.url.path,
+            result_entity_count=len(result.entries),
+            pii_payload=payload,
+            pii_result=result,
+        )
         query_response = QueryResponse(
             schema=result.schema._schema_name,  # noqa: SLF001 private-member-access
             results=[
