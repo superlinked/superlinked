@@ -14,9 +14,9 @@
 
 import logging
 import os
+from typing import cast
 
 import structlog
-from beartype.typing import cast
 from structlog.contextvars import merge_contextvars
 from structlog.typing import Processor
 from superlinked.framework.common.util.custom_structlog_processor import (
