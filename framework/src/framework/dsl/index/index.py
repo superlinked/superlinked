@@ -14,6 +14,7 @@
 
 import datetime
 
+import structlog
 from beartype.typing import Sequence
 from typing_extensions import Annotated
 
@@ -44,6 +45,8 @@ from superlinked.framework.dsl.index.util.effect_with_referenced_schema_object i
     EffectWithReferencedSchemaObject,
 )
 from superlinked.framework.dsl.space.space import Space
+
+logger = structlog.getLogger()
 
 ValidatedSpaceList = Annotated[list[Space], TypeValidator.list_validator(Space)]
 ValidatedSchemaFieldList = Annotated[
@@ -100,6 +103,14 @@ class Index:  # pylint: disable=too-many-instance-attributes
         self.__schema_type_schema_mapper = self.__init_schema_type_schema_mapper(
             effects_with_schema
         )
+        self._logger = logger.bind(
+            node_id=self._node_id,
+            space_ids=[hash(space) for space in self._spaces],
+            space_types=[space.__class__.__name__ for space in self._spaces],
+            field_ids=[hash(field) for field in self._fields],
+            field_types=[field.__class__.__name__ for field in self._fields],
+        )
+        self._logger.info("initialized index")
 
     @property
     def _spaces(self) -> Sequence[Space]:

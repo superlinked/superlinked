@@ -47,10 +47,11 @@ class LoggerConfigurator:
         json_log_file_path: str | None = None,
         processors: list[Processor] | None = None,
         expose_pii: bool = False,
+        log_as_json: bool = False,
     ) -> None:
         if not processors:
             processors = LoggerConfigurator._get_structlog_processors(
-                json_log_file_path, expose_pii
+                json_log_file_path, expose_pii, log_as_json
             )
         structlog.configure(
             processors=processors
@@ -66,7 +67,7 @@ class LoggerConfigurator:
             Processor,
             (
                 structlog.processors.JSONRenderer()
-                if json_log_file_path
+                if log_as_json
                 else structlog.dev.ConsoleRenderer()
             ),
         )
@@ -97,7 +98,7 @@ class LoggerConfigurator:
 
     @staticmethod
     def _get_structlog_processors(
-        json_log_file_path: str | None, expose_pii: bool
+        json_log_file_path: str | None, expose_pii: bool, log_as_json: bool
     ) -> list[Processor]:
         json_file_processors: list[Processor] = (
             [CustomStructlogProcessor._get_json_file_renderer(json_log_file_path)]
@@ -109,7 +110,7 @@ class LoggerConfigurator:
                 structlog.processors.EventRenamer("message"),
                 structlog.processors.format_exc_info,
             ]
-            if json_log_file_path
+            if log_as_json
             else []
         )
         return (

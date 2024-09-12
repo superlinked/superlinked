@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+import structlog
 from beartype.typing import Mapping, Sequence
 
 from superlinked.framework.common.dag.context import (
@@ -28,6 +29,8 @@ from superlinked.framework.dsl.source.in_memory_source import InMemorySource
 from superlinked.framework.dsl.storage.in_memory_vector_database import (
     InMemoryVectorDatabase,
 )
+
+logger = structlog.getLogger()
 
 
 class InMemoryExecutor(Executor[InMemorySource]):
@@ -63,6 +66,10 @@ class InMemoryExecutor(Executor[InMemorySource]):
                 context_data, environment=ExecutionEnvironment.IN_MEMORY
             ),
         )
+        self._logger = logger.bind(
+            source_schemas=[source._schema._schema_name for source in sources],
+            index_node_ids=[index._node.node_id for index in indices],
+        )
 
     def run(self) -> InMemoryApp:
         """
@@ -70,6 +77,8 @@ class InMemoryExecutor(Executor[InMemorySource]):
         Returns:
             InMemoryApp: An instance of InMemoryApp.
         """
-        return InMemoryApp(
+        app = InMemoryApp(
             self._sources, self._indices, self._vector_database, self._context
         )
+        self._logger.info("started inmemory app")
+        return app

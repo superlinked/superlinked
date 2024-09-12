@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import structlog
+
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.dag import Dag
 from superlinked.framework.common.dag.dag_effect import DagEffect
@@ -34,6 +36,8 @@ from superlinked.framework.evaluator.dag_evaluator import DagEvaluator
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_schema_dag import OnlineSchemaDag
 
+logger = structlog.get_logger()
+
 
 class OnlineDagEvaluator(DagEvaluator[EvaluationResult[Vector]]):
     def __init__(
@@ -53,6 +57,27 @@ class OnlineDagEvaluator(DagEvaluator[EvaluationResult[Vector]]):
         self._dag_effect_online_schema_dag_mapper = (
             self.__init_dag_effect_online_schema_dag_mapper(self._dag, storage_manager)
         )
+        self._log_dag_init()
+
+    def _log_dag_init(self) -> None:
+        for schema, online_schema_dag in self._schema_online_schema_dag_mapper.items():
+            logger.info(
+                "initialized entity dag",
+                schema=schema._schema_name,
+                node_ids=[node.node_id for node in online_schema_dag.nodes],
+                node_types=[node.class_name for node in online_schema_dag.nodes],
+            )
+        for (
+            dag_effect,
+            online_schema_dag,
+        ) in self._dag_effect_online_schema_dag_mapper.items():
+            logger.info(
+                "initialized event dag",
+                affected_schema=dag_effect.resolved_affected_schema_reference.schema._schema_name,
+                affecting_schema=dag_effect.resolved_affecting_schema_reference.schema._schema_name,
+                node_ids=[node.node_id for node in online_schema_dag.nodes],
+                node_types=[node.class_name for node in online_schema_dag.nodes],
+            )
 
     def __get_single_schema(self, parsed_schemas: list[ParsedSchema]) -> IdSchemaObject:
         unique_schemas: set[IdSchemaObject] = {
@@ -73,7 +98,17 @@ class OnlineDagEvaluator(DagEvaluator[EvaluationResult[Vector]]):
         if (
             online_schema_dag := self._schema_online_schema_dag_mapper.get(index_schema)
         ) is not None:
-            return online_schema_dag.evaluate(parsed_schemas, context)
+            results = online_schema_dag.evaluate(parsed_schemas, context)
+            for i, result in enumerate(results):
+                logger.info(
+                    "evaluated entity",
+                    schema=index_schema._schema_name,
+                    pii_vector=str(result.main.value),
+                    pii_field_values=[
+                        field.value for field in parsed_schemas[i].fields
+                    ],
+                )
+            return results
 
         raise InvalidSchemaException(
             f"Schema ({index_schema._schema_name}) isn't present in the index."
@@ -90,9 +125,26 @@ class OnlineDagEvaluator(DagEvaluator[EvaluationResult[Vector]]):
                 dag_effect
             )
         ) is not None:
-            return online_schema_dag.evaluate([parsed_schema_with_event], context)[0]
+            result = online_schema_dag.evaluate([parsed_schema_with_event], context)[0]
+            self._log_evaluated_event(parsed_schema_with_event, result)
+            return result
         raise InvalidDagEffectException(
             f"DagEffect ({dag_effect}) isn't present in the index."
+        )
+
+    def _log_evaluated_event(
+        self, parsed_schema_with_event: ParsedSchemaWithEvent, result: EvaluationResult
+    ) -> None:
+        logger.info(
+            "evaluated event",
+            event_id=parsed_schema_with_event.event_parsed_schema.id_,
+            affected_schema=parsed_schema_with_event.schema._schema_name,
+            affecting_schema=parsed_schema_with_event.event_parsed_schema.schema._schema_name,
+            pii_event_vector=str(result.main.value),
+            pii_field_values=[
+                field.value
+                for field in parsed_schema_with_event.event_parsed_schema.fields
+            ],
         )
 
     def __init_schema_online_schema_dag_mapper(

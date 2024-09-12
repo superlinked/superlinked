@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from abc import ABC, ABCMeta, abstractmethod
 
+import structlog
 from beartype.typing import Generic, TypeVar
 
 from superlinked.framework.common.dag.context import ExecutionContext
@@ -32,6 +33,8 @@ from superlinked.framework.online.dag.evaluation_result import (
 from superlinked.framework.online.dag.parent_validator import ParentValidationType
 
 ONT = TypeVar("ONT", bound="OnlineNode")
+
+logger = structlog.get_logger()
 
 
 class OnlineNode(ABC, Generic[NT, NDT], metaclass=ABCMeta):
@@ -106,6 +109,12 @@ class OnlineNode(ABC, Generic[NT, NDT], metaclass=ABCMeta):
                 chunk.value,
                 parsed_schema.id_,
             )
+        logger.debug(
+            "stored online node data",
+            schema=parsed_schema.schema._schema_name,
+            pii_main_result=str(result.main.value),
+            pii_chunk_result=[str(chunk.value) for chunk in result.chunks],
+        )
 
     def load_stored_result(self, object_id: str, schema: SchemaObject) -> NDT | None:
         return self.storage_manager.read_node_result(

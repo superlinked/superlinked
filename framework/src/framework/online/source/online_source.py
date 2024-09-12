@@ -51,13 +51,13 @@ class OnlineSource(
         parsed_schemas: list[ParsedSchema] = self.parser.unmarshal(data)
         chunk_size = Settings().ONLINE_PUT_CHUNK_SIZE
         put_logger = self._logger.bind(
-            chunk_num_total=math.ceil(len(parsed_schemas) / chunk_size),
+            n_chunk_total=math.ceil(len(parsed_schemas) / chunk_size),
         )
         for i, batch in enumerate(
             chunk_list(data=parsed_schemas, chunk_size=chunk_size)
         ):
             self._dispatch(batch)
             put_logger.info(
-                "online source input processed",
-                chunk_num_current=i + 1,
+                "processed chunk",
+                n_chunk_current=i + 1,
             )

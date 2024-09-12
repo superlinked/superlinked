@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import structlog
 from beartype.typing import cast
 
 from superlinked.framework.common.dag.context import ExecutionContext
@@ -26,6 +27,8 @@ from superlinked.framework.common.parser.parsed_schema import (
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.evaluator.online_dag_evaluator import OnlineDagEvaluator
+
+logger = structlog.get_logger()
 
 
 class OnlineDataProcessor(Subscriber[ParsedSchema]):
@@ -59,6 +62,14 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
                     parsed_schema.id_, parsed_schema.fields
                 )
             self.evaluator.evaluate(regular_msgs, self.context)
+
+        logger.info(
+            "stored input data",
+            schemas=list(
+                {parsed_schema.schema._schema_name for parsed_schema in messages}
+            ),
+            n_records=len(messages),
+        )
 
     def _process_event(
         self,

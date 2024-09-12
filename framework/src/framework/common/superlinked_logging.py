@@ -36,6 +36,7 @@ class SuperlinkedLoggerConfigurator:
         LoggerConfigurator.configure_structlog_logger(
             settings.SUPERLINKED_LOG_FILE_PATH,
             expose_pii=settings.SUPERLINKED_EXPOSE_PII,
+            log_as_json=settings.SUPERLINKED_LOG_AS_JSON,
         )
         if settings.SUPERLINKED_LOG_LEVEL:
             logging.getLogger(PACKAGE_NAME).setLevel(settings.SUPERLINKED_LOG_LEVEL)

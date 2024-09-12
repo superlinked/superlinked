@@ -26,6 +26,7 @@ from superlinked.framework.common.exception import (
 
 Json = Mapping[str, Any]
 NPArray = np.ndarray[Any, np.dtype[np.float64]]
+NP_PRINT_PRECISION = 6
 
 
 class Vector:
@@ -241,6 +242,11 @@ class Vector:
         if self.is_empty:
             return self
         return self.copy_with_new()
+
+    def __str__(self) -> str:
+        return np.array_str(
+            self.value, precision=NP_PRINT_PRECISION, suppress_small=True
+        )
 
 
 PythonTypes = float | int | str | Vector | list[float] | list[str]

@@ -37,15 +37,15 @@ class FieldData(Field, Generic[FT]):
 
     def __validate_value(self, data_type: FieldDataType, value: FT) -> None:
         valid_types = FieldTypeConverter.get_valid_python_types(data_type)
-        error_msg = f"Invalid value {value} for the given field data type {data_type}"
+        error_msg = "Invalid value {value} for the given field data type {data_type}"
         if not isinstance(value, tuple(valid_types)):
-            raise ValueError(error_msg)
+            raise ValueError(error_msg.format(value=value, data_type=data_type))
         if isinstance(value, list):
             # Assuming list types have only 1 valid type
             valid_type = VALID_TYPE_BY_FIELD_DATA_TYPE[data_type][0]
             generic_type = get_args(valid_type)[0]
             if not all(isinstance(item, generic_type) for item in value):
-                raise ValueError(error_msg)
+                raise ValueError(error_msg.format(value=value, data_type=data_type))
 
     @classmethod
     def from_field(cls, field: Field, value: FT) -> FieldData:

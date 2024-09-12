@@ -72,6 +72,8 @@ class QueryExecutor:
         self.query_vector_factory = query_vector_factory
         self._logger = logger.bind(
             schema=self.query_obj.schema._schema_name,
+            limit=self.query_obj.limit,
+            radius=self.query_obj.radius,
         )
 
     def query(self, **params: Any) -> Result:
@@ -96,8 +98,13 @@ class QueryExecutor:
         )
         entities: Sequence[SearchResultItem] = self._knn_search(knn_search_params)
         self._logger.info(
-            "query executed",
-            number_of_results=len(entities),
+            "executed query",
+            n_results=len(entities),
+            limit=knn_search_params.limit,
+            radius=knn_search_params.radius,
+            pii_knn_params=params,
+            pii_query_vector=str(knn_search_params.vector),
+            pii_natural_query=query_param_info.natural_query,
         )
         return Result(
             self.query_obj.schema,
