@@ -4678,13 +4678,13 @@ typing = ["mypy (>=1.4)", "rich", "twisted"]
 
 [[package]]
 name = "superlinked"
-version = "9.33.0"
+version = "9.34.0"
 description = "The Superlinked vector computing library"
 optional = false
 python-versions = "<=3.12.3,>=3.10"
 files = [
-    {file = "superlinked-9.33.0-py3-none-any.whl", hash = "sha256:f58097c9a7ce22b565149646847df2e6e6f894c6d8c176448136a955959b60d4"},
-    {file = "superlinked-9.33.0.tar.gz", hash = "sha256:9416b4ecc9db75f06b1b2f48e00f6d4142937b18247bc4f727751ab76251ce48"},
+    {file = "superlinked-9.34.0-py3-none-any.whl", hash = "sha256:ce60976bf7f35ee2e3ed90002f30b82d4d799b390ac59eedfdf1346679aaff5f"},
+    {file = "superlinked-9.34.0.tar.gz", hash = "sha256:dbe36bba18f8528a61b49d714874ee6e683e510981152190664b3e49a7cf36c1"},
 ]
 
 [package.dependencies]
@@ -5455,4 +5455,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10.3,<=3.12.3"
-content-hash = "7537f94eb961c6c3b9396c4fe65cba3548f8fc735d61bfdcbfed28844bac74dd"
+content-hash = "76eb22efad7220103216854429f39b4d80886072245fcab204df7fcf96d15be7"
