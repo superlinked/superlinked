@@ -25,6 +25,7 @@ from poller.app.custom_structlog_processor import CustomStructlogProcessor
 
 # TODO: Copied from Superlinked logging.py, FAI-2280 to remove it
 class LoggerConfigurator:
+
     @staticmethod
     def configure_default_logger(
         processors: list[Processor] | None = None,
@@ -45,9 +46,12 @@ class LoggerConfigurator:
         json_log_file_path: str | None = None,
         processors: list[Processor] | None = None,
         expose_pii: bool = False,
+        log_as_json: bool = False,
     ) -> None:
         if not processors:
-            processors = LoggerConfigurator._get_structlog_processors(json_log_file_path, expose_pii)
+            processors = LoggerConfigurator._get_structlog_processors(
+                json_log_file_path, expose_pii, log_as_json
+            )
         structlog.configure(
             processors=processors
             + [
@@ -60,13 +64,21 @@ class LoggerConfigurator:
 
         log_renderer = cast(
             Processor,
-            (structlog.processors.JSONRenderer() if json_log_file_path else structlog.dev.ConsoleRenderer()),
+            (
+                structlog.processors.JSONRenderer()
+                if log_as_json
+                else structlog.dev.ConsoleRenderer()
+            ),
         )
 
-        LoggerConfigurator._format_standard_logs_with_structlog(log_renderer, processors)
+        LoggerConfigurator._format_standard_logs_with_structlog(
+            log_renderer, processors
+        )
 
     @staticmethod
-    def _format_standard_logs_with_structlog(log_renderer: Processor, shared_processors: list[Processor]) -> None:
+    def _format_standard_logs_with_structlog(
+        log_renderer: Processor, shared_processors: list[Processor]
+    ) -> None:
         stdlib_processors: list[Processor] = [
             # Remove _record & _from_structlog.
             structlog.stdlib.ProcessorFormatter.remove_processors_meta,
@@ -84,7 +96,9 @@ class LoggerConfigurator:
         logging.getLogger().addHandler(handler)
 
     @staticmethod
-    def _get_structlog_processors(json_log_file_path: str | None, expose_pii: bool) -> list[Processor]:
+    def _get_structlog_processors(
+        json_log_file_path: str | None, expose_pii: bool, log_as_json: bool
+    ) -> list[Processor]:
         json_file_processors: list[Processor] = (
             [CustomStructlogProcessor._get_json_file_renderer(json_log_file_path)]
             if json_log_file_path is not None
@@ -95,10 +109,14 @@ class LoggerConfigurator:
                 structlog.processors.EventRenamer("message"),
                 structlog.processors.format_exc_info,
             ]
-            if json_log_file_path
+            if log_as_json
             else []
         )
-        return LoggerConfigurator._get_common_processors(expose_pii) + json_file_processors + json_console_processors
+        return (
+            LoggerConfigurator._get_common_processors(expose_pii)
+            + json_file_processors
+            + json_console_processors
+        )
 
     @staticmethod
     def _get_common_processors(expose_pii: bool = False) -> list[Processor]:

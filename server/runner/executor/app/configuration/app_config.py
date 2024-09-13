@@ -24,6 +24,7 @@ class AppConfig(BaseSettings):
     WORKER_COUNT: int
 
     JSON_LOG_FILE: str | None = None
+    LOG_AS_JSON: bool = False
     EXPOSE_PII: bool = False
 
     model_config = SettingsConfigDict(env_file="executor/.env", extra="ignore")

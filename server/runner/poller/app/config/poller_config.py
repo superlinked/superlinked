@@ -37,13 +37,14 @@ class PollerConfig:
         self.download_location = config.get("POLLER", "DOWNLOAD_LOCATION")
         self.log_level = config.get("POLLER", "LOG_LEVEL")
         self.json_log_file = config.get("POLLER", "JSON_LOG_FILE", fallback=None)
+        self.log_as_json = config.get("POLLER", "LOG_AS_JSON", fallback="false").lower() == "true"
         self._setup_logger()
 
     def _setup_logger(self) -> None:
         # structlog.is_configured works incorrectly so use a local state
         if PollerConfig.is_logger_configured:
             return
-        LoggerConfigurator.configure_structlog_logger(self.json_log_file)
+        LoggerConfigurator.configure_structlog_logger(self.json_log_file, log_as_json=self.log_as_json)
         configured_logger = logging.getLogger("")
         configured_logger.setLevel(self.log_level.upper())
         PollerConfig.is_logger_configured = True
