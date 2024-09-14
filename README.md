@@ -1,4 +1,4 @@
-# Superlinked 
+# Superlinked - The Vector Computer
 
 <div align="center">
 
