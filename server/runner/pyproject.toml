@@ -39,7 +39,7 @@ httpx = "^0.26.0"
 inject = "^5.2.0"
 fastapi-restful = "^0.5.0"
 pydantic = "^2.6.3"
-pydantic-settings = "^2.2.1"
+pydantic-settings = "^2.5.2"
 typing-inspect = "^0.9.0"
 tqdm = "^4.66.3" # Dependency of superlinked. Here because of security vulnerability [FAI-1841]
 superlinked = {version = "^9.35.0", extras = ["redis", "mongo"]}
