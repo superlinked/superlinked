@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 from abc import ABC, ABCMeta, abstractmethod
+from functools import partial
 
 import structlog
 from beartype.typing import Generic, TypeVar
@@ -112,8 +113,8 @@ class OnlineNode(ABC, Generic[NT, NDT], metaclass=ABCMeta):
         logger.debug(
             "stored online node data",
             schema=parsed_schema.schema._schema_name,
-            pii_main_result=str(result.main.value),
-            pii_chunk_result=[str(chunk.value) for chunk in result.chunks],
+            pii_main_result=partial(str, result.main.value),
+            pii_chunk_result=lambda: [str(chunk.value) for chunk in result.chunks],
         )
 
     def load_stored_result(self, object_id: str, schema: SchemaObject) -> NDT | None:

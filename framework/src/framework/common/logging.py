@@ -24,6 +24,8 @@ from superlinked.framework.common.util.custom_structlog_processor import (
     CustomStructlogProcessor,
 )
 
+PACKAGE_NAME = "superlinked"
+
 
 class LoggerConfigurator:
 
@@ -53,7 +55,9 @@ class LoggerConfigurator:
             processors = LoggerConfigurator._get_structlog_processors(
                 json_log_file_path, expose_pii, log_as_json
             )
+        log_level = logging.getLogger(PACKAGE_NAME).level
         structlog.configure(
+            wrapper_class=structlog.make_filtering_bound_logger(log_level),
             processors=processors
             + [
                 # Prepare event dict for `ProcessorFormatter`.
@@ -123,6 +127,7 @@ class LoggerConfigurator:
     def _get_common_processors(expose_pii: bool = False) -> list[Processor]:
         shared_processors: list[Processor] = [
             merge_contextvars,
+            CustomStructlogProcessor.evaluate_lazy_arguments,
             structlog.stdlib.add_logger_name,
             structlog.stdlib.add_log_level,
             structlog.stdlib.PositionalArgumentsFormatter(),

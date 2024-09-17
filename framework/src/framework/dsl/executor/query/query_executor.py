@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+from functools import partial
+
 import structlog
 from beartype.typing import Any, Sequence
 
@@ -103,7 +105,7 @@ class QueryExecutor:
             limit=knn_search_params.limit,
             radius=knn_search_params.radius,
             pii_knn_params=params,
-            pii_query_vector=str(knn_search_params.vector),
+            pii_query_vector=partial(str, knn_search_params.vector),
             pii_natural_query=query_param_info.natural_query,
         )
         return Result(

@@ -14,29 +14,27 @@
 
 import logging
 
-from superlinked.framework.common.logging import LoggerConfigurator
+from superlinked.framework.common.logging import PACKAGE_NAME, LoggerConfigurator
 from superlinked.framework.common.settings import Settings
-
-PACKAGE_NAME = "superlinked"
 
 
 class SuperlinkedLoggerConfigurator:
     @staticmethod
     def configure_default_logger() -> None:
         settings = Settings()
+        if settings.SUPERLINKED_LOG_LEVEL:
+            logging.getLogger(PACKAGE_NAME).setLevel(settings.SUPERLINKED_LOG_LEVEL)
         LoggerConfigurator.configure_default_logger(
             LoggerConfigurator._get_common_processors(settings.SUPERLINKED_EXPOSE_PII)
         )
-        if settings.SUPERLINKED_LOG_LEVEL:
-            logging.getLogger(PACKAGE_NAME).setLevel(settings.SUPERLINKED_LOG_LEVEL)
 
     @staticmethod
     def configure_structlog_logger() -> None:
         settings = Settings()
+        if settings.SUPERLINKED_LOG_LEVEL:
+            logging.getLogger(PACKAGE_NAME).setLevel(settings.SUPERLINKED_LOG_LEVEL)
         LoggerConfigurator.configure_structlog_logger(
             settings.SUPERLINKED_LOG_FILE_PATH,
             expose_pii=settings.SUPERLINKED_EXPOSE_PII,
             log_as_json=settings.SUPERLINKED_LOG_AS_JSON,
         )
-        if settings.SUPERLINKED_LOG_LEVEL:
-            logging.getLogger(PACKAGE_NAME).setLevel(settings.SUPERLINKED_LOG_LEVEL)

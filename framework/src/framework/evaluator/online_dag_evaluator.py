@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import partial
+
 import structlog
 
 from superlinked.framework.common.dag.context import ExecutionContext
@@ -103,7 +105,7 @@ class OnlineDagEvaluator(DagEvaluator[EvaluationResult[Vector]]):
                 logger.info(
                     "evaluated entity",
                     schema=index_schema._schema_name,
-                    pii_vector=str(result.main.value),
+                    pii_vector=partial(str, result.main.value),
                     pii_field_values=[
                         field.value for field in parsed_schemas[i].fields
                     ],
@@ -140,7 +142,7 @@ class OnlineDagEvaluator(DagEvaluator[EvaluationResult[Vector]]):
             event_id=parsed_schema_with_event.event_parsed_schema.id_,
             affected_schema=parsed_schema_with_event.schema._schema_name,
             affecting_schema=parsed_schema_with_event.event_parsed_schema.schema._schema_name,
-            pii_event_vector=str(result.main.value),
+            pii_event_vector=partial(str, result.main.value),
             pii_field_values=[
                 field.value
                 for field in parsed_schema_with_event.event_parsed_schema.fields

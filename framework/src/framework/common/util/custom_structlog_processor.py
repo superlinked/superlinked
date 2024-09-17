@@ -58,7 +58,16 @@ class CustomStructlogProcessor:
 
     @staticmethod
     def filter_pii(_: WrappedLogger, __: str, event_dict: EventDict) -> EventDict:
-        for k in list(event_dict.keys()):
-            if k.startswith(PII_PREFIX):
-                del event_dict[k]
+        event_dict = {
+            k: v for k, v in event_dict.items() if not k.startswith(PII_PREFIX)
+        }
+        return event_dict
+
+    @staticmethod
+    def evaluate_lazy_arguments(
+        _: WrappedLogger, __: str, event_dict: EventDict
+    ) -> EventDict:
+        for key, value in event_dict.items():
+            if callable(value):
+                event_dict[key] = value()
         return event_dict
