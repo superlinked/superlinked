@@ -17,7 +17,7 @@ import warnings
 from pathlib import Path
 
 import numpy as np
-from beartype.typing import Any, cast
+from beartype.typing import Any, Sequence, cast
 from huggingface_hub.file_download import (  # type:ignore[import-untyped]
     repo_folder_name,
 )
@@ -28,6 +28,7 @@ from typing_extensions import override
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.embedding import Embedding
+from superlinked.framework.common.embedding.embedding_cache import EmbeddingCache
 from superlinked.framework.common.interface.has_default_vector import HasDefaultVector
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.settings import Settings
@@ -41,7 +42,11 @@ SENTENCE_TRANSFORMERS_MODEL_DIR: Path = (
 
 
 class SentenceTransformerEmbedding(Embedding[str], HasLength, HasDefaultVector):
-    def __init__(self, model_name: str, normalization: Normalization) -> None:
+    def __init__(
+        self, model_name: str, normalization: Normalization, cache_size: int
+    ) -> None:
+        if cache_size < 0:
+            raise ValueError("cache_size must be non-negative")
         local_files_only = self._is_model_downloaded(model_name)
         self._gpu_embedding_util = GpuEmbeddingUtil(Settings().GPU_EMBEDDING_THRESHOLD)
         self._embedding_model = self._initialize_model(
@@ -54,6 +59,7 @@ class SentenceTransformerEmbedding(Embedding[str], HasLength, HasDefaultVector):
             )
         self.__normalization = normalization
         self.__length = self._embedding_model.get_sentence_embedding_dimension() or 0
+        self._cache = EmbeddingCache(cache_size)
 
     def _initialize_model(
         self, model_name: str, local_files_only: bool, device: str
@@ -109,11 +115,18 @@ class SentenceTransformerEmbedding(Embedding[str], HasLength, HasDefaultVector):
         )
 
     def embed_multiple(self, inputs: list[str]) -> list[Vector]:
+        cache_info = self._cache.calculate_cache_info(inputs)
+        new_vectors = self._embed_uncached(cache_info.inputs_to_embed)
+        self._cache.update(cache_info.inputs_to_embed, new_vectors)
+        combined_vectors = cache_info.combine_vectors(new_vectors)
+        return combined_vectors
+
+    def _embed_uncached(self, inputs: Sequence[str]) -> list[Vector]:
         inputs_count = len(inputs)
         if not inputs_count:
             return []
         embedding_model = self._get_embedding_model(inputs_count)
-        embeddings = embedding_model.encode(inputs)
+        embeddings = embedding_model.encode(list(inputs))
         return [self.__to_vector(embedding) for embedding in embeddings]
 
     def _get_embedding_model(self, number_of_inputs: int) -> SentenceTransformer:

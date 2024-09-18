@@ -30,19 +30,16 @@ from superlinked.framework.common.space.normalization import L2Norm
 
 
 class TextEmbeddingNode(Node[Vector], HasLength, HasAggregation):
-    def __init__(
-        self,
-        parent: Node[str],
-        model_name: str,
-    ) -> None:
+    def __init__(self, parent: Node[str], model_name: str, cache_size: int) -> None:
         super().__init__(Vector, [parent])
         self.model_name = model_name
+        self.cache_size = cache_size
         self.__aggregation = VectorAggregation(L2Norm())
         self.post_init()
 
     def post_init(self) -> None:
         self.embedding = SentenceTransformerEmbedding(
-            self.model_name, self.__aggregation.normalization
+            self.model_name, self.__aggregation.normalization, self.cache_size
         )
 
     @property
@@ -56,4 +53,8 @@ class TextEmbeddingNode(Node[Vector], HasLength, HasAggregation):
 
     @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
-        return {"model_name": self.model_name, "aggregation": self.__aggregation}
+        return {
+            "model_name": self.model_name,
+            "cache_size": self.cache_size,
+            "aggregation": self.__aggregation,
+        }

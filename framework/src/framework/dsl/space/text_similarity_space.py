@@ -27,6 +27,8 @@ from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
 TextInput = String | ChunkingNode
 
+DEFAULT_CACHE_SIZE = 10000
+
 
 class TextSimilaritySpace(Space):
     """
@@ -39,6 +41,7 @@ class TextSimilaritySpace(Space):
         self,
         text: TextInput | list[TextInput],
         model: str,
+        cache_size: int = DEFAULT_CACHE_SIZE,
     ) -> None:
         """
         Initialize the TextSimilaritySpace.
@@ -47,10 +50,12 @@ class TextSimilaritySpace(Space):
             text (TextInput | list[TextInput]): The Text input or a list of Text inputs.
             It is a SchemaFieldObject (String), not a regular python string.
             model (str): The model used for text similarity.
+            cache_size (int): The number of embeddings to be stored in an inmemory LRU cache.
+            Set it to 0, to disable caching. Defaults to 10000.
         """
         text_text_node_map = {
             self.__get_root(unchecked_text): self.__generate_embedding_node(
-                unchecked_text, model
+                unchecked_text, model, cache_size
             )
             for unchecked_text in (text if isinstance(text, list) else [text])
         }
@@ -70,13 +75,11 @@ class TextSimilaritySpace(Space):
         return self.__get_root(text.parents[0])
 
     def __generate_embedding_node(
-        self,
-        text: TextInput,
-        model: str,
+        self, text: TextInput, model: str, cache_size: int
     ) -> TextEmbeddingNode:
         if isinstance(text, ChunkingNode):
-            return TextEmbeddingNode(text, model)
-        return TextEmbeddingNode(SchemaFieldNode(text), model)
+            return TextEmbeddingNode(text, model, cache_size)
+        return TextEmbeddingNode(SchemaFieldNode(text), model, cache_size)
 
     @property
     def _node_by_schema(self) -> Mapping[SchemaObject, Node[Vector]]:
