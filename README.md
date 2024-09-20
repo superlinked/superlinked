@@ -15,7 +15,14 @@
 
 </div>
 
-Superlinked is a compute framework for your information retrieval and feature engineering systems, focused on turning complex (structured+unstructured) data into ultra-modal vector embeddings within your RAG, Search, Recommendations and Analytics stack. Integrate Superlinked into your machine learning stack for custom model performance with pre-trained model convenience. 
+### Why use Superlinked
+Improve your vector search relevance by encoding your metadata together with your data into your vector embeddings.
+
+### What is Superlinked
+Superlinked is a framework AND a self-hostable REST API server that helps you make better vectors, that sits between your data, vector database and backend services.
+
+### How does it work
+Superlinked makes it easy to construct custom data & query embedding models from pre-trained encoders, see the use-case and feature notebooks below for examples.
 
 If you like what we do, give us a star! ⭐
 
