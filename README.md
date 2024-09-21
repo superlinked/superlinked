@@ -1,4 +1,8 @@
-# Superlinked - The Vector Computer
+
+
+<div align="center">
+<img width=400 src="https://cdn.prod.website-files.com/65dce6831bf9f730421e2915/66ef0317ed8616151ee1d451_superlinked_logo_white.png">
+</div>  &nbsp;
 
 <div align="center">
 
@@ -22,7 +26,7 @@ Improve your vector search relevance by encoding your metadata together with you
 Superlinked is a framework AND a self-hostable REST API server that helps you make better vectors, that sits between your data, vector database and backend services.
 
 #### How does it work
-Superlinked makes it easy to construct & run custom data & query embedding models from pre-trained encoders, see the <b>feature</b> and <b>use-case</b> notebooks below for examples.
+Superlinked makes it easy to construct custom data & query embedding models from pre-trained encoders, see the <b>feature</b> and <b>use-case</b> notebooks below for examples.
 
 If you like what we do, give us a star! ⭐
 
