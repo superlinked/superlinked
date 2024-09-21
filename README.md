@@ -15,14 +15,14 @@
 
 </div>
 
-### Why use Superlinked
+#### Why use Superlinked
 Improve your vector search relevance by encoding your metadata together with your data into your vector embeddings.
 
-### What is Superlinked
+#### What is Superlinked
 Superlinked is a framework AND a self-hostable REST API server that helps you make better vectors, that sits between your data, vector database and backend services.
 
-### How does it work
-Superlinked makes it easy to construct custom data & query embedding models from pre-trained encoders, see the use-case and feature notebooks below for examples.
+#### How does it work
+Superlinked makes it easy to construct & run custom data & query embedding models from pre-trained encoders, see the <b>feature</b> and <b>use-case</b> notebooks below for examples.
 
 If you like what we do, give us a star! ⭐
 
