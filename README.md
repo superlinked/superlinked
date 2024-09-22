@@ -39,7 +39,7 @@ Superlinked makes it easy to construct custom data & query embedding models from
 
 If you like what we do, give us a star! ⭐
 
-![](https://storage.googleapis.com/superlinked-public-assets/readme.png)
+![](https://cdn.prod.website-files.com/65dce6831bf9f730421e2915/66f05365ad05806eb16c9cb8_superlinked_system_diagram3.png)
 
 Visit [Superlinked](https://superlinked.com/) for more information about the company behind this product and our other initiatives.
 
