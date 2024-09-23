@@ -81,12 +81,12 @@ def save_tree(directory_tree, cur_path, indent=0):
             new_path = new_path.strip('/')
             save_tree(directory_tree, new_path, indent + 2)
         
-directory_tree = build_tree('reference')
+directory_tree = build_tree('docs/reference')
 
-new_references_to_write.append("* [Overview](reference/overview.md)\n")
-new_references_to_write.append("* [Changelog](reference/changelog.md)\n")
+new_references_to_write.append("* [Overview](docs/reference/overview.md)\n")
+new_references_to_write.append("* [Changelog](docs/reference/changelog.md)\n")
 
-new_references_to_write.append("* [Components](reference/components.md)\n")
+new_references_to_write.append("* [Components](docs/reference/components.md)\n")
 save_tree(directory_tree, 'common', 2)
 
 # new_references_to_write.append("* [DSL](reference/dsl)\n")
@@ -94,4 +94,4 @@ save_tree(directory_tree, 'dsl', 2)
 
 new_references_to_write.append(f'\n')
 
-replace_content_between_headers('SUMMARY.md', '## Reference', '## Tutorials', new_references_to_write)
+replace_content_between_headers('docs/SUMMARY.md', '## Reference', '## Tutorials', new_references_to_write)
