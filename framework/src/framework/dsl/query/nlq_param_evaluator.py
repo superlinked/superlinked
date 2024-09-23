@@ -252,12 +252,12 @@ class NLQParamEvaluator:
         the input "Cold War era").\n
         4. When dealing with numbers, the Mode of the NumberSpace is of utmost importance. Also, sometimes number space
         references are a bit harder to extract. "High quality products" would mean positive weight for a rating, or
-        the like space that conveys quality of the product - even though there is no direct reference to ratings or
+        the like space that conveys quality of the product - even though there is no direct refernce to ratings or
         reviews. Conversely, if the space refers to how bad the product is, like number of complaints, high quality
         would mean a negative weight in that case.\n
         5. Categorical spaces can only have a limited set of values specified in the space description. If you see text
         present in the query that is present in the categorical similarity space description, it most probably refers to
-        that space. Fill the corresponding .similar clause input with the value (multiple are possible) and give it
+        that space. Fill the corresponding .similar clause input with the value (mutliple are possible) and give it
         positive weight - unless the query specifies preference against that category - in that case use a negative
         weight.\n
         """
