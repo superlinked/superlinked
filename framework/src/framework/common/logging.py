@@ -51,6 +51,7 @@ class LoggerConfigurator:
         expose_pii: bool = False,
         log_as_json: bool = False,
     ) -> None:
+
         if not processors:
             processors = LoggerConfigurator._get_structlog_processors(
                 json_log_file_path, expose_pii, log_as_json
@@ -96,9 +97,15 @@ class LoggerConfigurator:
             processors=stdlib_processors,
         )
         # Use OUR `ProcessorFormatter` to format all `logging` entries.
+        logger = logging.getLogger()
+
+        while logger.hasHandlers():
+            logger.handlers[0].close()
+            logger.removeHandler(logger.handlers[0])
+
         handler = logging.StreamHandler()
         handler.setFormatter(formatter)
-        logging.getLogger().addHandler(handler)
+        logger.addHandler(handler)
 
     @staticmethod
     def _get_structlog_processors(

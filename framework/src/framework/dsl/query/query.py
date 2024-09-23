@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+import structlog
 from beartype.typing import NamedTuple, cast
 from typing_extensions import Annotated
 
@@ -29,7 +30,11 @@ from superlinked.framework.common.interface.comparison_operand import (
 from superlinked.framework.common.nlq.open_ai import OpenAIClientConfig
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema import T
-from superlinked.framework.common.schema.schema_object import SchemaField
+from superlinked.framework.common.schema.schema_object import (
+    SchemaField,
+    String,
+    StringList,
+)
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.query.param import (
@@ -52,12 +57,17 @@ from superlinked.framework.dsl.query.query_param_information import (
     QueryParamInformation,
     WeightedParamInfo,
 )
+from superlinked.framework.dsl.space.categorical_similarity_space import (
+    CategoricalSimilaritySpace,
+)
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
 # Exclude from documentation.
 __pdoc__ = {}
 __pdoc__["AlterParams"] = False
+
+logger = structlog.getLogger()
 
 
 class AlterParams(NamedTuple):
@@ -199,12 +209,16 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
         natural_query_param = ParamInfo.init_with(
             ParamGroup.NATURAL_QUERY, natural_query
         )
-        return self.__alter(
+        altered_query_obj = self.__alter(
             AlterParams(
                 natural_query_param=natural_query_param,
                 natural_query_client_config=client_config,
             )
         )
+        self._warn_if_nlq_is_used_without_recommended_param_descriptions(
+            altered_query_obj
+        )
+        return altered_query_obj
 
     def radius(self, radius: NumericParamType | None) -> QueryObj:
         """
@@ -266,12 +280,13 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
             schema_obj.id,
         )
         looks_like_filter_information = LooksLikeFilterInformation(schema_obj.id)
-        return self.__alter(
+        altered_query_obj = self.__alter(
             AlterParams(
                 looks_like_filter_param=looks_like_filter_param,
                 looks_like_filter_info=looks_like_filter_information,
             )
         )
+        return altered_query_obj
 
     def filter(
         self,
@@ -309,7 +324,7 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
             for operation in comparison_operations
         ]
         hard_filter_params, hard_filter_infos = zip(*hard_filter_params_infos)
-        return self.__alter(
+        altered_query_obj = self.__alter(
             AlterParams(
                 hard_filter_params=self.query_param_info.hard_filter_params
                 + list(hard_filter_params),
@@ -317,6 +332,10 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
                 + list(hard_filter_infos),
             )
         )
+        self._warn_if_nlq_is_used_without_recommended_param_descriptions(
+            altered_query_obj
+        )
+        return altered_query_obj
 
     def _create_hard_filter_param_and_info(
         self, operation: ComparisonOperation
@@ -369,6 +388,34 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
             params.override_now or self._override_now,
             params.natural_query_client_config or self.natural_query_client_config,
         )
+
+    @classmethod
+    def _warn_if_nlq_is_used_without_recommended_param_descriptions(
+        cls, query_obj: QueryObj
+    ) -> None:
+        if (
+            query_obj.natural_query_client_config is None
+            or not query_obj.query_param_info.hard_filter_params
+        ):
+            return
+        affected_param_names = [
+            param.name
+            for param in query_obj.query_param_info.hard_filter_params
+            if (
+                param.value is None
+                and param.description is None
+                and not isinstance(param.space, CategoricalSimilaritySpace)
+                and isinstance(param.schema_field, (String, StringList))
+            )
+        ]
+        if affected_param_names:
+            affected_param_names_text = ", ".join(affected_param_names)
+            logger.warning(
+                f"When using a natural query with a 'filter' for a field that has no corresponding"
+                f" {type(CategoricalSimilaritySpace).__name__} and has a Param as a value,"
+                f" it is recommended to provide a description for the Param that outlines the possible values."
+                f" affected parameters: {affected_param_names_text}"
+            )
 
 
 class Query:
