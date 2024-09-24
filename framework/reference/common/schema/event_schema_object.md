@@ -39,7 +39,7 @@ Classes
 
     ### Instance variables
 
-    `created_at: superlinked.framework.common.schema.event_schema_object.CreatedAtField`
+    `created_at: CreatedAtField`
     :
 
 `MultipliedSchemaReference(schema_reference: SchemaReference[RST], multiplier: float = 1.0)`

@@ -28,5 +28,5 @@ Classes
 
     ### Instance variables
 
-    `dag_effect: superlinked.framework.common.dag.dag_effect.DagEffect`
+    `dag_effect: DagEffect`
     :
