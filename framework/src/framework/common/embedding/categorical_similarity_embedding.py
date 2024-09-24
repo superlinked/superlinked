@@ -33,7 +33,7 @@ class CategoricalSimilarityParams:
         categories: list[str],
         uncategorized_as_category: bool,
         negative_filter: float = 0.0,
-    ):
+    ) -> None:
         self.categories: list[str] = categories
         self.uncategorized_as_category: bool = uncategorized_as_category
         self.negative_filter: float = negative_filter
@@ -45,6 +45,7 @@ class CategoricalSimilarityEmbedding(Embedding[list[str]], HasLength, HasDefault
         categorical_similarity_param: CategoricalSimilarityParams,
         normalization: Normalization,
     ) -> None:
+        super().__init__()
         self.categorical_similarity_param: CategoricalSimilarityParams = (
             categorical_similarity_param
         )

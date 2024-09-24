@@ -54,7 +54,7 @@ class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasL
             result = EvaluationResult(
                 self._get_single_evaluation_result(self.node.embedding.default_vector)
             )
-            return [result for _ in parsed_schemas]
+            return [result] * len(parsed_schemas)
         return super().evaluate_self(parsed_schemas, context)
 
     @override

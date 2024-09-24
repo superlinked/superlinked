@@ -17,12 +17,14 @@ from typing_extensions import override
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.embedding import Embedding
+from superlinked.framework.common.interface.has_default_vector import HasDefaultVector
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.space.normalization import Normalization
 
 
-class CustomEmbedding(Embedding[list[float]], HasLength):
+class CustomEmbedding(Embedding[list[float]], HasLength, HasDefaultVector):
     def __init__(self, length: int, normalization: Normalization) -> None:
+        super().__init__()
         self.__length: int = length
         self._normalization: Normalization = normalization
 
@@ -33,6 +35,11 @@ class CustomEmbedding(Embedding[list[float]], HasLength):
         context: ExecutionContext,  # pylint: disable=unused-argument
     ) -> Vector:
         return self._normalization.normalize(Vector(input_))
+
+    @property
+    @override
+    def default_vector(self) -> Vector:
+        return Vector([0.0] * self.length)
 
     @property
     def length(self) -> int:

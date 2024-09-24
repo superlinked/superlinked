@@ -45,6 +45,7 @@ class SentenceTransformerEmbedding(Embedding[str], HasLength, HasDefaultVector):
     def __init__(
         self, model_name: str, normalization: Normalization, cache_size: int
     ) -> None:
+        super().__init__()
         if cache_size < 0:
             raise ValueError("cache_size must be non-negative")
         local_files_only = self._is_model_downloaded(model_name)

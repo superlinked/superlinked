@@ -55,7 +55,10 @@ def suppress_tokenizer_warnings() -> Generator[None, Any, None]:
     def filter_stderr() -> None:
         with os.fdopen(read_fd) as f:
             for line in f:
-                if not any(msg in line for msg in msgs_to_filter):
+                if (
+                    not any(msg in line for msg in msgs_to_filter)
+                    and sys.__stderr__ is not None
+                ):
                     sys.__stderr__.write(line)
 
     thread = threading.Thread(target=filter_stderr)

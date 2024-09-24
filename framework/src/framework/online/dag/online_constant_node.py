@@ -49,7 +49,7 @@ class OnlineConstantNode(OnlineNode[ConstantNode[NDT], NDT]):
         result = EvaluationResult(
             self._get_single_evaluation_result(self._evaluate_single())
         )
-        return [result for _ in parsed_schemas]
+        return [result] * len(parsed_schemas)
 
     def _evaluate_single(
         self,
