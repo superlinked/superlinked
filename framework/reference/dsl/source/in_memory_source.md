@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.source.in_memory_source
 Classes
 -------
 
-`InMemorySource(schema: ~SchemaObjectT, parser: superlinked.framework.common.parser.data_parser.DataParser | None = None)`
+`InMemorySource(schema: ~IdSchemaObjectT, parser: Optional[superlinked.framework.common.parser.data_parser.DataParser[~IdSchemaObjectT, ~SourceTypeT]] = None)`
 :   InMemorySource represents a source of data, where you can put your data. This will supply
     the index with the data it needs to index and search in.
     
@@ -19,13 +19,14 @@ Classes
 
     ### Ancestors (in MRO)
 
-    * superlinked.framework.dsl.source.source.Source
-    * abc.ABC
+    * superlinked.framework.online.source.online_source.OnlineSource
+    * superlinked.framework.common.observable.TransformerPublisher
+    * superlinked.framework.common.source.source.Source
     * typing.Generic
 
     ### Methods
 
-    `put(self, data: list[SourceTypeT]) ‑> None`
+    `put(self, data: Sequence[SourceTypeT]) ‑> None`
     :   Put data into the InMemorySource. This operation can take time as the vectorization
         of your data happens here.
         

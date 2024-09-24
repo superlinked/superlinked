@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.app.online.online_app
 Classes
 -------
 
-`OnlineApp(sources: collections.abc.Sequence[~SourceT], indices: collections.abc.Sequence[superlinked.framework.dsl.index.index.Index], vector_database: superlinked.framework.dsl.storage.vector_database.VectorDatabase, context: superlinked.framework.common.dag.context.ExecutionContext)`
+`OnlineApp(sources: collections.abc.Sequence[~OnlineSourceT], indices: collections.abc.Sequence[superlinked.framework.dsl.index.index.Index], vector_database: superlinked.framework.dsl.storage.vector_database.VectorDatabase, context: superlinked.framework.common.dag.context.ExecutionContext, queue: superlinked.framework.queue.interface.queue.Queue | None = None)`
 :   Manages the execution environment for online sources and indices.
     
     This class extends the base App class and incorporates the QueryMixin to handle
@@ -14,10 +14,12 @@ Classes
     Initialize the OnlineApp with the given sources, indices, vector database, and execution context.
     
     Args:
-        sources (Sequence[SourceT]): A sequence of data sources to be used by the application.
+        sources (Sequence[OnlineSourceT]): A sequence of data sources to be used by the application.
         indices (Sequence[Index]): A sequence of indices for data retrieval and storage.
         vector_database (VectorDatabase): The vector database instance for managing vector data.
         context (ExecutionContext): The execution context providing necessary runtime information.
+        source_to_queue_map (dict[OnlineSourceT, Queue] | None): a mapping from sources
+            to messaging queues persisting the ingested data on the given source; defaults to None.
 
     ### Ancestors (in MRO)
 
@@ -30,3 +32,8 @@ Classes
 
     * superlinked.framework.dsl.app.in_memory.in_memory_app.InMemoryApp
     * superlinked.framework.dsl.app.rest.rest_app.RestApp
+
+    ### Class variables
+
+    `INGEST_MESSAGE_TYPE`
+    :

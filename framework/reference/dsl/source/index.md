@@ -9,5 +9,4 @@ Sub-modules
 * superlinked.framework.dsl.source.data_loader_source
 * superlinked.framework.dsl.source.in_memory_source
 * superlinked.framework.dsl.source.rest_source
-* superlinked.framework.dsl.source.source
 * superlinked.framework.dsl.source.types
