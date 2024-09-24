@@ -23,7 +23,7 @@ from superlinked.framework.common.storage_manager.storage_manager import (
     StorageManager,
 )
 from superlinked.framework.dsl.index.index import Index
-from superlinked.framework.dsl.source.source import SourceT
+from superlinked.framework.dsl.source.types import SourceT
 from superlinked.framework.dsl.storage.vector_database import VectorDatabase
 
 

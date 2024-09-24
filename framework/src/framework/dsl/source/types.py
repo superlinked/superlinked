@@ -12,27 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from abc import ABC, abstractmethod
+from beartype.typing import TypeVar
 
-from superlinked.framework.common.source.source import Source as CommonSource
+from superlinked.framework.dsl.source.source import Source
 
-
-class Source(ABC):
-    """
-    Abstract base class for a source.
-    """
-
-    def __init__(self) -> None:
-        """
-        Initialize the Source.
-        """
-
-    @property
-    @abstractmethod
-    def _source(self) -> CommonSource:
-        """
-        Abstract method to get the common source.
-
-        Returns:
-            CommonSource: The common source.
-        """
+SourceT = TypeVar("SourceT", bound=Source)
