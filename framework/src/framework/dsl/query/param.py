@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from beartype.typing import Sequence, TypeAlias, TypeVar
+from beartype.typing import Any, Sequence, TypeAlias, TypeVar
 
 
 class Param:
@@ -21,20 +21,29 @@ class Param:
     Class representing a parameter that will be provided during the execution of the query.
 
     Attributes:
-        name (str): The name of the parameter.
+        name (str): The unique name of the parameter.
+        description (str, optional): Description of the parameter. Used for natural language query.
+            Defaults to None.
+        default (Any, optional): Value to use if not overridden by query parameter.
+            Natural language query will use defaults. Defaults to None.
     """
 
-    def __init__(self, name: str, description: str | None = None) -> None:
+    def __init__(
+        self, name: str, description: str | None = None, default: Any | None = None
+    ) -> None:
         """
         Initialize the Param.
 
         Args:
-            name (str): The name of the parameter.
+            name (str): The unique name of the parameter.
             description (str, optional): Description of the parameter. Used for natural language query.
                 Defaults to None.
+            default (Any, optional): Value to use if not overridden by query parameter.
+                Natural language query will use defaults. Defaults to None.
         """
         self.name = name
         self.description = description
+        self.default = default
 
 
 ParamInputType: TypeAlias = (

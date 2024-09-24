@@ -107,7 +107,7 @@ class ParamInfo:
             ParamGroup.LOOKS_LIKE_FILTER_WEIGHT,
         ]
         if isinstance(param, Param):
-            name, description, value = (param.name, param.description, None)
+            name, description, value = (param.name, param.description, param.default)
         else:
             default_name = cls._get_default_name(
                 param_group,
