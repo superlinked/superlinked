@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from beartype.typing import Mapping, Sequence
+from beartype.typing import Any, Mapping, Sequence
 
 from superlinked.framework.common.dag.context import (
     ContextValue,
@@ -31,6 +31,7 @@ from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.source.data_loader_source import DataLoaderSource
 from superlinked.framework.dsl.source.rest_source import RestSource
 from superlinked.framework.dsl.storage.vector_database import VectorDatabase
+from superlinked.framework.queue.queue_factory import QueueFactory
 
 
 class RestExecutor(Executor[RestSource | DataLoaderSource]):
@@ -73,6 +74,7 @@ class RestExecutor(Executor[RestSource | DataLoaderSource]):
         self._endpoint_configuration = (
             endpoint_configuration or RestEndpointConfiguration()
         )
+        self._queue = QueueFactory.create_queue(dict[str, Any])
 
     def run(self) -> RestApp:
         """
@@ -88,4 +90,5 @@ class RestExecutor(Executor[RestSource | DataLoaderSource]):
             self._vector_database,
             self._context,
             self._endpoint_configuration,
+            self._queue,
         )

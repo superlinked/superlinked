@@ -13,26 +13,28 @@
 # limitations under the License.
 
 
-from beartype.typing import Sequence
+from beartype.typing import Generic, Sequence
 
 from superlinked.framework.common.dag.context import ExecutionContext
+from superlinked.framework.common.settings import Settings
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.app.app import App
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.query.query_mixin import QueryMixin
-from superlinked.framework.dsl.source.types import SourceT
 from superlinked.framework.dsl.storage.vector_database import VectorDatabase
 from superlinked.framework.evaluator.online_dag_evaluator import OnlineDagEvaluator
 from superlinked.framework.online.source.online_data_processor import (
     OnlineDataProcessor,
 )
 from superlinked.framework.online.source.online_object_writer import OnlineObjectWriter
-from superlinked.framework.online.source.online_source import OnlineSource
+from superlinked.framework.online.source.types import OnlineSourceT
+from superlinked.framework.queue.interface.queue import Queue
+from superlinked.framework.queue.interface.queue_subscriber import QueueSubscriber
 
 
 @TypeValidator.wrap
-class OnlineApp(App[SourceT], QueryMixin):
+class OnlineApp(App[OnlineSourceT], Generic[OnlineSourceT], QueryMixin):
     """
     Manages the execution environment for online sources and indices.
 
@@ -41,21 +43,26 @@ class OnlineApp(App[SourceT], QueryMixin):
     the necessary setup and management for efficient data processing and querying.
     """
 
+    INGEST_MESSAGE_TYPE = "ingest"
+
     def __init__(
         self,
-        sources: Sequence[SourceT],
+        sources: Sequence[OnlineSourceT],
         indices: Sequence[Index],
         vector_database: VectorDatabase,
         context: ExecutionContext,
+        queue: Queue | None = None,
     ) -> None:
         """
         Initialize the OnlineApp with the given sources, indices, vector database, and execution context.
 
         Args:
-            sources (Sequence[SourceT]): A sequence of data sources to be used by the application.
+            sources (Sequence[OnlineSourceT]): A sequence of data sources to be used by the application.
             indices (Sequence[Index]): A sequence of indices for data retrieval and storage.
             vector_database (VectorDatabase): The vector database instance for managing vector data.
             context (ExecutionContext): The execution context providing necessary runtime information.
+            source_to_queue_map (dict[OnlineSourceT, Queue] | None): a mapping from sources
+                to messaging queues persisting the ingested data on the given source; defaults to None.
         """
         super().__init__(sources, indices, vector_database, context)
         self._data_processors: list[OnlineDataProcessor] = []
@@ -63,6 +70,8 @@ class OnlineApp(App[SourceT], QueryMixin):
         self.setup_query_execution(self._indices, self.storage_manager)
         self._init_search_indices()
         self.__setup_sources()
+        if queue is not None:
+            self.__register_queue_to_sources(queue)
 
     def __setup_sources(self) -> None:
         """
@@ -91,16 +100,20 @@ class OnlineApp(App[SourceT], QueryMixin):
     def _register_object_writer(self) -> None:
         object_writer = OnlineObjectWriter(self.storage_manager)
         for source in self._sources:
-            if isinstance(source._source, OnlineSource):
-                source._source.register(object_writer)
+            source.register(object_writer)
 
     def _init_storage_manager(self) -> StorageManager:
         return StorageManager(self._vector_database._vdb_connector)
 
-    def __filter_index_sources(self, index: Index) -> Sequence[OnlineSource]:
-        return [
-            source._source
-            for source in self._sources
-            if isinstance(source._source, OnlineSource)
-            and index.has_schema(source._source._schema)
-        ]
+    def __filter_index_sources(self, index: Index) -> Sequence[OnlineSourceT]:
+        return [source for source in self._sources if index.has_schema(source._schema)]
+
+    def __register_queue_to_sources(self, queue: Queue) -> None:
+        for source in self._sources:
+            source.register_pre_transform(
+                QueueSubscriber(
+                    queue,
+                    Settings().INGESTION_TOPIC_NAME,
+                    OnlineApp.INGEST_MESSAGE_TYPE,
+                )
+            )

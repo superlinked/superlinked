@@ -18,17 +18,9 @@ from typing_extensions import override
 
 from superlinked.framework.queue.interface.queue import Queue
 from superlinked.framework.queue.interface.queue_message import QueueMessage
-from superlinked.framework.queue.no_op_queue.no_op_message_converter import (
-    NoOpMessageConverter,
-)
 
 
-class NoOpQueue(Queue[Any, Any]):
-    def __init__(
-        self,
-    ) -> None:
-        super().__init__(NoOpMessageConverter())
-
+class NoOpQueue(Queue[Any]):
     @override
     def publish(self, topic_name: str, message: QueueMessage[Any]) -> None:
         pass

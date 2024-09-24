@@ -13,6 +13,9 @@
 # limitations under the License.
 
 
+import json
+from dataclasses import asdict
+
 import requests
 import structlog
 from beartype.typing import Any, Generic, Sequence
@@ -21,7 +24,6 @@ from google.api_core import retry as retries
 from google.cloud import pubsub_v1  # type: ignore
 from typing_extensions import override
 
-from superlinked.framework.queue.interface.message_converter import MessageConverter
 from superlinked.framework.queue.interface.queue import Queue
 from superlinked.framework.queue.interface.queue_message import PayloadT, QueueMessage
 
@@ -44,16 +46,15 @@ def on_error(exception: Exception) -> None:
     logger.exception(exception)
 
 
-class PubSubQueue(Queue[PayloadT, bytes], Generic[PayloadT]):
+class PubSubQueue(Queue[PayloadT], Generic[PayloadT]):
     DEFAULT_TIMEOUT = 60.0
 
     def __init__(
         self,
-        converter: MessageConverter[PayloadT, bytes],
         project_id: str,
         retry_timeout: int | None = None,
     ) -> None:
-        super().__init__(converter, retry_timeout)
+        super().__init__(retry_timeout)
         self._project_id = project_id
         self._publisher = pubsub_v1.PublisherClient()
         self._retry = self.__init_retry()
@@ -73,9 +74,12 @@ class PubSubQueue(Queue[PayloadT, bytes], Generic[PayloadT]):
     def publish(self, topic_name: str, message: QueueMessage[PayloadT]) -> None:
         topic_path = self._publisher.topic_path(self._project_id, topic_name)
 
-        future = self._publisher.publish(
+        self._publisher.publish(
             topic_path,
-            data=self._message_converter.convert(message),
+            data=self._message_to_bytes(message),
             retry=self._retry,
         )
-        future.result(self._retry_timeout)
+
+    def _message_to_bytes(self, message: QueueMessage[PayloadT]) -> bytes:
+        message_dict = asdict(message)
+        return json.dumps(message_dict).encode("utf-8")

@@ -21,6 +21,7 @@ from superlinked.framework.dsl.app.online.online_app import OnlineApp
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.source.in_memory_source import InMemorySource
 from superlinked.framework.dsl.storage.vector_database import VectorDatabase
+from superlinked.framework.queue.no_op_queue.no_op_queue import NoOpQueue
 
 
 @TypeValidator.wrap
@@ -44,4 +45,10 @@ class InMemoryApp(OnlineApp[InMemorySource]):
             vector_database (VectorDatabase | None): Vector database instance. Defaults to InMemory.
             context (Mapping[str, Mapping[str, Any]]): Context mapping.
         """
-        super().__init__(sources, indices, vector_database, context)
+        super().__init__(
+            sources,
+            indices,
+            vector_database,
+            context,
+            NoOpQueue(),
+        )

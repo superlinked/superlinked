@@ -14,31 +14,71 @@
 
 from abc import ABC, abstractmethod
 
-from beartype.typing import Generic, TypeVar
+from beartype.typing import Generic, Sequence, TypeVar
+from typing_extensions import override
 
-# PublisherMessage
-PM = TypeVar("PM")
+from superlinked.framework.common.util.collection_util import chunk_list
+
+PublishedMessageT = TypeVar("PublishedMessageT")
 
 
-class Subscriber(ABC, Generic[PM]):
+class Subscriber(ABC, Generic[PublishedMessageT]):
     def __init__(self) -> None:
         pass
 
     @abstractmethod
-    def update(self, messages: list[PM]) -> None:
+    def update(self, messages: Sequence[PublishedMessageT]) -> None:
         pass
 
 
-class Publisher(Generic[PM]):
-    def __init__(self) -> None:
-        self.subscribers: list[Subscriber] = []
+ReceivedMessageT = TypeVar("ReceivedMessageT")
 
-    def register(self, subscriber: Subscriber[PM]) -> None:
-        self.subscribers.append(subscriber)
 
-    def unregister(self, subscriber: Subscriber[PM]) -> None:
-        self.subscribers.remove(subscriber)
+class TransformerPublisher(Generic[ReceivedMessageT, PublishedMessageT]):
+    def __init__(self, chunk_size: int = 1) -> None:
+        self._chunk_size = chunk_size
+        self._pre_transform_subscribers: list[Subscriber[ReceivedMessageT]] = []
+        self._subscribers: list[Subscriber[PublishedMessageT]] = []
 
-    def _dispatch(self, messages: list[PM]) -> None:
-        for subscriber in self.subscribers:
-            subscriber.update(messages)
+    def register_pre_transform(self, subscriber: Subscriber[ReceivedMessageT]) -> None:
+        self._pre_transform_subscribers.append(subscriber)
+
+    def unregister_pre_transform(
+        self, subscriber: Subscriber[ReceivedMessageT]
+    ) -> None:
+        self._pre_transform_subscribers.remove(subscriber)
+
+    def register(self, subscriber: Subscriber[PublishedMessageT]) -> None:
+        self._subscribers.append(subscriber)
+
+    def unregister(self, subscriber: Subscriber[PublishedMessageT]) -> None:
+        self._subscribers.remove(subscriber)
+
+    @abstractmethod
+    def transform(self, message: ReceivedMessageT) -> list[PublishedMessageT]:
+        pass
+
+    def _dispatch(self, messages: Sequence[ReceivedMessageT]) -> None:
+        for batch in chunk_list(data=messages, chunk_size=self._chunk_size):
+            for pre_transform_subscriber in self._pre_transform_subscribers:
+                pre_transform_subscriber.update(batch)
+
+        transformed_messages = [
+            transformed_message
+            for message in messages
+            for transformed_message in self.transform(message)
+        ]
+        for transformed_batch in chunk_list(
+            data=transformed_messages, chunk_size=self._chunk_size
+        ):
+            for subscriber in self._subscribers:
+                subscriber.update(transformed_batch)
+
+
+class Publisher(
+    TransformerPublisher[PublishedMessageT, PublishedMessageT],
+    Generic[PublishedMessageT],
+):
+    @override
+    def transform(self, message: PublishedMessageT) -> list[PublishedMessageT]:
+        return [message]

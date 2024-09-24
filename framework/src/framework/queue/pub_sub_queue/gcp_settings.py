@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Generic, TypeVar
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from superlinked.framework.common.schema.id_schema_object import IdSchemaObjectT
-
-SourceT = TypeVar("SourceT", bound="Source")
+from superlinked.framework.common.util.singleton_decorator import singleton
 
 
-class Source(Generic[IdSchemaObjectT]):
-    def __init__(self, schema: IdSchemaObjectT) -> None:
-        self._schema = schema
+@singleton
+class GCPSettings(BaseSettings):
+    GCP_PROJECT_ID: str | None = None
+    PUB_SUB_TIMEOUT: int | None = None
+
+    model_config = SettingsConfigDict(env_file=".env-gcp")

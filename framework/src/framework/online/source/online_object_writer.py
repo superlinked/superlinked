@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from beartype.typing import Sequence
+
 from superlinked.framework.common.observable import Subscriber
 from superlinked.framework.common.parser.json_parser import JsonParser
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
@@ -23,7 +25,7 @@ class OnlineObjectWriter(Subscriber[ParsedSchema]):
         super().__init__()
         self.__storage_manager = storage_manager
 
-    def update(self, messages: list[ParsedSchema]) -> None:
+    def update(self, messages: Sequence[ParsedSchema]) -> None:
         for message in messages:
             parser = JsonParser(message.schema)
             data = parser.marshal(message)

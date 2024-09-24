@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Iterator, TypeVar
+from beartype.typing import Iterator, Sequence, TypeVar
 
 T = TypeVar("T")
 
 
-def chunk_list(data: list[T], chunk_size: int) -> Iterator[list[T]]:
-    return (data[i : i + chunk_size] for i in range(0, len(data), chunk_size))
+def chunk_list(data: Sequence[T], chunk_size: int) -> Iterator[list[T]]:
+    return (list(data[i : i + chunk_size]) for i in range(0, len(data), chunk_size))

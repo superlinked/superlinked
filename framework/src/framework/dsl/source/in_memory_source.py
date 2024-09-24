@@ -14,22 +14,24 @@
 
 from __future__ import annotations
 
-from beartype.typing import Generic
+from beartype.typing import Generic, Sequence, cast
+from typing_extensions import override
 
 from superlinked.framework.common.exception import InitializationException
 from superlinked.framework.common.parser.data_parser import DataParser
 from superlinked.framework.common.parser.json_parser import JsonParser
-from superlinked.framework.common.schema.schema_object import (
-    SchemaObject,
-    SchemaObjectT,
+from superlinked.framework.common.schema.id_schema_object import (
+    IdSchemaObject,
+    IdSchemaObjectT,
 )
 from superlinked.framework.common.source.types import SourceTypeT
 from superlinked.framework.common.util.type_validator import TypeValidator
-from superlinked.framework.dsl.source.source import Source
 from superlinked.framework.online.source.online_source import OnlineSource
 
 
-class InMemorySource(Source, Generic[SchemaObjectT, SourceTypeT]):
+class InMemorySource(
+    OnlineSource[IdSchemaObjectT, SourceTypeT], Generic[IdSchemaObjectT, SourceTypeT]
+):
     """
     InMemorySource represents a source of data, where you can put your data. This will supply
     the index with the data it needs to index and search in.
@@ -38,8 +40,8 @@ class InMemorySource(Source, Generic[SchemaObjectT, SourceTypeT]):
     @TypeValidator.wrap
     def __init__(
         self,
-        schema: SchemaObjectT,
-        parser: DataParser | None = None,
+        schema: IdSchemaObjectT,
+        parser: DataParser[IdSchemaObjectT, SourceTypeT] | None = None,
     ) -> None:
         """
         Initialize the InMemorySource.
@@ -51,19 +53,19 @@ class InMemorySource(Source, Generic[SchemaObjectT, SourceTypeT]):
         Raises:
             InitializationException: If the schema is not an instance of SchemaObject.
         """
-        if not isinstance(schema, SchemaObject):
+        super().__init__(
+            schema,
+            cast(
+                DataParser[IdSchemaObjectT, SourceTypeT], parser or JsonParser(schema)
+            ),
+        )
+        if not isinstance(schema, IdSchemaObject):
             raise InitializationException(
                 f"Parameter `schema` is of invalid type: {schema.__class__.__name__}"
             )
-        self._schema = schema
-        self._parser = parser or JsonParser(schema)
-        self.__source = OnlineSource(schema, self._parser)
 
-    @property
-    def _source(self) -> OnlineSource:
-        return self.__source
-
-    def put(self, data: list[SourceTypeT]) -> None:
+    @override
+    def put(self, data: Sequence[SourceTypeT]) -> None:
         """
         Put data into the InMemorySource. This operation can take time as the vectorization
         of your data happens here.
@@ -71,5 +73,5 @@ class InMemorySource(Source, Generic[SchemaObjectT, SourceTypeT]):
         Args:
             data (list[SourceTypeT]): The data to put.
         """
-        for item in data:
-            self.__source.put(item)
+        # Calls the parent, override is only necessary for adding the docstring.
+        super().put(data)

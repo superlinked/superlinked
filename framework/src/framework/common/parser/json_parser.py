@@ -14,9 +14,8 @@
 
 from __future__ import annotations
 
-from beartype.typing import Generic, cast
+from beartype.typing import Any, Generic, Sequence, cast
 
-from superlinked.framework.common.data_types import Json
 from superlinked.framework.common.parser.data_parser import DataParser
 from superlinked.framework.common.parser.exception import (
     MissingCreatedAtException,
@@ -39,13 +38,15 @@ from superlinked.framework.common.util.dot_separated_path_util import (
 )
 
 
-class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, Json]):
+class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, dict[str, Any]]):
     """
     JsonParser gets a `Json` object and using `str` based dot separated path mapping
     it transforms the `Json` to a desired schema.
     """
 
-    def unmarshal(self, data: Json | list[Json]) -> list[ParsedSchema]:
+    def unmarshal(
+        self, data: dict[str, Any] | Sequence[dict[str, Any]]
+    ) -> list[ParsedSchema]:
         """
         Parses the given Json into a list of ParsedSchema objects according to the defined schema and mapping.
 
@@ -56,11 +57,13 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, Json]):
             list[ParsedSchema]: A list of ParsedSchema objects that will be processed by the spaces.
         """
 
-        if not isinstance(data, list):
+        if isinstance(data, dict):
             data = [data]
         return [self._unmarshal_single(json_data) for json_data in data]
 
-    def _unmarshal_single(self, json_data: Json) -> EventParsedSchema | ParsedSchema:
+    def _unmarshal_single(
+        self, json_data: dict[str, Any]
+    ) -> EventParsedSchema | ParsedSchema:
         id_ = self.__ensure_id(json_data)
         parsed_fields: list[ParsedSchemaField] = [
             ParsedSchemaField.from_schema_field(field, parsed_value)
@@ -83,7 +86,7 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, Json]):
     def _marshal(
         self,
         parsed_schemas: list[ParsedSchema],
-    ) -> list[Json]:
+    ) -> list[dict[str, Any]]:
         """
         Converts a ParsedSchema objects back into a list of Json objects.
         You can use this functionality to check, if your mapping was defined properly.
@@ -103,7 +106,9 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, Json]):
             ]
         ]
 
-    def __construct_json(self, parsed_schema_field: list[ParsedSchemaField]) -> Json:
+    def __construct_json(
+        self, parsed_schema_field: list[ParsedSchemaField]
+    ) -> dict[str, Any]:
         return DotSeparatedPathUtil.to_dict(
             [
                 ValuedDotSeparatedPath(
@@ -114,7 +119,7 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, Json]):
             ]
         )
 
-    def __ensure_id(self, data: Json) -> str:
+    def __ensure_id(self, data: dict[str, Any]) -> str:
         id_ = DotSeparatedPathUtil.get(data, self._id_name)
         if not self._is_id_value_valid(id_):
             raise MissingIdException(
@@ -122,7 +127,7 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, Json]):
             )
         return str(id_)
 
-    def __ensure_created_at(self, data: Json) -> int:
+    def __ensure_created_at(self, data: dict[str, Any]) -> int:
         created_at = DotSeparatedPathUtil.get(data, self._created_at_name)
         if not self._is_created_at_value_valid(created_at):
             raise MissingCreatedAtException(
@@ -131,7 +136,7 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, Json]):
         return cast(int, created_at)
 
     def _parse_schema_field_value(
-        self, field: SchemaField[SFT], data: Json
+        self, field: SchemaField[SFT], data: dict[str, Any]
     ) -> SFT | None:
         path: str = self._get_path(field)
         parsed_schema_field_value = DotSeparatedPathUtil.get(data, path)

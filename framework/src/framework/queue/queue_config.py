@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Generic, TypeVar
+from dataclasses import dataclass
 
-from superlinked.framework.common.schema.id_schema_object import IdSchemaObjectT
+from beartype.typing import Any
 
-SourceT = TypeVar("SourceT", bound="Source")
+from superlinked.framework.queue.queue_type import QueueType
 
 
-class Source(Generic[IdSchemaObjectT]):
-    def __init__(self, schema: IdSchemaObjectT) -> None:
-        self._schema = schema
+@dataclass(frozen=True)
+class QueueConfig:
+    queue_type: QueueType
+    kwargs: dict[str, Any] = {}

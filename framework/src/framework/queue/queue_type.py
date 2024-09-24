@@ -12,13 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Generic, TypeVar
-
-from superlinked.framework.common.schema.id_schema_object import IdSchemaObjectT
-
-SourceT = TypeVar("SourceT", bound="Source")
+from enum import Enum
 
 
-class Source(Generic[IdSchemaObjectT]):
-    def __init__(self, schema: IdSchemaObjectT) -> None:
-        self._schema = schema
+class QueueType(Enum):
+    NO_OP = "no_op"
+    PUB_SUB = "pub_sub"

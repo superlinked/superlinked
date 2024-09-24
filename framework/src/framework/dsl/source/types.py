@@ -14,6 +14,6 @@
 
 from beartype.typing import TypeVar
 
-from superlinked.framework.dsl.source.source import Source
+from superlinked.framework.common.source.source import Source
 
 SourceT = TypeVar("SourceT", bound=Source)
