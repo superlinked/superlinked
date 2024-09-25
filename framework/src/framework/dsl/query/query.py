@@ -191,6 +191,8 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
         Returns:
             Self: The query object itself.
         """
+        if self.query_param_info.limit_param is not None:
+            raise QueryException("One query cannot have more than one 'limit'.")
         limit_param = ParamInfo.init_with(ParamGroup.LIMIT, limit)
         return self.__alter(AlterParams(limit_param=limit_param))
 
@@ -240,6 +242,8 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
             ValueError: If the radius is not between 0 and 1.
         """
         radius_param = ParamInfo.init_with(ParamGroup.RADIUS, radius)
+        if self.query_param_info.radius_param is not None:
+            raise QueryException("One query cannot have more than one 'radius'.")
         return self.__alter(AlterParams(radius_param=radius_param))
 
     def with_vector(
