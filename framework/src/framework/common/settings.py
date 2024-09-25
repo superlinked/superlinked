@@ -56,12 +56,17 @@ class Settings(BaseSettings):
                 logger.warning(e)
 
     def __warn_if_none_queue_params(self) -> None:
-        queue_params = [
-            (self.QUEUE_MODULE_PATH, "queue module path is"),
-            (self.QUEUE_CLASS_NAME, "queue class name is"),
-            (self.QUEUE_CLASS_ARGS_STR, "queue class args are"),
-            (self.INGESTION_TOPIC_NAME, "ingestion topic name is"),
-        ]
-        for param, warning in queue_params:
-            if param is None:
-                logger.warning(f"{warning} not set")
+        queue_params = {
+            "QUEUE_MODULE_PATH": self.QUEUE_MODULE_PATH,
+            "QUEUE_CLASS_NAME": self.QUEUE_CLASS_NAME,
+            "QUEUE_CLASS_ARGS_STR": self.QUEUE_CLASS_ARGS_STR,
+            "INGESTION_TOPIC_NAME": self.INGESTION_TOPIC_NAME,
+        }
+        if any(value is not None for value in queue_params.values()) and not all(
+            value is not None for value in queue_params.values()
+        ):
+            logger.warning(
+                "Queue configuration warning: Incomplete queue parameters detected. "
+                "Ensure all parameters are set for proper queue functionality.",
+                params=queue_params,
+            )
