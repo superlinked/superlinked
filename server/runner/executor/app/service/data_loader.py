@@ -57,16 +57,14 @@ class DataLoader:
     def __read_and_put_data(self, source: DataLoaderSource) -> None:
         data = self.__read_data(source.config.path, source.config.format, source.config.pandas_read_kwargs)
         if isinstance(data, pd.DataFrame):
-            if logger.isEnabledFor(logging.DEBUG):
-                data.info(memory_usage=True)
+            self.__print_memory_usage(data)
             logger.debug("loaded data frame to memory", chunked=False, size=len(data))
-            source._source.put(data)  # noqa: SLF001 private-member-access
+            source.put([data])
         elif isinstance(data, TextFileReader | JsonReader):
             for chunk in data:
-                if logger.isEnabledFor(logging.DEBUG):
-                    chunk.info(memory_usage=True)
+                self.__print_memory_usage(chunk)
                 logger.debug("loaded data frame to memory", chunked=True, size=len(chunk))
-                source._source.put(chunk)  # noqa: SLF001 private-member-access
+                source.put([chunk])
         else:
             error_message = (
                 "The returned object from the Pandas read method was not of the "
@@ -101,3 +99,8 @@ class DataLoader:
             case _:
                 msg = "Unsupported data format: %s"
                 raise ValueError(msg, data_format)
+
+    # TODO: This is printing not logging the data. See FAI-2328
+    def __print_memory_usage(self, df: pd.DataFrame) -> None:
+        if logging.getLogger().isEnabledFor(logging.DEBUG):
+            df.info(memory_usage=True)
