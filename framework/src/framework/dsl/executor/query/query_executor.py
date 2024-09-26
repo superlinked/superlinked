@@ -128,14 +128,14 @@ class QueryExecutor:
     def _fill_query_param_info(
         self, query_param_info: QueryParamInformation, params: dict[str, Any]
     ) -> QueryParamInformation:
-        query_param_info = query_param_info.alter_with_values(
+        altered_query_param_info = query_param_info.alter_with_values(
             params, override_already_set=True
         )
-        nlq_params = self._calculate_nlq_params(query_param_info)
-        query_param_info = query_param_info.alter_with_values(
+        nlq_params = self._calculate_nlq_params(altered_query_param_info)
+        nlq_altered_query_param_info = altered_query_param_info.alter_with_values(
             nlq_params, override_already_set=False
         )
-        return query_param_info
+        return nlq_altered_query_param_info
 
     def _calculate_nlq_params(
         self,

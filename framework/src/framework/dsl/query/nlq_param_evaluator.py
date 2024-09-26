@@ -57,7 +57,10 @@ class NLQParamEvaluator:
             raise QueryException(f"Error executing natural query: {str(e)}") from e
 
     def _all_params_have_value_set(self) -> bool:
-        return all(param_info.value is not None for param_info in self.param_infos)
+        return all(
+            param_info.value is not None and not param_info.is_default
+            for param_info in self.param_infos
+        )
 
     def _calculate_instructor_prompt(self, model_class: type[BaseModel]) -> str:
         persona_description = """You are helping a user translate their natural language query to a structured
