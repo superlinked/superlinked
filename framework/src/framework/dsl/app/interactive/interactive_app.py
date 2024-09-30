@@ -17,36 +17,38 @@ from beartype.typing import Sequence
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.util.type_validator import TypeValidator
-from superlinked.framework.dsl.app.interactive.interactive_app import InteractiveApp
+from superlinked.framework.dsl.app.online.online_app import OnlineApp
 from superlinked.framework.dsl.index.index import Index
-from superlinked.framework.dsl.source.in_memory_source import InMemorySource
-from superlinked.framework.dsl.storage.in_memory_vector_database import (
-    InMemoryVectorDatabase,
-)
+from superlinked.framework.dsl.source.interactive_source import InteractiveSource
 from superlinked.framework.dsl.storage.vector_database import VectorDatabase
+from superlinked.framework.queue.no_op_queue.no_op_queue import NoOpQueue
 
 
 @TypeValidator.wrap
-class InMemoryApp(InteractiveApp):
+class InteractiveApp(OnlineApp[InteractiveSource]):
     """
-    In-memory implementation of the App class.
+    Interactive implementation of the App class.
     """
 
     def __init__(
         self,
-        sources: Sequence[InMemorySource],
+        sources: Sequence[InteractiveSource],
         indices: Sequence[Index],
-        vector_database: VectorDatabase | None,
+        vector_database: VectorDatabase,
         context: ExecutionContext,
     ) -> None:
         """
-        Initialize the InMemoryApp from an InMemoryExecutor.
+        Initialize the InteractiveApp from an InteractiveExecutor.
         Args:
-            sources (list[InMemorySource]): List of in-memory sources.
+            sources (list[InteractiveSource]): List of interactive sources.
             indices (list[Index]): List of indices.
             vector_database (VectorDatabase | None): Vector database instance. Defaults to InMemory.
             context (Mapping[str, Mapping[str, Any]]): Context mapping.
         """
         super().__init__(
-            sources, indices, vector_database or InMemoryVectorDatabase(), context
+            sources,
+            indices,
+            vector_database,
+            context,
+            NoOpQueue(),
         )

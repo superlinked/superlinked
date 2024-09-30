@@ -1,0 +1,77 @@
+# Copyright 2024 Superlinked, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from __future__ import annotations
+
+from beartype.typing import Generic, Sequence, cast
+from typing_extensions import override
+
+from superlinked.framework.common.exception import InitializationException
+from superlinked.framework.common.parser.data_parser import DataParser
+from superlinked.framework.common.parser.json_parser import JsonParser
+from superlinked.framework.common.schema.id_schema_object import (
+    IdSchemaObject,
+    IdSchemaObjectT,
+)
+from superlinked.framework.common.source.types import SourceTypeT
+from superlinked.framework.common.util.type_validator import TypeValidator
+from superlinked.framework.online.source.online_source import OnlineSource
+
+
+class InteractiveSource(
+    OnlineSource[IdSchemaObjectT, SourceTypeT], Generic[IdSchemaObjectT, SourceTypeT]
+):
+    """
+    InteractiveSource represents a source of data, where you can put your data. This will supply
+    the index with the data it needs to index and search in.
+    """
+
+    @TypeValidator.wrap
+    def __init__(
+        self,
+        schema: IdSchemaObjectT,
+        parser: DataParser[IdSchemaObjectT, SourceTypeT] | None = None,
+    ) -> None:
+        """
+        Initialize the InteractiveSource.
+
+        Args:
+            schema (IdSchemaObject): The schema object.
+            parser (DataParser | None, optional): The data parser. Defaults to JsonParser if None is supplied.
+
+        Raises:
+            InitializationException: If the schema is not an instance of SchemaObject.
+        """
+        super().__init__(
+            schema,
+            cast(
+                DataParser[IdSchemaObjectT, SourceTypeT], parser or JsonParser(schema)
+            ),
+        )
+        if not isinstance(schema, IdSchemaObject):
+            raise InitializationException(
+                f"Parameter `schema` is of invalid type: {schema.__class__.__name__}"
+            )
+
+    @override
+    def put(self, data: Sequence[SourceTypeT]) -> None:
+        """
+        Put data into the InteractiveSource. This operation can take time as the vectorization
+        of your data happens here.
+
+        Args:
+            data (list[SourceTypeT]): The data to put.
+        """
+        # Calls the parent, override is only necessary for adding the docstring.
+        super().put(data)
