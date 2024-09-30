@@ -11,17 +11,17 @@ Classes
     Attributes:
         sources (list[InMemorySource]): List of in-memory sources.
         indices (list[Index]): List of indices.
-        vector_database (VectorDatabase | None): Vector database instance. Defaults to InMemory.
     
     Initialize the InMemoryExecutor.
     Args:
         sources (list[InMemorySource]): List of in-memory sources.
         indices (list[Index]): List of indices.
-        vector_database: (VectorDatabase | None): Vector database instance. Defaults to InMemory.
-        context (Mapping[str, Mapping[str, Any]]): Context mapping.
+        context_data (Mapping[str, Mapping[str, ContextValue]] | None):
+            Context data for execution. Defaults to None.
 
     ### Ancestors (in MRO)
 
+    * superlinked.framework.dsl.executor.interactive.interactive_executor.InteractiveExecutor
     * superlinked.framework.dsl.executor.executor.Executor
     * abc.ABC
     * typing.Generic

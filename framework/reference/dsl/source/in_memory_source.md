@@ -8,7 +8,7 @@ Classes
 :   InMemorySource represents a source of data, where you can put your data. This will supply
     the index with the data it needs to index and search in.
     
-    Initialize the InMemorySource.
+    Initialize the InteractiveSource.
     
     Args:
         schema (IdSchemaObject): The schema object.
@@ -19,16 +19,8 @@ Classes
 
     ### Ancestors (in MRO)
 
+    * superlinked.framework.dsl.source.interactive_source.InteractiveSource
     * superlinked.framework.online.source.online_source.OnlineSource
     * superlinked.framework.common.observable.TransformerPublisher
     * superlinked.framework.common.source.source.Source
     * typing.Generic
-
-    ### Methods
-
-    `put(self, data: Sequence[SourceTypeT]) ‑> None`
-    :   Put data into the InMemorySource. This operation can take time as the vectorization
-        of your data happens here.
-        
-        Args:
-            data (list[SourceTypeT]): The data to put.

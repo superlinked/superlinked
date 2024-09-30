@@ -30,7 +30,7 @@ Classes
 
     ### Descendants
 
-    * superlinked.framework.dsl.app.in_memory.in_memory_app.InMemoryApp
+    * superlinked.framework.dsl.app.interactive.interactive_app.InteractiveApp
     * superlinked.framework.dsl.app.rest.rest_app.RestApp
 
     ### Class variables
