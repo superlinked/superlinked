@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.app.rest.rest_app
 Classes
 -------
 
-`RestApp(sources: collections.abc.Sequence[superlinked.framework.dsl.source.rest_source.RestSource | superlinked.framework.dsl.source.data_loader_source.DataLoaderSource], indices: collections.abc.Sequence[superlinked.framework.dsl.index.index.Index], queries: collections.abc.Sequence[superlinked.framework.dsl.executor.rest.rest_configuration.RestQuery], vector_database: superlinked.framework.dsl.storage.vector_database.VectorDatabase, context: superlinked.framework.common.dag.context.ExecutionContext, endpoint_configuration: superlinked.framework.dsl.executor.rest.rest_configuration.RestEndpointConfiguration, queue: Optional[superlinked.framework.queue.interface.queue.Queue[dict]] = None)`
+`RestApp(sources: collections.abc.Sequence[superlinked.framework.dsl.source.rest_source.RestSource | superlinked.framework.dsl.source.data_loader_source.DataLoaderSource], indices: collections.abc.Sequence[superlinked.framework.dsl.index.index.Index], queries: collections.abc.Sequence[superlinked.framework.dsl.executor.rest.rest_configuration.RestQuery], vector_database: superlinked.framework.dsl.storage.vector_database.VectorDatabase, context: superlinked.framework.common.dag.context.ExecutionContext, endpoint_configuration: superlinked.framework.dsl.executor.rest.rest_configuration.RestEndpointConfiguration, queue: Optional[superlinked.framework.queue.interface.queue.Queue[superlinked.framework.queue.interface.queue_message.MessageBody[dict]]] = None)`
 :   Rest implementation of the App class.
     
     Initialize the RestApp from a RestExecutor.
