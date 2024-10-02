@@ -18,14 +18,14 @@ from beartype.typing import cast
 from superlinked.framework.common.settings import Settings
 from superlinked.framework.common.util.class_helper import ClassHelper
 from superlinked.framework.queue.interface.queue import Queue
-from superlinked.framework.queue.interface.queue_message import PayloadT
+from superlinked.framework.queue.interface.queue_message import MessageBody, PayloadT
 
 logger = structlog.getLogger()
 
 
 class QueueFactory:
     @staticmethod
-    def create_queue(_: type[PayloadT]) -> Queue[PayloadT] | None:
+    def create_queue(_: type[PayloadT]) -> Queue[MessageBody[PayloadT]] | None:
         module_path = Settings().QUEUE_MODULE_PATH
         class_name = Settings().QUEUE_CLASS_NAME
         if module_path is None or class_name is None:
@@ -43,4 +43,7 @@ class QueueFactory:
                 class_name=class_name,
             )
             return None
-        return cast(Queue[PayloadT], queue_class(**(Settings().QUEUE_CLASS_ARGS or {})))
+        return cast(
+            Queue[MessageBody[PayloadT]],
+            queue_class(**(Settings().QUEUE_CLASS_ARGS or {})),
+        )

@@ -113,6 +113,7 @@ class OnlineApp(App[OnlineSourceT], Generic[OnlineSourceT], QueryMixin):
             source.register_pre_transform(
                 QueueSubscriber(
                     queue,
+                    source._schema._schema_name,
                     Settings().INGESTION_TOPIC_NAME,
                     OnlineApp.INGEST_MESSAGE_TYPE,
                 )

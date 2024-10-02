@@ -25,7 +25,7 @@ from google.cloud import pubsub_v1  # type: ignore
 from typing_extensions import override
 
 from superlinked.framework.queue.interface.queue import Queue
-from superlinked.framework.queue.interface.queue_message import PayloadT, QueueMessage
+from superlinked.framework.queue.interface.queue_message import MessageT, QueueMessage
 
 # The metaclass of these are overwritten that's the reason behind the use of Any.
 EXCEPTIONS_TO_RETRY: Sequence[Any] = [
@@ -46,7 +46,7 @@ def on_error(exception: Exception) -> None:
     logger.exception(exception)
 
 
-class PubSubQueue(Queue[PayloadT], Generic[PayloadT]):
+class PubSubQueue(Queue[MessageT], Generic[MessageT]):
     DEFAULT_TIMEOUT = 60.0
 
     def __init__(
@@ -71,7 +71,7 @@ class PubSubQueue(Queue[PayloadT], Generic[PayloadT]):
         )
 
     @override
-    def publish(self, topic_name: str, message: QueueMessage[PayloadT]) -> None:
+    def publish(self, topic_name: str, message: QueueMessage[MessageT]) -> None:
         topic_path = self._publisher.topic_path(self._project_id, topic_name)
 
         self._publisher.publish(
@@ -80,6 +80,6 @@ class PubSubQueue(Queue[PayloadT], Generic[PayloadT]):
             retry=self._retry,
         )
 
-    def _message_to_bytes(self, message: QueueMessage[PayloadT]) -> bytes:
+    def _message_to_bytes(self, message: QueueMessage[MessageT]) -> bytes:
         message_dict = asdict(message)
         return json.dumps(message_dict).encode("utf-8")
