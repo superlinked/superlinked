@@ -11,13 +11,13 @@ on:
 jobs:
   run-python-script:
     runs-on: ubuntu-latest
-
+    permissions: 
+      contents: write
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         persist-credentials: false
-        fetch-depth: 0
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -37,7 +37,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.DATA_PUSH_TOKEN }}
       run: |
         git add .
-        git commit -m "Update docs/SUMMARY.md" || exit 0  # Exit 0 if no changes
+        git commit -m "docs: update summary.md" || exit 0  # Exit 0 if no changes
     
     - name: Push changes
       uses: ad-m/github-push-action@master

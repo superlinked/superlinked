@@ -89,7 +89,6 @@ new_references_to_write.append("* [Changelog](docs/reference/changelog.md)\n")
 new_references_to_write.append("* [Components](docs/reference/components.md)\n")
 save_tree(directory_tree, 'common', 2)
 
-# new_references_to_write.append("* [DSL](reference/dsl)\n")
 save_tree(directory_tree, 'dsl', 2)
 
 new_references_to_write.append(f'\n')
