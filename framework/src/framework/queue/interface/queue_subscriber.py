@@ -14,7 +14,7 @@
 
 from dataclasses import dataclass
 
-from beartype.typing import Generic, Sequence
+from beartype.typing import Generic, Sequence, cast
 from typing_extensions import override
 
 from superlinked.framework.common.observable import Subscriber
@@ -52,11 +52,12 @@ class QueueSubscriber(Generic[PayloadT], Subscriber[PayloadT]):
     def update(self, messages: Sequence[PayloadT]) -> None:
         if self.__topic_name is not None:
             for item in messages:
-                message = self.__generate_queue_message(item)
-                self.__queue.publish(self.__topic_name, message)
+                if isinstance(item, dict):
+                    message = self.__generate_queue_message(item)
+                    self.__queue.publish(self.__topic_name, message)
 
     def __generate_queue_message(
-        self, payload: PayloadT
+        self, payload: dict
     ) -> QueueMessage[SchemaIdMessageBody[PayloadT]]:
         format_ = payload.__class__.__name__
         created_at = time_util.now()
@@ -65,5 +66,5 @@ class QueueSubscriber(Generic[PayloadT], Subscriber[PayloadT]):
             format_=format_,
             created_at=created_at,
             version=self.__queue_message_version,
-            message=SchemaIdMessageBody(payload, self.__schema_id),
+            message=SchemaIdMessageBody(cast(PayloadT, payload), self.__schema_id),
         )
