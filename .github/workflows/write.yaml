@@ -30,11 +30,11 @@ jobs:
 
     - name: Commit and push if there are changes
       env:
-        GIT_AUTHOR_NAME: Arunesh Singh
-        GIT_AUTHOR_EMAIL: 43724007+AruneshSingh@users.noreply.github.com
-        GIT_COMMITTER_NAME: Arunesh Singh
-        GIT_COMMITTER_EMAIL: 43724007+AruneshSingh@users.noreply.github.com
-        GITHUB_TOKEN: ${{ secrets.DATA_PUSH_TOKEN }}
+        GIT_AUTHOR_NAME: ${{ secrets.SLRELEASE_NAME }}
+        GIT_AUTHOR_EMAIL: ${{ secrets.SLRELEASE_EMAIL }}
+        GIT_COMMITTER_NAME: ${{ secrets.SLRELEASE_NAME }}
+        GIT_COMMITTER_EMAIL: ${{ secrets.SLRELEASE_EMAIL }}
+        GITHUB_TOKEN: ${{ secrets.SLRELEASE_DOCS_WRITE_TOKEN }}
       run: |
         git add .
         git commit -m "docs: update summary.md" || exit 0  # Exit 0 if no changes
@@ -42,4 +42,4 @@ jobs:
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
-        github_token: ${{ secrets.DATA_PUSH_TOKEN }}
+        github_token: ${{ secrets.SLRELEASE_DOCS_WRITE_TOKEN }}
