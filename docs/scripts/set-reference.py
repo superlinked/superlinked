@@ -63,13 +63,13 @@ def save_tree(directory_tree, cur_path, indent=0):
         for file in directory_tree[cur_path]['files']:
             if not 'index.md' in file.lower():
                 spaces = ' ' * indent
-                file_path = 'reference/' + cur_path + '/' + file
+                file_path = os.path.join('docs', 'reference/', cur_path, file)
                 line_to_print = f"* [{get_file_header(file_path)}]({file_path})"
                 new_references_to_write.append(f"{spaces}{line_to_print}\n")
 
         for dir in directory_tree[cur_path]['dirs']:
             spaces = ' ' * indent
-            dir_path = 'reference/' + cur_path + '/' + dir
+            dir_path = os.path.join('docs', 'reference/', cur_path, dir)
             dir_path = dir_path.replace('//', '/') # Happens for root of the directory
             if file_exists_in_directory(dir_path, 'index.md'):
                line_to_print = f"* [{convert_text_to_title_case(dir)}]({dir_path}/index.md)"
