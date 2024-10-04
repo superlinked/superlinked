@@ -64,17 +64,19 @@ def save_tree(directory_tree, cur_path, indent=0):
             if not 'index.md' in file.lower():
                 spaces = ' ' * indent
                 file_path = os.path.join('docs', 'reference/', cur_path, file)
-                line_to_print = f"* [{get_file_header(file_path)}]({file_path})"
+                relative_file_path = os.path.join('reference/', cur_path, file)
+                line_to_print = f"* [{get_file_header(file_path)}]({relative_file_path})"
                 new_references_to_write.append(f"{spaces}{line_to_print}\n")
 
         for dir in directory_tree[cur_path]['dirs']:
             spaces = ' ' * indent
             dir_path = os.path.join('docs', 'reference/', cur_path, dir)
+            relative_dir_path = os.path.join('reference/', cur_path, dir)
             dir_path = dir_path.replace('//', '/') # Happens for root of the directory
             if file_exists_in_directory(dir_path, 'index.md'):
-               line_to_print = f"* [{convert_text_to_title_case(dir)}]({dir_path}/index.md)"
+               line_to_print = f"* [{convert_text_to_title_case(dir)}]({relative_dir_path}/index.md)"
             else:
-               line_to_print = f"* [{convert_text_to_title_case(dir)}]({dir_path})"
+               line_to_print = f"* [{convert_text_to_title_case(dir)}]({relative_dir_path})"
             new_references_to_write.append(f"{spaces}{line_to_print}\n")
 
             new_path = cur_path + '/' + dir
@@ -83,10 +85,10 @@ def save_tree(directory_tree, cur_path, indent=0):
         
 directory_tree = build_tree('docs/reference')
 
-new_references_to_write.append("* [Overview](docs/reference/overview.md)\n")
-new_references_to_write.append("* [Changelog](docs/reference/changelog.md)\n")
+new_references_to_write.append("* [Overview](reference/overview.md)\n")
+new_references_to_write.append("* [Changelog](reference/changelog.md)\n")
 
-new_references_to_write.append("* [Components](docs/reference/components.md)\n")
+new_references_to_write.append("* [Components](reference/components.md)\n")
 save_tree(directory_tree, 'common', 2)
 
 save_tree(directory_tree, 'dsl', 2)
