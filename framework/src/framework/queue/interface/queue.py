@@ -16,22 +16,16 @@ from abc import abstractmethod
 
 from beartype.typing import Generic
 
-from superlinked.framework.queue.interface.message_converter import (
-    MessageConverter,
-    PublishedMessageT,
-)
-from superlinked.framework.queue.interface.queue_message import PayloadT, QueueMessage
+from superlinked.framework.queue.interface.queue_message import MessageT, QueueMessage
 
 
-class Queue(Generic[PayloadT, PublishedMessageT]):
+class Queue(Generic[MessageT]):
     def __init__(
         self,
-        message_converter: MessageConverter[PayloadT, PublishedMessageT],
         retry_timeout: int | None = None,
     ) -> None:
-        self._message_converter = message_converter
         self._retry_timeout = retry_timeout
 
     @abstractmethod
-    def publish(self, topic_name: str, message: QueueMessage[PayloadT]) -> None:
+    def publish(self, topic_name: str, message: QueueMessage[MessageT]) -> None:
         pass

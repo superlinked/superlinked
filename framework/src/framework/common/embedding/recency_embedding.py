@@ -40,6 +40,7 @@ class RecencyEmbedding(Embedding[int], HasLength):
         time_period_hour_offset: timedelta,
         negative_filter: float = 0.0,
     ) -> None:
+        super().__init__()
         # sort period times to ensure the last vector part corresponds to the max period_time
         self.__period_time_list: list[PeriodTime] = sorted(
             period_time_list, key=lambda x: x.period_time.total_seconds()

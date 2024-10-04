@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from beartype import BeartypeConf, beartype
-from beartype.typing import Any, Callable, TypeAlias, TypeVar
+from beartype.typing import Any, Callable, TypeAlias, TypeVar, cast
 from beartype.vale import Is
 from beartype.vale._core._valecore import BeartypeValidator
 
@@ -35,7 +35,7 @@ class TypeValidator:
     @staticmethod
     def validate_list_item_type(
         items: Any,
-        type_: type | TypeAlias,
+        type_: type | TypeAlias | TypeVar,
         items_name: str,
     ) -> None:
         """
@@ -43,16 +43,19 @@ class TypeValidator:
         Raises:
             TypeError: if either of the checks fails.
         """
+        type_to_test = cast(
+            type, type_.__bound__ if isinstance(type_, TypeVar) else type_
+        )
         if not isinstance(items, list):
             raise TypeError(
                 f"'{items_name}' must be a `list`, got {items.__class__.__name__}"
             )
         if items_of_wrong_type := [
-            item for item in items if not isinstance(item, type_)
+            item for item in items if not isinstance(item, type_to_test)
         ]:
             raise TypeError(
                 f"'{items_name}' must be a(n) "
-                + f"{type_.__name__}` list, got {items_of_wrong_type}"
+                + f"{type_to_test.__name__}` list, got {items_of_wrong_type}"
             )
 
     @staticmethod

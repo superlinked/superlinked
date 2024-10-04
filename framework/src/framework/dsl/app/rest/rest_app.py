@@ -26,6 +26,8 @@ from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.source.data_loader_source import DataLoaderSource
 from superlinked.framework.dsl.source.rest_source import RestSource
 from superlinked.framework.dsl.storage.vector_database import VectorDatabase
+from superlinked.framework.queue.interface.queue import Queue
+from superlinked.framework.queue.interface.queue_message import MessageBody
 
 
 class RestApp(OnlineApp[RestSource | DataLoaderSource]):
@@ -42,6 +44,7 @@ class RestApp(OnlineApp[RestSource | DataLoaderSource]):
         vector_database: VectorDatabase,
         context: ExecutionContext,
         endpoint_configuration: RestEndpointConfiguration,
+        queue: Queue[MessageBody[dict]] | None = None,
     ):
         """
         Initialize the RestApp from a RestExecutor.
@@ -54,8 +57,15 @@ class RestApp(OnlineApp[RestSource | DataLoaderSource]):
             vector_database (VectorDatabase): The vector database instance to be used by the RestApp.
             context (ExecutionContext): The execution context for the RestApp.
             endpoint_configuration (RestEndpointConfiguration): The configuration for the REST endpoints.
+            queue (Queue[dict] | None): a messaging queue persisting the ingested data; defaults to None.
         """
-        super().__init__(sources, indices, vector_database, context)
+        super().__init__(
+            sources,
+            indices,
+            vector_database,
+            context,
+            queue,
+        )
         self._endpoint_configuration = endpoint_configuration
         self._queries = queries
 

@@ -17,6 +17,7 @@ import warnings
 from pathlib import Path
 
 import numpy as np
+import structlog
 from beartype.typing import Any, Sequence, cast
 from huggingface_hub.file_download import (  # type:ignore[import-untyped]
     repo_folder_name,
@@ -40,11 +41,14 @@ SENTENCE_TRANSFORMERS_MODEL_DIR: Path = (
     Path.home() / ".cache" / SENTENCE_TRANSFORMERS_ORG_NAME
 )
 
+logger = structlog.getLogger()
+
 
 class SentenceTransformerEmbedding(Embedding[str], HasLength, HasDefaultVector):
     def __init__(
         self, model_name: str, normalization: Normalization, cache_size: int
     ) -> None:
+        super().__init__()
         if cache_size < 0:
             raise ValueError("cache_size must be non-negative")
         local_files_only = self._is_model_downloaded(model_name)
@@ -54,9 +58,17 @@ class SentenceTransformerEmbedding(Embedding[str], HasLength, HasDefaultVector):
         )
         self._bulk_embedding_model = None
         if self._gpu_embedding_util.is_gpu_embedding_enabled:
-            self._bulk_embedding_model = self._initialize_model(
-                model_name, local_files_only, self._gpu_embedding_util.gpu_device_type
-            )
+            try:
+                self._bulk_embedding_model = self._initialize_model(
+                    model_name,
+                    local_files_only,
+                    self._gpu_embedding_util.gpu_device_type,
+                )
+            except FileNotFoundError:
+                logger.exception("Cached model not found, downloading model.")
+                self._bulk_embedding_model = self._initialize_model(
+                    model_name, False, self._gpu_embedding_util.gpu_device_type
+                )
         self.__normalization = normalization
         self.__length = self._embedding_model.get_sentence_embedding_dimension() or 0
         self._cache = EmbeddingCache(cache_size)

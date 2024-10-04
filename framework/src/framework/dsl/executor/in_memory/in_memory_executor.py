@@ -17,13 +17,11 @@ from __future__ import annotations
 import structlog
 from beartype.typing import Mapping, Sequence
 
-from superlinked.framework.common.dag.context import (
-    ContextValue,
-    ExecutionContext,
-    ExecutionEnvironment,
-)
+from superlinked.framework.common.dag.context import ContextValue
 from superlinked.framework.dsl.app.in_memory.in_memory_app import InMemoryApp
-from superlinked.framework.dsl.executor.executor import Executor
+from superlinked.framework.dsl.executor.interactive.interactive_executor import (
+    InteractiveExecutor,
+)
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.source.in_memory_source import InMemorySource
 from superlinked.framework.dsl.storage.in_memory_vector_database import (
@@ -33,7 +31,7 @@ from superlinked.framework.dsl.storage.in_memory_vector_database import (
 logger = structlog.getLogger()
 
 
-class InMemoryExecutor(Executor[InMemorySource]):
+class InMemoryExecutor(InteractiveExecutor[InMemorySource]):
     """
     In-memory implementation of the Executor class. Supply it with the sources through which
     your data is received, and the indices indicating the desired vector spaces, and the executor will
@@ -41,7 +39,6 @@ class InMemoryExecutor(Executor[InMemorySource]):
     Attributes:
         sources (list[InMemorySource]): List of in-memory sources.
         indices (list[Index]): List of indices.
-        vector_database (VectorDatabase | None): Vector database instance. Defaults to InMemory.
     """
 
     def __init__(
@@ -55,21 +52,10 @@ class InMemoryExecutor(Executor[InMemorySource]):
         Args:
             sources (list[InMemorySource]): List of in-memory sources.
             indices (list[Index]): List of indices.
-            vector_database: (VectorDatabase | None): Vector database instance. Defaults to InMemory.
-            context (Mapping[str, Mapping[str, Any]]): Context mapping.
+            context_data (Mapping[str, Mapping[str, ContextValue]] | None):
+                Context data for execution. Defaults to None.
         """
-        super().__init__(
-            sources,
-            indices,
-            InMemoryVectorDatabase(),
-            ExecutionContext.from_context_data(
-                context_data, environment=ExecutionEnvironment.IN_MEMORY
-            ),
-        )
-        self._logger = logger.bind(
-            source_schemas=[source._schema._schema_name for source in sources],
-            index_node_ids=[index._node.node_id for index in indices],
-        )
+        super().__init__(sources, indices, InMemoryVectorDatabase(), context_data)
 
     def run(self) -> InMemoryApp:
         """
@@ -80,5 +66,5 @@ class InMemoryExecutor(Executor[InMemorySource]):
         app = InMemoryApp(
             self._sources, self._indices, self._vector_database, self._context
         )
-        self._logger.info("started inmemory app")
+        self._logger.info("started in-memory app")
         return app

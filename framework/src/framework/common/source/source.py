@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Generic
+from beartype.typing import Generic, TypeVar
 
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObjectT
-from superlinked.framework.common.schema.schema_object import SchemaObjectT
-from superlinked.framework.common.source.types import SourceTypeT
+
+SourceT = TypeVar("SourceT", bound="Source")
 
 
-class Source(Generic[IdSchemaObjectT, SourceTypeT]):
-    def __init__(self, schema: SchemaObjectT) -> None:
+class Source(Generic[IdSchemaObjectT]):
+    def __init__(self, schema: IdSchemaObjectT) -> None:
         self._schema = schema

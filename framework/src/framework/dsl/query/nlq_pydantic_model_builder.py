@@ -15,6 +15,7 @@
 from beartype.typing import Any, Sequence
 from pydantic import BaseModel, Field, create_model, model_validator
 
+from superlinked.framework.common.const import constants
 from superlinked.framework.common.exception import QueryException
 from superlinked.framework.common.interface.comparison_operation_type import (
     LIST_TYPE_COMPATIBLE_TYPES,
@@ -23,7 +24,9 @@ from superlinked.framework.common.interface.comparison_operation_type import (
 from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.util.generic_class_util import GenericClassUtil
 from superlinked.framework.dsl.query.query_param_information import ParamInfo
-from superlinked.framework.dsl.space.space import Space
+from superlinked.framework.dsl.space.categorical_similarity_space import (
+    CategoricalSimilaritySpace,
+)
 
 # Exclude from documentation.
 __pdoc__ = {}
@@ -47,40 +50,83 @@ class NLQPydanticModelBuilder:
         similar_and_space_weight_param_names = (
             self._calculate_similar_and_space_weight_param_names()
         )
+        categories_by_category_param: dict[str, list[str]] = {
+            param_info.name: param_info.space.categorical_similarity_param.categories
+            for param_info in self.param_infos
+            if isinstance(param_info.space, CategoricalSimilaritySpace)
+            and not param_info.is_weight
+        }
 
         @model_validator(mode="after")
-        def check_space_weights_filled_when_similar_weight_filled(data: Any) -> Any:
-            if isinstance(data, dict):
-                for similar, space in similar_and_space_weight_param_names:
-                    if not (
-                        data.get(similar, 0.0) == 0.0 or data.get(space, 0.0) != 0.0
-                    ):
+        def check_space_weights_filled_when_similar_weight_filled(
+            model: Any,
+        ) -> Any:
+            if not isinstance(model, BaseModel):
+                return model
+
+            for similar, space in similar_and_space_weight_param_names:
+                similar_value = getattr(
+                    model, similar, constants.DEFAULT_NOT_AFFECTING_WEIGHT
+                )
+                space_value = getattr(
+                    model, space, constants.DEFAULT_NOT_AFFECTING_WEIGHT
+                )
+                if (
+                    similar_value != constants.DEFAULT_NOT_AFFECTING_WEIGHT
+                    and space_value == constants.DEFAULT_NOT_AFFECTING_WEIGHT
+                ):
+                    raise ValueError(
+                        f"If {similar} is not {constants.DEFAULT_NOT_AFFECTING_WEIGHT}/None,"
+                        " then {space} must not be {constants.DEFAULT_NOT_AFFECTING_WEIGHT}/None too."
+                    )
+            return model
+
+        @model_validator(mode="after")
+        def check_category_is_defined(model: Any) -> Any:
+            if not isinstance(model, BaseModel):
+                return model
+
+            for param_name, categories in categories_by_category_param.items():
+                returned_value = getattr(model, param_name)
+                if returned_value is None:
+                    continue
+
+                if isinstance(returned_value, str):
+                    if returned_value not in categories:
                         raise ValueError(
-                            f"If {similar} is not 0.0/None, then {space} must not be 0.0/None too."
+                            f"The field {param_name} must be None or one of the following items: {str(categories)}."
                         )
-            return data
+                elif isinstance(returned_value, list) and not all(
+                    category in categories or category is None
+                    for category in returned_value
+                ):
+                    raise ValueError(
+                        f"The field {param_name} can only contain None or a subset of: {str(categories)}."
+                    )
+            return model
 
         return {
             "__validators__": {
-                "check_weights": check_space_weights_filled_when_similar_weight_filled
+                "check_weights": check_space_weights_filled_when_similar_weight_filled,
+                "check_category_is_defined": check_category_is_defined,
             }
         }
 
     def _calculate_similar_and_space_weight_param_names(self) -> list[tuple[str, str]]:
-        space_weight_by_space: dict[Space, str] = {
-            param_info.space: param_info.name
+        space_weight_by_schema_field: dict[SchemaField, str] = {
+            param_info.schema_field: param_info.name
             for param_info in self.param_infos
             if param_info.is_weight
-            and param_info.space is not None
-            and param_info.schema_field is None
+            and param_info.space is None
+            and param_info.schema_field is not None
         }
         similar_and_space_weight_param_names: list[tuple[str, str]] = [
-            (param_info.name, space_weight_by_space[param_info.space])
+            (param_info.name, space_weight_by_schema_field[param_info.schema_field])
             for param_info in self.param_infos
             if param_info.is_weight
             and param_info.space is not None
             and param_info.schema_field is not None
-            and param_info.space in space_weight_by_space
+            and param_info.schema_field in space_weight_by_schema_field
         ]
         return similar_and_space_weight_param_names
 

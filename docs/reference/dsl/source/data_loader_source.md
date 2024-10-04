@@ -83,15 +83,31 @@ Classes
     `path: str`
     :
 
-`DataLoaderSource(schema: ~SchemaObjectT, data_loader_config: superlinked.framework.dsl.source.data_loader_source.DataLoaderConfig, parser: superlinked.framework.common.parser.data_parser.DataParser | None = None)`
-:   Abstract base class for a source.
+`DataLoaderSource(schema: ~IdSchemaObjectT, data_loader_config: superlinked.framework.dsl.source.data_loader_source.DataLoaderConfig, parser: Optional[superlinked.framework.common.parser.data_parser.DataParser[~IdSchemaObjectT, ~SourceTypeT]] = None)`
+:   Abstract base class for generic types.
     
-    Initialize the Source.
+    A generic type is typically declared by inheriting from
+    this class parameterized with one or more type variables.
+    For example, a generic mapping type might be defined as::
+    
+      class Mapping(Generic[KT, VT]):
+          def __getitem__(self, key: KT) -> VT:
+              ...
+          # Etc.
+    
+    This class can then be used as follows::
+    
+      def lookup_name(mapping: Mapping[KT, VT], key: KT, default: VT) -> VT:
+          try:
+              return mapping[key]
+          except KeyError:
+              return default
 
     ### Ancestors (in MRO)
 
-    * superlinked.framework.dsl.source.source.Source
-    * abc.ABC
+    * superlinked.framework.online.source.online_source.OnlineSource
+    * superlinked.framework.common.observable.TransformerPublisher
+    * superlinked.framework.common.source.source.Source
     * typing.Generic
 
     ### Instance variables

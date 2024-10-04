@@ -30,6 +30,7 @@ from superlinked.framework.common.space.aggregation import (
 from superlinked.framework.common.space.normalization import L2Norm, NoNorm
 from superlinked.framework.dsl.space.exception import (
     InvalidAggregationStrategyException,
+    InvalidSpaceParamException,
 )
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
@@ -90,7 +91,8 @@ class CustomSpace(Space):
               that only valid aggregation strategies are used.
         """
         super().__init__(vector, FloatList)
-        self._description = description
+        if length < 1:
+            raise InvalidSpaceParamException("Vector length must be greater than 0.")
         aggregation_strategy: Aggregation
         match aggregation:
             case self.AggregationStrategy.SUM_AND_NORMALIZE:
@@ -114,6 +116,7 @@ class CustomSpace(Space):
             schema_field.schema_obj: node
             for schema_field, node in unchecked_custom_node_map.items()
         }
+        self._description = description
         self._length = length
 
     @property

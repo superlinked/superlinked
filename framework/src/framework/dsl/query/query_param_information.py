@@ -71,7 +71,7 @@ class WeightedParamInfo:
 
 
 @dataclass(frozen=True)
-class ParamInfo:
+class ParamInfo:  # pylint: disable=too-many-instance-attributes
     name: str
     description: str | None
     value: ParamInputType
@@ -79,8 +79,9 @@ class ParamInfo:
     schema_field: SchemaField | None = None
     space: Space | None = None
     op: ComparisonOperationType | None = None
+    is_default: bool = False
 
-    def copy_with_new_value(self, value: ParamInputType) -> ParamInfo:
+    def copy_with_new_value(self, value: ParamInputType, is_default: bool) -> ParamInfo:
         return ParamInfo(
             self.name,
             self.description,
@@ -89,6 +90,7 @@ class ParamInfo:
             self.schema_field,
             self.space,
             self.op,
+            is_default,
         )
 
     @classmethod
@@ -107,7 +109,8 @@ class ParamInfo:
             ParamGroup.LOOKS_LIKE_FILTER_WEIGHT,
         ]
         if isinstance(param, Param):
-            name, description, value = (param.name, param.description, None)
+            name, description, value = (param.name, param.description, param.default)
+            is_default = value is not None
         else:
             default_name = cls._get_default_name(
                 param_group,
@@ -117,7 +120,17 @@ class ParamInfo:
                 op,
             )
             name, description, value = (default_name, None, cast(ParamInputType, param))
-        return cls(name, description, value, is_weight, schema_field, space, op)
+            is_default = False
+        return cls(
+            name,
+            description,
+            value,
+            is_weight,
+            schema_field,
+            space,
+            op,
+            is_default,
+        )
 
     @classmethod
     def _get_default_name(
@@ -207,13 +220,14 @@ class QueryParamInformation:
         override_already_set: bool,
     ) -> ParamInfo:
         new_value = new_value_by_name.get(param_info.name)
-        can_be_overridden = param_info.value is None or override_already_set
-        value = (
-            new_value
-            if new_value is not None and can_be_overridden
-            else param_info.value
+        can_be_overridden = (
+            param_info.value is None or param_info.is_default or override_already_set
         )
-        return param_info.copy_with_new_value(value)
+        will_be_overridden = new_value is not None and can_be_overridden
+        value = new_value if will_be_overridden else param_info.value
+        return param_info.copy_with_new_value(
+            value, is_default=param_info.is_default and not will_be_overridden
+        )
 
     @lazy_property
     def natural_query(self) -> str | None:

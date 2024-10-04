@@ -14,11 +14,7 @@
 
 from abc import ABC, abstractmethod
 
-from beartype.typing import TypeVar
-
 from superlinked.framework.common.source.source import Source as CommonSource
-
-SourceT = TypeVar("SourceT", bound="Source")
 
 
 class Source(ABC):

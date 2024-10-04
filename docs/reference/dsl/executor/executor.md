@@ -21,7 +21,7 @@ Classes
 
     ### Descendants
 
-    * superlinked.framework.dsl.executor.in_memory.in_memory_executor.InMemoryExecutor
+    * superlinked.framework.dsl.executor.interactive.interactive_executor.InteractiveExecutor
     * superlinked.framework.dsl.executor.rest.rest_executor.RestExecutor
 
     ### Methods

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import structlog
-from beartype.typing import cast
+from beartype.typing import Sequence, cast
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.dag_effect import DagEffect
@@ -49,7 +49,7 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
         self._schema_type_schema_mapper = index._schema_type_schema_mapper
         self._dag_effects = index._dag_effects
 
-    def update(self, messages: list[ParsedSchema]) -> None:
+    def update(self, messages: Sequence[ParsedSchema]) -> None:
         regular_msgs: list[ParsedSchema] = []
         for message in messages:
             if message.schema in self.effect_schemas:

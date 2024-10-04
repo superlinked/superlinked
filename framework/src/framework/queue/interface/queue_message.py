@@ -19,10 +19,18 @@ from beartype.typing import Generic, TypeVar
 PayloadT = TypeVar("PayloadT")
 
 
+@dataclass(frozen=True)
+class MessageBody(Generic[PayloadT]):
+    payload: PayloadT
+
+
+MessageT = TypeVar("MessageT", bound=MessageBody)
+
+
 @dataclass
-class QueueMessage(Generic[PayloadT]):
+class QueueMessage(Generic[MessageT]):
     type_: str
     format_: str
     created_at: int
     version: int
-    payload: PayloadT
+    message: MessageT

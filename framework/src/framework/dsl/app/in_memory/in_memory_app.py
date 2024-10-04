@@ -17,14 +17,17 @@ from beartype.typing import Sequence
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.util.type_validator import TypeValidator
-from superlinked.framework.dsl.app.online.online_app import OnlineApp
+from superlinked.framework.dsl.app.interactive.interactive_app import InteractiveApp
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.source.in_memory_source import InMemorySource
+from superlinked.framework.dsl.storage.in_memory_vector_database import (
+    InMemoryVectorDatabase,
+)
 from superlinked.framework.dsl.storage.vector_database import VectorDatabase
 
 
 @TypeValidator.wrap
-class InMemoryApp(OnlineApp[InMemorySource]):
+class InMemoryApp(InteractiveApp):
     """
     In-memory implementation of the App class.
     """
@@ -33,7 +36,7 @@ class InMemoryApp(OnlineApp[InMemorySource]):
         self,
         sources: Sequence[InMemorySource],
         indices: Sequence[Index],
-        vector_database: VectorDatabase,
+        vector_database: VectorDatabase | None,
         context: ExecutionContext,
     ) -> None:
         """
@@ -44,4 +47,6 @@ class InMemoryApp(OnlineApp[InMemorySource]):
             vector_database (VectorDatabase | None): Vector database instance. Defaults to InMemory.
             context (Mapping[str, Mapping[str, Any]]): Context mapping.
         """
-        super().__init__(sources, indices, vector_database, context)
+        super().__init__(
+            sources, indices, vector_database or InMemoryVectorDatabase(), context
+        )

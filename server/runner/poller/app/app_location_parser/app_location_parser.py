@@ -57,11 +57,15 @@ class AppLocationParser:
         match app_location:
             case app_location if app_location.startswith(("s3://", "s3a://", "s3n://")):
                 type_ = StorageType.S3
-                pattern = r"s3[a|n]?://([^/]+)/(.+)"
+                pattern = r"s3[a|n]?://([^/^\n]+)/?(.*)"
                 bucket, path = self._get_bucket_and_path_or_raise(pattern, app_location)
             case app_location if "amazonaws.com" in app_location:
+                # Handle both AWS S3 URL formats
+                if re.match(r"https?://[a-z0-9-]+\.s3\.[a-z0-9-]+\.amazonaws\.com/.+", app_location):
+                    pattern = r"https?://([^/.]+)\.s3\.[a-z0-9-]+\.amazonaws\.com/(.+)"
+                else:
+                    pattern = r"https?://s3\.[a-z0-9-]+\.amazonaws\.com/([^/]+)/(.+)"
                 type_ = StorageType.S3
-                pattern = r"https?://(?:s3)[^/]*.amazonaws.com/([^/]+)/(.+)"
                 bucket, path = self._get_bucket_and_path_or_raise(pattern, app_location)
             case app_location if "storage.googleapis.com" in app_location or "storage.cloud.google.com" in app_location:
                 type_ = StorageType.GCS

@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.app.rest.rest_app
 Classes
 -------
 
-`RestApp(sources: collections.abc.Sequence[superlinked.framework.dsl.source.rest_source.RestSource | superlinked.framework.dsl.source.data_loader_source.DataLoaderSource], indices: collections.abc.Sequence[superlinked.framework.dsl.index.index.Index], queries: collections.abc.Sequence[superlinked.framework.dsl.executor.rest.rest_configuration.RestQuery], vector_database: superlinked.framework.dsl.storage.vector_database.VectorDatabase, context: superlinked.framework.common.dag.context.ExecutionContext, endpoint_configuration: superlinked.framework.dsl.executor.rest.rest_configuration.RestEndpointConfiguration)`
+`RestApp(sources: collections.abc.Sequence[superlinked.framework.dsl.source.rest_source.RestSource | superlinked.framework.dsl.source.data_loader_source.DataLoaderSource], indices: collections.abc.Sequence[superlinked.framework.dsl.index.index.Index], queries: collections.abc.Sequence[superlinked.framework.dsl.executor.rest.rest_configuration.RestQuery], vector_database: superlinked.framework.dsl.storage.vector_database.VectorDatabase, context: superlinked.framework.common.dag.context.ExecutionContext, endpoint_configuration: superlinked.framework.dsl.executor.rest.rest_configuration.RestEndpointConfiguration, queue: Optional[superlinked.framework.queue.interface.queue.Queue[superlinked.framework.queue.interface.queue_message.MessageBody[dict]]] = None)`
 :   Rest implementation of the App class.
     
     Initialize the RestApp from a RestExecutor.
@@ -17,6 +17,7 @@ Classes
         vector_database (VectorDatabase): The vector database instance to be used by the RestApp.
         context (ExecutionContext): The execution context for the RestApp.
         endpoint_configuration (RestEndpointConfiguration): The configuration for the REST endpoints.
+        queue (Queue[dict] | None): a messaging queue persisting the ingested data; defaults to None.
 
     ### Ancestors (in MRO)
 

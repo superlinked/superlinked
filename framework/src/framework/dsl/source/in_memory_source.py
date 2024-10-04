@@ -12,64 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import annotations
-
-from beartype.typing import Generic
-
-from superlinked.framework.common.exception import InitializationException
-from superlinked.framework.common.parser.data_parser import DataParser
-from superlinked.framework.common.parser.json_parser import JsonParser
-from superlinked.framework.common.schema.schema_object import (
-    SchemaObject,
-    SchemaObjectT,
-)
-from superlinked.framework.common.source.types import SourceTypeT
-from superlinked.framework.common.util.type_validator import TypeValidator
-from superlinked.framework.dsl.source.source import Source
-from superlinked.framework.online.source.online_source import OnlineSource
+from superlinked.framework.dsl.source.interactive_source import InteractiveSource
 
 
-class InMemorySource(Source, Generic[SchemaObjectT, SourceTypeT]):
+class InMemorySource(InteractiveSource):
     """
     InMemorySource represents a source of data, where you can put your data. This will supply
     the index with the data it needs to index and search in.
     """
-
-    @TypeValidator.wrap
-    def __init__(
-        self,
-        schema: SchemaObjectT,
-        parser: DataParser | None = None,
-    ) -> None:
-        """
-        Initialize the InMemorySource.
-
-        Args:
-            schema (IdSchemaObject): The schema object.
-            parser (DataParser | None, optional): The data parser. Defaults to JsonParser if None is supplied.
-
-        Raises:
-            InitializationException: If the schema is not an instance of SchemaObject.
-        """
-        if not isinstance(schema, SchemaObject):
-            raise InitializationException(
-                f"Parameter `schema` is of invalid type: {schema.__class__.__name__}"
-            )
-        self._schema = schema
-        self._parser = parser or JsonParser(schema)
-        self.__source = OnlineSource(schema, self._parser)
-
-    @property
-    def _source(self) -> OnlineSource:
-        return self.__source
-
-    def put(self, data: list[SourceTypeT]) -> None:
-        """
-        Put data into the InMemorySource. This operation can take time as the vectorization
-        of your data happens here.
-
-        Args:
-            data (list[SourceTypeT]): The data to put.
-        """
-        for item in data:
-            self.__source.put(item)

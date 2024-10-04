@@ -129,7 +129,7 @@ class QueryVectorFactory:
         context_base: ExecutionContext,
         global_space_weight_map: dict[Space, float],
     ) -> Vector | None:
-        if not (query_filters.similar_filters or not query_filters.looks_like_filter):
+        if not query_filters.similar_filters and query_filters.looks_like_filter:
             return None
         node_id_weight_map = self.__get_node_id_weight_map_from_filters(query_filters)
         if query_filters.has_multiple_similar_for_same_schema_field_node():

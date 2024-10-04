@@ -56,6 +56,11 @@ class OnlineCustomVectorEmbeddingNode(
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
     ) -> list[EvaluationResult[Vector]]:
+        if context.should_load_default_node_input:
+            result = EvaluationResult(
+                self._get_single_evaluation_result(self.node.embedding.default_vector)
+            )
+            return [result] * len(parsed_schemas)
         return [self.evaluate_self_single(schema, context) for schema in parsed_schemas]
 
     def evaluate_self_single(

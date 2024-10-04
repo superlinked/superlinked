@@ -4,7 +4,6 @@ Module superlinked.framework.dsl.space.text_similarity_space
 Functions
 ---------
 
-    
 `chunk(text: superlinked.framework.common.schema.schema_object.String, chunk_size: int | None = None, chunk_overlap: int | None = None, split_chars_keep: list[str] | None = None, split_chars_remove: list[str] | None = None) ‑> superlinked.framework.common.dag.chunking_node.ChunkingNode`
 :   Create smaller chunks from the given text, a String SchemaFieldObject. It is helpful when you search
         for more granular information in your text corpus. It is recommended to try different chunk_sizes to
