@@ -7,14 +7,25 @@ coverY: 0
 
 # Why Superlinked?
 
-### Your queries are changing
+**Table of Contents**
+- [Why Superlinked?](#why-superlinked)
+    - [Your users expect better search](#your-users-expect-better-search)
+    - [Enter Superlinked](#enter-superlinked)
+    - [But can't I put all my data in json, stringify it and embed using LLM?](#but-cant-i-put-all-my-data-in-json-stringify-it-and-embed-using-llm)
+    - [Okay, But can't I  ...](#okay-but-cant-i--)
+      - [1. Use different already existing storages per attribute, fire multiple searches and then reconcile results?](#1-use-different-already-existing-storages-per-attribute-fire-multiple-searches-and-then-reconcile-results)
+      - [2. Use Metadata filters or Candidate re-ranking](#2-use-metadata-filters-or-candidate-re-ranking)
+    - [Okay, seems like Superlinked proposes a nice approach, but](#okay-seems-like-superlinked-proposes-a-nice-approach-but)
+    - [How does it fit in the big picture?](#how-does-it-fit-in-the-big-picture)
 
-The landscape of search and information retrieval is rapidly evolving. With the rise of AI and large language models, user expectations for search capabilities have skyrocketed. Your users now expect that your search can handle complex, nuanced queries that go beyond simple keyword matching.
+### Your users expect better search
 
-> **We saw 2x more keywords search 6 months after the ChatGPT launch.**
-> *Algolia CTO, 2023 | 120B searches/month ! 17,000 customers*
+The landscape of search and information retrieval is rapidly evolving. With the rise of AI and large language models, user expectations for search capabilities have skyrocketed. Your users now expect that your search can handle complex, nuanced queries that go beyond simple keyword matching. Just hear what Algolia CTO has to say -
 
-This trend isn't isolated. Across industries, we're seeing a shift towards more sophisticated search queries that blend multiple concepts, contexts, and data types.
+> "We saw 2x more keywords search 6 months after the ChatGPT launch." 
+> _Algolia CTO, 2023_ 
+
+They have 17,000 customers accounting for 120B searches/month. This trend isn't isolated. Across industries, we're seeing a shift towards more sophisticated search queries that blend multiple concepts, contexts, and data types.
 
 Vector Search with text-only embeddings (& also multi-modal) fails on complex queries, because complex queries are never just about text. They involve other data too!
 
@@ -196,7 +207,7 @@ scores = cosine_similarity(embeddings, embeddings)
 
 ### Okay, But can't I  ...
 
-1. *Use different already existing storages per attribute, fire multiple searches and then reconcile results?*
+#### 1. Use different already existing storages per attribute, fire multiple searches and then reconcile results?
 
 <!-- {% hint style="info" %} -->
 Our naive approach (above) - storing and searching attribute vectors separately, then combining results - is limited in ability, subtlety, and efficiency when we need to retrieve objects with multiple simultaneous attributes. Moreover, multiple kNN searches take [more time than a single search with concatenated vectors](https://redis.io/blog/benchmarking-results-for-vector-databases/).
@@ -207,7 +218,7 @@ Read more here: [Multi-attribute search with vector embeddings](https://superlin
 
 <!-- {% endhint %} -->
 
-2. *Use Metadata filters or Candidate re-ranking*
+#### 2. Use Metadata filters or Candidate re-ranking
 
 <!-- {% hint style="info" %} -->
 When you convert a fuzzy preference like “recent”, “risky” or “popular” into a filter, you model a sigmoid with a binary step function = not enough resolution.

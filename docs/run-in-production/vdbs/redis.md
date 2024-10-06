@@ -45,4 +45,4 @@ To initiate a managed Redis instance, navigate to [Redis Labs](https://app.redis
 
 ## Example app with Redis
 
-You can find an example that utilizes Redis [here](https://github.com/superlinked/superlinked/blob/main/server/docs/redis/app_with_redis.py)
+You can find an example that utilizes Redis [here](https://github.com/superlinked/superlinked/blob/main/docs/run-in-production/vdbs/redis/app_with_redis.py)
