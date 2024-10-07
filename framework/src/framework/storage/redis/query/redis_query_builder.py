@@ -36,7 +36,7 @@ from superlinked.framework.storage.redis.redis_field_encoder import (
 )
 
 RANGE_DISTANCE_PARAM_NAME = "__range_dist"
-VECTOR_SCORE_ALIAS = "__vector_score"
+VECTOR_DISTANCE_ALIAS = "__vector_distance"
 
 
 @dataclass
@@ -96,7 +96,7 @@ class RedisQueryBuilder:
         )
         return (
             f"{pre_filter_str}=>[KNN {search_params.limit} "
-            + f"@{search_params.vector_field.name} ${vector_field_param_name} AS {VECTOR_SCORE_ALIAS}]"
+            + f"@{search_params.vector_field.name} ${vector_field_param_name} AS {VECTOR_DISTANCE_ALIAS}]"
         )
 
     def calculate_pre_filters_str(
@@ -138,11 +138,11 @@ class RedisQueryBuilder:
     ) -> Query:
         return (
             Query(query_string)
-            .sort_by(VECTOR_SCORE_ALIAS, asc=False)
+            .sort_by(VECTOR_DISTANCE_ALIAS, asc=True)
             .paging(0, limit)
             .return_fields(
                 *(
-                    [VECTOR_SCORE_ALIAS, f"{RANGE_DISTANCE_PARAM_NAME}"]
+                    [VECTOR_DISTANCE_ALIAS, RANGE_DISTANCE_PARAM_NAME]
                     + [returned_field.name for returned_field in returned_fields]
                 )
             )

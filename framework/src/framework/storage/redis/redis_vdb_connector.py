@@ -33,7 +33,7 @@ from superlinked.framework.common.storage.search_index_creation.search_algorithm
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
 from superlinked.framework.storage.common.vdb_settings import VDBSettings
 from superlinked.framework.storage.redis.query.redis_query_builder import (
-    VECTOR_SCORE_ALIAS,
+    VECTOR_DISTANCE_ALIAS,
 )
 from superlinked.framework.storage.redis.redis_connection_params import (
     RedisConnectionParams,
@@ -147,12 +147,17 @@ class RedisVDBConnector(VDBConnector):
                 self._extract_fields_from_document(
                     document["extra_attributes"], returned_fields
                 ),
-                self._encoder._decode_double(
-                    document["extra_attributes"][VECTOR_SCORE_ALIAS]
+                self._convert_distance_to_score(
+                    self._encoder._decode_double(
+                        document["extra_attributes"][VECTOR_DISTANCE_ALIAS]
+                    )
                 ),
             )
             for document in result["results"]
         ]
+
+    def _convert_distance_to_score(self, distance: float) -> float:
+        return 1 - distance
 
     def _extract_fields_from_document(
         self, document: dict[str, Any], returned_fields: Sequence[Field]
