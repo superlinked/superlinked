@@ -27,6 +27,7 @@ from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
     _Or,
 )
+from superlinked.framework.common.interface.has_space_field_set import HasSpaceFieldSet
 from superlinked.framework.common.nlq.open_ai import OpenAIClientConfig
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema import T
@@ -126,7 +127,7 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
 
     def similar(
         self,
-        field_set: SpaceFieldSet,
+        space_field_set: HasSpaceFieldSet | SpaceFieldSet,
         param: ParamType,
         weight: NumericParamType = constants.DEFAULT_WEIGHT,
     ) -> QueryObj:
@@ -136,7 +137,7 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
         in the referenced space of the index.
 
         Args:
-            field_set (SpaceFieldSet): The referenced space.
+            space_field_set (HasSpaceFieldSet | SpaceFieldSet): The space or field set to search within.
             param (ParamType): The parameter. Basically the query itself. It can be a fixed value,
             or a placeholder (Param) for later substitution.
             weight (NumericParamType, optional): The weight. Defaults to 1.0.
@@ -148,6 +149,15 @@ class QueryObj:  # pylint: disable=too-many-instance-attributes
             QueryException: If the space is already bound in the query.
             InvalidSchemaException: If the schema is not in the similarity field's schema types.
         """
+        if isinstance(space_field_set, HasSpaceFieldSet):
+            field_set = space_field_set.space_field_set
+        elif isinstance(space_field_set, SpaceFieldSet):
+            field_set = space_field_set
+        else:
+            raise TypeError(
+                f"Similar clause space_field_set got invalid type: {type(space_field_set).__name__}."
+            )
+
         if not self.__is_indexed_space(field_set.space):
             raise QueryException("Space isn't present in the index.")
 

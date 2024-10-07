@@ -21,6 +21,7 @@ from superlinked.framework.common.dag.custom_node import CustomVectorEmbeddingNo
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.interface.has_space_field_set import HasSpaceFieldSet
 from superlinked.framework.common.schema.schema_object import FloatList, SchemaObject
 from superlinked.framework.common.space.aggregation import (
     Aggregation,
@@ -36,7 +37,7 @@ from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
 
-class CustomSpace(Space):
+class CustomSpace(Space, HasSpaceFieldSet):
     """
     CustomSpace is the instrument of ingesting your own vectors into Superlinked.
     This way you can use your own vectors right away. What you need to know: (you can use numbering too)
@@ -118,6 +119,11 @@ class CustomSpace(Space):
         }
         self._description = description
         self._length = length
+
+    @property
+    @override
+    def space_field_set(self) -> SpaceFieldSet:
+        return self.vector
 
     @property
     def _node_by_schema(self) -> Mapping[SchemaObject, Node[Vector]]:

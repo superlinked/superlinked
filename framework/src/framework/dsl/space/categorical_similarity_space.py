@@ -25,6 +25,7 @@ from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.categorical_similarity_embedding import (
     CategoricalSimilarityParams,
 )
+from superlinked.framework.common.interface.has_space_field_set import HasSpaceFieldSet
 from superlinked.framework.common.schema.schema_object import (
     SchemaObject,
     String,
@@ -34,7 +35,7 @@ from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
 
-class CategoricalSimilaritySpace(Space):
+class CategoricalSimilaritySpace(Space, HasSpaceFieldSet):
     """
     Represents a space for encoding categorical similarity.
 
@@ -128,6 +129,15 @@ class CategoricalSimilaritySpace(Space):
         return self.__schema_node_map
 
     @property
+    def category(self) -> SpaceFieldSet:
+        return self.__category
+
+    @property
+    @override
+    def space_field_set(self) -> SpaceFieldSet:
+        return self.category
+
+    @property
     @override
     def annotation(self) -> str:
         not_text_for_uncategorized = (
@@ -156,7 +166,3 @@ class CategoricalSimilaritySpace(Space):
     @property
     def uncategorized_as_category(self) -> bool:
         return self.categorical_similarity_param.uncategorized_as_category
-
-    @property
-    def category(self) -> SpaceFieldSet:
-        return self.__category

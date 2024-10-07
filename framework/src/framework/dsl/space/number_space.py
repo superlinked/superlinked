@@ -31,6 +31,7 @@ from superlinked.framework.common.embedding.number_embedding import (
     Mode,
     Scale,
 )
+from superlinked.framework.common.interface.has_space_field_set import HasSpaceFieldSet
 from superlinked.framework.common.schema.schema_object import Number, SchemaObject
 from superlinked.framework.common.space.aggregation import InputAggregationMode
 from superlinked.framework.dsl.space.exception import (
@@ -41,7 +42,7 @@ from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
 
-class NumberSpace(Space):
+class NumberSpace(Space, HasSpaceFieldSet):
     """
     NumberSpace is used to encode numerical values within a specified range.
     The range is defined by the min_value and max_value parameters.
@@ -147,6 +148,11 @@ class NumberSpace(Space):
     @property
     def _node_by_schema(self) -> Mapping[SchemaObject, Node[Vector]]:
         return self.__schema_node_map
+
+    @property
+    @override
+    def space_field_set(self) -> SpaceFieldSet:
+        return self.number
 
     @property
     @override

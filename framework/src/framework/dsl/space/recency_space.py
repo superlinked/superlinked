@@ -24,6 +24,7 @@ from superlinked.framework.common.dag.period_time import PeriodTime
 from superlinked.framework.common.dag.recency_node import RecencyNode
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.interface.has_space_field_set import HasSpaceFieldSet
 from superlinked.framework.common.schema.schema_object import SchemaObject, Timestamp
 from superlinked.framework.common.space.aggregation import InputAggregationMode
 from superlinked.framework.common.util.named_function_evaluator import NamedFunction
@@ -35,7 +36,9 @@ logger = structlog.getLogger()
 DEFAULT_PERIOD_TIME = PeriodTime(period_time=timedelta(days=14))
 
 
-class RecencySpace(Space):  # pylint: disable=too-many-instance-attributes
+class RecencySpace(
+    Space, HasSpaceFieldSet
+):  # pylint: disable=too-many-instance-attributes
     """
     Recency space encodes timestamp type data measured in seconds and in unix timestamp format.
     Recency space is utilized to encode how recent items are. Use period_time_list
@@ -120,6 +123,11 @@ class RecencySpace(Space):  # pylint: disable=too-many-instance-attributes
             ).period_time.total_seconds()
             / 86400
         )
+
+    @property
+    @override
+    def space_field_set(self) -> SpaceFieldSet:
+        return self.timestamp
 
     @property
     def _node_by_schema(self) -> Mapping[SchemaObject, Node[Vector]]:

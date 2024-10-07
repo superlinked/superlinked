@@ -20,6 +20,7 @@ from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.dag.text_embedding_node import TextEmbeddingNode
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.interface.has_space_field_set import HasSpaceFieldSet
 from superlinked.framework.common.schema.schema_object import SchemaObject, String
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.space.space import Space
@@ -30,7 +31,7 @@ TextInput = String | ChunkingNode
 DEFAULT_CACHE_SIZE = 10000
 
 
-class TextSimilaritySpace(Space):
+class TextSimilaritySpace(Space, HasSpaceFieldSet):
     """
     A text similarity space is used to create vectors from documents in order to search in them
     later on. We only support (SentenceTransformers)[https://www.sbert.net/] models as they have
@@ -80,6 +81,11 @@ class TextSimilaritySpace(Space):
         if isinstance(text, ChunkingNode):
             return TextEmbeddingNode(text, model, cache_size)
         return TextEmbeddingNode(SchemaFieldNode(text), model, cache_size)
+
+    @property
+    @override
+    def space_field_set(self) -> SpaceFieldSet:
+        return self.text
 
     @property
     def _node_by_schema(self) -> Mapping[SchemaObject, Node[Vector]]:
