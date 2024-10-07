@@ -104,13 +104,13 @@ Classes
         Raises:
             ValueError: If the radius is not between 0 and 1.
 
-    `similar(self, field_set: superlinked.framework.dsl.space.space_field_set.SpaceFieldSet, param: collections.abc.Sequence[str] | collections.abc.Sequence[float] | str | int | float | bool | None | superlinked.framework.dsl.query.param.Param, weight: float | int | superlinked.framework.dsl.query.param.Param = 1.0) ‑> superlinked.framework.dsl.query.query.QueryObj`
+    `similar(self, space_field_set: superlinked.framework.common.interface.has_space_field_set.HasSpaceFieldSet | superlinked.framework.dsl.space.space_field_set.SpaceFieldSet, param: collections.abc.Sequence[str] | collections.abc.Sequence[float] | str | int | float | bool | None | superlinked.framework.dsl.query.param.Param, weight: float | int | superlinked.framework.dsl.query.param.Param = 1.0) ‑> superlinked.framework.dsl.query.query.QueryObj`
     :   Add a 'similar' clause to the query. Similar queries compile query inputs (like query text) into vectors
         using a space and then use the query_vector (weighted with weight param) to search
         in the referenced space of the index.
         
         Args:
-            field_set (SpaceFieldSet): The referenced space.
+            space_field_set (HasSpaceFieldSet | SpaceFieldSet): The space or field set to search within.
             param (ParamType): The parameter. Basically the query itself. It can be a fixed value,
             or a placeholder (Param) for later substitution.
             weight (NumericParamType, optional): The weight. Defaults to 1.0.

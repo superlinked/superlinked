@@ -36,6 +36,7 @@ Classes
     ### Ancestors (in MRO)
 
     * superlinked.framework.dsl.space.space.Space
+    * superlinked.framework.common.interface.has_space_field_set.HasSpaceFieldSet
     * abc.ABC
 
     ### Class variables
@@ -53,4 +54,7 @@ Classes
     ### Instance variables
 
     `annotation: str`
+    :
+
+    `space_field_set: superlinked.framework.dsl.space.space_field_set.SpaceFieldSet`
     :
