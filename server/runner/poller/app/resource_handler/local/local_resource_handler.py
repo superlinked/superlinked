@@ -38,6 +38,9 @@ class LocalResourceHandler(ResourceHandler):
         notification_needed = False
         for root, _, files in os.walk(self.app_location.path):
             for file in files:
+                if file not in self.poller_config.allowed_files:
+                    logger.debug("skipped file", filename=file, allowed_files=self.poller_config.allowed_files)
+                    continue
                 file_path = os.path.join(root, file)
                 notification_needed |= self._process_file(file_path)
         if notification_needed:

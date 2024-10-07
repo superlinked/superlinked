@@ -15,12 +15,15 @@
 import json
 
 import boto3
+import structlog
 from botocore.client import Config
 from botocore.exceptions import ClientError
 from mypy_boto3_s3.client import S3Client
 
 from poller.app.app_location_parser.app_location_parser import AppLocation
 from poller.app.resource_handler.resource_handler import ResourceHandler
+
+logger = structlog.getLogger(__name__)
 
 
 class S3ResourceHandler(ResourceHandler):
@@ -64,6 +67,9 @@ class S3ResourceHandler(ResourceHandler):
         bucket_name = self.get_bucket()
         bucket = self.resource.Bucket(bucket_name)
         for obj in bucket.objects.filter(Prefix=self.app_location.path):
+            if obj.key not in self.poller_config.allowed_files:
+                logger.debug("skipped file", filename=obj.key, allowed_files=self.poller_config.allowed_files)
+                continue
             if self.is_object_outdated(obj.last_modified, obj.key):
                 self.download_file(bucket_name, obj.key, self.get_destination_path(obj.key))
                 notification_needed = True

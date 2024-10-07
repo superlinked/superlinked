@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import structlog
 from google.auth.exceptions import DefaultCredentialsError
 from google.cloud import storage  # type: ignore[attr-defined]
 from google.cloud.exceptions import GoogleCloudError
@@ -19,6 +20,8 @@ from google.cloud.storage.client import Client as GCSClient
 
 from poller.app.app_location_parser.app_location_parser import AppLocation
 from poller.app.resource_handler.resource_handler import ResourceHandler
+
+logger = structlog.getLogger(__name__)
 
 
 class GCSResourceHandler(ResourceHandler):
@@ -52,6 +55,9 @@ class GCSResourceHandler(ResourceHandler):
         blobs = bucket.list_blobs(prefix=self.app_location.path)
         notification_needed = False
         for blob in blobs:
+            if blob.name not in self.poller_config.allowed_files:
+                logger.debug("skipped file", filename=blob.name, allowed_files=self.poller_config.allowed_files)
+                continue
             if self.is_object_outdated(blob.updated, blob.name):
                 self.download_file(bucket_name, blob.name, self.get_destination_path(blob.name))
                 notification_needed = True

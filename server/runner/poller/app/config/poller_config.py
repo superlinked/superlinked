@@ -38,6 +38,7 @@ class PollerConfig:
         self.log_level = config.get("POLLER", "LOG_LEVEL")
         self.json_log_file = config.get("POLLER", "JSON_LOG_FILE", fallback=None)
         self.log_as_json = config.get("POLLER", "LOG_AS_JSON", fallback="false").lower() == "true"
+        self.allowed_files = config.get("POLLER", "ALLOWED_FILES").split(",")
         self._setup_logger()
 
     def _setup_logger(self) -> None:
