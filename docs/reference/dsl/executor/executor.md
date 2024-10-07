@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.executor.executor
 Classes
 -------
 
-`Executor(sources: collections.abc.Sequence[~SourceT], indices: typing.Annotated[collections.abc.Sequence[superlinked.framework.dsl.index.index.Index], Is[TypeValidator.list_validator.validator]], vector_database: superlinked.framework.dsl.storage.vector_database.VectorDatabase, context: superlinked.framework.common.dag.context.ExecutionContext)`
+`Executor(sources: collections.abc.Sequence[~SourceT], indices: typing.Annotated[collections.abc.Sequence[superlinked.framework.dsl.index.index.Index], beartype.vale.Is[TypeValidator.list_validator.validator]], vector_database: superlinked.framework.dsl.storage.vector_database.VectorDatabase, context: superlinked.framework.common.dag.context.ExecutionContext)`
 :   Abstract base class for an executor.
     
     Initialize the Executor.

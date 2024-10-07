@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.query.query
 Classes
 -------
 
-`Query(index: superlinked.framework.dsl.index.index.Index, weights: Optional[typing.Annotated[dict[superlinked.framework.dsl.space.space.Space, float | int | superlinked.framework.dsl.query.param.Param], Is[TypeValidator.dict_validator.validator]]] = None)`
+`Query(index: superlinked.framework.dsl.index.index.Index, weights: Optional[typing.Annotated[dict[superlinked.framework.dsl.space.space.Space, float | int | superlinked.framework.dsl.query.param.Param], beartype.vale.Is[TypeValidator.dict_validator.validator]]] = None)`
 :   A class representing a query. Build queries using Params as placeholders for weights or query text,
     and supply their value later on when executing a query.
     

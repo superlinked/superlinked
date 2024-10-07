@@ -53,4 +53,3 @@ Classes
         
         Returns:
             list[ParsedSchema]: A list of ParsedSchema objects.
-            
