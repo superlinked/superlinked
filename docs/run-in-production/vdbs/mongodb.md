@@ -75,4 +75,4 @@ A step-by-step guide to set up a database, a user, and the required API key.
 
 ## Example app with Mongo DB
 
-You can find an example that utilizes Mongo DB [here](https://github.com/superlinked/superlinked/blob/main/server/docs/mongodb/app_with_mongodb.py)
+You can find an example that utilizes Mongo DB [here](https://github.com/superlinked/superlinked/blob/main/docs/run-in-production/vdbs/mongodb/app_with_mongodb.py)
