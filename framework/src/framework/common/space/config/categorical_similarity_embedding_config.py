@@ -12,17 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from dataclasses import dataclass
+
+from beartype.typing import Sequence
 from typing_extensions import override
 
-from superlinked.framework.common.dag.embedding_node import VectorEmbeddingNode
-from superlinked.framework.common.embedding.sentence_transformer_embedding import (
-    SentenceTransformerEmbedding,
-    TextSimilarityEmbeddingConfig,
-)
+from superlinked.framework.common.space.config.embedding_config import EmbeddingConfig
 
 
-class TextEmbeddingNode(VectorEmbeddingNode[str, TextSimilarityEmbeddingConfig]):
+@dataclass(frozen=True)
+class CategoricalSimilarityEmbeddingConfig(EmbeddingConfig):
+    categories: Sequence[str]
+    uncategorized_as_category: bool
+    negative_filter: float = 0.0
+
     @property
     @override
-    def embedding_type(self) -> type[SentenceTransformerEmbedding]:
-        return SentenceTransformerEmbedding
+    def length(self) -> int:
+        return len(self.categories) + 1

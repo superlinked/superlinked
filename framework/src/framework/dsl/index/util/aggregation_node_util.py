@@ -13,10 +13,10 @@
 # limitations under the License.
 
 from superlinked.framework.common.dag.aggregation_node import AggregationNode
+from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import InitializationException
-from superlinked.framework.common.interface.has_aggregation import HasAggregation
 from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.dsl.index.effect import EffectModifier
 from superlinked.framework.dsl.index.util.aggregation_effect_group import (
@@ -55,7 +55,7 @@ class AggregationNodeUtil:
         affected_node = aggregation_effect_group.space._get_node(
             aggregation_effect_group.affected_schema
         )
-        if not isinstance(affected_node, HasAggregation):
+        if not isinstance(affected_node, EmbeddingNode):
             raise InitializationException(
                 f"AggregationNode affected node of type {type(affected_node).__name__} does not have aggregation set."
             )

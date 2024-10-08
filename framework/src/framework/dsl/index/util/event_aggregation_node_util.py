@@ -15,6 +15,7 @@
 from beartype.typing import cast
 
 from superlinked.framework.common.dag.comparison_filter_node import ComparisonFilterNode
+from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.event_aggregation_node import EventAggregationNode
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.dag.schema_object_reference import (
@@ -42,12 +43,17 @@ class EventAggregationNodeUtil:
             raise InitializationException(
                 "EventAggregationNode initialization needs a not empty set of Effects."
             )
+        input_to_aggregate = effect_group.key.space._get_node(
+            effect_group.key.resolved_affecting_schema
+        )
+        if not isinstance(input_to_aggregate, EmbeddingNode):
+            raise InitializationException(
+                f"Affecting node must be an EmbeddingNode, got {input_to_aggregate.class_name}."
+            )
 
         return EventAggregationNode(
             EventAggregationNode.InitParams(
-                effect_group.key.space._get_node(
-                    effect_group.key.resolved_affecting_schema
-                ),
+                input_to_aggregate,
                 effect_group.key.event_schema,
                 SchemaObjectReference(
                     effect_group.key.resolved_affected_schema_reference.schema,

@@ -21,7 +21,9 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.custom_node import CustomVectorEmbeddingNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.embedding.custom_embedding import CustomEmbedding
 from superlinked.framework.common.exception import ValidationException
+from superlinked.framework.common.interface.has_embedding import HasEmbedding
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
@@ -31,7 +33,7 @@ from superlinked.framework.online.dag.parent_validator import ParentValidationTy
 
 
 class OnlineCustomVectorEmbeddingNode(
-    OnlineNode[CustomVectorEmbeddingNode, Vector], HasLength
+    OnlineNode[CustomVectorEmbeddingNode, Vector], HasLength, HasEmbedding
 ):
     def __init__(
         self,
@@ -45,10 +47,17 @@ class OnlineCustomVectorEmbeddingNode(
             storage_manager,
             ParentValidationType.LESS_THAN_TWO_PARENTS,
         )
+        self._embedding = cast(CustomEmbedding, self.node.init_embedding())
 
     @property
+    @override
     def length(self) -> int:
         return self.node.length
+
+    @property
+    @override
+    def embedding(self) -> CustomEmbedding:
+        return self._embedding
 
     @override
     def evaluate_self(
@@ -58,7 +67,7 @@ class OnlineCustomVectorEmbeddingNode(
     ) -> list[EvaluationResult[Vector]]:
         if context.should_load_default_node_input:
             result = EvaluationResult(
-                self._get_single_evaluation_result(self.node.embedding.default_vector)
+                self._get_single_evaluation_result(self.embedding.default_vector)
             )
             return [result] * len(parsed_schemas)
         return [self.evaluate_self_single(schema, context) for schema in parsed_schemas]
@@ -82,6 +91,6 @@ class OnlineCustomVectorEmbeddingNode(
                 + f" of size {self.length}"
                 + f", got {len(input_value)}"
             )
-        transformed_input_value = self.node.embedding.embed(input_value, context)
+        transformed_input_value = self.embedding.embed(Vector(input_value), context)
         main = self._get_single_evaluation_result(transformed_input_value)
         return EvaluationResult(main)

@@ -12,61 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import timedelta
 
-from beartype.typing import Any
 from typing_extensions import override
 
-from superlinked.framework.common.dag.node import Node
-from superlinked.framework.common.dag.period_time import PeriodTime
-from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.dag.embedding_node import InputEmbeddingNode
 from superlinked.framework.common.embedding.recency_embedding import (
     RecencyEmbedding,
-    calculate_recency_normalization,
-)
-from superlinked.framework.common.interface.has_aggregation import HasAggregation
-from superlinked.framework.common.interface.has_length import HasLength
-from superlinked.framework.common.space.aggregation import (
-    Aggregation,
-    InputAggregation,
-    InputAggregationMode,
+    RecencyEmbeddingConfig,
 )
 
 
-class RecencyNode(Node[Vector], HasLength, HasAggregation):
-    def __init__(
-        self,
-        parent: Node[int],
-        time_period_hour_offset: timedelta,
-        period_time_list: list[PeriodTime],
-        aggregation_mode: InputAggregationMode,
-        negative_filter: float,
-    ) -> None:
-        super().__init__(Vector, [parent])
-        normalization = calculate_recency_normalization(period_time_list)
-        self.embedding = RecencyEmbedding(
-            period_time_list,
-            normalization,
-            time_period_hour_offset,
-            negative_filter,
-        )
-        self.__aggregation: InputAggregation = InputAggregation.from_aggregation_mode(
-            aggregation_mode, normalization, self.embedding
-        )
-
-    @property
-    def length(self) -> int:
-        return self.embedding.length
-
+class RecencyNode(InputEmbeddingNode[int, RecencyEmbeddingConfig]):
     @property
     @override
-    def aggregation(self) -> Aggregation:
-        return self.__aggregation
-
-    @override
-    def _get_node_id_parameters(self) -> dict[str, Any]:
-        return {
-            "period_time_list": self.embedding.period_time_list,
-            "negative_filter": self.embedding.negative_filter,
-            "aggregation": self.__aggregation,
-        }
+    def embedding_type(self) -> type[RecencyEmbedding]:
+        return RecencyEmbedding

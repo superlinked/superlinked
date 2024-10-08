@@ -15,121 +15,75 @@
 
 import numpy as np
 from beartype.typing import Sequence
-from typing_extensions import override
+from typing_extensions import TypeVar, override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import NPArray, Vector
 from superlinked.framework.common.embedding.embedding import Embedding
-from superlinked.framework.common.interface.has_default_vector import HasDefaultVector
-from superlinked.framework.common.interface.has_length import HasLength
-from superlinked.framework.common.space.normalization import Normalization
+from superlinked.framework.common.space.config.categorical_similarity_embedding_config import (
+    CategoricalSimilarityEmbeddingConfig,
+)
+from superlinked.framework.common.space.normalization import L2Norm
 
 CATEGORICAL_ENCODING_VALUE: int = 1
 
-
-class CategoricalSimilarityParams:
-    def __init__(
-        self,
-        categories: list[str],
-        uncategorized_as_category: bool,
-        negative_filter: float = 0.0,
-    ) -> None:
-        self.categories: list[str] = categories
-        self.uncategorized_as_category: bool = uncategorized_as_category
-        self.negative_filter: float = negative_filter
+CategoryT = TypeVar("CategoryT", str, list[str])
 
 
-class CategoricalSimilarityEmbedding(Embedding[list[str]], HasLength, HasDefaultVector):
-    def __init__(
-        self,
-        categorical_similarity_param: CategoricalSimilarityParams,
-        normalization: Normalization,
-    ) -> None:
-        super().__init__()
-        self.categorical_similarity_param: CategoricalSimilarityParams = (
-            categorical_similarity_param
+class CategoricalSimilarityEmbedding(
+    Embedding[CategoryT, CategoricalSimilarityEmbeddingConfig]
+):
+    def __init__(self, embedding_config: CategoricalSimilarityEmbeddingConfig) -> None:
+        super().__init__(embedding_config)
+        self._other_category_index: int | None = (
+            self.length - 1 if self._config.uncategorized_as_category else None
         )
-        self.__length: int = (
-            len(self.categorical_similarity_param.categories) + 1
-        )  # last bin reserved for 'other'
-        self.__normalization: Normalization = normalization
-        self.__category_index_map: dict[str, int] = {
-            elem: i
-            for i, elem in enumerate(self.categorical_similarity_param.categories)
+        self._category_index_map: dict[str, int] = {
+            elem: i for i, elem in enumerate(self._config.categories)
         }
-        self.other_category_index: int | None = (
-            self.__length - 1
-            if self.categorical_similarity_param.uncategorized_as_category
-            else None
+        self._default_n_hot_encoding = np.full(
+            self.length, self._config.negative_filter, dtype=np.float64
         )
+        self._normalization = L2Norm()
+
+    @property
+    @override
+    def normalization(self) -> L2Norm:
+        return self._normalization
 
     @override
     def embed(self, input_: list[str] | str, context: ExecutionContext) -> Vector:
         inputs: list[str] = input_ if isinstance(input_, list) else [input_]
-        one_hot_encoding: NPArray = self.__n_hot_encode(
-            inputs, context.is_query_context
-        )
+        n_hot_encoding: NPArray = self._n_hot_encode(inputs, context.is_query_context)
         negative_filter_indices = set(
-            ind
-            for ind in range(self.__length)
-            if ind not in self.__get_category_indices(inputs)
+            i for i in range(self.length) if i not in self._get_category_indices(inputs)
         )
-        vector = Vector(one_hot_encoding, negative_filter_indices)
+        vector = Vector(n_hot_encoding, negative_filter_indices)
         return self.normalization.normalize(vector)
 
-    def __n_hot_encode(self, category_list: list[str], is_query: bool) -> NPArray:
-        n_hot_encoding: NPArray = np.full(
-            self.__length,
-            0 if is_query else self.categorical_similarity_param.negative_filter,
-            dtype=np.float64,
-        )
-        category_indices: Sequence[int] = self.__get_category_indices(category_list)
+    def _n_hot_encode(self, category_list: Sequence[str], is_query: bool) -> NPArray:
+        n_hot_encoding = self._default_n_hot_encoding.copy()
+        if is_query:
+            n_hot_encoding.fill(0)
+        category_indices = self._get_category_indices(category_list)
         if category_indices:
             n_hot_encoding[category_indices] = CATEGORICAL_ENCODING_VALUE
         return n_hot_encoding
 
-    def __get_category_indices(self, text_input: list[str]) -> list[int]:
+    def _get_category_indices(self, text_input: Sequence[str]) -> list[int]:
         return list(
             {
                 category_index
                 for category_value in text_input
-                if (category_index := self.__get_index_for_category(category_value))
+                if (category_index := self._get_index_for_category(category_value))
                 is not None
             }
         )
 
-    def __get_index_for_category(self, category: str) -> int | None:
-        return self.__category_index_map.get(
-            category,
-            self.other_category_index,
-        )
+    def _get_index_for_category(self, category: str) -> int | None:
+        return self._category_index_map.get(category, self._other_category_index)
 
     @property
     @override
     def length(self) -> int:
-        return self.__length
-
-    @property
-    @override
-    def default_vector(self) -> Vector:
-        return Vector([0.0] * self.length)
-
-    @property
-    def category_index_map(self) -> dict[str, int]:
-        return self.__category_index_map
-
-    @property
-    def categories(self) -> list[str]:
-        return self.categorical_similarity_param.categories
-
-    @property
-    def negative_filter(self) -> float:
-        return self.categorical_similarity_param.negative_filter
-
-    @property
-    def uncategorized_as_category(self) -> bool:
-        return self.categorical_similarity_param.uncategorized_as_category
-
-    @property
-    def normalization(self) -> Normalization:
-        return self.__normalization
+        return self._config.length

@@ -25,6 +25,7 @@ from superlinked.framework.common.exception import (
     MismatchingDimensionException,
     ValidationException,
 )
+from superlinked.framework.common.interface.has_embedding import HasEmbedding
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
@@ -84,12 +85,33 @@ class OnlineAggregationNode(DefaultOnlineNode[AggregationNode, Vector], HasLengt
         context: ExecutionContext,
     ) -> Vector:
         self._check_evaluation_inputs(parent_results)
-        weighted_vectors = self._get_weighted_vectors(parent_results)
-        if self._no_event_present(weighted_vectors):
-            return weighted_vectors[0].item
-        return self.node.aggregation.aggregate_weighted(weighted_vectors, context)
+        weighted_vector_by_parent = self._get_weighted_vector_by_parent(parent_results)
 
-    def _no_event_present(self, weighted_vectors: Sequence[Weighted[Vector]]) -> bool:
+        if self._no_event_present(weighted_vector_by_parent):
+            return list(weighted_vector_by_parent.values())[0].item
+
+        online_nodes = list(weighted_vector_by_parent.keys())
+        self._validate_embeddings(online_nodes)
+
+        embedding = HasEmbedding.get_common_embedding(
+            cast(list[HasEmbedding], online_nodes)
+        )
+
+        return self.node.aggregation.aggregate_weighted(
+            list(weighted_vector_by_parent.values()), embedding, context
+        )
+
+    def _validate_embeddings(self, online_nodes: Sequence[OnlineNode]) -> None:
+        if not all(
+            isinstance(online_node, HasEmbedding) for online_node in online_nodes
+        ):
+            raise ValidationException(
+                f"Parents of {self.class_name} must have embedding."
+            )
+
+    def _no_event_present(
+        self, weighted_vectors: dict[OnlineNode, Weighted[Vector]]
+    ) -> bool:
         return len(weighted_vectors) == 1
 
     def _check_evaluation_inputs(
@@ -126,11 +148,13 @@ class OnlineAggregationNode(DefaultOnlineNode[AggregationNode, Vector], HasLengt
                 + f", got {invalid_length_results[0].value.dimension}"
             )
 
-    def _get_weighted_vectors(
+    def _get_weighted_vector_by_parent(
         self, parent_results: dict[OnlineNode, SingleEvaluationResult]
-    ) -> Sequence[Weighted[Vector]]:
-        return [
-            Weighted(result.value, self._node_id_weight_map[parent.node.node_id])
+    ) -> dict[OnlineNode, Weighted[Vector]]:
+        return {
+            parent: Weighted(
+                result.value, self._node_id_weight_map[parent.node.node_id]
+            )
             for parent, result in parent_results.items()
             if result.value and not result.value.is_empty
-        ]
+        }

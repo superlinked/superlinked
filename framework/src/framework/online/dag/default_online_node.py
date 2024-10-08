@@ -20,7 +20,7 @@ from beartype.typing import Generic, Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.dag.node import NDT, NT
+from superlinked.framework.common.dag.node import NT, NodeDataT
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.online.dag.batched_chunk_input_item import (
     BatchedChunkInputItem,
@@ -33,13 +33,13 @@ from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.dag.parent_results import ParentResults
 
 
-class DefaultOnlineNode(OnlineNode[NT, NDT], ABC, Generic[NT, NDT]):
+class DefaultOnlineNode(OnlineNode[NT, NodeDataT], ABC, Generic[NT, NodeDataT]):
     @override
     def evaluate_self(
         self,
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
-    ) -> list[EvaluationResult[NDT]]:
+    ) -> list[EvaluationResult[NodeDataT]]:
         batch_size = len(parsed_schemas)
         if batch_size == 0:
             return []
@@ -53,7 +53,7 @@ class DefaultOnlineNode(OnlineNode[NT, NDT], ABC, Generic[NT, NDT]):
         mains: list[SingleEvaluationResult] = self._get_single_evaluation_results(
             self._evaluate_single_with_fallback(parsed_schemas, context, main_inputs)
         )
-        chunk_results_per_parsed_schema: list[list[NDT]] = (
+        chunk_results_per_parsed_schema: list[list[NodeDataT]] = (
             self.__get_chunk_results_per_parsed_schema(
                 parsed_schemas, context, parent_results
             )
@@ -74,7 +74,7 @@ class DefaultOnlineNode(OnlineNode[NT, NDT], ABC, Generic[NT, NDT]):
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
         parent_results: list[dict[OnlineNode, EvaluationResult]],
-    ) -> list[list[NDT]]:
+    ) -> list[list[NodeDataT]]:
         batch_size = len(parsed_schemas)
         if context.is_query_context:
             return [[]] * batch_size
@@ -91,7 +91,9 @@ class DefaultOnlineNode(OnlineNode[NT, NDT], ABC, Generic[NT, NDT]):
             ]
             for i in range(batch_size)
         ]
-        chunks_per_parsed_schema: list[list[NDT]] = [[] for i in range(batch_size)]
+        chunks_per_parsed_schema: list[list[NodeDataT]] = [
+            [] for i in range(batch_size)
+        ]
         for batched_inputs in self.__batch_chunk_inputs_by_size(
             chunk_inputs_per_parsed_schema, batch_size
         ):
@@ -128,8 +130,8 @@ class DefaultOnlineNode(OnlineNode[NT, NDT], ABC, Generic[NT, NDT]):
         return result
 
     def _get_single_evaluation_results(
-        self, values: list[NDT]
-    ) -> list[SingleEvaluationResult[NDT]]:
+        self, values: list[NodeDataT]
+    ) -> list[SingleEvaluationResult[NodeDataT]]:
         return [self._get_single_evaluation_result(value) for value in values]
 
     def __get_parent_results(
@@ -181,7 +183,7 @@ class DefaultOnlineNode(OnlineNode[NT, NDT], ABC, Generic[NT, NDT]):
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
         parent_results: list[ParentResults],
-    ) -> list[NDT]:
+    ) -> list[NodeDataT]:
         single_result_all = self._evaluate_singles(parent_results, context)
         return [
             (
@@ -197,11 +199,11 @@ class DefaultOnlineNode(OnlineNode[NT, NDT], ABC, Generic[NT, NDT]):
         self,
         parent_results: list[ParentResults],
         context: ExecutionContext,
-    ) -> Sequence[NDT | None]:
+    ) -> Sequence[NodeDataT | None]:
         pass
 
     def get_fallback_result(
         self,
         parsed_schema: ParsedSchema,
-    ) -> NDT:
+    ) -> NodeDataT:
         return self.load_stored_result_or_raise_exception(parsed_schema)

@@ -19,7 +19,7 @@ from enum import Enum
 from functools import reduce
 
 import numpy as np
-from beartype.typing import Any, Generic, Mapping, Sequence, TypeVar
+from beartype.typing import Generic, Mapping, Sequence, TypeVar
 from typing_extensions import override
 
 from superlinked.framework.common.const import constants
@@ -28,62 +28,32 @@ from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.embedding import Embedding
 from superlinked.framework.common.exception import NegativeFilterException
 from superlinked.framework.common.interface.weighted import Weighted
-from superlinked.framework.common.space.normalization import L2Norm, Normalization
+from superlinked.framework.common.space.normalization import L2Norm
 
 VALUE_UNAFFECTING_AGGREGATION = 0
 
 AIT = TypeVar("AIT", float, int)
 
 
-class InputAggregationMode(Enum):
-    INPUT_MAXIMUM = "input_maximum"
-    INPUT_MINIMUM = "input_minimum"
-    INPUT_AVERAGE = "input_average"
-
-
 class Aggregation:
-
-    def __init__(
-        self,
-        normalization: Normalization,
-    ) -> None:
-        self.normalization = normalization
-
-    @abstractmethod
-    def aggregate(
-        self, vectors: Sequence[Vector], context: ExecutionContext
-    ) -> Vector: ...
 
     @abstractmethod
     def aggregate_weighted(
-        self, weighted_vectors: Sequence[Weighted[Vector]], context: ExecutionContext
+        self,
+        weighted_vectors: Sequence[Weighted[Vector]],
+        embedding: Embedding,
+        context: ExecutionContext,
     ) -> Vector: ...
-
-    def __str__(self) -> str:
-        items = {k: str(v) for k, v in self.__dict__.items()} if self.__dict__ else ""
-        return f"{self.__class__.__name__}({items})"
 
 
 class VectorAggregation(Aggregation):
 
     @override
-    def aggregate(self, vectors: Sequence[Vector], context: ExecutionContext) -> Vector:
-        vector = self._reduce(vectors)
-        return self.normalization.normalize(vector)
-
-    def _aggregate(
-        self,
-        vectors: Sequence[Weighted[Vector]],
-        context: ExecutionContext,  # pylint: disable=unused-argument
-    ) -> Vector:
-        vector = self._reduce(vectors)
-        return self.normalization.normalize(vector)
-
-    @override
     def aggregate_weighted(
         self,
         weighted_vectors: Sequence[Weighted[Vector]],
-        context: ExecutionContext,  # pylint: disable=unused-argument
+        embedding: Embedding,
+        context: ExecutionContext,
     ) -> Vector:
         vector = self._reduce(weighted_vectors)
         return L2Norm().normalize(vector)
@@ -143,29 +113,13 @@ class VectorAggregation(Aggregation):
         return VALUE_UNAFFECTING_AGGREGATION
 
 
-class VectorAvg(VectorAggregation):
-    @override
-    def aggregate(self, vectors: Sequence[Vector], context: ExecutionContext) -> Vector:
-        return self._reduce(vectors).normalize(len(vectors))
-
-
 class InputAggregation(Aggregation, Generic[AIT]):
-    def __init__(self, normalization: Normalization, embedding: Embedding) -> None:
-        self.embedding = embedding
-        super().__init__(normalization)
-
-    @override
-    def aggregate(self, vectors: Sequence[Vector], context: ExecutionContext) -> Vector:
-        embedding_inputs = [
-            self.embedding.inverse_embed(vector, context) for vector in vectors
-        ]
-        embedding_input = self._aggregate_inputs(embedding_inputs)
-        vector = self.embedding.embed(embedding_input, context)
-        return vector
-
     @override
     def aggregate_weighted(
-        self, weighted_vectors: Sequence[Weighted[Vector]], context: ExecutionContext
+        self,
+        weighted_vectors: Sequence[Weighted[Vector]],
+        embedding: Embedding,
+        context: ExecutionContext,
     ) -> Vector:
         weighted_vectors = [
             weighted
@@ -176,43 +130,28 @@ class InputAggregation(Aggregation, Generic[AIT]):
         if len(weighted_vectors) == 1:
             return weighted_vectors[0].item
         embedding_inputs: list[AIT] = [
-            self.embedding.inverse_embed(weighted.item, context)
+            embedding.inverse_embed(weighted.item, context)
             for weighted in weighted_vectors
         ]
         weights = [weighted.weight for weighted in weighted_vectors]
-        embedding_input = np.average(embedding_inputs, weights=weights)
-        vector = self.embedding.embed(embedding_input, context)
+        embedding_input = np.average(  # type: ignore
+            embedding_inputs,
+            weights=weights,
+        )
+        vector = embedding.embed(embedding_input, context)
         return vector
 
     @abstractmethod
     def _aggregate_inputs(self, inputs: Sequence[AIT]) -> AIT: ...
 
-    @override
-    def __eq__(self, other: Any) -> bool:
-        if isinstance(other, type(self)):
-            return self.normalization == other.normalization and isinstance(
-                other.embedding, type(self.embedding)
-            )
-        return False
-
-    def __str__(self) -> str:
-        items = (
-            {k: str(v) for k, v in self.__dict__.items() if k != "embedding"}
-            if self.__dict__
-            else ""
-        )
-        return f"{self.__class__.__name__}({items})"
-
     @staticmethod
     def from_aggregation_mode(
         aggregation_mode: InputAggregationMode,
-        normalization: Normalization,
-        embedding: Embedding,
     ) -> InputAggregation[AIT]:
         agg_class = INPUT_TYPE_BY_AGG_MODE.get(aggregation_mode)
         if agg_class is None:
             raise ValueError(f"Unknown aggregation mode: {aggregation_mode}")
-        return agg_class(normalization, embedding)
+        return agg_class()
 
 
 class InputAvg(InputAggregation):
@@ -231,6 +170,12 @@ class InputMax(InputAggregation):
     @override
     def _aggregate_inputs(self, inputs: Sequence[float]) -> float:
         return max(inputs)
+
+
+class InputAggregationMode(Enum):
+    INPUT_MAXIMUM = "input_maximum"
+    INPUT_MINIMUM = "input_minimum"
+    INPUT_AVERAGE = "input_average"
 
 
 INPUT_TYPE_BY_AGG_MODE: Mapping[InputAggregationMode, type[InputAggregation]] = {

@@ -50,8 +50,8 @@ class NLQPydanticModelBuilder:
         similar_and_space_weight_param_names = (
             self._calculate_similar_and_space_weight_param_names()
         )
-        categories_by_category_param: dict[str, list[str]] = {
-            param_info.name: param_info.space.categorical_similarity_param.categories
+        categories_by_category_param: dict[str, Sequence[str]] = {
+            param_info.name: param_info.space.embedding_config.categories
             for param_info in self.param_infos
             if isinstance(param_info.space, CategoricalSimilaritySpace)
             and not param_info.is_weight

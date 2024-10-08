@@ -12,17 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from dataclasses import dataclass
+
 from typing_extensions import override
 
-from superlinked.framework.common.dag.embedding_node import VectorEmbeddingNode
-from superlinked.framework.common.embedding.sentence_transformer_embedding import (
-    SentenceTransformerEmbedding,
-    TextSimilarityEmbeddingConfig,
-)
+from superlinked.framework.common.space.config.embedding_config import EmbeddingConfig
 
 
-class TextEmbeddingNode(VectorEmbeddingNode[str, TextSimilarityEmbeddingConfig]):
+@dataclass(frozen=True)
+class TextSimilarityEmbeddingConfig(EmbeddingConfig):
+    model_name: str
+    cache_size: int
+    length_to_use: int
+
+    def __post_init__(self) -> None:
+        if self.cache_size < 0:
+            raise ValueError("cache_size must be non-negative")
+
     @property
     @override
-    def embedding_type(self) -> type[SentenceTransformerEmbedding]:
-        return SentenceTransformerEmbedding
+    def length(self) -> int:
+        return self.length_to_use

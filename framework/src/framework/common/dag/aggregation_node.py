@@ -40,13 +40,13 @@ class AggregationNode(Node[Vector], HasLength):
             persistence_params=PersistenceParams(persist_parent_evaluation_result=True),
             dag_effects=dag_effects,
         )
-        self.__validate_parents()
+        self._validate_parents()
         self.weighted_parents = weighted_parents
         self.aggregation = aggregation
         # All parents are of the same length as it was validated earlier.
         self.__length = cast(HasLength, self.parents[0]).length
 
-    def __validate_parents(self) -> None:
+    def _validate_parents(self) -> None:
         if len(self.parents) == 0:
             raise ParentCountException(
                 f"{self.class_name} must have at least 1 parent."
@@ -66,6 +66,7 @@ class AggregationNode(Node[Vector], HasLength):
             )
 
     @property
+    @override
     def length(self) -> int:
         return self.__length
 

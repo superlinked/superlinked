@@ -19,7 +19,7 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.named_function_node import NamedFunctionNode
-from superlinked.framework.common.dag.node import NDT
+from superlinked.framework.common.dag.node import NodeDataT
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.util.named_function_evaluator import (
@@ -30,7 +30,7 @@ from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.dag.parent_validator import ParentValidationType
 
 
-class OnlineNamedFunctionNode(OnlineNode[NamedFunctionNode[NDT], NDT]):
+class OnlineNamedFunctionNode(OnlineNode[NamedFunctionNode[NodeDataT], NodeDataT]):
     def __init__(
         self,
         node: NamedFunctionNode,
@@ -49,7 +49,7 @@ class OnlineNamedFunctionNode(OnlineNode[NamedFunctionNode[NDT], NDT]):
         self,
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
-    ) -> list[EvaluationResult[NDT]]:
+    ) -> list[EvaluationResult[NodeDataT]]:
         result = EvaluationResult(
             self._get_single_evaluation_result(self._evaluate_single(context))
         )
@@ -58,9 +58,9 @@ class OnlineNamedFunctionNode(OnlineNode[NamedFunctionNode[NDT], NDT]):
     def _evaluate_single(
         self,
         context: ExecutionContext,
-    ) -> NDT:
+    ) -> NodeDataT:
         result = cast(
-            NDT,
+            NodeDataT,
             NamedFunctionEvaluator().evaluate(self.node.named_function, context),
         )
         return result

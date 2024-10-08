@@ -12,42 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Any
 from typing_extensions import override
 
-from superlinked.framework.common.dag.node import Node
+from superlinked.framework.common.dag.embedding_node import VectorEmbeddingNode
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.embedding.custom_embedding import CustomEmbedding
-from superlinked.framework.common.interface.has_aggregation import HasAggregation
-from superlinked.framework.common.interface.has_length import HasLength
-from superlinked.framework.common.space.aggregation import Aggregation
+from superlinked.framework.common.embedding.custom_embedding import (
+    CustomEmbedding,
+    CustomEmbeddingConfig,
+)
 
 
-class CustomVectorEmbeddingNode(Node[Vector], HasLength, HasAggregation):
-    def __init__(
-        self,
-        parent: Node[Vector],
-        length: int,
-        aggregation: Aggregation,
-    ) -> None:
-        super().__init__(Vector, [parent])
-        self.__aggregation = aggregation
-        self.embedding = CustomEmbedding(
-            length=length, normalization=self.__aggregation.normalization
-        )
-
-    @property
-    def length(self) -> int:
-        return self.embedding.length
-
+class CustomVectorEmbeddingNode(VectorEmbeddingNode[Vector, CustomEmbeddingConfig]):
     @property
     @override
-    def aggregation(self) -> Aggregation:
-        return self.__aggregation
-
-    @override
-    def _get_node_id_parameters(self) -> dict[str, Any]:
-        return {
-            "length": self.length,
-            "aggregation": self.__aggregation,
-        }
+    def embedding_type(self) -> type[CustomEmbedding]:
+        return CustomEmbedding

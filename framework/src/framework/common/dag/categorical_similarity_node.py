@@ -12,51 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Any
+
 from typing_extensions import override
 
-from superlinked.framework.common.dag.node import Node
-from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.dag.embedding_node import VectorEmbeddingNode
 from superlinked.framework.common.embedding.categorical_similarity_embedding import (
     CategoricalSimilarityEmbedding,
-    CategoricalSimilarityParams,
+    CategoryT,
 )
-from superlinked.framework.common.interface.has_aggregation import HasAggregation
-from superlinked.framework.common.interface.has_length import HasLength
-from superlinked.framework.common.space.aggregation import (
-    Aggregation,
-    VectorAggregation,
+from superlinked.framework.common.space.config.categorical_similarity_embedding_config import (
+    CategoricalSimilarityEmbeddingConfig,
 )
-from superlinked.framework.common.space.normalization import L2Norm
 
 
-class CategoricalSimilarityNode(Node[Vector], HasLength, HasAggregation):
-    def __init__(
-        self,
-        parent: Node[str],
-        categorical_similarity_param: CategoricalSimilarityParams,
-    ) -> None:
-        super().__init__(Vector, [parent])
-        self.__aggregation = VectorAggregation(L2Norm())
-        self.embedding = CategoricalSimilarityEmbedding(
-            categorical_similarity_param=categorical_similarity_param,
-            normalization=self.__aggregation.normalization,
-        )
-
-    @property
-    def length(self) -> int:
-        return self.embedding.length
-
+class CategoricalSimilarityNode(
+    VectorEmbeddingNode[CategoryT, CategoricalSimilarityEmbeddingConfig]
+):
     @property
     @override
-    def aggregation(self) -> Aggregation:
-        return self.__aggregation
-
-    @override
-    def _get_node_id_parameters(self) -> dict[str, Any]:
-        return {
-            "categories": self.embedding.categories,
-            "negative_filter": self.embedding.negative_filter,
-            "uncategorized_as_category": self.embedding.uncategorized_as_category,
-            "aggregation": self.__aggregation,
-        }
+    def embedding_type(self) -> type[CategoricalSimilarityEmbedding]:
+        return CategoricalSimilarityEmbedding

@@ -12,35 +12,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.embedding import Embedding
-from superlinked.framework.common.interface.has_default_vector import HasDefaultVector
-from superlinked.framework.common.interface.has_length import HasLength
-from superlinked.framework.common.space.normalization import Normalization
+from superlinked.framework.common.space.config.custom_embedding_config import (
+    CustomEmbeddingConfig,
+)
+from superlinked.framework.common.space.normalization import L2Norm, Normalization
 
 
-class CustomEmbedding(Embedding[list[float]], HasLength, HasDefaultVector):
-    def __init__(self, length: int, normalization: Normalization) -> None:
-        super().__init__()
-        self.__length: int = length
-        self._normalization: Normalization = normalization
-
-    @override
-    def embed(
-        self,
-        input_: list[float],
-        context: ExecutionContext,  # pylint: disable=unused-argument
-    ) -> Vector:
-        return self._normalization.normalize(Vector(input_))
+class CustomEmbedding(Embedding[Vector, CustomEmbeddingConfig]):
+    def __init__(self, embedding_config: CustomEmbeddingConfig) -> None:
+        super().__init__(embedding_config)
+        self._normalization = L2Norm()
 
     @property
     @override
-    def default_vector(self) -> Vector:
-        return Vector([0.0] * self.length)
+    def normalization(self) -> Normalization:
+        return self._normalization
 
     @property
+    @override
     def length(self) -> int:
-        return self.__length
+        return self._config.length
+
+    @override
+    def embed(self, input_: Vector, context: ExecutionContext) -> Vector:
+        return self.normalization.normalize(input_)

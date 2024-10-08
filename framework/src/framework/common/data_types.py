@@ -25,7 +25,10 @@ from superlinked.framework.common.exception import (
 )
 
 Json = Mapping[str, Any]
-NPArray = np.ndarray[Any, np.dtype[np.float64]]
+NPArray = np.ndarray[
+    Any,
+    np.dtype[np.float64],  # type: ignore # numpy stub is missing for mypy-pylance
+]
 NP_PRINT_PRECISION = 6
 
 
@@ -180,24 +183,18 @@ class Vector:
     def __mul__(self, other: float | int | Vector) -> Vector:
         if self.is_empty:
             return self
-
-        if isinstance(other, Vector):
-            if self.dimension != other.dimension:
-                raise ValueError(
-                    f"Vector dimensions are not equal. First Vector dimension={self.dimension} "
-                    f"other Vector dimension={other.dimension}"
-                )
-            return self.copy_with_new(self.value * other.value)
         if isinstance(other, int | float):
             return (
                 self.copy_with_new(self.value)
                 if float(other) == 1.0
                 else self.copy_with_new(self.value * float(other))
             )
-        raise NotImplementedError(
-            f"Vector multiplication is only implemented for Vector and int | float types."
-            f"Got {type(other)}"
-        )
+        if self.dimension != other.dimension:
+            raise ValueError(
+                f"Vector dimensions are not equal. First Vector dimension={self.dimension} "
+                f"other Vector dimension={other.dimension}"
+            )
+        return self.copy_with_new(self.value * other.value)
 
     def __truediv__(self, other: Any) -> Vector:
         if (not isinstance(other, (float, int))) or other == 0:
@@ -244,7 +241,7 @@ class Vector:
         return self.copy_with_new()
 
     def __str__(self) -> str:
-        return np.array_str(
+        return np.array_str(  # type: ignore # numpy stub is missing for mypy-pylance
             self.value, precision=NP_PRINT_PRECISION, suppress_small=True
         )
 

@@ -22,7 +22,7 @@ from beartype.typing import Generic, TypeVar
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.exception import ParentCountException
-from superlinked.framework.common.dag.node import NDT, NT
+from superlinked.framework.common.dag.node import NT, NodeDataT
 from superlinked.framework.common.exception import DagEvaluationException
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.schema_object import SchemaObject
@@ -38,7 +38,7 @@ ONT = TypeVar("ONT", bound="OnlineNode")
 logger = structlog.get_logger()
 
 
-class OnlineNode(ABC, Generic[NT, NDT], metaclass=ABCMeta):
+class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
     def __init__(
         self,
         node: NT,
@@ -56,20 +56,22 @@ class OnlineNode(ABC, Generic[NT, NDT], metaclass=ABCMeta):
 
     @property
     def class_name(self) -> str:
-        return self.__class__.__name__
+        return type(self).__name__
 
     @property
     def node_id(self) -> str:
         return self.node.node_id
 
-    def _get_single_evaluation_result(self, value: NDT) -> SingleEvaluationResult[NDT]:
+    def _get_single_evaluation_result(
+        self, value: NodeDataT
+    ) -> SingleEvaluationResult[NodeDataT]:
         return SingleEvaluationResult(self.node_id, value)
 
     def evaluate_next(
         self,
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
-    ) -> list[EvaluationResult[NDT]]:
+    ) -> list[EvaluationResult[NodeDataT]]:
         results = self.evaluate_self(parsed_schemas, context)
         if self.node.persist_evaluation_result and not context.is_query_context:
             for i, result in enumerate(results):
@@ -80,7 +82,7 @@ class OnlineNode(ABC, Generic[NT, NDT], metaclass=ABCMeta):
         self,
         parsed_schema: ParsedSchema,
         context: ExecutionContext,
-    ) -> EvaluationResult[NDT]:
+    ) -> EvaluationResult[NodeDataT]:
         return self.evaluate_next([parsed_schema], context)[0]
 
     @abstractmethod
@@ -88,12 +90,12 @@ class OnlineNode(ABC, Generic[NT, NDT], metaclass=ABCMeta):
         self,
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
-    ) -> list[EvaluationResult[NDT]]:
+    ) -> list[EvaluationResult[NodeDataT]]:
         pass
 
     def persist(
         self,
-        result: EvaluationResult[NDT],
+        result: EvaluationResult[NodeDataT],
         parsed_schema: ParsedSchema,
     ) -> None:
         self.storage_manager.write_node_result(
@@ -117,7 +119,9 @@ class OnlineNode(ABC, Generic[NT, NDT], metaclass=ABCMeta):
             pii_chunk_result=lambda: [str(chunk.value) for chunk in result.chunks],
         )
 
-    def load_stored_result(self, object_id: str, schema: SchemaObject) -> NDT | None:
+    def load_stored_result(
+        self, object_id: str, schema: SchemaObject
+    ) -> NodeDataT | None:
         return self.storage_manager.read_node_result(
             schema,
             object_id,
@@ -128,7 +132,7 @@ class OnlineNode(ABC, Generic[NT, NDT], metaclass=ABCMeta):
     def load_stored_result_or_raise_exception(
         self,
         parsed_schema: ParsedSchema,
-    ) -> NDT:
+    ) -> NodeDataT:
         stored_result = self.load_stored_result(parsed_schema.id_, parsed_schema.schema)
         if stored_result is None:
             raise DagEvaluationException(

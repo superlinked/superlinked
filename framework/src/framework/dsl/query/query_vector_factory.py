@@ -84,11 +84,11 @@ class QueryVectorFactory:
             context_base,
             global_space_weight_map,
         )
-        weight_sum = query_filters._get_weight_abs_sum(global_space_weight_map)
+        weight_abs_sum = query_filters._get_weight_abs_sum(global_space_weight_map)
         # Aggregate them.
         vector: Vector = self._combine_vectors(
             [looks_like_vector, similar_vector],
-            weight_sum,
+            weight_abs_sum,
         )
         if not query_filters.has_multiple_similar_for_same_schema_field_node():
             # Re-weight by space weights.
@@ -247,12 +247,12 @@ class QueryVectorFactory:
         ]
 
     @staticmethod
-    def _combine_vectors(vectors: list[Vector | None], weight_sum: float) -> Vector:
+    def _combine_vectors(vectors: list[Vector | None], weight_abs_sum: float) -> Vector:
         if non_none_vectors := [
             vector for vector in vectors if vector and not vector.is_empty
         ]:
-            aggregation = reduce(lambda a, b: a.aggregate(b), non_none_vectors)
-            return aggregation.normalize(sqrt(weight_sum))
+            combined_vector = reduce(lambda a, b: a.aggregate(b), non_none_vectors)
+            return combined_vector.normalize(sqrt(weight_abs_sum))
         raise QueryException("No implemented OP provided for the query")
 
     @staticmethod

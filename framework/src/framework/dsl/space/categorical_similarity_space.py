@@ -23,7 +23,7 @@ from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.categorical_similarity_embedding import (
-    CategoricalSimilarityParams,
+    CategoricalSimilarityEmbeddingConfig,
 )
 from superlinked.framework.common.interface.has_space_field_set import HasSpaceFieldSet
 from superlinked.framework.common.schema.schema_object import (
@@ -103,9 +103,12 @@ class CategoricalSimilaritySpace(Space, HasSpaceFieldSet):
             indicating a configuration or implementation error.
         """
         # TODO this type ignore is not needed but linting is flaky in CI
-        super().__init__(category_input, String | StringList)  # type: ignore[misc]
-        self.categorical_similarity_param: CategoricalSimilarityParams = (
-            CategoricalSimilarityParams(
+        super().__init__(
+            category_input,
+            String | StringList,  # type: ignore[misc] # interface supports only one type
+        )
+        self.embedding_config: CategoricalSimilarityEmbeddingConfig = (
+            CategoricalSimilarityEmbeddingConfig(
                 categories=categories,
                 uncategorized_as_category=uncategorized_as_category,
                 negative_filter=negative_filter,
@@ -115,7 +118,7 @@ class CategoricalSimilaritySpace(Space, HasSpaceFieldSet):
         unchecked_category_node_map = {
             single_category: CategoricalSimilarityNode(
                 parent=SchemaFieldNode(single_category),
-                categorical_similarity_param=self.categorical_similarity_param,
+                embedding_config=self.embedding_config,
             )
             for single_category in self._field_set
         }
@@ -129,10 +132,6 @@ class CategoricalSimilaritySpace(Space, HasSpaceFieldSet):
         return self.__schema_node_map
 
     @property
-    def category(self) -> SpaceFieldSet:
-        return self.__category
-
-    @property
     @override
     def space_field_set(self) -> SpaceFieldSet:
         return self.category
@@ -141,15 +140,13 @@ class CategoricalSimilaritySpace(Space, HasSpaceFieldSet):
     @override
     def annotation(self) -> str:
         not_text_for_uncategorized = (
-            ""
-            if self.categorical_similarity_param.uncategorized_as_category
-            else " not"
+            "" if self.embedding_config.uncategorized_as_category else " not"
         )
         return f"""The space creates a one-hot encoding where its value can be one or more
-        of {str(self.categorical_similarity_param.categories)}.
+        of {str(self.embedding_config.categories)}.
         Other values do{not_text_for_uncategorized} have a separate other category,
         so these are{not_text_for_uncategorized} similar to each other.
-        Not matching categories are creating {self.categorical_similarity_param.negative_filter}
+        Not matching categories are creating {self.embedding_config.negative_filter}
         similarity contribution.
         There has to be a .similar clause in the Query corresponding to this space.
         Negative weights mean similarity to anything but that category,
@@ -165,4 +162,8 @@ class CategoricalSimilaritySpace(Space, HasSpaceFieldSet):
 
     @property
     def uncategorized_as_category(self) -> bool:
-        return self.categorical_similarity_param.uncategorized_as_category
+        return self.embedding_config.uncategorized_as_category
+
+    @property
+    def category(self) -> SpaceFieldSet:
+        return self.__category

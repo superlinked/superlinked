@@ -22,13 +22,19 @@ from typing_extensions import override
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.event_aggregation_node import EventAggregationNode
-from superlinked.framework.common.dag.exception import ParentCountException
+from superlinked.framework.common.dag.exception import (
+    InvalidDagException,
+    ParentCountException,
+)
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.embedding.embedding import Embedding
 from superlinked.framework.common.exception import (
     DagEvaluationException,
     ValidationException,
 )
+from superlinked.framework.common.interface.has_embedding import HasEmbedding
 from superlinked.framework.common.interface.has_length import HasLength
+from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.parser.parsed_schema import (
     EventParsedSchema,
     ParsedSchema,
@@ -39,6 +45,7 @@ from superlinked.framework.common.storage_manager.storage_manager import Storage
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.event_aggregator import (
     EventAggregator,
+    EventAggregatorParams,
     EventMetadata,
 )
 from superlinked.framework.online.dag.online_comparison_filter_node import (
@@ -47,7 +54,9 @@ from superlinked.framework.online.dag.online_comparison_filter_node import (
 from superlinked.framework.online.dag.online_node import OnlineNode
 
 
-class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLength):
+class OnlineEventAggregationNode(
+    OnlineNode[EventAggregationNode, Vector], HasLength, HasEmbedding
+):
     EFFECT_COUNT_KEY = "effect_count"
     EFFECT_OLDEST_TS_KEY = "effect_oldest_age"
     EFFECT_AVG_TS_KEY = "average_age"
@@ -62,6 +71,9 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         self.__init_named_parents()
         # in case 2 effects are identical except for the multiplier
         self._metadata_key = str(self.node.effect_modifier)
+        self._embedding = (
+            self.node.input_to_aggregate.init_embedding()
+        )  # TODO FAI-2357 we should avoid the re-initialization of embeddings
 
     def __init_named_parents(self) -> None:
         inputs_to_aggregate = [
@@ -76,6 +88,13 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         self._input_to_aggregate = (
             inputs_to_aggregate[0] if len(inputs_to_aggregate) > 0 else None
         )
+        if self._input_to_aggregate is not None and not isinstance(
+            self._input_to_aggregate, HasEmbedding
+        ):
+            parent_class_name = type(self._input_to_aggregate).__name__
+            raise InvalidDagException(
+                f"{self.class_name} must have an embedding node as a parent, got {parent_class_name}"
+            )
         self.weighted_filter_parents = {
             parent: self.__get_parent_weight(parent)
             for parent in self.parents
@@ -93,8 +112,14 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         )
 
     @property
+    @override
     def length(self) -> int:
         return self.node.length
+
+    @property
+    @override
+    def embedding(self) -> Embedding:
+        return self._embedding
 
     @override
     def evaluate_self(
@@ -122,11 +147,6 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         ):
             return EvaluationResult(self._get_single_evaluation_result(stored_result))
 
-        if input_to_aggregate is None:
-            raise DagEvaluationException(
-                f"{self.class_name} must have an input to aggregate."
-            )
-
         affecting_vector = self._calculate_affecting_vector(
             context, parsed_schema.event_parsed_schema, input_to_aggregate
         )
@@ -139,15 +159,16 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         event_metadata: EventMetadata = self._calculate_and_store_metadata(
             parsed_schema, len(weights)
         )
-        event_vector = EventAggregator(
-            context, input_to_aggregate.node.aggregation
-        ).calculate_event_vector(
+        event_aggregator_params = EventAggregatorParams(
+            context,
+            input_to_aggregate.node.aggregation,
             stored_result,
-            affecting_vector,
-            avg_affecting_weight,
+            Weighted(affecting_vector, avg_affecting_weight),
             event_metadata,
             self.node.effect_modifier,
+            self.embedding,
         )
+        event_vector = EventAggregator(event_aggregator_params).calculate_event_vector()
         return EvaluationResult(self._get_single_evaluation_result(event_vector))
 
     def _calculate_affecting_vector(

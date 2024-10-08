@@ -20,6 +20,10 @@ from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.dag.text_embedding_node import TextEmbeddingNode
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.embedding.sentence_transformer_embedding import (
+    SentenceTransformerEmbedding,
+    TextSimilarityEmbeddingConfig,
+)
 from superlinked.framework.common.interface.has_space_field_set import HasSpaceFieldSet
 from superlinked.framework.common.schema.schema_object import SchemaObject, String
 from superlinked.framework.common.util.type_validator import TypeValidator
@@ -54,33 +58,35 @@ class TextSimilaritySpace(Space, HasSpaceFieldSet):
             cache_size (int): The number of embeddings to be stored in an inmemory LRU cache.
             Set it to 0, to disable caching. Defaults to 10000.
         """
+        length = SentenceTransformerEmbedding.calculate_length(model)
+        embedding_config = TextSimilarityEmbeddingConfig(model, cache_size, length)
         text_text_node_map = {
-            self.__get_root(unchecked_text): self.__generate_embedding_node(
-                unchecked_text, model, cache_size
+            self._get_root(unchecked_text): self._generate_embedding_node(
+                unchecked_text, embedding_config
             )
             for unchecked_text in (text if isinstance(text, list) else [text])
         }
         super().__init__(list(text_text_node_map.keys()), String)
         self.text = SpaceFieldSet(self, set(text_text_node_map.keys()))
-        self.__schema_node_map: dict[SchemaObject, TextEmbeddingNode] = {
+        self._schema_node_map: dict[SchemaObject, TextEmbeddingNode] = {
             schema_field.schema_obj: node
             for schema_field, node in text_text_node_map.items()
         }
         self._model = model
 
-    def __get_root(self, text: String | Node) -> String:
+    def _get_root(self, text: String | Node) -> String:
         if isinstance(text, String):
             return text
         if isinstance(text, SchemaFieldNode):
             return cast(String, text.schema_field)
-        return self.__get_root(text.parents[0])
+        return self._get_root(text.parents[0])
 
-    def __generate_embedding_node(
-        self, text: TextInput, model: str, cache_size: int
+    def _generate_embedding_node(
+        self, text: TextInput, embedding_config: TextSimilarityEmbeddingConfig
     ) -> TextEmbeddingNode:
         if isinstance(text, ChunkingNode):
-            return TextEmbeddingNode(text, model, cache_size)
-        return TextEmbeddingNode(SchemaFieldNode(text), model, cache_size)
+            return TextEmbeddingNode(text, embedding_config)
+        return TextEmbeddingNode(SchemaFieldNode(text), embedding_config)
 
     @property
     @override
@@ -89,7 +95,7 @@ class TextSimilaritySpace(Space, HasSpaceFieldSet):
 
     @property
     def _node_by_schema(self) -> Mapping[SchemaObject, Node[Vector]]:
-        return self.__schema_node_map
+        return self._schema_node_map
 
     @property
     @override

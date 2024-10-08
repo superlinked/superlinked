@@ -23,6 +23,10 @@ from superlinked.framework.common.dag.categorical_similarity_node import (
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.embedding.categorical_similarity_embedding import (
+    CategoricalSimilarityEmbedding,
+)
+from superlinked.framework.common.interface.has_embedding import HasEmbedding
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
@@ -32,7 +36,7 @@ from superlinked.framework.online.dag.parent_validator import ParentValidationTy
 
 
 class OnlineCategoricalSimilarityNode(
-    OnlineNode[CategoricalSimilarityNode, Vector], HasLength
+    OnlineNode[CategoricalSimilarityNode, Vector], HasLength, HasEmbedding
 ):
     def __init__(
         self,
@@ -46,10 +50,19 @@ class OnlineCategoricalSimilarityNode(
             storage_manager,
             ParentValidationType.LESS_THAN_TWO_PARENTS,
         )
+        self._embedding = cast(
+            CategoricalSimilarityEmbedding, self.node.init_embedding()
+        )
 
     @property
+    @override
     def length(self) -> int:
         return self.node.length
+
+    @property
+    @override
+    def embedding(self) -> CategoricalSimilarityEmbedding:
+        return self._embedding
 
     @override
     def evaluate_self(
@@ -65,7 +78,7 @@ class OnlineCategoricalSimilarityNode(
         context: ExecutionContext,
     ) -> EvaluationResult[Vector]:
         if context.should_load_default_node_input:
-            result = self.node.embedding.default_vector
+            result = self.embedding.default_vector
         elif len(self.parents) == 0:
             result = self.load_stored_result_or_raise_exception(parsed_schema)
         else:
@@ -73,5 +86,5 @@ class OnlineCategoricalSimilarityNode(
                 OnlineNode[Node[list[str]], list[str]],
                 self.parents[0],
             ).evaluate_next_single(parsed_schema, context)
-            result = self.node.embedding.embed(input_.main.value, context)
+            result = self.embedding.embed(input_.main.value, context)
         return EvaluationResult(self._get_single_evaluation_result(result))

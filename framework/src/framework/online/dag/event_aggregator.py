@@ -19,6 +19,7 @@ from datetime import timedelta
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.embedding.embedding import Embedding
 from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.space.aggregation import Aggregation
 from superlinked.framework.dsl.index.effect import EffectModifier
@@ -33,49 +34,47 @@ class EventMetadata:
     effect_oldest_ts: int
 
 
+@dataclass
+class EventAggregatorParams:
+    context: ExecutionContext
+    aggregation: Aggregation
+    stored_result: Vector
+    affecting_vector: Weighted[Vector]
+    event_metadata: EventMetadata
+    effect_modifier: EffectModifier
+    embedding: Embedding
+
+
 class EventAggregator:
 
-    def __init__(self, context: ExecutionContext, aggregation: Aggregation) -> None:
-        self._context = context
-        self._aggregation = aggregation
+    def __init__(self, params: EventAggregatorParams) -> None:
+        self._params = params
 
-    def calculate_event_vector(
-        self,
-        stored_result: Vector,
-        affecting_vector: Vector,
-        affecting_weight: float,
-        event_metadata: EventMetadata,
-        effect_modifier: EffectModifier,
-    ) -> Vector:
+    def calculate_event_vector(self) -> Vector:
         weighted_affecting_vector = Weighted(
-            affecting_vector, affecting_weight * effect_modifier.temperature
+            self._params.affecting_vector.item,
+            self._params.affecting_vector.weight
+            * self._params.effect_modifier.temperature,
         )
         weighted_stored_vector = Weighted(
-            stored_result,
-            self._calculate_stored_weight(
-                self._context.now(), event_metadata, effect_modifier
-            ),
+            self._params.stored_result, self._calculate_stored_weight()
         )
-        return self._aggregation.aggregate_weighted(
-            [weighted_affecting_vector, weighted_stored_vector], self._context
+        return self._params.aggregation.aggregate_weighted(
+            [weighted_affecting_vector, weighted_stored_vector],
+            self._params.embedding,
+            self._params.context,
         )
 
-    @classmethod
-    def _calculate_stored_weight(
-        cls,
-        now: int,
-        event_metadata: EventMetadata,
-        effect_modifier: EffectModifier,
-    ) -> float:
+    def _calculate_stored_weight(self) -> float:
         return (
-            cls._calculate_time_modifier(
-                now,
-                event_metadata.effect_oldest_ts,
-                event_metadata.effect_avg_ts,
-                effect_modifier.max_age_delta,
+            EventAggregator._calculate_time_modifier(
+                self._params.context.now(),
+                self._params.event_metadata.effect_oldest_ts,
+                self._params.event_metadata.effect_avg_ts,
+                self._params.effect_modifier.max_age_delta,
             )
-            * event_metadata.effect_count
-            * (1 - effect_modifier.temperature)
+            * self._params.event_metadata.effect_count
+            * (1 - self._params.effect_modifier.temperature)
         )
 
     @classmethod

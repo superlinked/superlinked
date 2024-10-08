@@ -27,13 +27,12 @@ from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.storage.persistence_type import PersistenceType
 from superlinked.framework.common.util.string_util import StringUtil
 
-# NodeDataType
-NDT = TypeVar("NDT", bound=PythonTypes)
+NodeDataT = TypeVar("NodeDataT", bound=PythonTypes)
 # NodeType
 NT = TypeVar("NT", bound="Node")
 
 
-class Node(Generic[NDT], ABC):
+class Node(Generic[NodeDataT], ABC):
     _instances: dict[str, Node] = {}
 
     def __new__(cls, *args: Any, **kwargs: Any) -> Self:
@@ -47,7 +46,7 @@ class Node(Generic[NDT], ABC):
 
     def __init__(
         self,
-        node_data_type: type[NDT],
+        node_data_type: type[NodeDataT],
         parents: Sequence[Node],
         schemas: set[SchemaObject] | None = None,
         dag_effects: set[DagEffect] | None = None,
@@ -78,7 +77,7 @@ class Node(Generic[NDT], ABC):
         )
 
     @property
-    def node_data_type(self) -> type[NDT]:
+    def node_data_type(self) -> type[NodeDataT]:
         return self._node_data_type
 
     @property

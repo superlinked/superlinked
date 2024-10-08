@@ -21,6 +21,7 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.comparison_filter_node import ComparisonFilterNode
 from superlinked.framework.common.dag.dag_effect import DagEffect
+from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.persistence_params import PersistenceParams
 from superlinked.framework.common.dag.schema_object_reference import (
@@ -39,7 +40,7 @@ class EventAggregationNode(
 ):  # pylint: disable=too-many-instance-attributes
     @dataclass
     class InitParams:
-        input_to_aggregate: Node[Vector]
+        input_to_aggregate: EmbeddingNode
         event_schema: EventSchemaObject
         affected_schema: SchemaObjectReference
         affecting_schema: SchemaObjectReference

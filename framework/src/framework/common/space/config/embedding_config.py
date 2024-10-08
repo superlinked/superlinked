@@ -12,17 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing_extensions import override
+from dataclasses import dataclass
 
-from superlinked.framework.common.dag.embedding_node import VectorEmbeddingNode
-from superlinked.framework.common.embedding.sentence_transformer_embedding import (
-    SentenceTransformerEmbedding,
-    TextSimilarityEmbeddingConfig,
-)
+from superlinked.framework.common.interface.has_length import HasLength
 
 
-class TextEmbeddingNode(VectorEmbeddingNode[str, TextSimilarityEmbeddingConfig]):
-    @property
-    @override
-    def embedding_type(self) -> type[SentenceTransformerEmbedding]:
-        return SentenceTransformerEmbedding
+@dataclass(frozen=True)
+class EmbeddingConfig(HasLength):
+    pass

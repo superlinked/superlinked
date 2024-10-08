@@ -18,7 +18,7 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.constant_node import ConstantNode
 from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.dag.node import NDT
+from superlinked.framework.common.dag.node import NodeDataT
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
@@ -26,7 +26,7 @@ from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.dag.parent_validator import ParentValidationType
 
 
-class OnlineConstantNode(OnlineNode[ConstantNode[NDT], NDT]):
+class OnlineConstantNode(OnlineNode[ConstantNode[NodeDataT], NodeDataT]):
     def __init__(
         self,
         node: ConstantNode,
@@ -45,7 +45,7 @@ class OnlineConstantNode(OnlineNode[ConstantNode[NDT], NDT]):
         self,
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
-    ) -> list[EvaluationResult[NDT]]:
+    ) -> list[EvaluationResult[NodeDataT]]:
         result = EvaluationResult(
             self._get_single_evaluation_result(self._evaluate_single())
         )
@@ -53,5 +53,5 @@ class OnlineConstantNode(OnlineNode[ConstantNode[NDT], NDT]):
 
     def _evaluate_single(
         self,
-    ) -> NDT:
+    ) -> NodeDataT:
         return self.node.value

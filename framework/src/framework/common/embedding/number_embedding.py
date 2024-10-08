@@ -13,87 +13,50 @@
 # limitations under the License.
 
 import math
-from dataclasses import dataclass
-from enum import Enum
 
 import numpy as np
-from beartype.typing import Sequence
-from typing_extensions import override
+from beartype.typing import cast
+from typing_extensions import TypeVar, override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.embedding.embedding import Embedding
-from superlinked.framework.common.interface.has_default_vector import HasDefaultVector
-from superlinked.framework.common.interface.has_length import HasLength
-from superlinked.framework.common.space.normalization import Normalization
+from superlinked.framework.common.space.config.number_embedding_config import (
+    LogarithmicScale,
+    Mode,
+    NumberEmbeddingConfig,
+)
+from superlinked.framework.common.space.normalization import NoNorm, Normalization
+
+NumberT = TypeVar("NumberT", int, float)
 
 
-class Mode(Enum):
-    MAXIMUM = "maximum"
-    MINIMUM = "minimum"
-    SIMILAR = "similar"
+class NumberEmbedding(Embedding[NumberT, NumberEmbeddingConfig]):
+    def __init__(self, embedding_config: NumberEmbeddingConfig) -> None:
+        super().__init__(embedding_config)
+        self._default_vector = self._config.default_vector
+        self._circle_size_in_rad = math.pi / 2
+        self._value_when_out_of_bounds = [0.0, 0.0, self._config.negative_filter]
 
-
-@dataclass(frozen=True)
-class Scale:
-    pass
-
-
-@dataclass(frozen=True)
-class LinearScale(Scale):
-    pass
-
-
-@dataclass(frozen=True)
-class LogarithmicScale(Scale):
-    base: float = 10
-
-    def __post_init__(self) -> None:
-        if self.base <= 1:
-            raise ValueError("Logarithmic function base must larger than 1.")
-
-
-class NumberEmbedding(
-    Embedding[float], HasLength, HasDefaultVector
-):  # pylint: disable=too-many-instance-attributes,too-many-arguments
-    def __init__(
-        self,
-        min_value: float,
-        max_value: float,
-        mode: Mode,
-        scale: Scale,
-        negative_filter: float,
-        normalization: Normalization,
-    ) -> None:
-        if isinstance(scale, LogarithmicScale) and min_value < 0:
-            raise ValueError(
-                "Min value must be 0 or higher when using logarithmic scale."
-            )
-        if isinstance(scale, LogarithmicScale) and max_value < 0:
-            raise ValueError("Max value cannot be 0 when using logarithmic scale.")
-        self.__circle_size_in_rad = math.pi / 2
-        self.__length = 3
-        self._min_value = min_value
-        self._max_value = max_value
-        self._mode = mode
-        self._scale = scale
-        self._negative_filter = negative_filter
-        self._normalization = normalization
-        self.__default_vector = {
-            Mode.SIMILAR: [0.0, 0.0, 0.0],
-            Mode.MINIMUM: [0.0, 1.0, 1.0],
-            Mode.MAXIMUM: [1.0, 0.0, 1.0],
-        }[self._mode]
+    @property
+    @override
+    def normalization(self) -> Normalization:
+        return NoNorm()
 
     @property
     @override
     def default_vector(self) -> Vector:
-        return Vector(self.__default_vector)
+        return self._default_vector
+
+    @property
+    @override
+    def length(self) -> int:
+        return self._config.length
 
     def should_return_default(self, context: ExecutionContext) -> bool:
         return context.should_load_default_node_input or (
             context.is_query_context
-            and self._mode
+            and self._config.mode
             in {
                 Mode.MINIMUM,
                 Mode.MAXIMUM,
@@ -101,21 +64,17 @@ class NumberEmbedding(
         )
 
     @override
-    def embed(
-        self,
-        input_: float,
-        context: ExecutionContext,  # pylint: disable=unused-argument
-    ) -> Vector:
+    def embed(self, input_: float, context: ExecutionContext) -> Vector:
         if (
-            input_ < self._min_value
-            and self._mode
+            input_ < self._config.min_value
+            and self._config.mode
             in {
                 Mode.MAXIMUM,
                 Mode.SIMILAR,
             }
         ) or (
-            input_ > self._max_value
-            and self._mode
+            input_ > self._config.max_value
+            and self._config.mode
             in {
                 Mode.MINIMUM,
                 Mode.SIMILAR,
@@ -123,71 +82,61 @@ class NumberEmbedding(
         ):
             return Vector(list(self._value_when_out_of_bounds), {2})
         transformed_input = self._transform_to_log_if_logarithmic(input_)
-        transformed_min = self._transform_to_log_if_logarithmic(self._min_value)
-        transformed_max = self._transform_to_log_if_logarithmic(self._max_value)
+        transformed_min = self._transform_to_log_if_logarithmic(self._config.min_value)
+        transformed_max = self._transform_to_log_if_logarithmic(self._config.max_value)
         constrained_input: float = min(
             max(transformed_min, transformed_input), transformed_max
         )
         normalized_input = (constrained_input - transformed_min) / (
             transformed_max - transformed_min
         )
-        angle_in_radians = normalized_input * self.__circle_size_in_rad
+        angle_in_radians = normalized_input * self._circle_size_in_rad
         vector_input = np.array(
             [math.sin(angle_in_radians), math.cos(angle_in_radians)]
         )
         vector = Vector(np.append(vector_input, [0.0]), {2}).normalize(
-            self._normalization.norm(vector_input)
+            self.normalization.norm(vector_input)
         )
         return vector
 
     @override
-    def inverse_embed(
-        self,
-        vector: Vector,
-        context: ExecutionContext,  # pylint: disable=unused-argument
-    ) -> float:
+    def inverse_embed(self, vector: Vector, context: ExecutionContext) -> NumberT:
         """
         This function might seem complex,
         but it essentially performs the inverse operation of the embed function.
         """
-        denormalized = self._normalization.denormalize(vector)
+        denormalized = self.normalization.denormalize(vector)
         if list(vector.value) == self._value_when_out_of_bounds:
-            out_of_bounds_bias = (self._max_value - self._min_value) / 1000
-            if self._mode == Mode.MAXIMUM:
-                return self._min_value - out_of_bounds_bias
+            out_of_bounds_bias: float = (
+                self._config.max_value - self._config.min_value
+            ) / 1000.0
+            if self._config.mode == Mode.MAXIMUM:
+                return cast(NumberT, self._config.min_value - out_of_bounds_bias)
             # INFO: for similar it doesn't matter, which direction is it out of bounds
-            return self._max_value + out_of_bounds_bias
+            return cast(NumberT, self._config.max_value + out_of_bounds_bias)
         angle_in_radians = math.atan2(denormalized.value[0], denormalized.value[1])
-        transformed_number = angle_in_radians / self.__circle_size_in_rad
-        transformed_max = self._transform_to_log_if_logarithmic(self._max_value)
-        transformed_min = self._transform_to_log_if_logarithmic(self._min_value)
+        transformed_number = angle_in_radians / self._circle_size_in_rad
+        transformed_max = self._transform_to_log_if_logarithmic(self._config.max_value)
+        transformed_min = self._transform_to_log_if_logarithmic(self._config.min_value)
         transformed_input_ = (
             transformed_number * (transformed_max - transformed_min) + transformed_min
         )
         input_ = self._transform_from_log_if_logarithmic(transformed_input_)
-        return input_
+        return cast(NumberT, input_)
 
     def _transform_to_log_if_logarithmic(self, value: float) -> float:
         return (
-            math.log(1 + value, self._scale.base)
-            if isinstance(self._scale, LogarithmicScale)
+            math.log(1 + value, self._config.scale.base)
+            if isinstance(self._config.scale, LogarithmicScale)
             else value
         )
 
     def _transform_from_log_if_logarithmic(self, value: float) -> float:
         return round(
             (
-                self._scale.base**value - 1
-                if isinstance(self._scale, LogarithmicScale)
+                self._config.scale.base**value - 1
+                if isinstance(self._config.scale, LogarithmicScale)
                 else value
             ),
             10,
         )
-
-    @property
-    def _value_when_out_of_bounds(self) -> Sequence[float]:
-        return [0.0, 0.0, self._negative_filter]
-
-    @property
-    def length(self) -> int:
-        return self.__length

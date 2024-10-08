@@ -29,10 +29,7 @@ from superlinked.framework.common.dag.context import (
     ExecutionEnvironment,
 )
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.embedding.recency_embedding import (
-    RecencyEmbedding,
-    calculate_recency_normalization,
-)
+from superlinked.framework.common.embedding.recency_embedding import RecencyEmbedding
 from superlinked.framework.dsl.space.recency_space import RecencySpace
 
 
@@ -64,42 +61,11 @@ class RecencyPlotter:
         self.context: ExecutionContext = ExecutionContext.from_context_data(
             context_data, environment=ExecutionEnvironment.IN_MEMORY
         )
-        normalization = calculate_recency_normalization(recency_space.period_time_list)
-        self._embedding = RecencyEmbedding(
-            period_time_list=recency_space.period_time_list,
-            normalization=normalization,
-            time_period_hour_offset=recency_space.time_period_hour_offset,
-            negative_filter=recency_space.negative_filter,
-        )
+        self._embedding = RecencyEmbedding(recency_space.embedding_config)
         self._negative_filter_time_period_showcase_multiplier = (
             negative_filter_time_period_showcase_multiplier
         )
         self.vector_similarity_calculator = vector_similarity_calculator
-
-    def __generate_recency_scores(
-        self, oldest_ts_to_plot: int, now_ts: int, num_points: int
-    ) -> pd.DataFrame:
-        plot_timestamps: np.ndarray = np.linspace(
-            start=oldest_ts_to_plot, stop=now_ts, num=num_points
-        )
-        recency_vectors: list[Vector] = [
-            self._embedding.calc_recency_vector(plot_ts, self.context)
-            for plot_ts in plot_timestamps
-        ]
-        now_vector: Vector = self._embedding.calc_recency_vector(
-            now_ts,
-            ExecutionContext.from_context_data(
-                self.context.data, environment=ExecutionEnvironment.QUERY
-            ),
-        )
-        recency_scores: list[float] = [
-            self.vector_similarity_calculator.calculate_similarity(now_vector, vec)
-            for vec in recency_vectors
-        ]
-        date_labels: list[datetime.datetime] = [
-            datetime.datetime.fromtimestamp(ts) for ts in plot_timestamps
-        ]
-        return pd.DataFrame({"date": date_labels, "score": recency_scores})
 
     def plot_recency_curve(
         self,
@@ -132,7 +98,7 @@ class RecencyPlotter:
             )
         )
 
-        df: pd.DataFrame = self.__generate_recency_scores(
+        df: pd.DataFrame = self._generate_recency_scores(
             oldest_ts_to_plot, now_ts, num_points
         )
 
@@ -148,3 +114,27 @@ class RecencyPlotter:
                 width=width, height=height, title="Recency scores (unit weight)"
             )
         )
+
+    def _generate_recency_scores(
+        self, oldest_ts_to_plot: int, now_ts: int, num_points: int
+    ) -> pd.DataFrame:
+        plot_timestamps: np.ndarray = np.linspace(
+            start=oldest_ts_to_plot, stop=now_ts, num=num_points
+        )
+        recency_vectors: list[Vector] = [
+            self._embedding.embed(plot_ts, self.context) for plot_ts in plot_timestamps
+        ]
+        now_vector: Vector = self._embedding.embed(
+            now_ts,
+            ExecutionContext.from_context_data(
+                self.context.data, environment=ExecutionEnvironment.QUERY
+            ),
+        )
+        recency_scores: list[float] = [
+            self.vector_similarity_calculator.calculate_similarity(now_vector, vec)
+            for vec in recency_vectors
+        ]
+        date_labels: list[datetime.datetime] = [
+            datetime.datetime.fromtimestamp(ts) for ts in plot_timestamps
+        ]
+        return pd.DataFrame({"date": date_labels, "score": recency_scores})

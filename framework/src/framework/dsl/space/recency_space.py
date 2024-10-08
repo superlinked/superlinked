@@ -24,6 +24,9 @@ from superlinked.framework.common.dag.period_time import PeriodTime
 from superlinked.framework.common.dag.recency_node import RecencyNode
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.embedding.recency_embedding import (
+    RecencyEmbeddingConfig,
+)
 from superlinked.framework.common.interface.has_space_field_set import HasSpaceFieldSet
 from superlinked.framework.common.schema.schema_object import SchemaObject, Timestamp
 from superlinked.framework.common.space.aggregation import InputAggregationMode
@@ -87,14 +90,14 @@ class RecencySpace(
                 Day will be the next day of context.now(). Defaults to timedelta(hours=0).
             period_time_list (list[PeriodTime] | None): A list of period time parameters.
                 Weights default to 1. Period time to 14 days.
-            aggregation_mode (InputAggregationMode): The  aggregation mode of the number embedding.
+            aggregation_mode (InputAggregationMode): The  aggregation mode of the recency embedding.
                 Possible values are: maximum, minimum and average. Defaults to InputAggregationMode.INPUT_AVERAGE.
             negative_filter (float): The recency score of items that are older than the oldest period time.
                 Defaults to 0.0.
         """
         super().__init__(timestamp, Timestamp)
         self.timestamp = SpaceFieldSet(self, self._field_set)
-        self.period_time_list: list[PeriodTime] = (
+        recency_periods: list[PeriodTime] = (
             period_time_list
             if isinstance(period_time_list, list)
             else (
@@ -103,26 +106,30 @@ class RecencySpace(
                 else [DEFAULT_PERIOD_TIME]
             )
         )
-        self.negative_filter = negative_filter
-        self.time_period_hour_offset = time_period_hour_offset
-        self.__aggregation_mode: InputAggregationMode = aggregation_mode
-        self.__run_parameter_checks()
-        self.__schema_node_map: dict[SchemaObject, RecencyNode] = {
+        self._embedding_config = RecencyEmbeddingConfig(
+            recency_periods,
+            time_period_hour_offset,
+            negative_filter,
+        )
+        self._aggregation_mode: InputAggregationMode = aggregation_mode
+        self._schema_node_map: dict[SchemaObject, RecencyNode] = {
             field.schema_obj: RecencyNode(
                 SchemaFieldNode(field),
-                self.time_period_hour_offset,
-                self.period_time_list,
-                self.__aggregation_mode,
-                self.negative_filter,
+                self._embedding_config,
+                self._aggregation_mode,
             )
             for field in self.timestamp.fields
         }
         self._max_period_time_days = (
             max(
-                self.period_time_list, key=lambda p: p.period_time
+                self._embedding_config.period_time_list, key=lambda p: p.period_time
             ).period_time.total_seconds()
             / 86400
         )
+
+    @property
+    def embedding_config(self) -> RecencyEmbeddingConfig:
+        return self._embedding_config
 
     @property
     @override
@@ -131,7 +138,7 @@ class RecencySpace(
 
     @property
     def _node_by_schema(self) -> Mapping[SchemaObject, Node[Vector]]:
-        return self.__schema_node_map
+        return self._schema_node_map
 
     @property
     @override
@@ -154,48 +161,13 @@ class RecencySpace(
     def _allow_empty_fields(self) -> bool:
         return True
 
-    def __run_parameter_checks(self) -> None:
-        if self.negative_filter > 0:
-            sum_weights: float = sum(param.weight for param in self.period_time_list)
-
-            max_period_time: timedelta = max(
-                param.period_time for param in self.period_time_list
-            )
-            max_period_time_str = (
-                f"{max_period_time.days} days"
-                if max_period_time.days
-                else f"{round(max_period_time.total_seconds() / 3600, 2)} hours"
-            )
-            logger.warning(
-                "Positive negative_filter value was supplied. This will lead to "
-                "old items (older than max_period_time) having recency scores of "
-                "negative_filter.\nMeanwhile the largest recency score possible for the most "
-                "recent items is around the sum of weights, and the score at max_period_time will be 0. "
-                "\nUse with caution.",
-                negative_filter=self.negative_filter,
-                max_period_time=max_period_time_str,
-                sum_of_weights=sum_weights,
-            )
-
-        if any(param.weight < 0 for param in self.period_time_list):
-            logger.warning(
-                "Negative weight was supplied for some period_time_param. This can lead to very strange "
-                "recency score curves. Use with caution. \n"
-                "To better understand your recency scores use RecencyPlotter."
-                "It can be imported from `superlinked.evaluation.charts.recency_plotter`. \n"
-                "Check an example notebook at: https://github.com/superlinked/superlinked/blob/main"
-                "/notebook/combining_recency_and_relevance.ipynb. "
-            )
-
     @override
     def _handle_node_not_present(self, schema: SchemaObject) -> RecencyNode:
         named_function_node = NamedFunctionNode(NamedFunction.NOW, schema, int)
         recency_node = RecencyNode(
             named_function_node,
-            self.time_period_hour_offset,
-            self.period_time_list,
-            self.__aggregation_mode,
-            self.negative_filter,
+            self._embedding_config,
+            self._aggregation_mode,
         )
-        self.__schema_node_map[schema] = recency_node
+        self._schema_node_map[schema] = recency_node
         return recency_node

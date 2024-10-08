@@ -20,6 +20,10 @@ from typing_extensions import override
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.text_embedding_node import TextEmbeddingNode
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.embedding.sentence_transformer_embedding import (
+    SentenceTransformerEmbedding,
+)
+from superlinked.framework.common.interface.has_embedding import HasEmbedding
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
@@ -31,7 +35,9 @@ from superlinked.framework.online.dag.evaluation_result import (
 from superlinked.framework.online.dag.online_node import OnlineNode
 
 
-class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasLength):
+class OnlineTextEmbeddingNode(
+    DefaultOnlineNode[TextEmbeddingNode, Vector], HasLength, HasEmbedding
+):
     def __init__(
         self,
         node: TextEmbeddingNode,
@@ -39,10 +45,20 @@ class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasL
         storage_manager: StorageManager,
     ) -> None:
         super().__init__(node, parents, storage_manager)
+        self._embedding = self._init_embedding()
 
     @property
+    @override
     def length(self) -> int:
         return self.node.length
+
+    @property
+    @override
+    def embedding(self) -> SentenceTransformerEmbedding:
+        return self._embedding
+
+    def _init_embedding(self) -> SentenceTransformerEmbedding:
+        return cast(SentenceTransformerEmbedding, self.node.init_embedding())
 
     @override
     def evaluate_self(
@@ -52,7 +68,7 @@ class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasL
     ) -> list[EvaluationResult[Vector]]:
         if context.should_load_default_node_input:
             result = EvaluationResult(
-                self._get_single_evaluation_result(self.node.embedding.default_vector)
+                self._get_single_evaluation_result(self.embedding.default_vector)
             )
             return [result] * len(parsed_schemas)
         return super().evaluate_self(parsed_schemas, context)
@@ -75,10 +91,12 @@ class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasL
                 non_none_parent_results,
             )
         )
-        embedded_texts = cast(list[Vector | None], self.__embed_texts(input_))
+        embedded_texts: list[Vector | None] = list(self.__embed_texts(input_, context))
         for i in none_indices:
             embedded_texts.insert(i, None)
         return embedded_texts
 
-    def __embed_texts(self, texts: list[str]) -> list[Vector]:
-        return self.node.embedding.embed_multiple(texts)
+    def __embed_texts(
+        self, texts: Sequence[str], context: ExecutionContext
+    ) -> list[Vector]:
+        return self.embedding.embed_multiple(texts, context)
