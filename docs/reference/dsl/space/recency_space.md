@@ -42,7 +42,7 @@ Classes
             Day will be the next day of context.now(). Defaults to timedelta(hours=0).
         period_time_list (list[PeriodTime] | None): A list of period time parameters.
             Weights default to 1. Period time to 14 days.
-        aggregation_mode (InputAggregationMode): The  aggregation mode of the number embedding.
+        aggregation_mode (InputAggregationMode): The  aggregation mode of the recency embedding.
             Possible values are: maximum, minimum and average. Defaults to InputAggregationMode.INPUT_AVERAGE.
         negative_filter (float): The recency score of items that are older than the oldest period time.
             Defaults to 0.0.
@@ -56,6 +56,9 @@ Classes
     ### Instance variables
 
     `annotation: str`
+    :
+
+    `embedding_config: superlinked.framework.common.space.config.recency_embedding_config.RecencyEmbeddingConfig`
     :
 
     `space_field_set: superlinked.framework.dsl.space.space_field_set.SpaceFieldSet`
