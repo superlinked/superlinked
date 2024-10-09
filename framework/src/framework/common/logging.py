@@ -119,7 +119,7 @@ class LoggerConfigurator:
         json_console_processors: list[Processor] = (
             [
                 structlog.processors.EventRenamer("message"),
-                structlog.processors.format_exc_info,
+                structlog.processors.dict_tracebacks,
             ]
             if log_as_json
             else []
