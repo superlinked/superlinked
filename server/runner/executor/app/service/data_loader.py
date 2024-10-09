@@ -76,8 +76,8 @@ class DataLoader:
     def _task_done_callback(self, task: asyncio.Task) -> None:
         try:
             task.result()
-        except Exception as e:  # pylint: disable=broad-except
-            logger.exception("failed task", task_name=task.get_name(), exc_info=e)
+        except Exception:  # pylint: disable=broad-except
+            logger.exception("failed task", task_name=task.get_name())
 
     def __read_data(
         self, path: str, data_format: DataFormat, pandas_read_kwargs: dict[str, Any] | None

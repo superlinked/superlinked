@@ -11,7 +11,9 @@ from executor.app.configuration.app_config import AppConfig
 class ServerLoggerConfigurator:
     @staticmethod
     def setup_logger(app_config: AppConfig, logs_to_suppress: list[str] | None = None) -> None:
-        processors = LoggerConfigurator._get_common_processors(app_config.EXPOSE_PII)  # noqa:SLF001 Private member
+        processors = LoggerConfigurator._get_structlog_processors(  # noqa:SLF001 Private member
+            app_config.JSON_LOG_FILE, app_config.EXPOSE_PII, app_config.LOG_AS_JSON
+        )
         processors += [CustomStructlogProcessor.drop_color_message_key]  # Drop color must be the last processor
         LoggerConfigurator.configure_structlog_logger(
             app_config.JSON_LOG_FILE, processors, app_config.EXPOSE_PII, app_config.LOG_AS_JSON

@@ -80,14 +80,10 @@ class ResourceHandler(ABC):
             response = requests.post(api_url, timeout=10)
             response.raise_for_status()
             logger.info("notified executor", notification_event="file_change", url=api_url)
-        except requests.HTTPError as http_err:
-            logger.exception(
-                "failed to notify executor",
-                status_code=http_err.response.status_code,
-                error_message=http_err.response.text,
-            )
-        except requests.RequestException as req_err:
-            logger.exception("failed to notify executor", error_type=type(req_err).__name__, error_message=str(req_err))
+        except requests.HTTPError:
+            logger.exception("failed to notify executor", notification_event="file_change", url=api_url)
+        except requests.RequestException:
+            logger.exception("failed to notify executor", notification_event="file_change", url=api_url)
 
     def check_api_health(self, *, verbose: bool = True) -> bool:
         """
