@@ -1,9 +1,11 @@
 import time
 from collections.abc import Awaitable, Callable
+from typing import cast
 
 import structlog
 from asgi_correlation_id.context import correlation_id
 from fastapi import FastAPI, Request, Response
+from uvicorn._types import HTTPScope
 from uvicorn.protocols.utils import get_path_with_query_string
 
 access_logger = structlog.stdlib.get_logger("api.access")
@@ -25,7 +27,7 @@ def add_timing_middleware(app: FastAPI) -> None:
             raise
         process_time = time.perf_counter_ns() - start_time
         status_code = response.status_code
-        url = get_path_with_query_string(request.scope)
+        url = get_path_with_query_string(cast(HTTPScope, request.scope))
         client_host = request.client.host if request.client else "no-client"
         client_port = request.client.port if request.client else "no-client"
         http_method = request.method
