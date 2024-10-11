@@ -125,7 +125,7 @@ class InputAggregation(Aggregation, Generic[AIT]):
             weighted
             for weighted in weighted_vectors
             if not weighted.item.is_empty
-            and weighted.weight is not constants.DEFAULT_NOT_AFFECTING_WEIGHT
+            and weighted.weight != constants.DEFAULT_NOT_AFFECTING_WEIGHT
         ]
         if len(weighted_vectors) == 1:
             return weighted_vectors[0].item
@@ -134,15 +134,12 @@ class InputAggregation(Aggregation, Generic[AIT]):
             for weighted in weighted_vectors
         ]
         weights = [weighted.weight for weighted in weighted_vectors]
-        embedding_input = np.average(  # type: ignore
-            embedding_inputs,
-            weights=weights,
-        )
+        embedding_input = self._aggregate_inputs(embedding_inputs, weights)
         vector = embedding.embed(embedding_input, context)
         return vector
 
     @abstractmethod
-    def _aggregate_inputs(self, inputs: Sequence[AIT]) -> AIT: ...
+    def _aggregate_inputs(self, inputs: list[AIT], weights: Sequence[float]) -> AIT: ...
 
     @staticmethod
     def from_aggregation_mode(
@@ -156,20 +153,23 @@ class InputAggregation(Aggregation, Generic[AIT]):
 
 class InputAvg(InputAggregation):
     @override
-    def _aggregate_inputs(self, inputs: Sequence[float]) -> float:
-        return sum(inputs) / len(inputs)
+    def _aggregate_inputs(self, inputs: list[AIT], weights: Sequence[float]) -> AIT:
+        return np.average(  # type: ignore
+            inputs,
+            weights=weights,
+        )
 
 
 class InputMin(InputAggregation):
     @override
-    def _aggregate_inputs(self, inputs: Sequence[float]) -> float:
-        return min(inputs)
+    def _aggregate_inputs(self, inputs: list[float], weights: Sequence[float]) -> float:
+        return np.min(np.array(inputs))
 
 
 class InputMax(InputAggregation):
     @override
-    def _aggregate_inputs(self, inputs: Sequence[float]) -> float:
-        return max(inputs)
+    def _aggregate_inputs(self, inputs: list[float], weights: Sequence[float]) -> float:
+        return np.max(np.array(inputs))
 
 
 class InputAggregationMode(Enum):
