@@ -24,7 +24,7 @@
 
 <div align="center">
 
-[Experiment in a notebook](#experiment-in-a-notebook)  | [Run in production](#run-in-production) | [Use-cases](#use-cases) | [Supported VDBs](#supported-vdbs) | [Resources](#resources)
+[Docs](https://docs.superlinked.com) | [Experiment in a notebook](#experiment-in-a-notebook)  | [Run in production](#run-in-production) | [Use-cases](#use-cases) | [Supported VDBs](#supported-vdbs) | [Other Resources](#resources)
 
 </div>
 
@@ -41,7 +41,7 @@ If you like what we do, give us a star! ⭐
 
 ![](https://cdn.prod.website-files.com/65dce6831bf9f730421e2915/66f05365ad05806eb16c9cb8_superlinked_system_diagram3.png)
 
-Visit [Superlinked](https://superlinked.com/) for more information about the company behind this product and our other initiatives.
+See [docs.superlinked.com](https://docs.superlinked.com) to learn more and [superlinked.com](https://superlinked.com/) for information about the company.
 
 ## Features
 
