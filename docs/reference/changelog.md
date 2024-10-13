@@ -5,7 +5,26 @@ icon: clock-rotate-left
 
 # Changelog
 
-## [9.43.0] - 2024-09-25
+## 2024-10-9
+
+- #### Framework: v9.43.0 - v10.1.0
+- #### Server: v9.42.1 - 10.1.0 (running with framework/v10.1.0)
+- #### Batch: v1.8.0 - v1.11.1
+
+
+### Added
+- **Optional Params in Query**: Params in Query are now optional. If not filled during a query, the clause will not affect the query results.
+- **Support for VDBs in Notebooks**: Introduced the `InteractiveExecutor` to support connecting to different VDBs from a notebook environment.
+- **Simplified Query Definition**: Users can now provide the space as a parameter when only one field is suitable, e.g., `.similar(number_space, 3)` instead of `.similar(number_space.number, 3)`.
+- **Stacktrace in JSON Logs**: Added stacktrace to JSON logs for improved debugging.
+
+### Fixed
+- **Plot Rendering in Notebooks**: Added support to render notebooks properly across different environments.
+- **Redis Incorrect Results**: Fixed a naming issue that caused Redis to return incorrect results. Continuous testing of VDB integrations is planned to prevent such issues.
+- **Constrain Category Choices in NLQ**: NLQ can no longer "hallucinate" categories that do not exist for a given query.
+
+
+## 2024-09-25
 
 - #### Framework: v9.33.0 - v9.43.0
 - #### Server: v9.33.0 - v9.42.1 (running with framework/v9.42.1)
@@ -29,7 +48,7 @@ icon: clock-rotate-left
 - **Hard-filter compatibility with batch**: Ensured compatibility of IN, NOT_IN, LT, LTE, GT, GTE operators with batch-encoded datasets.
 
 
-## [9.33.0] - 2024-09-11
+## 2024-09-11
 
 - #### Framework: v9.22.1 - v9.33.0
 - #### Server: v9.33.0 - v9.33.0 (running with framework/v9.33.0)
@@ -49,7 +68,7 @@ icon: clock-rotate-left
 
 
 
-## [9.22.1] - 2024-08-28
+## 2024-08-28
 
 - #### Framework: v9.12.1 - v9.22.1
 - #### Server: v9.12.1 - v9.22.0 (running with framework/v9.12.1)
@@ -75,7 +94,7 @@ icon: clock-rotate-left
 
   
 
-## [9.12.1] - 2024-08-14
+## 2024-08-14
 
 - #### Framework: v9.7.0 - v9.12.1
 - #### Server: v9.6.0 - v9.7.0 (running with v9.2.0)
@@ -91,7 +110,7 @@ icon: clock-rotate-left
 
 
 
-## [9.7.0] - 2024-08-07
+## 2024-08-07
 
 - #### Framework: v9.7.0
 - #### Server: v9.6.0
