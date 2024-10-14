@@ -41,11 +41,9 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
         storage_manager: StorageManager,
     ) -> None:
         super().__init__(
-            node,
-            parents,
-            storage_manager,
-            ParentValidationType.AT_LEAST_ONE_PARENT,
+            node, parents, storage_manager, ParentValidationType.AT_LEAST_ONE_PARENT
         )
+        self._norm = L2Norm()
 
     @property
     def length(self) -> int:
@@ -57,62 +55,59 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
         parent_results: list[dict[OnlineNode, SingleEvaluationResult]],
         context: ExecutionContext,
     ) -> Sequence[Vector | None]:
-        self.__check_evaluation_inputs(parent_results)
-        vectors = [
-            reduce(
-                lambda a, b: a.concatenate(b),
-                (
-                    WeightArithmetics.apply_vector_weight(
-                        result.value, parent.node_id, context
-                    )
-                    for parent, result in parent_result.items()
-                ),
-            )
+        self._check_evaluation_inputs(parent_results)
+        vector_and_nodes_list: list[list[tuple[Vector, OnlineNode]]] = [
+            [(result.value, parent) for parent, result in parent_result.items()]
             for parent_result in parent_results
         ]
-        if context.is_query_context:
-            return vectors
-        l2_norm = L2Norm()
-        return [l2_norm.normalize(vector) for vector in vectors]
+        weighted_vectors = [
+            self._apply_weights_and_concatenate(vector_and_nodes, context)
+            for vector_and_nodes in vector_and_nodes_list
+        ]
+        if not context.is_query_context:
+            normalized_vectors = [
+                self._norm.normalize(vector) for vector in weighted_vectors
+            ]
+            return normalized_vectors
+        return weighted_vectors
 
-    def re_weight_vector(
+    def re_weight_vector(self, vector: Vector, context: ExecutionContext) -> Vector:
+        parts = self._split_vector(vector)
+        vector_and_nodes = list(zip(parts, self.parents))
+        weighted_vector = self._apply_weights_and_concatenate(vector_and_nodes, context)
+        normalized_vector = self._norm.normalize(weighted_vector)
+        return normalized_vector
+
+    def _apply_weights_and_concatenate(
         self,
-        vector: Vector,
+        vector_and_nodes: list[tuple[Vector, OnlineNode]],
         context: ExecutionContext,
     ) -> Vector:
-        parts = self._split_vector(vector)
-        vector = reduce(
-            lambda a, b: a.concatenate(b),
-            (
-                WeightArithmetics.apply_vector_weight(part, parent.node_id, context)
-                for part, parent in zip(parts, self.parents)
-            ),
+        weighted_vectors = (
+            WeightArithmetics.apply_vector_weight(vector, parent.node_id, context)
+            for vector, parent in vector_and_nodes
         )
-        return L2Norm().normalize(vector)
+        vector = reduce(lambda a, b: a.concatenate(b), weighted_vectors)
+        return vector
 
-    def __check_evaluation_inputs(
+    def _check_evaluation_inputs(
         self,
         parent_results: list[dict[OnlineNode, SingleEvaluationResult]],
     ) -> None:
-        invalid_results = [
+        if any(
             result
             for parent_result in parent_results
             for result in parent_result.values()
             if not isinstance(result.value, Vector)
-        ]
-        if len(invalid_results) != 0:
+        ):
             raise ValidationException(
                 f"{self.class_name} can only process `Vector` inputs."
             )
 
     def _split_vector(self, vector: Vector) -> list[Vector]:
-        if vector is None:
-            vector = Vector([])
-        offset: int = 0
-        parts: list[Vector] = []
-        vector_value = vector.value
-        for parent in self.parents:
-            parent_length = cast(HasLength, parent).length
-            parts.append(Vector(vector_value[offset : offset + parent_length]))
-            offset += parent_length
-        return parts
+        parents_without_duplicates = list(dict.fromkeys(self.parents))
+        lengths = [
+            cast(HasLength, parent).length for parent in parents_without_duplicates
+        ]
+        vectors: list[Vector] = vector.split(lengths)
+        return vectors

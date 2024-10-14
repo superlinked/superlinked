@@ -38,7 +38,7 @@ class Vector:
     def __init__(
         self,
         value: Sequence[float] | Sequence[np.float64] | NPArray,
-        negative_filter_indices: set[int] | None = None,
+        negative_filter_indices: set[int] | frozenset[int] | None = None,
         vector_before_normalization: Vector | None = None,
     ) -> None:
         if isinstance(value, np.ndarray):
@@ -47,7 +47,11 @@ class Vector:
             value_to_set = np.array(list(value), dtype=np.float64)
         self.value: NPArray = value_to_set
         self.__dimension: int = len(self.value)
-        self.__negative_filter_indices = negative_filter_indices or set()
+        self.__negative_filter_indices = (
+            frozenset(negative_filter_indices)
+            if negative_filter_indices
+            else frozenset({})
+        )
         self.__validate_negative_filter_indices()
         self.__vector_before_normalization = vector_before_normalization
 
@@ -66,7 +70,7 @@ class Vector:
         return Vector.EMPTY_VECTOR
 
     @property
-    def negative_filter_indices(self) -> set[int]:
+    def negative_filter_indices(self) -> frozenset[int]:
         return self.__negative_filter_indices
 
     @property
@@ -180,6 +184,25 @@ class Vector:
             vector_before_normalization,
         )
 
+    def split(self, lengths: list[int]) -> list[Vector]:
+        if sum(lengths) < self.dimension:
+            raise ValueError(
+                f"The sum of the provided lengths {sum(lengths)} is smaller than the vector dimension {self.dimension}."
+            )
+        indices = list(np.cumsum(np.array([0] + lengths))[1:].tolist())
+        split_values = np.split(self.value, indices)
+        split_vectors = []
+        for i, length in enumerate(lengths):
+            start_index = indices[i - 1] if i > 0 else 0
+            end_index = start_index + length
+            negative_filter_indices = {
+                idx - start_index
+                for idx in self.negative_filter_indices
+                if start_index <= idx < end_index
+            }
+            split_vectors.append(Vector(split_values[i], negative_filter_indices, None))
+        return split_vectors
+
     def __mul__(self, other: float | int | Vector) -> Vector:
         if self.is_empty:
             return self
@@ -205,13 +228,19 @@ class Vector:
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, Vector):
-            return np.array_equal(self.value, other.value)
+            return (
+                np.array_equal(self.value, other.value)
+                and self.negative_filter_indices == other.negative_filter_indices
+            )
         return False
+
+    def __hash__(self) -> int:
+        return hash((str(self.value), self.negative_filter_indices))
 
     def copy_with_new(
         self,
         value: list[float] | list[np.float64] | NPArray | None = None,
-        negative_filter_indices: set[int] | None = None,
+        negative_filter_indices: set[int] | frozenset[int] | None = None,
         vector_before_normalization: Vector | None = None,
     ) -> Vector:
         value_to_use = self.value if value is None else value
@@ -244,6 +273,10 @@ class Vector:
         return np.array_str(  # type: ignore # numpy stub is missing for mypy-pylance
             self.value, precision=NP_PRINT_PRECISION, suppress_small=True
         )
+
+    @classmethod
+    def init_zero_vector(cls, length: int) -> Vector:
+        return Vector([0] * length)
 
 
 PythonTypes = float | int | str | Vector | list[float] | list[str]

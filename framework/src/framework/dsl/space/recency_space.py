@@ -15,7 +15,6 @@
 from datetime import timedelta
 
 import structlog
-from beartype.typing import Mapping
 from typing_extensions import override
 
 from superlinked.framework.common.dag.named_function_node import NamedFunctionNode
@@ -112,7 +111,7 @@ class RecencySpace(
             negative_filter,
         )
         self._aggregation_mode: InputAggregationMode = aggregation_mode
-        self._schema_node_map: dict[SchemaObject, RecencyNode] = {
+        self._schema_node_map: dict[SchemaObject, Node] = {
             field.schema_obj: RecencyNode(
                 SchemaFieldNode(field),
                 self._embedding_config,
@@ -137,7 +136,7 @@ class RecencySpace(
         return self.timestamp
 
     @property
-    def _node_by_schema(self) -> Mapping[SchemaObject, Node[Vector]]:
+    def _node_by_schema(self) -> dict[SchemaObject, Node[Vector]]:
         return self._schema_node_map
 
     @property
@@ -162,12 +161,11 @@ class RecencySpace(
         return True
 
     @override
-    def _handle_node_not_present(self, schema: SchemaObject) -> RecencyNode:
+    def _create_default_node(self, schema: SchemaObject) -> Node[Vector]:
         named_function_node = NamedFunctionNode(NamedFunction.NOW, schema, int)
-        recency_node = RecencyNode(
+        default_node = RecencyNode(
             named_function_node,
             self._embedding_config,
             self._aggregation_mode,
         )
-        self._schema_node_map[schema] = recency_node
-        return recency_node
+        return default_node

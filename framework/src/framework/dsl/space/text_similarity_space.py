@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Mapping, cast
+from beartype.typing import cast
 from typing_extensions import override
 
 from superlinked.framework.common.dag.chunking_node import ChunkingNode
+from superlinked.framework.common.dag.constant_node import ConstantNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.dag.text_embedding_node import TextEmbeddingNode
@@ -59,16 +60,18 @@ class TextSimilaritySpace(Space, HasSpaceFieldSet):
             Set it to 0, to disable caching. Defaults to 10000.
         """
         length = SentenceTransformerEmbedding.calculate_length(model)
-        embedding_config = TextSimilarityEmbeddingConfig(model, cache_size, length)
+        self._embedding_config = TextSimilarityEmbeddingConfig(
+            model, cache_size, length
+        )
         text_text_node_map = {
             self._get_root(unchecked_text): self._generate_embedding_node(
-                unchecked_text, embedding_config
+                unchecked_text, self._embedding_config
             )
             for unchecked_text in (text if isinstance(text, list) else [text])
         }
         super().__init__(list(text_text_node_map.keys()), String)
         self.text = SpaceFieldSet(self, set(text_text_node_map.keys()))
-        self._schema_node_map: dict[SchemaObject, TextEmbeddingNode] = {
+        self._schema_node_map: dict[SchemaObject, Node] = {
             schema_field.schema_obj: node
             for schema_field, node in text_text_node_map.items()
         }
@@ -94,8 +97,15 @@ class TextSimilaritySpace(Space, HasSpaceFieldSet):
         return self.text
 
     @property
-    def _node_by_schema(self) -> Mapping[SchemaObject, Node[Vector]]:
+    def _node_by_schema(self) -> dict[SchemaObject, Node[Vector]]:
         return self._schema_node_map
+
+    @override
+    def _create_default_node(self, schema: SchemaObject) -> Node[Vector]:
+        zero_vector = Vector.init_zero_vector(self._embedding_config.length)
+        constant_node = cast(Node, ConstantNode(value=zero_vector, schema=schema))
+        default_node = TextEmbeddingNode(constant_node, self._embedding_config)
+        return default_node
 
     @property
     @override

@@ -13,12 +13,13 @@
 # limitations under the License.
 
 
-from beartype.typing import Mapping
+from beartype.typing import cast
 from typing_extensions import override
 
 from superlinked.framework.common.dag.categorical_similarity_node import (
     CategoricalSimilarityNode,
 )
+from superlinked.framework.common.dag.constant_node import ConstantNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
@@ -122,14 +123,21 @@ class CategoricalSimilaritySpace(Space, HasSpaceFieldSet):
             )
             for single_category in self._field_set
         }
-        self.__schema_node_map: dict[SchemaObject, CategoricalSimilarityNode] = {
+        self.__schema_node_map: dict[SchemaObject, Node] = {
             schema_field.schema_obj: node
             for schema_field, node in unchecked_category_node_map.items()
         }
 
     @property
-    def _node_by_schema(self) -> Mapping[SchemaObject, Node[Vector]]:
+    def _node_by_schema(self) -> dict[SchemaObject, Node[Vector]]:
         return self.__schema_node_map
+
+    @override
+    def _create_default_node(self, schema: SchemaObject) -> Node[Vector]:
+        zero_vector = Vector.init_zero_vector(self.embedding_config.length)
+        constant_node = cast(Node, ConstantNode(value=zero_vector, schema=schema))
+        default_node = CategoricalSimilarityNode(constant_node, self.embedding_config)
+        return default_node
 
     @property
     @override

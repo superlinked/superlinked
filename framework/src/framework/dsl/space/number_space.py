@@ -14,7 +14,6 @@
 
 import math
 
-from beartype.typing import Mapping, cast
 from typing_extensions import override
 
 from superlinked.framework.common.dag.constant_node import ConstantNode
@@ -116,7 +115,7 @@ class NumberSpace(Space, HasSpaceFieldSet):
         }
 
     @property
-    def _node_by_schema(self) -> Mapping[SchemaObject, Node[Vector]]:
+    def _node_by_schema(self) -> dict[SchemaObject, Node[Vector]]:
         return self.__schema_node_map
 
     @property
@@ -186,15 +185,14 @@ class NumberSpace(Space, HasSpaceFieldSet):
         return self.aggregation_mode == Mode.SIMILAR
 
     @override
-    def _handle_node_not_present(self, schema: SchemaObject) -> NumberEmbeddingNode:
-        constant_node = cast(
-            Node, ConstantNode(value=self._default_constant_node_input, schema=schema)
+    def _create_default_node(self, schema: SchemaObject) -> Node[Vector]:
+        constant_node = ConstantNode(
+            value=self._default_constant_node_input, schema=schema
         )
-        number_embedding_node = NumberEmbeddingNode(
+        default_node = NumberEmbeddingNode(
             constant_node, self._config, self.aggregation_mode
         )
-        self.__schema_node_map[schema] = number_embedding_node
-        return number_embedding_node
+        return default_node
 
     @lazy_property
     def _default_constant_node_input(self) -> float:

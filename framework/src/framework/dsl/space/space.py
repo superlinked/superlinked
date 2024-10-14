@@ -16,11 +16,10 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from beartype.typing import Mapping, TypeAlias, TypeVar
+from beartype.typing import TypeAlias, TypeVar
 
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.exception import InvalidSchemaException
 from superlinked.framework.common.schema.schema_object import SchemaField, SchemaObject
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.space.exception import InvalidSpaceParamException
@@ -66,9 +65,12 @@ class Space(ABC):
     @abstractmethod
     def _allow_empty_fields(self) -> bool: ...
 
+    @abstractmethod
+    def _create_default_node(self, schema: SchemaObject) -> Node[Vector]: ...
+
     @property
     @abstractmethod
-    def _node_by_schema(self) -> Mapping[SchemaObject, Node[Vector]]: ...
+    def _node_by_schema(self) -> dict[SchemaObject, Node[Vector]]: ...
 
     def _get_node(self, schema: SchemaObject) -> Node[Vector]:
         if node := self._node_by_schema.get(schema):
@@ -76,9 +78,9 @@ class Space(ABC):
         return self._handle_node_not_present(schema)
 
     def _handle_node_not_present(self, schema: SchemaObject) -> Node[Vector]:
-        raise InvalidSchemaException(
-            f"There's no node corresponding to this schema: {schema._schema_name}"
-        )
+        embedding_node = self._create_default_node(schema)
+        self._node_by_schema[schema] = embedding_node
+        return embedding_node
 
     def _get_all_leaf_nodes(self) -> set[Node[Vector]]:
         return set(self._node_by_schema.values())

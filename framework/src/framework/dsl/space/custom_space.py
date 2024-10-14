@@ -13,9 +13,9 @@
 # limitations under the License.
 
 
-from beartype.typing import Mapping
 from typing_extensions import override
 
+from superlinked.framework.common.dag.constant_node import ConstantNode
 from superlinked.framework.common.dag.custom_node import CustomVectorEmbeddingNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
@@ -70,7 +70,7 @@ class CustomSpace(Space, HasSpaceFieldSet):
         return self.vector
 
     @property
-    def _node_by_schema(self) -> Mapping[SchemaObject, Node[Vector]]:
+    def _node_by_schema(self) -> dict[SchemaObject, Node[Vector]]:
         return self._schema_node_map
 
     @property
@@ -86,9 +86,16 @@ class CustomSpace(Space, HasSpaceFieldSet):
     def _allow_empty_fields(self) -> bool:
         return False
 
-    def _calculate_schema_node_map(
-        self, length: int
-    ) -> dict[SchemaObject, CustomVectorEmbeddingNode]:
+    @override
+    def _create_default_node(self, schema: SchemaObject) -> Node[Vector]:
+        zero_vector = Vector.init_zero_vector(self._length)
+        constant_node = ConstantNode(value=zero_vector, schema=schema)
+        default_node = CustomVectorEmbeddingNode(
+            constant_node, CustomEmbeddingConfig(self._length)
+        )
+        return default_node
+
+    def _calculate_schema_node_map(self, length: int) -> dict[SchemaObject, Node]:
         embedding_config = CustomEmbeddingConfig(length)
         unchecked_custom_node_map = {
             vector_schema_field: CustomVectorEmbeddingNode(
@@ -96,7 +103,7 @@ class CustomSpace(Space, HasSpaceFieldSet):
             )
             for vector_schema_field in self._field_set
         }
-        schema_node_map: dict[SchemaObject, CustomVectorEmbeddingNode] = {
+        schema_node_map: dict[SchemaObject, Node] = {
             schema_field.schema_obj: node
             for schema_field, node in unchecked_custom_node_map.items()
         }
