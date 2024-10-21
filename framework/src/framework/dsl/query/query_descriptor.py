@@ -26,7 +26,6 @@ from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
     _Or,
 )
-from superlinked.framework.common.interface.has_space_field_set import HasSpaceFieldSet
 from superlinked.framework.common.nlq.open_ai import OpenAIClientConfig
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema import T
@@ -60,6 +59,7 @@ from superlinked.framework.dsl.query.query_param_information import (
 from superlinked.framework.dsl.space.categorical_similarity_space import (
     CategoricalSimilaritySpace,
 )
+from superlinked.framework.dsl.space.has_space_field_set import HasSpaceFieldSet
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 

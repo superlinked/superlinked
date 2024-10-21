@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from abc import ABC, abstractmethod
+from abc import ABC
 
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.interface.has_length import HasLength
 
 
-class HasDefaultVector(ABC):
+class HasDefaultVector(HasLength, ABC):
     @property
-    @abstractmethod
     def default_vector(self) -> Vector:
-        pass
+        return Vector([0.0] * self.length)

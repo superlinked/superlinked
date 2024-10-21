@@ -24,7 +24,7 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import ValidationException
 from superlinked.framework.common.interface.has_length import HasLength
-from superlinked.framework.common.space.normalization import L2Norm
+from superlinked.framework.common.space.normalization.normalization import L2Norm
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.util.weight_arithmetics import WeightArithmetics
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode

@@ -13,20 +13,16 @@
 # limitations under the License.
 
 
-from typing_extensions import override
+from beartype.typing import Generic
 
-from superlinked.framework.common.dag.embedding_node import InputEmbeddingNode
-from superlinked.framework.common.embedding.number_embedding import (
-    NumberEmbedding,
-    NumberT,
+from superlinked.framework.common.dag.embedding_node import EmbeddingNode
+from superlinked.framework.common.space.config.aggregation.aggregation_config import (
+    AggregationInputT,
 )
-from superlinked.framework.common.space.config.number_embedding_config import (
-    NumberEmbeddingConfig,
-)
+from superlinked.framework.common.space.embedding.number_embedding import NumberT
 
 
-class NumberEmbeddingNode(InputEmbeddingNode[NumberT, NumberEmbeddingConfig]):
-    @property
-    @override
-    def embedding_type(self) -> type[NumberEmbedding]:
-        return NumberEmbedding
+class NumberEmbeddingNode(
+    Generic[AggregationInputT, NumberT], EmbeddingNode[AggregationInputT, NumberT]
+):
+    pass

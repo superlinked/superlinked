@@ -17,7 +17,7 @@ import datetime
 import altair as alt
 import numpy as np
 import pandas as pd
-from beartype.typing import Mapping
+from beartype.typing import Mapping, cast
 
 from superlinked.framework.common.calculation.distance_metric import DistanceMetric
 from superlinked.framework.common.calculation.vector_similarity import (
@@ -29,7 +29,12 @@ from superlinked.framework.common.dag.context import (
     ExecutionEnvironment,
 )
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.embedding.recency_embedding import RecencyEmbedding
+from superlinked.framework.common.space.config.embedding.recency_embedding_config import (
+    RecencyEmbeddingConfig,
+)
+from superlinked.framework.common.transform.transformation_factory import (
+    TransformationFactory,
+)
 from superlinked.framework.dsl.space.recency_space import RecencySpace
 
 
@@ -61,7 +66,14 @@ class RecencyPlotter:
         self.context: ExecutionContext = ExecutionContext.from_context_data(
             context_data, environment=ExecutionEnvironment.IN_MEMORY
         )
-        self._embedding = RecencyEmbedding(recency_space.embedding_config)
+        self._embedding_config = cast(
+            RecencyEmbeddingConfig, recency_space.transformation_config.embedding_config
+        )
+        self._embedding_transformation = (
+            TransformationFactory.create_embedding_transformation(
+                recency_space.transformation_config
+            )
+        )
         self._negative_filter_time_period_showcase_multiplier = (
             negative_filter_time_period_showcase_multiplier
         )
@@ -88,8 +100,12 @@ class RecencyPlotter:
         """
         now_ts: int = self.context.now()
         max_period_time_ts: int = int(
-            self._embedding.max_period_time.period_time.total_seconds()
+            max(
+                period_time.period_time
+                for period_time in self._embedding_config.period_time_list
+            ).total_seconds()
         )
+
         oldest_ts_to_plot: int = int(
             now_ts
             - (
@@ -122,9 +138,10 @@ class RecencyPlotter:
             start=oldest_ts_to_plot, stop=now_ts, num=num_points
         )
         recency_vectors: list[Vector] = [
-            self._embedding.embed(plot_ts, self.context) for plot_ts in plot_timestamps
+            self._embedding_transformation.transform(plot_ts, self.context)
+            for plot_ts in plot_timestamps
         ]
-        now_vector: Vector = self._embedding.embed(
+        now_vector: Vector = self._embedding_transformation.transform(
             now_ts,
             ExecutionContext.from_context_data(
                 self.context.data, environment=ExecutionEnvironment.QUERY

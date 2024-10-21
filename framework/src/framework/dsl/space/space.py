@@ -16,11 +16,20 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from beartype.typing import TypeAlias, TypeVar
+from beartype.typing import Generic, TypeAlias, TypeVar
+from typing_extensions import override
 
-from superlinked.framework.common.dag.node import Node
-from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.schema.schema_object import SchemaField, SchemaObject
+from superlinked.framework.common.space.config.aggregation.aggregation_config import (
+    AggregationInputT,
+)
+from superlinked.framework.common.space.config.embedding.embedding_config import (
+    EmbeddingInputT,
+)
+from superlinked.framework.common.space.interface.has_transformation_config import (
+    HasTransformationConfig,
+)
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.space.exception import InvalidSpaceParamException
 
@@ -28,7 +37,11 @@ from superlinked.framework.dsl.space.exception import InvalidSpaceParamException
 SIT = TypeVar("SIT", bound=SchemaField)
 
 
-class Space(ABC):
+class Space(
+    HasTransformationConfig[AggregationInputT, EmbeddingInputT],
+    Generic[AggregationInputT, EmbeddingInputT],
+    ABC,
+):
     """
     Abstract base class for a space.
 
@@ -58,6 +71,11 @@ class Space(ABC):
             )
 
     @property
+    @override
+    def length(self) -> int:
+        return self.transformation_config.length
+
+    @property
     @abstractmethod
     def annotation(self) -> str: ...
 
@@ -66,21 +84,31 @@ class Space(ABC):
     def _allow_empty_fields(self) -> bool: ...
 
     @abstractmethod
-    def _create_default_node(self, schema: SchemaObject) -> Node[Vector]: ...
+    def _create_default_node(
+        self, schema: SchemaObject
+    ) -> EmbeddingNode[AggregationInputT, EmbeddingInputT]: ...
 
     @property
     @abstractmethod
-    def _node_by_schema(self) -> dict[SchemaObject, Node[Vector]]: ...
+    def _node_by_schema(
+        self,
+    ) -> dict[SchemaObject, EmbeddingNode[AggregationInputT, EmbeddingInputT]]: ...
 
-    def _get_node(self, schema: SchemaObject) -> Node[Vector]:
+    def _get_node(
+        self, schema: SchemaObject
+    ) -> EmbeddingNode[AggregationInputT, EmbeddingInputT]:
         if node := self._node_by_schema.get(schema):
             return node
         return self._handle_node_not_present(schema)
 
-    def _handle_node_not_present(self, schema: SchemaObject) -> Node[Vector]:
+    def _handle_node_not_present(
+        self, schema: SchemaObject
+    ) -> EmbeddingNode[AggregationInputT, EmbeddingInputT]:
         embedding_node = self._create_default_node(schema)
         self._node_by_schema[schema] = embedding_node
         return embedding_node
 
-    def _get_all_leaf_nodes(self) -> set[Node[Vector]]:
+    def _get_all_leaf_nodes(
+        self,
+    ) -> set[EmbeddingNode[AggregationInputT, EmbeddingInputT]]:
         return set(self._node_by_schema.values())

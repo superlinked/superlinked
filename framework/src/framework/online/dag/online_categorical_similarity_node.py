@@ -23,20 +23,20 @@ from superlinked.framework.common.dag.categorical_similarity_node import (
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.embedding.categorical_similarity_embedding import (
-    CategoricalSimilarityEmbedding,
-)
-from superlinked.framework.common.interface.has_embedding import HasEmbedding
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
+from superlinked.framework.common.transform.transform import Step
+from superlinked.framework.common.transform.transformation_factory import (
+    TransformationFactory,
+)
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.dag.parent_validator import ParentValidationType
 
 
 class OnlineCategoricalSimilarityNode(
-    OnlineNode[CategoricalSimilarityNode, Vector], HasLength, HasEmbedding
+    OnlineNode[CategoricalSimilarityNode, Vector], HasLength
 ):
     def __init__(
         self,
@@ -50,8 +50,10 @@ class OnlineCategoricalSimilarityNode(
             storage_manager,
             ParentValidationType.LESS_THAN_TWO_PARENTS,
         )
-        self._embedding = cast(
-            CategoricalSimilarityEmbedding, self.node.init_embedding()
+        self._embedding_transformation = (
+            TransformationFactory.create_embedding_transformation(
+                self.node.transformation_config
+            )
         )
 
     @property
@@ -60,9 +62,8 @@ class OnlineCategoricalSimilarityNode(
         return self.node.length
 
     @property
-    @override
-    def embedding(self) -> CategoricalSimilarityEmbedding:
-        return self._embedding
+    def embedding_transformation(self) -> Step[list[str], Vector]:
+        return self._embedding_transformation
 
     @override
     def evaluate_self(
@@ -77,14 +78,20 @@ class OnlineCategoricalSimilarityNode(
         parsed_schema: ParsedSchema,
         context: ExecutionContext,
     ) -> EvaluationResult[Vector]:
-        if context.should_load_default_node_input:
-            result = self.embedding.default_vector
+        if self.node.transformation_config.embedding_config.should_return_default(
+            context
+        ):
+            result = self.node.transformation_config.embedding_config.default_vector
         elif len(self.parents) == 0:
             result = self.load_stored_result_or_raise_exception(parsed_schema)
         else:
-            input_: EvaluationResult[list[str]] = cast(
-                OnlineNode[Node[list[str]], list[str]],
-                self.parents[0],
-            ).evaluate_next_single(parsed_schema, context)
-            result = self.embedding.embed(input_.main.value, context)
+            input_: str | list[str] = (
+                cast(
+                    OnlineNode[Node[str | list[str]], str | list[str]], self.parents[0]
+                )
+                .evaluate_next_single(parsed_schema, context)
+                .main.value
+            )
+            categories = input_ if isinstance(input_, list) else [input_]
+            result = self.embedding_transformation.transform(categories, context)
         return EvaluationResult(self._get_single_evaluation_result(result))

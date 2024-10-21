@@ -12,18 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from beartype.typing import Generic
 
-from typing_extensions import override
-
-from superlinked.framework.common.dag.embedding_node import InputEmbeddingNode
-from superlinked.framework.common.embedding.recency_embedding import (
-    RecencyEmbedding,
-    RecencyEmbeddingConfig,
+from superlinked.framework.common.dag.embedding_node import EmbeddingNode
+from superlinked.framework.common.space.config.aggregation.aggregation_config import (
+    AggregationInputT,
 )
 
 
-class RecencyNode(InputEmbeddingNode[int, RecencyEmbeddingConfig]):
-    @property
-    @override
-    def embedding_type(self) -> type[RecencyEmbedding]:
-        return RecencyEmbedding
+class RecencyNode(Generic[AggregationInputT], EmbeddingNode[AggregationInputT, int]):
+    pass

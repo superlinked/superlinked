@@ -25,10 +25,12 @@ from superlinked.framework.common.exception import (
     MismatchingDimensionException,
     ValidationException,
 )
-from superlinked.framework.common.interface.has_embedding import HasEmbedding
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
+from superlinked.framework.common.transform.transformation_factory import (
+    TransformationFactory,
+)
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
 from superlinked.framework.online.dag.evaluation_result import SingleEvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
@@ -49,10 +51,11 @@ class OnlineAggregationNode(DefaultOnlineNode[AggregationNode, Vector], HasLengt
             ParentValidationType.AT_LEAST_ONE_PARENT,
         )
         OnlineAggregationNode._validate_parents(parents)
-        self._node_id_weight_map: dict[str, float] = {
-            weighted_parent.item.node_id: weighted_parent.weight
-            for weighted_parent in self.node.weighted_parents
-        }
+        self._aggregation_transformation = (
+            TransformationFactory.create_aggregation_transformation(
+                self.node.transformation_config,
+            )
+        )
 
     @property
     def length(self) -> int:
@@ -85,34 +88,15 @@ class OnlineAggregationNode(DefaultOnlineNode[AggregationNode, Vector], HasLengt
         context: ExecutionContext,
     ) -> Vector:
         self._check_evaluation_inputs(parent_results)
-        weighted_vector_by_parent = self._get_weighted_vector_by_parent(parent_results)
-
-        if self._no_event_present(weighted_vector_by_parent):
-            return list(weighted_vector_by_parent.values())[0].item
-
-        online_nodes = list(weighted_vector_by_parent.keys())
-        self._validate_embeddings(online_nodes)
-
-        embedding = HasEmbedding.get_common_embedding(
-            cast(list[HasEmbedding], online_nodes)
+        not_empty_weighted_vectors = self._get_not_empty_weighted_vectors(
+            list(parent_results.values())
         )
-
-        return self.node.aggregation.aggregate_weighted(
-            list(weighted_vector_by_parent.values()), embedding, context
+        if self._no_event_present(not_empty_weighted_vectors):
+            return not_empty_weighted_vectors[0].item
+        return self._aggregation_transformation.transform(
+            not_empty_weighted_vectors,
+            context,
         )
-
-    def _validate_embeddings(self, online_nodes: Sequence[OnlineNode]) -> None:
-        if not all(
-            isinstance(online_node, HasEmbedding) for online_node in online_nodes
-        ):
-            raise ValidationException(
-                f"Parents of {self.class_name} must have embedding."
-            )
-
-    def _no_event_present(
-        self, weighted_vectors: dict[OnlineNode, Weighted[Vector]]
-    ) -> bool:
-        return len(weighted_vectors) == 1
 
     def _check_evaluation_inputs(
         self,
@@ -148,13 +132,16 @@ class OnlineAggregationNode(DefaultOnlineNode[AggregationNode, Vector], HasLengt
                 + f", got {invalid_length_results[0].value.dimension}"
             )
 
-    def _get_weighted_vector_by_parent(
-        self, parent_results: dict[OnlineNode, SingleEvaluationResult]
-    ) -> dict[OnlineNode, Weighted[Vector]]:
-        return {
-            parent: Weighted(
-                result.value, self._node_id_weight_map[parent.node.node_id]
+    def _get_not_empty_weighted_vectors(
+        self, parent_result_values: Sequence[SingleEvaluationResult]
+    ) -> list[Weighted[Vector]]:
+        return [
+            Weighted(parent_result.value, weighted_parent.weight)
+            for parent_result, weighted_parent in zip(
+                parent_result_values, self.node.weighted_parents
             )
-            for parent, result in parent_results.items()
-            if result.value and not result.value.is_empty
-        }
+            if parent_result.value and not cast(Vector, parent_result.value).is_empty
+        ]
+
+    def _no_event_present(self, weighted_vectors: Sequence[Weighted[Vector]]) -> bool:
+        return len(weighted_vectors) == 1

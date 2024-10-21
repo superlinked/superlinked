@@ -13,12 +13,18 @@
 # limitations under the License.
 
 from superlinked.framework.common.dag.aggregation_node import AggregationNode
+from superlinked.framework.common.dag.effect_modifier import EffectModifier
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import InitializationException
 from superlinked.framework.common.interface.weighted import Weighted
-from superlinked.framework.dsl.index.effect import EffectModifier
+from superlinked.framework.common.space.config.aggregation.aggregation_config import (
+    AggregationInputT,
+)
+from superlinked.framework.common.space.config.embedding.embedding_config import (
+    EmbeddingInputT,
+)
 from superlinked.framework.dsl.index.util.aggregation_effect_group import (
     AggregationEffectGroup,
 )
@@ -33,9 +39,11 @@ from superlinked.framework.dsl.index.util.event_aggregation_node_util import (
 class AggregationNodeUtil:
     @staticmethod
     def init_aggregation_node(
-        aggregation_effect_group: AggregationEffectGroup,
+        aggregation_effect_group: AggregationEffectGroup[
+            AggregationInputT, EmbeddingInputT
+        ],
         effect_modifier: EffectModifier,
-    ) -> AggregationNode:
+    ) -> AggregationNode[AggregationInputT, EmbeddingInputT]:
         if len(aggregation_effect_group.effects) == 0:
             raise InitializationException(
                 "AggregationNode initialization needs a non-empty set of Effects."
@@ -66,6 +74,6 @@ class AggregationNodeUtil:
         aggregation_node = AggregationNode(
             weighted_eans + [weighted_affected_node],
             {effect.dag_effect for effect in aggregation_effect_group.effects},
-            affected_node.aggregation,
+            affected_node.transformation_config,
         )
         return aggregation_node

@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from beartype.typing import cast
+from beartype.typing import Generic, cast
 
 from superlinked.framework.common.dag.dag_effect import DagEffect
 from superlinked.framework.common.dag.resolved_schema_reference import (
@@ -33,12 +33,18 @@ from superlinked.framework.common.schema.event_schema_object import (
 )
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import SchemaObject
+from superlinked.framework.common.space.config.aggregation.aggregation_config import (
+    AggregationInputT,
+)
+from superlinked.framework.common.space.config.embedding.embedding_config import (
+    EmbeddingInputT,
+)
 from superlinked.framework.dsl.index.effect import Effect
 
 
 @dataclass(frozen=True)
-class EffectWithReferencedSchemaObject:
-    base_effect: Effect
+class EffectWithReferencedSchemaObject(Generic[AggregationInputT, EmbeddingInputT]):
+    base_effect: Effect[AggregationInputT, EmbeddingInputT]
     resolved_affected_schema_reference: ResolvedSchemaReference
     resolved_affecting_schema_reference: ResolvedSchemaReference
     event_schema: EventSchemaObject

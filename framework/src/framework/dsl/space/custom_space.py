@@ -17,19 +17,28 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.constant_node import ConstantNode
 from superlinked.framework.common.dag.custom_node import CustomVectorEmbeddingNode
-from superlinked.framework.common.dag.node import Node
+from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.embedding.custom_embedding import (
+from superlinked.framework.common.schema.schema_object import FloatList, SchemaObject
+from superlinked.framework.common.space.config.aggregation.aggregation_config import (
+    VectorAggregationConfig,
+)
+from superlinked.framework.common.space.config.embedding.custom_embedding_config import (
     CustomEmbeddingConfig,
 )
-from superlinked.framework.common.interface.has_space_field_set import HasSpaceFieldSet
-from superlinked.framework.common.schema.schema_object import FloatList, SchemaObject
+from superlinked.framework.common.space.config.normalization.normalization_config import (
+    L2NormConfig,
+)
+from superlinked.framework.common.space.config.transformation_config import (
+    TransformationConfig,
+)
+from superlinked.framework.dsl.space.has_space_field_set import HasSpaceFieldSet
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
 
-class CustomSpace(Space, HasSpaceFieldSet):
+class CustomSpace(Space[Vector, Vector], HasSpaceFieldSet):
     """
     CustomSpace is the instrument of ingesting your own vectors into Superlinked.
     This way you can use your own vectors right away. What you need to know: (you can use numbering too)
@@ -60,7 +69,10 @@ class CustomSpace(Space, HasSpaceFieldSet):
         """
         super().__init__(vector, FloatList)
         self.vector = SpaceFieldSet(self, self._field_set)
-        self._schema_node_map = self._calculate_schema_node_map(length)
+        self._transformation_config = self._init_transformation_config(length)
+        self._schema_node_map = self._calculate_schema_node_map(
+            self._transformation_config
+        )
         self._description = description
         self._length = length
 
@@ -70,7 +82,13 @@ class CustomSpace(Space, HasSpaceFieldSet):
         return self.vector
 
     @property
-    def _node_by_schema(self) -> dict[SchemaObject, Node[Vector]]:
+    @override
+    def transformation_config(self) -> TransformationConfig[Vector, Vector]:
+        return self._transformation_config
+
+    @property
+    @override
+    def _node_by_schema(self) -> dict[SchemaObject, EmbeddingNode[Vector, Vector]]:
         return self._schema_node_map
 
     @property
@@ -86,24 +104,38 @@ class CustomSpace(Space, HasSpaceFieldSet):
     def _allow_empty_fields(self) -> bool:
         return False
 
+    def _init_transformation_config(
+        self, length: int
+    ) -> TransformationConfig[Vector, Vector]:
+        embedding_config = CustomEmbeddingConfig(length)
+        aggregation_config = VectorAggregationConfig()
+        normalization_config = L2NormConfig()
+        return TransformationConfig(
+            normalization_config, aggregation_config, embedding_config
+        )
+
     @override
-    def _create_default_node(self, schema: SchemaObject) -> Node[Vector]:
+    def _create_default_node(
+        self, schema: SchemaObject
+    ) -> EmbeddingNode[Vector, Vector]:
         zero_vector = Vector.init_zero_vector(self._length)
         constant_node = ConstantNode(value=zero_vector, schema=schema)
         default_node = CustomVectorEmbeddingNode(
-            constant_node, CustomEmbeddingConfig(self._length)
+            constant_node, self.transformation_config
         )
         return default_node
 
-    def _calculate_schema_node_map(self, length: int) -> dict[SchemaObject, Node]:
-        embedding_config = CustomEmbeddingConfig(length)
+    def _calculate_schema_node_map(
+        self, transformation_config: TransformationConfig
+    ) -> dict[SchemaObject, EmbeddingNode[Vector, Vector]]:
         unchecked_custom_node_map = {
             vector_schema_field: CustomVectorEmbeddingNode(
-                SchemaFieldNode(vector_schema_field), embedding_config
+                parent=SchemaFieldNode(vector_schema_field),
+                transformation_config=transformation_config,
             )
             for vector_schema_field in self._field_set
         }
-        schema_node_map: dict[SchemaObject, Node] = {
+        schema_node_map: dict[SchemaObject, EmbeddingNode[Vector, Vector]] = {
             schema_field.schema_obj: node
             for schema_field, node in unchecked_custom_node_map.items()
         }

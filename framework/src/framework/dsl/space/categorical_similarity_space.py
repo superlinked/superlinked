@@ -20,23 +20,33 @@ from superlinked.framework.common.dag.categorical_similarity_node import (
     CategoricalSimilarityNode,
 )
 from superlinked.framework.common.dag.constant_node import ConstantNode
+from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.embedding.categorical_similarity_embedding import (
-    CategoricalSimilarityEmbeddingConfig,
-)
-from superlinked.framework.common.interface.has_space_field_set import HasSpaceFieldSet
 from superlinked.framework.common.schema.schema_object import (
     SchemaObject,
     String,
     StringList,
 )
+from superlinked.framework.common.space.config.aggregation.aggregation_config import (
+    VectorAggregationConfig,
+)
+from superlinked.framework.common.space.config.embedding.categorical_similarity_embedding_config import (
+    CategoricalSimilarityEmbeddingConfig,
+)
+from superlinked.framework.common.space.config.normalization.normalization_config import (
+    L2NormConfig,
+)
+from superlinked.framework.common.space.config.transformation_config import (
+    TransformationConfig,
+)
+from superlinked.framework.dsl.space.has_space_field_set import HasSpaceFieldSet
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
 
-class CategoricalSimilaritySpace(Space, HasSpaceFieldSet):
+class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
     """
     Represents a space for encoding categorical similarity.
 
@@ -108,35 +118,52 @@ class CategoricalSimilaritySpace(Space, HasSpaceFieldSet):
             category_input,
             String | StringList,  # type: ignore[misc] # interface supports only one type
         )
-        self.embedding_config: CategoricalSimilarityEmbeddingConfig = (
-            CategoricalSimilarityEmbeddingConfig(
-                categories=categories,
-                uncategorized_as_category=uncategorized_as_category,
-                negative_filter=negative_filter,
-            )
+        self._embedding_config = CategoricalSimilarityEmbeddingConfig(
+            categories=categories,
+            uncategorized_as_category=uncategorized_as_category,
+            negative_filter=negative_filter,
+        )
+        self._transformation_config = self._init_transformation_config(
+            self._embedding_config
         )
         self.__category = SpaceFieldSet(self, self._field_set)
         unchecked_category_node_map = {
             single_category: CategoricalSimilarityNode(
                 parent=SchemaFieldNode(single_category),
-                embedding_config=self.embedding_config,
+                transformation_config=self.transformation_config,
             )
             for single_category in self._field_set
         }
-        self.__schema_node_map: dict[SchemaObject, Node] = {
+        self.__schema_node_map: dict[SchemaObject, EmbeddingNode[Vector, list[str]]] = {
             schema_field.schema_obj: node
             for schema_field, node in unchecked_category_node_map.items()
         }
 
     @property
-    def _node_by_schema(self) -> dict[SchemaObject, Node[Vector]]:
+    @override
+    def _node_by_schema(
+        self,
+    ) -> dict[SchemaObject, EmbeddingNode[Vector, list[str]]]:
         return self.__schema_node_map
 
+    def _init_transformation_config(
+        self, embedding_config: CategoricalSimilarityEmbeddingConfig
+    ) -> TransformationConfig[Vector, list[str]]:
+        aggregation_config = VectorAggregationConfig()
+        normalization_config = L2NormConfig()
+        return TransformationConfig(
+            normalization_config, aggregation_config, embedding_config
+        )
+
     @override
-    def _create_default_node(self, schema: SchemaObject) -> Node[Vector]:
-        zero_vector = Vector.init_zero_vector(self.embedding_config.length)
+    def _create_default_node(
+        self, schema: SchemaObject
+    ) -> EmbeddingNode[Vector, list[str]]:
+        zero_vector = Vector.init_zero_vector(self.length)
         constant_node = cast(Node, ConstantNode(value=zero_vector, schema=schema))
-        default_node = CategoricalSimilarityNode(constant_node, self.embedding_config)
+        default_node = CategoricalSimilarityNode(
+            constant_node, self.transformation_config
+        )
         return default_node
 
     @property
@@ -146,15 +173,20 @@ class CategoricalSimilaritySpace(Space, HasSpaceFieldSet):
 
     @property
     @override
+    def transformation_config(self) -> TransformationConfig[Vector, list[str]]:
+        return self._transformation_config
+
+    @property
+    @override
     def annotation(self) -> str:
         not_text_for_uncategorized = (
-            "" if self.embedding_config.uncategorized_as_category else " not"
+            "" if self._embedding_config.uncategorized_as_category else " not"
         )
         return f"""The space creates a one-hot encoding where its value can be one or more
-        of {str(self.embedding_config.categories)}.
+        of {str(self._embedding_config.categories)}.
         Other values do{not_text_for_uncategorized} have a separate other category,
         so these are{not_text_for_uncategorized} similar to each other.
-        Not matching categories are creating {self.embedding_config.negative_filter}
+        Not matching categories are creating {self._embedding_config.negative_filter}
         similarity contribution.
         There has to be a .similar clause in the Query corresponding to this space.
         Negative weights mean similarity to anything but that category,
@@ -170,7 +202,7 @@ class CategoricalSimilaritySpace(Space, HasSpaceFieldSet):
 
     @property
     def uncategorized_as_category(self) -> bool:
-        return self.embedding_config.uncategorized_as_category
+        return self._embedding_config.uncategorized_as_category
 
     @property
     def category(self) -> SpaceFieldSet:

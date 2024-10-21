@@ -14,17 +14,19 @@
 
 from __future__ import annotations
 
-from beartype.typing import Sequence, cast
+from beartype.typing import Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.recency_node import RecencyNode
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.embedding.recency_embedding import RecencyEmbedding
-from superlinked.framework.common.interface.has_embedding import HasEmbedding
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
+from superlinked.framework.common.transform.transform import Step
+from superlinked.framework.common.transform.transformation_factory import (
+    TransformationFactory,
+)
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
 from superlinked.framework.online.dag.evaluation_result import (
     EvaluationResult,
@@ -36,9 +38,7 @@ from superlinked.framework.online.dag.parent_validator import ParentValidationTy
 DAY_IN_SECONDS: int = 24 * 60 * 60
 
 
-class OnlineRecencyNode(
-    DefaultOnlineNode[RecencyNode, Vector], HasLength, HasEmbedding
-):
+class OnlineRecencyNode(DefaultOnlineNode[RecencyNode, Vector], HasLength):
     def __init__(
         self,
         node: RecencyNode,
@@ -51,7 +51,11 @@ class OnlineRecencyNode(
             storage_manager,
             ParentValidationType.EXACTLY_ONE_PARENT,
         )
-        self._embedding = cast(RecencyEmbedding, self.node.init_embedding())
+        self._embedding_transformation = (
+            TransformationFactory.create_embedding_transformation(
+                self.node.transformation_config
+            )
+        )
 
     @property
     @override
@@ -59,9 +63,8 @@ class OnlineRecencyNode(
         return self.node.length
 
     @property
-    @override
-    def embedding(self) -> RecencyEmbedding:
-        return self._embedding
+    def embedding_transformation(self) -> Step[int, Vector]:
+        return self._embedding_transformation
 
     @override
     def evaluate_self(
@@ -71,7 +74,9 @@ class OnlineRecencyNode(
     ) -> list[EvaluationResult[Vector]]:
         if context.should_load_default_node_input:
             result = EvaluationResult(
-                self._get_single_evaluation_result(self.embedding.default_vector)
+                self._get_single_evaluation_result(
+                    self.node.transformation_config.embedding_config.default_vector
+                )
             )
             return [result] * len(parsed_schemas)
         return super().evaluate_self(parsed_schemas, context)
@@ -95,4 +100,4 @@ class OnlineRecencyNode(
         if len(parent_results.items()) != 1:
             return None
         input_: int = list(parent_results.values())[0].value
-        return self.embedding.embed(input_, context)
+        return self.embedding_transformation.transform(input_, context)

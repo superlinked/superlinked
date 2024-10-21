@@ -17,27 +17,38 @@ import math
 from typing_extensions import override
 
 from superlinked.framework.common.dag.constant_node import ConstantNode
-from superlinked.framework.common.dag.node import Node
+from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.number_embedding_node import NumberEmbeddingNode
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
-from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.interface.has_space_field_set import HasSpaceFieldSet
 from superlinked.framework.common.schema.schema_object import Number, SchemaObject
-from superlinked.framework.common.space.aggregation import InputAggregationMode
-from superlinked.framework.common.space.config.number_embedding_config import (
+from superlinked.framework.common.space.config.aggregation.aggregation_config import (
+    AggregationConfig,
+)
+from superlinked.framework.common.space.config.aggregation.aggregation_type import (
+    AggregationType,
+)
+from superlinked.framework.common.space.config.embedding.number_embedding_config import (
     LinearScale,
     LogarithmicScale,
     Mode,
     NumberEmbeddingConfig,
     Scale,
 )
+from superlinked.framework.common.space.config.normalization.normalization_config import (
+    NoNormConfig,
+)
+from superlinked.framework.common.space.config.transformation_config import (
+    TransformationConfig,
+)
 from superlinked.framework.common.util.lazy_property import lazy_property
 from superlinked.framework.dsl.space.exception import NoDefaultNodeException
+from superlinked.framework.dsl.space.has_space_field_set import HasSpaceFieldSet
+from superlinked.framework.dsl.space.input_aggregation_mode import InputAggregationMode
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
 
-class NumberSpace(Space, HasSpaceFieldSet):
+class NumberSpace(Space[float, float], HasSpaceFieldSet):
     """
     NumberSpace is used to encode numerical values within a specified range.
     The range is defined by the min_value and max_value parameters.
@@ -97,25 +108,37 @@ class NumberSpace(Space, HasSpaceFieldSet):
             negative_filter (float): This is a value that will be set for everything that is equal or
                 lower than the min_value. It can be a float. It defaults to 0 (No effect)
         """
-        self.aggregation_mode = aggregation_mode  # this must be set before super init for _handle_node_not_present
+        self._aggregation_mode = aggregation_mode  # this must be set before super init for _handle_node_not_present
         super().__init__(number, Number)
-        self._config = NumberEmbeddingConfig(
-            float(min_value), float(max_value), mode, scale, negative_filter
+        self._aggregation_type_by_mode = self.__init_aggregation_type_by_mode()
+        self._embedding_config = NumberEmbeddingConfig(
+            float(min_value),
+            float(max_value),
+            mode,
+            scale,
+            negative_filter,
+        )
+        self._transformation_config = self._init_transformation_config(
+            self._embedding_config, self._aggregation_mode
         )
         number_node_map = {
             num: NumberEmbeddingNode(
-                SchemaFieldNode(num), self._config, self.aggregation_mode
+                parent=SchemaFieldNode(num),
+                transformation_config=self._transformation_config,
             )
             for num in self._field_set
         }
         self.number = SpaceFieldSet(self, set(number_node_map.keys()))
-        self.__schema_node_map: dict[SchemaObject, Node] = {
+        self.__schema_node_map: dict[SchemaObject, EmbeddingNode[float, float]] = {
             schema_field.schema_obj: node
             for schema_field, node in number_node_map.items()
         }
 
     @property
-    def _node_by_schema(self) -> dict[SchemaObject, Node[Vector]]:
+    @override
+    def _node_by_schema(
+        self,
+    ) -> dict[SchemaObject, EmbeddingNode[float, float]]:
         return self.__schema_node_map
 
     @property
@@ -125,8 +148,22 @@ class NumberSpace(Space, HasSpaceFieldSet):
 
     @property
     @override
+    def transformation_config(self) -> TransformationConfig[float, float]:
+        return self._transformation_config
+
+    def __init_aggregation_type_by_mode(
+        self,
+    ) -> dict[InputAggregationMode, AggregationType]:
+        return {
+            InputAggregationMode.INPUT_AVERAGE: AggregationType.AVERAGE,
+            InputAggregationMode.INPUT_MINIMUM: AggregationType.MINIMUM,
+            InputAggregationMode.INPUT_MAXIMUM: AggregationType.MAXIMUM,
+        }
+
+    @property
+    @override
     def annotation(self) -> str:
-        mode_text = self._config.mode.value
+        mode_text = self._embedding_config.mode.value
         mode_to_preference: dict[str, str] = {
             "minimum": "lower",
             "maximum": "higher",
@@ -136,7 +173,7 @@ class NumberSpace(Space, HasSpaceFieldSet):
             """
             s to the one supplied in a .similar clause during a Query.
             """
-            if self._config.mode == Mode.SIMILAR
+            if self._embedding_config.mode == Mode.SIMILAR
             else ""
         )
         negative_text: dict[str, str] = {
@@ -146,29 +183,29 @@ class NumberSpace(Space, HasSpaceFieldSet):
         }
         end_text: str = (
             " Accepts int or float type input for a corresponding .similar clause input."
-            if self._config.mode == Mode.SIMILAR
+            if self._embedding_config.mode == Mode.SIMILAR
             else ""
         )
         scaling_text = (
-            f"logarithmically with the base of {self._config.scale.base}"
-            if isinstance(self._config.scale, LogarithmicScale)
+            f"logarithmically with the base of {self._embedding_config.scale.base}"
+            if isinstance(self._embedding_config.scale, LogarithmicScale)
             else "linearly"
         )
         min_value = (
             math.log(
-                1 + self._config.min_value,
-                self._config.scale.base,
+                1 + self._embedding_config.min_value,
+                self._embedding_config.scale.base,
             )
-            if isinstance(self._config.scale, LogarithmicScale)
-            else self._config.min_value
+            if isinstance(self._embedding_config.scale, LogarithmicScale)
+            else self._embedding_config.min_value
         )
         max_value = (
             math.log(
-                1 + self._config.max_value,
-                self._config.scale.base,
+                1 + self._embedding_config.max_value,
+                self._embedding_config.scale.base,
             )
-            if isinstance(self._config.scale, LogarithmicScale)
-            else self._config.max_value
+            if isinstance(self._embedding_config.scale, LogarithmicScale)
+            else self._embedding_config.max_value
         )
         return f"""The space encodes numbers between {min_value}
         and {max_value}, being the domain of the space.
@@ -182,30 +219,44 @@ class NumberSpace(Space, HasSpaceFieldSet):
     @property
     @override
     def _allow_empty_fields(self) -> bool:
-        return self.aggregation_mode == Mode.SIMILAR
+        return self._aggregation_mode == Mode.SIMILAR
+
+    def _init_transformation_config(
+        self,
+        embedding_config: NumberEmbeddingConfig,
+        aggregation_mode: InputAggregationMode,
+    ) -> TransformationConfig[float, float]:
+        aggregation_config = AggregationConfig(
+            self._aggregation_type_by_mode[aggregation_mode], float
+        )
+        normalization_config = NoNormConfig()
+        return TransformationConfig(
+            normalization_config, aggregation_config, embedding_config
+        )
 
     @override
-    def _create_default_node(self, schema: SchemaObject) -> Node[Vector]:
+    def _create_default_node(self, schema: SchemaObject) -> EmbeddingNode[float, float]:
         constant_node = ConstantNode(
             value=self._default_constant_node_input, schema=schema
         )
         default_node = NumberEmbeddingNode(
-            constant_node, self._config, self.aggregation_mode
+            parent=constant_node,
+            transformation_config=self._transformation_config,
         )
         return default_node
 
     @lazy_property
     def _default_constant_node_input(self) -> float:
-        match self._config.mode:
+        match self._embedding_config.mode:
             case Mode.MAXIMUM:
-                default_constant_node_input = self._config.max_value
+                default_constant_node_input = self._embedding_config.max_value
             case Mode.MINIMUM:
-                default_constant_node_input = self._config.min_value
+                default_constant_node_input = self._embedding_config.min_value
             case Mode.SIMILAR:
                 raise NoDefaultNodeException(
                     "Number Space with SIMILAR Mode do not have a default value, a .similar "
                     "clause is needed in the query."
                 )
             case _:
-                raise ValueError(f"Unknown mode: {self._config.mode}")
+                raise ValueError(f"Unknown mode: {self._embedding_config.mode}")
         return default_constant_node_input

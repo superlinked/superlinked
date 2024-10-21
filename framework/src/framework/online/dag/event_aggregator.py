@@ -18,11 +18,15 @@ from dataclasses import dataclass
 from datetime import timedelta
 
 from superlinked.framework.common.dag.context import ExecutionContext
+from superlinked.framework.common.dag.effect_modifier import EffectModifier
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.embedding.embedding import Embedding
 from superlinked.framework.common.interface.weighted import Weighted
-from superlinked.framework.common.space.aggregation import Aggregation
-from superlinked.framework.dsl.index.effect import EffectModifier
+from superlinked.framework.common.space.config.transformation_config import (
+    TransformationConfig,
+)
+from superlinked.framework.common.transform.transformation_factory import (
+    TransformationFactory,
+)
 
 WARP = 0.2  # ensures that the time modifier does not become too extreme, cannot be 1.0
 
@@ -37,18 +41,21 @@ class EventMetadata:
 @dataclass
 class EventAggregatorParams:
     context: ExecutionContext
-    aggregation: Aggregation
     stored_result: Vector
     affecting_vector: Weighted[Vector]
     event_metadata: EventMetadata
     effect_modifier: EffectModifier
-    embedding: Embedding
+    transformation_config: TransformationConfig
 
 
 class EventAggregator:
-
     def __init__(self, params: EventAggregatorParams) -> None:
         self._params = params
+        self._aggregation_transformation = (
+            TransformationFactory.create_aggregation_transformation(
+                self._params.transformation_config
+            )
+        )
 
     def calculate_event_vector(self) -> Vector:
         weighted_affecting_vector = Weighted(
@@ -59,9 +66,13 @@ class EventAggregator:
         weighted_stored_vector = Weighted(
             self._params.stored_result, self._calculate_stored_weight()
         )
-        return self._params.aggregation.aggregate_weighted(
-            [weighted_affecting_vector, weighted_stored_vector],
-            self._params.embedding,
+        not_empty_weighted_vectors = [
+            weighted_vector
+            for weighted_vector in [weighted_affecting_vector, weighted_stored_vector]
+            if not weighted_vector.item.is_empty
+        ]
+        return self._aggregation_transformation.transform(
+            not_empty_weighted_vectors,
             self._params.context,
         )
 

@@ -14,19 +14,19 @@
 
 from __future__ import annotations
 
-from beartype.typing import Sequence, cast
+from beartype.typing import Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.text_embedding_node import TextEmbeddingNode
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.embedding.sentence_transformer_embedding import (
-    SentenceTransformerEmbedding,
-)
-from superlinked.framework.common.interface.has_embedding import HasEmbedding
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
+from superlinked.framework.common.transform.transform import Step
+from superlinked.framework.common.transform.transformation_factory import (
+    TransformationFactory,
+)
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
 from superlinked.framework.online.dag.evaluation_result import (
     EvaluationResult,
@@ -35,9 +35,7 @@ from superlinked.framework.online.dag.evaluation_result import (
 from superlinked.framework.online.dag.online_node import OnlineNode
 
 
-class OnlineTextEmbeddingNode(
-    DefaultOnlineNode[TextEmbeddingNode, Vector], HasLength, HasEmbedding
-):
+class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasLength):
     def __init__(
         self,
         node: TextEmbeddingNode,
@@ -45,7 +43,12 @@ class OnlineTextEmbeddingNode(
         storage_manager: StorageManager,
     ) -> None:
         super().__init__(node, parents, storage_manager)
-        self._embedding = self._init_embedding()
+        self._embedding_transformation = self._init_embedding_transformation()
+
+    def _init_embedding_transformation(self) -> Step[Sequence[str], list[Vector]]:
+        return TransformationFactory.create_multi_embedding_transformation(
+            self.node.transformation_config
+        )
 
     @property
     @override
@@ -53,12 +56,8 @@ class OnlineTextEmbeddingNode(
         return self.node.length
 
     @property
-    @override
-    def embedding(self) -> SentenceTransformerEmbedding:
-        return self._embedding
-
-    def _init_embedding(self) -> SentenceTransformerEmbedding:
-        return cast(SentenceTransformerEmbedding, self.node.init_embedding())
+    def embedding_transformation(self) -> Step[Sequence[str], list[Vector]]:
+        return self._embedding_transformation
 
     @override
     def evaluate_self(
@@ -68,7 +67,9 @@ class OnlineTextEmbeddingNode(
     ) -> list[EvaluationResult[Vector]]:
         if context.should_load_default_node_input:
             result = EvaluationResult(
-                self._get_single_evaluation_result(self.embedding.default_vector)
+                self._get_single_evaluation_result(
+                    self.node.transformation_config.embedding_config.default_vector
+                )
             )
             return [result] * len(parsed_schemas)
         return super().evaluate_self(parsed_schemas, context)
@@ -76,7 +77,7 @@ class OnlineTextEmbeddingNode(
     @override
     def _evaluate_singles(
         self,
-        parent_results: list[dict[OnlineNode, SingleEvaluationResult]],
+        parent_results: list[dict[OnlineNode, SingleEvaluationResult[str]]],
         context: ExecutionContext,
     ) -> Sequence[Vector | None]:
         none_indices = [
@@ -99,4 +100,4 @@ class OnlineTextEmbeddingNode(
     def __embed_texts(
         self, texts: Sequence[str], context: ExecutionContext
     ) -> list[Vector]:
-        return self.embedding.embed_multiple(texts, context)
+        return self.embedding_transformation.transform(texts, context)

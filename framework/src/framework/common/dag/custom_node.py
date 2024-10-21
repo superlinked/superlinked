@@ -12,18 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing_extensions import override
-
-from superlinked.framework.common.dag.embedding_node import VectorEmbeddingNode
+from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.embedding.custom_embedding import (
-    CustomEmbedding,
-    CustomEmbeddingConfig,
-)
 
 
-class CustomVectorEmbeddingNode(VectorEmbeddingNode[Vector, CustomEmbeddingConfig]):
-    @property
-    @override
-    def embedding_type(self) -> type[CustomEmbedding]:
-        return CustomEmbedding
+class CustomVectorEmbeddingNode(EmbeddingNode[Vector, Vector]):
+    pass

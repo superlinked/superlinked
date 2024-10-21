@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
 from dataclasses import dataclass
+
+from beartype.typing import Generic
 
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
@@ -23,6 +24,12 @@ from superlinked.framework.common.schema.event_schema_object import (
     SchemaReference,
 )
 from superlinked.framework.common.schema.schema_object import SchemaField
+from superlinked.framework.common.space.config.aggregation.aggregation_config import (
+    AggregationInputT,
+)
+from superlinked.framework.common.space.config.embedding.embedding_config import (
+    EmbeddingInputT,
+)
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.space.space import Space
 
@@ -33,7 +40,7 @@ __pdoc__["EffectModifier"] = False
 
 @TypeValidator.wrap
 @dataclass
-class Effect:
+class Effect(Generic[AggregationInputT, EmbeddingInputT]):
     """
     An effect represents a conditional interaction within a `Space` where the
     `affecting_schema_reference` interacted with the `affected_schema_reference`.
@@ -42,7 +49,7 @@ class Effect:
     e.g.: A `User` schema interacts with a `Post` schema, if `event.type == 'like'.
     """
 
-    space: Space
+    space: Space[AggregationInputT, EmbeddingInputT]
     affected_schema_reference: SchemaReference
     affecting_schema_reference: SchemaReference | MultipliedSchemaReference
     filter_: ComparisonOperation[SchemaField]
@@ -52,27 +59,4 @@ class Effect:
             f"{self.__class__.__name__}(space={self.space}, filter={self.filter_}, "
             f"affected_schema_reference={self.affected_schema_reference}, "
             f"affecting_schema_reference={self.affecting_schema_reference})"
-        )
-
-
-@TypeValidator.wrap
-@dataclass
-class EffectModifier:
-    max_age_delta: datetime.timedelta | None = None
-    max_count: int | None = None
-    temperature: int | float = 0.5
-
-    def __post_init__(self) -> None:
-        if not 0 <= self.temperature <= 1:
-            raise ValueError("temperature must be between 0 and 1.")
-        if self.max_age_delta is not None and self.max_age_delta.total_seconds() == 0:
-            raise ValueError("max_age cannot be 0 seconds.")
-        if self.max_count is not None and self.max_count < 0:
-            raise ValueError("max_count cannot be smaller than 0.")
-
-    def __str__(self) -> str:
-        return (
-            f"{self.__class__.__name__}(max_age={self.max_age_delta},"
-            f"max_count={self.max_count}, "
-            f"temperature={self.temperature})"
         )

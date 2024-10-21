@@ -18,12 +18,12 @@ from beartype.typing import Generic, TypeVar
 
 from superlinked.framework.common.const import constants
 
-WT = TypeVar("WT")
+WeightedItemT = TypeVar("WeightedItemT")
 
 
 @dataclass
-class Weighted(Generic[WT]):
-    item: WT
+class Weighted(Generic[WeightedItemT]):
+    item: WeightedItemT
     weight: float = constants.DEFAULT_WEIGHT
 
     def __str__(self) -> str:

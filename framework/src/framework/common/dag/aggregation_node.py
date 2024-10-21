@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Any, Sequence, cast
+from beartype.typing import Any, Generic, Sequence, cast
 from typing_extensions import override
 
 from superlinked.framework.common.dag.dag_effect import DagEffect
@@ -24,15 +24,30 @@ from superlinked.framework.common.exception import ValidationException
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.schema.schema_object import SchemaObject
-from superlinked.framework.common.space.aggregation import Aggregation
+from superlinked.framework.common.space.config.aggregation.aggregation_config import (
+    AggregationInputT,
+)
+from superlinked.framework.common.space.config.embedding.embedding_config import (
+    EmbeddingInputT,
+)
+from superlinked.framework.common.space.config.transformation_config import (
+    TransformationConfig,
+)
+from superlinked.framework.common.space.interface.has_transformation_config import (
+    HasTransformationConfig,
+)
 
 
-class AggregationNode(Node[Vector], HasLength):
+class AggregationNode(
+    Generic[AggregationInputT, EmbeddingInputT],
+    Node[Vector],
+    HasTransformationConfig[AggregationInputT, EmbeddingInputT],
+):
     def __init__(
         self,
-        weighted_parents: list[Weighted[Node[Vector]]],
+        weighted_parents: Sequence[Weighted[Node[Vector]]],
         dag_effects: set[DagEffect],
-        aggregation: Aggregation,
+        transformation_config: TransformationConfig[AggregationInputT, EmbeddingInputT],
     ) -> None:
         super().__init__(
             Vector,
@@ -41,8 +56,8 @@ class AggregationNode(Node[Vector], HasLength):
             dag_effects=dag_effects,
         )
         self._validate_parents()
-        self.weighted_parents = weighted_parents
-        self.aggregation = aggregation
+        self._weighted_parents = weighted_parents
+        self._transformation_config = transformation_config
         # All parents are of the same length as it was validated earlier.
         self.__length = cast(HasLength, self.parents[0]).length
 
@@ -70,6 +85,17 @@ class AggregationNode(Node[Vector], HasLength):
     def length(self) -> int:
         return self.__length
 
+    @property
+    def weighted_parents(self) -> Sequence[Weighted[Node[Vector]]]:
+        return self._weighted_parents
+
+    @property
+    @override
+    def transformation_config(
+        self,
+    ) -> TransformationConfig[AggregationInputT, EmbeddingInputT]:
+        return self._transformation_config
+
     @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
         weighted_parents = [
@@ -79,7 +105,7 @@ class AggregationNode(Node[Vector], HasLength):
         return {
             "weighted_parents": weighted_parents,
             "dag_effects": self.dag_effects,
-            "aggregation": self.aggregation,
+            "transformation_config": self.transformation_config,
         }
 
     @property

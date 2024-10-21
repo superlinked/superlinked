@@ -13,22 +13,9 @@
 # limitations under the License.
 
 
-from typing_extensions import override
-
-from superlinked.framework.common.dag.embedding_node import VectorEmbeddingNode
-from superlinked.framework.common.embedding.categorical_similarity_embedding import (
-    CategoricalSimilarityEmbedding,
-    CategoryT,
-)
-from superlinked.framework.common.space.config.categorical_similarity_embedding_config import (
-    CategoricalSimilarityEmbeddingConfig,
-)
+from superlinked.framework.common.dag.embedding_node import EmbeddingNode
+from superlinked.framework.common.data_types import Vector
 
 
-class CategoricalSimilarityNode(
-    VectorEmbeddingNode[CategoryT, CategoricalSimilarityEmbeddingConfig]
-):
-    @property
-    @override
-    def embedding_type(self) -> type[CategoricalSimilarityEmbedding]:
-        return CategoricalSimilarityEmbedding
+class CategoricalSimilarityNode(EmbeddingNode[Vector, list[str]]):
+    pass

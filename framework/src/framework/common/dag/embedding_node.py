@@ -13,82 +13,49 @@
 # limitations under the License.
 
 
-from abc import abstractmethod
-from dataclasses import asdict
-
 from beartype.typing import Any, Generic
 from typing_extensions import override
 
 from superlinked.framework.common.dag.node import Node, NodeDataT
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.embedding.embedding import Embedding, EmbeddingConfigT
-from superlinked.framework.common.interface.has_length import HasLength
-from superlinked.framework.common.space.aggregation import (
-    Aggregation,
-    InputAggregation,
-    InputAggregationMode,
-    VectorAggregation,
+from superlinked.framework.common.space.config.aggregation.aggregation_config import (
+    AggregationInputT,
+)
+from superlinked.framework.common.space.config.transformation_config import (
+    TransformationConfig,
+)
+from superlinked.framework.common.space.interface.has_transformation_config import (
+    HasTransformationConfig,
 )
 
 
-class EmbeddingNode(Generic[NodeDataT, EmbeddingConfigT], Node[Vector], HasLength):
+class EmbeddingNode(
+    Generic[AggregationInputT, NodeDataT],
+    Node[Vector],
+    HasTransformationConfig[AggregationInputT, NodeDataT],
+):
     def __init__(
         self,
         parent: Node[NodeDataT],
-        embedding_config: EmbeddingConfigT,
-        aggregation: Aggregation,
+        transformation_config: TransformationConfig[AggregationInputT, NodeDataT],
     ) -> None:
         super().__init__(Vector, [parent])
-        self._embedding_config = embedding_config
-        self._aggregation = aggregation
-
-    @property
-    @abstractmethod
-    def embedding_type(self) -> type[Embedding[NodeDataT, EmbeddingConfigT]]:
-        pass
+        self._transformation_config = transformation_config
 
     @property
     @override
     def length(self) -> int:
-        return self._embedding_config.length
+        return self._transformation_config.length
 
     @property
-    def embedding_config(self) -> EmbeddingConfigT:
-        return self._embedding_config
-
-    @property
-    def aggregation(self) -> Aggregation:
-        return self._aggregation
-
-    def init_embedding(self) -> Embedding[NodeDataT, EmbeddingConfigT]:
-        return self.embedding_type(self.embedding_config)
+    @override
+    def transformation_config(
+        self,
+    ) -> TransformationConfig[AggregationInputT, NodeDataT]:
+        return self._transformation_config
 
     @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
         return {
-            "embedding_config": str(asdict(self.embedding_config)),
-            "aggregation": type(self.aggregation).__name__,
+            "transformation_config": str(self.transformation_config.to_dict()),
         }
-
-
-class VectorEmbeddingNode(
-    Generic[NodeDataT, EmbeddingConfigT], EmbeddingNode[NodeDataT, EmbeddingConfigT]
-):
-    def __init__(
-        self, parent: Node[NodeDataT], embedding_config: EmbeddingConfigT
-    ) -> None:
-        aggregation = VectorAggregation()
-        super().__init__(parent, embedding_config, aggregation)
-
-
-class InputEmbeddingNode(
-    Generic[NodeDataT, EmbeddingConfigT], EmbeddingNode[NodeDataT, EmbeddingConfigT]
-):
-    def __init__(
-        self,
-        parent: Node[NodeDataT],
-        embedding_config: EmbeddingConfigT,
-        aggregation_mode: InputAggregationMode,
-    ) -> None:
-        aggregation = InputAggregation.from_aggregation_mode(aggregation_mode)
-        super().__init__(parent, embedding_config, aggregation)

@@ -16,11 +16,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from beartype.typing import Any, Sequence, cast
+from beartype.typing import Any, Generic, Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.comparison_filter_node import ComparisonFilterNode
 from superlinked.framework.common.dag.dag_effect import DagEffect
+from superlinked.framework.common.dag.effect_modifier import EffectModifier
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.persistence_params import PersistenceParams
@@ -28,27 +29,43 @@ from superlinked.framework.common.dag.schema_object_reference import (
     SchemaObjectReference,
 )
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.schema.event_schema_object import EventSchemaObject
 from superlinked.framework.common.schema.schema_object import SchemaObject
-from superlinked.framework.dsl.index.effect import EffectModifier
+from superlinked.framework.common.space.config.aggregation.aggregation_config import (
+    AggregationInputT,
+)
+from superlinked.framework.common.space.config.embedding.embedding_config import (
+    EmbeddingInputT,
+)
+from superlinked.framework.common.space.config.transformation_config import (
+    TransformationConfig,
+)
+from superlinked.framework.common.space.interface.has_transformation_config import (
+    HasTransformationConfig,
+)
+
+
+@dataclass
+class EventAggregationNodeInitParams(Generic[AggregationInputT, EmbeddingInputT]):
+    input_to_aggregate: EmbeddingNode[AggregationInputT, EmbeddingInputT]
+    event_schema: EventSchemaObject
+    affected_schema: SchemaObjectReference
+    affecting_schema: SchemaObjectReference
+    filter_inputs: Sequence[Weighted[ComparisonFilterNode]]
+    dag_effects: set[DagEffect]
+    effect_modifier: EffectModifier
 
 
 class EventAggregationNode(
-    Node[Vector], HasLength
+    Generic[AggregationInputT, EmbeddingInputT],
+    Node[Vector],
+    HasTransformationConfig[AggregationInputT, EmbeddingInputT],
 ):  # pylint: disable=too-many-instance-attributes
-    @dataclass
-    class InitParams:
-        input_to_aggregate: EmbeddingNode
-        event_schema: EventSchemaObject
-        affected_schema: SchemaObjectReference
-        affecting_schema: SchemaObjectReference
-        filter_inputs: list[Weighted[ComparisonFilterNode]]
-        dag_effects: set[DagEffect]
-        effect_modifier: EffectModifier
-
-    def __init__(self, init_params: InitParams) -> None:
+    def __init__(
+        self,
+        init_params: EventAggregationNodeInitParams[AggregationInputT, EmbeddingInputT],
+    ) -> None:
         super().__init__(
             Vector,
             [init_params.input_to_aggregate]
@@ -68,11 +85,18 @@ class EventAggregationNode(
         self.affecting_schema = init_params.affecting_schema
         self.filters = init_params.filter_inputs
         self.effect_modifier = init_params.effect_modifier
-        self.__length = cast(HasLength, self.parents[0]).length
+        self.__length = self.input_to_aggregate.length
 
     @property
     def length(self) -> int:
         return self.__length
+
+    @property
+    @override
+    def transformation_config(
+        self,
+    ) -> TransformationConfig[AggregationInputT, EmbeddingInputT]:
+        return self.input_to_aggregate._transformation_config
 
     @override
     def _get_node_id_parameters(self) -> dict[str, Any]:

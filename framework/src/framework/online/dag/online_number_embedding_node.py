@@ -14,28 +14,30 @@
 
 from __future__ import annotations
 
-from beartype.typing import cast
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.number_embedding_node import NumberEmbeddingNode
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.embedding.number_embedding import NumberEmbedding
-from superlinked.framework.common.interface.has_embedding import HasEmbedding
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
+from superlinked.framework.common.transform.transform import Step
+from superlinked.framework.common.transform.transformation_factory import (
+    TransformationFactory,
+)
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.dag.parent_validator import ParentValidationType
 
 
 class OnlineNumberEmbeddingNode(
-    OnlineNode[NumberEmbeddingNode, Vector], HasLength, HasEmbedding
+    OnlineNode[NumberEmbeddingNode[float, float], Vector],
+    HasLength,
 ):
     def __init__(
         self,
-        node: NumberEmbeddingNode,
+        node: NumberEmbeddingNode[float, float],
         parents: list[OnlineNode],
         storage_manager: StorageManager,
     ) -> None:
@@ -45,7 +47,11 @@ class OnlineNumberEmbeddingNode(
             storage_manager,
             ParentValidationType.LESS_THAN_TWO_PARENTS,
         )
-        self._embedding = cast(NumberEmbedding, self.node.init_embedding())
+        self._embedding_transformation = (
+            TransformationFactory.create_embedding_transformation(
+                self.node.transformation_config
+            )
+        )
 
     @property
     @override
@@ -53,9 +59,8 @@ class OnlineNumberEmbeddingNode(
         return self.node.length
 
     @property
-    @override
-    def embedding(self) -> NumberEmbedding:
-        return self._embedding
+    def embedding_transformation(self) -> Step[float, Vector]:
+        return self._embedding_transformation
 
     @override
     def evaluate_self(
@@ -70,11 +75,13 @@ class OnlineNumberEmbeddingNode(
         parsed_schema: ParsedSchema,
         context: ExecutionContext,
     ) -> EvaluationResult[Vector]:
-        if self.embedding.should_return_default(context):
-            result = self.embedding.default_vector
+        if self.node.transformation_config.embedding_config.should_return_default(
+            context
+        ):
+            result = self.node.transformation_config.embedding_config.default_vector
         elif len(self.parents) == 0:
             result = self.load_stored_result_or_raise_exception(parsed_schema)
         else:
             input_ = self.parents[0].evaluate_next_single(parsed_schema, context)
-            result = self.embedding.embed(input_.main.value, context)
+            result = self.embedding_transformation.transform(input_.main.value, context)
         return EvaluationResult(self._get_single_evaluation_result(result))

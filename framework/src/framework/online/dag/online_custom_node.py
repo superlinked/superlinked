@@ -21,19 +21,21 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.custom_node import CustomVectorEmbeddingNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.embedding.custom_embedding import CustomEmbedding
 from superlinked.framework.common.exception import ValidationException
-from superlinked.framework.common.interface.has_embedding import HasEmbedding
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
+from superlinked.framework.common.transform.transform import Step
+from superlinked.framework.common.transform.transformation_factory import (
+    TransformationFactory,
+)
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.dag.parent_validator import ParentValidationType
 
 
 class OnlineCustomVectorEmbeddingNode(
-    OnlineNode[CustomVectorEmbeddingNode, Vector], HasLength, HasEmbedding
+    OnlineNode[CustomVectorEmbeddingNode, Vector], HasLength
 ):
     def __init__(
         self,
@@ -47,7 +49,11 @@ class OnlineCustomVectorEmbeddingNode(
             storage_manager,
             ParentValidationType.LESS_THAN_TWO_PARENTS,
         )
-        self._embedding = cast(CustomEmbedding, self.node.init_embedding())
+        self._embedding_transformation = (
+            TransformationFactory.create_embedding_transformation(
+                self.node.transformation_config
+            )
+        )
 
     @property
     @override
@@ -55,9 +61,8 @@ class OnlineCustomVectorEmbeddingNode(
         return self.node.length
 
     @property
-    @override
-    def embedding(self) -> CustomEmbedding:
-        return self._embedding
+    def embedding_transformation(self) -> Step[Vector, Vector]:
+        return self._embedding_transformation
 
     @override
     def evaluate_self(
@@ -65,9 +70,13 @@ class OnlineCustomVectorEmbeddingNode(
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
     ) -> list[EvaluationResult[Vector]]:
-        if context.should_load_default_node_input:
+        if self.node.transformation_config.embedding_config.should_return_default(
+            context
+        ):
             result = EvaluationResult(
-                self._get_single_evaluation_result(self.embedding.default_vector)
+                self._get_single_evaluation_result(
+                    self.node.transformation_config.embedding_config.default_vector
+                )
             )
             return [result] * len(parsed_schemas)
         return [self.evaluate_self_single(schema, context) for schema in parsed_schemas]
@@ -91,6 +100,8 @@ class OnlineCustomVectorEmbeddingNode(
                 + f" of size {self.length}"
                 + f", got {len(input_value)}"
             )
-        transformed_input_value = self.embedding.embed(Vector(input_value), context)
+        transformed_input_value = self.embedding_transformation.transform(
+            Vector(input_value), context
+        )
         main = self._get_single_evaluation_result(transformed_input_value)
         return EvaluationResult(main)

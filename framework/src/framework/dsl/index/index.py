@@ -22,6 +22,7 @@ from superlinked.framework.common.const import constants
 from superlinked.framework.common.dag.concatenation_node import ConcatenationNode
 from superlinked.framework.common.dag.dag import Dag
 from superlinked.framework.common.dag.dag_effect import DagEffect
+from superlinked.framework.common.dag.effect_modifier import EffectModifier
 from superlinked.framework.common.dag.index_node import IndexNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
@@ -33,8 +34,14 @@ from superlinked.framework.common.exception import (
 from superlinked.framework.common.schema.event_schema_object import EventSchemaObject
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import SchemaField, SchemaObject
+from superlinked.framework.common.space.config.aggregation.aggregation_config import (
+    AggregationInputT,
+)
+from superlinked.framework.common.space.config.embedding.embedding_config import (
+    EmbeddingInputT,
+)
 from superlinked.framework.common.util.type_validator import TypeValidator
-from superlinked.framework.dsl.index.effect import Effect, EffectModifier
+from superlinked.framework.dsl.index.effect import Effect
 from superlinked.framework.dsl.index.util.aggregation_effect_group import (
     AggregationEffectGroup,
 )
@@ -262,9 +269,9 @@ class Index:  # pylint: disable=too-many-instance-attributes
 
     def __init_parent_for_index_or_aggregation(
         self,
-        space: Space,
+        space: Space[AggregationInputT, EmbeddingInputT],
         schema: SchemaObject,
-        effects: list[EffectWithReferencedSchemaObject],
+        effects: Sequence[EffectWithReferencedSchemaObject],
         effect_modifier: EffectModifier,
     ) -> Node[Vector]:
         filtered_effects = Index.__filter_effects_by_space_and_schema(
@@ -283,10 +290,10 @@ class Index:  # pylint: disable=too-many-instance-attributes
 
     @staticmethod
     def __filter_effects_by_space_and_schema(
-        effects: list[EffectWithReferencedSchemaObject],
-        space: Space,
+        effects: Sequence[EffectWithReferencedSchemaObject],
+        space: Space[AggregationInputT, EmbeddingInputT],
         schema: SchemaObject,
-    ) -> list[EffectWithReferencedSchemaObject]:
+    ) -> list[EffectWithReferencedSchemaObject[AggregationInputT, EmbeddingInputT]]:
         return [
             effect
             for effect in effects

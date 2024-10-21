@@ -12,24 +12,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import math
 from datetime import timedelta
 
 import structlog
+from beartype.typing import Sequence
 from typing_extensions import override
 
+from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.named_function_node import NamedFunctionNode
-from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.period_time import PeriodTime
 from superlinked.framework.common.dag.recency_node import RecencyNode
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
-from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.embedding.recency_embedding import (
+from superlinked.framework.common.schema.schema_object import SchemaObject, Timestamp
+from superlinked.framework.common.space.config.aggregation.aggregation_config import (
+    AggregationConfig,
+)
+from superlinked.framework.common.space.config.aggregation.aggregation_type import (
+    AggregationType,
+)
+from superlinked.framework.common.space.config.embedding.recency_embedding_config import (
     RecencyEmbeddingConfig,
 )
-from superlinked.framework.common.interface.has_space_field_set import HasSpaceFieldSet
-from superlinked.framework.common.schema.schema_object import SchemaObject, Timestamp
-from superlinked.framework.common.space.aggregation import InputAggregationMode
+from superlinked.framework.common.space.config.normalization.normalization_config import (
+    ConstantNormConfig,
+)
+from superlinked.framework.common.space.config.transformation_config import (
+    TransformationConfig,
+)
 from superlinked.framework.common.util.named_function_evaluator import NamedFunction
+from superlinked.framework.dsl.space.has_space_field_set import HasSpaceFieldSet
+from superlinked.framework.dsl.space.input_aggregation_mode import InputAggregationMode
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
@@ -39,7 +52,7 @@ DEFAULT_PERIOD_TIME = PeriodTime(period_time=timedelta(days=14))
 
 
 class RecencySpace(
-    Space, HasSpaceFieldSet
+    Space[int, int], HasSpaceFieldSet
 ):  # pylint: disable=too-many-instance-attributes
     """
     Recency space encodes timestamp type data measured in seconds and in unix timestamp format.
@@ -95,6 +108,7 @@ class RecencySpace(
                 Defaults to 0.0.
         """
         super().__init__(timestamp, Timestamp)
+        self._aggregation_type_by_mode = self.__init_aggregation_type_by_mode()
         self.timestamp = SpaceFieldSet(self, self._field_set)
         recency_periods: list[PeriodTime] = (
             period_time_list
@@ -105,17 +119,25 @@ class RecencySpace(
                 else [DEFAULT_PERIOD_TIME]
             )
         )
+        self._aggregation_mode: InputAggregationMode = aggregation_mode
         self._embedding_config = RecencyEmbeddingConfig(
             recency_periods,
             time_period_hour_offset,
             negative_filter,
         )
-        self._aggregation_mode: InputAggregationMode = aggregation_mode
-        self._schema_node_map: dict[SchemaObject, Node] = {
+        self._aggregation_config = AggregationConfig(
+            self._aggregation_type_by_mode[self._aggregation_mode], int
+        )
+        self._normalization_config = ConstantNormConfig(
+            math.sqrt(sum(period_time.weight**2 for period_time in recency_periods))
+        )
+        self._transformation_config = self._init_transformation_config(
+            self._embedding_config, self._aggregation_mode, recency_periods
+        )
+        self._schema_node_map: dict[SchemaObject, EmbeddingNode[int, int]] = {
             field.schema_obj: RecencyNode(
-                SchemaFieldNode(field),
-                self._embedding_config,
-                self._aggregation_mode,
+                parent=SchemaFieldNode(field),
+                transformation_config=self._transformation_config,
             )
             for field in self.timestamp.fields
         }
@@ -127,16 +149,29 @@ class RecencySpace(
         )
 
     @property
-    def embedding_config(self) -> RecencyEmbeddingConfig:
-        return self._embedding_config
-
-    @property
     @override
     def space_field_set(self) -> SpaceFieldSet:
         return self.timestamp
 
     @property
-    def _node_by_schema(self) -> dict[SchemaObject, Node[Vector]]:
+    @override
+    def transformation_config(self) -> TransformationConfig[int, int]:
+        return self._transformation_config
+
+    def __init_aggregation_type_by_mode(
+        self,
+    ) -> dict[InputAggregationMode, AggregationType]:
+        return {
+            InputAggregationMode.INPUT_AVERAGE: AggregationType.AVERAGE,
+            InputAggregationMode.INPUT_MINIMUM: AggregationType.MINIMUM,
+            InputAggregationMode.INPUT_MAXIMUM: AggregationType.MAXIMUM,
+        }
+
+    @property
+    @override
+    def _node_by_schema(
+        self,
+    ) -> dict[SchemaObject, EmbeddingNode[int, int]]:
         return self._schema_node_map
 
     @property
@@ -160,12 +195,29 @@ class RecencySpace(
     def _allow_empty_fields(self) -> bool:
         return True
 
+    def _init_transformation_config(
+        self,
+        embedding_config: RecencyEmbeddingConfig,
+        aggregation_mode: InputAggregationMode,
+        recency_periods: Sequence[PeriodTime],
+    ) -> TransformationConfig[int, int]:
+        aggregation_config = AggregationConfig(
+            self._aggregation_type_by_mode[aggregation_mode], int
+        )
+        normalization_config = ConstantNormConfig(
+            math.sqrt(sum(period_time.weight**2 for period_time in recency_periods))
+        )
+        return TransformationConfig(
+            normalization_config,
+            aggregation_config,
+            embedding_config,
+        )
+
     @override
-    def _create_default_node(self, schema: SchemaObject) -> Node[Vector]:
+    def _create_default_node(self, schema: SchemaObject) -> EmbeddingNode[int, int]:
         named_function_node = NamedFunctionNode(NamedFunction.NOW, schema, int)
         default_node = RecencyNode(
-            named_function_node,
-            self._embedding_config,
-            self._aggregation_mode,
+            parent=named_function_node,
+            transformation_config=self._transformation_config,
         )
         return default_node

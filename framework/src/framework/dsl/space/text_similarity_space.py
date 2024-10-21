@@ -17,17 +17,29 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.chunking_node import ChunkingNode
 from superlinked.framework.common.dag.constant_node import ConstantNode
+from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.dag.text_embedding_node import TextEmbeddingNode
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.embedding.sentence_transformer_embedding import (
-    SentenceTransformerEmbedding,
+from superlinked.framework.common.schema.schema_object import SchemaObject, String
+from superlinked.framework.common.space.config.aggregation.aggregation_config import (
+    VectorAggregationConfig,
+)
+from superlinked.framework.common.space.config.embedding.text_similarity_embedding_config import (
     TextSimilarityEmbeddingConfig,
 )
-from superlinked.framework.common.interface.has_space_field_set import HasSpaceFieldSet
-from superlinked.framework.common.schema.schema_object import SchemaObject, String
+from superlinked.framework.common.space.config.normalization.normalization_config import (
+    L2NormConfig,
+)
+from superlinked.framework.common.space.config.transformation_config import (
+    TransformationConfig,
+)
+from superlinked.framework.common.space.embedding.sentence_transformer_embedding import (
+    SentenceTransformerEmbedding,
+)
 from superlinked.framework.common.util.type_validator import TypeValidator
+from superlinked.framework.dsl.space.has_space_field_set import HasSpaceFieldSet
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
@@ -36,7 +48,7 @@ TextInput = String | ChunkingNode
 DEFAULT_CACHE_SIZE = 10000
 
 
-class TextSimilaritySpace(Space, HasSpaceFieldSet):
+class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
     """
     A text similarity space is used to create vectors from documents in order to search in them
     later on. We only support (SentenceTransformers)[https://www.sbert.net/] models as they have
@@ -60,18 +72,18 @@ class TextSimilaritySpace(Space, HasSpaceFieldSet):
             Set it to 0, to disable caching. Defaults to 10000.
         """
         length = SentenceTransformerEmbedding.calculate_length(model)
-        self._embedding_config = TextSimilarityEmbeddingConfig(
+        self._transformation_config = self._init_transformation_config(
             model, cache_size, length
         )
         text_text_node_map = {
             self._get_root(unchecked_text): self._generate_embedding_node(
-                unchecked_text, self._embedding_config
+                unchecked_text, self._transformation_config
             )
             for unchecked_text in (text if isinstance(text, list) else [text])
         }
         super().__init__(list(text_text_node_map.keys()), String)
         self.text = SpaceFieldSet(self, set(text_text_node_map.keys()))
-        self._schema_node_map: dict[SchemaObject, Node] = {
+        self._schema_node_map: dict[SchemaObject, EmbeddingNode[Vector, str]] = {
             schema_field.schema_obj: node
             for schema_field, node in text_text_node_map.items()
         }
@@ -85,11 +97,13 @@ class TextSimilaritySpace(Space, HasSpaceFieldSet):
         return self._get_root(text.parents[0])
 
     def _generate_embedding_node(
-        self, text: TextInput, embedding_config: TextSimilarityEmbeddingConfig
+        self, text: TextInput, transformation_config: TransformationConfig
     ) -> TextEmbeddingNode:
-        if isinstance(text, ChunkingNode):
-            return TextEmbeddingNode(text, embedding_config)
-        return TextEmbeddingNode(SchemaFieldNode(text), embedding_config)
+        parent = text if isinstance(text, ChunkingNode) else SchemaFieldNode(text)
+        return TextEmbeddingNode(
+            parent=parent,
+            transformation_config=transformation_config,
+        )
 
     @property
     @override
@@ -97,14 +111,20 @@ class TextSimilaritySpace(Space, HasSpaceFieldSet):
         return self.text
 
     @property
-    def _node_by_schema(self) -> dict[SchemaObject, Node[Vector]]:
+    @override
+    def transformation_config(self) -> TransformationConfig[Vector, str]:
+        return self._transformation_config
+
+    @property
+    @override
+    def _node_by_schema(self) -> dict[SchemaObject, EmbeddingNode[Vector, str]]:
         return self._schema_node_map
 
     @override
-    def _create_default_node(self, schema: SchemaObject) -> Node[Vector]:
-        zero_vector = Vector.init_zero_vector(self._embedding_config.length)
+    def _create_default_node(self, schema: SchemaObject) -> EmbeddingNode[Vector, str]:
+        zero_vector = Vector.init_zero_vector(self.transformation_config.length)
         constant_node = cast(Node, ConstantNode(value=zero_vector, schema=schema))
-        default_node = TextEmbeddingNode(constant_node, self._embedding_config)
+        default_node = TextEmbeddingNode(constant_node, self._transformation_config)
         return default_node
 
     @property
@@ -121,6 +141,16 @@ class TextSimilaritySpace(Space, HasSpaceFieldSet):
     @override
     def _allow_empty_fields(self) -> bool:
         return False
+
+    def _init_transformation_config(
+        self, model: str, cache_size: int, length: int
+    ) -> TransformationConfig[Vector, str]:
+        embedding_config = TextSimilarityEmbeddingConfig(model, cache_size, length)
+        aggregation_config = VectorAggregationConfig()
+        normalization_config = L2NormConfig()
+        return TransformationConfig(
+            normalization_config, aggregation_config, embedding_config
+        )
 
 
 @TypeValidator.wrap
