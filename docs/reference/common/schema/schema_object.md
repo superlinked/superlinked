@@ -4,6 +4,23 @@ Module superlinked.framework.common.schema.schema_object
 Classes
 -------
 
+`Blob(name: str, schema_obj: SchemaObjectT)`
+:   Field of a schema that represents a local/remote file path or an utf-8 encoded bytes string.
+    
+    e.g.: `ImageSpace` expects a blob field as an input.
+
+    ### Ancestors (in MRO)
+
+    * superlinked.framework.common.schema.schema_object.SchemaField
+    * superlinked.framework.common.interface.comparison_operand.ComparisonOperand
+    * abc.ABC
+    * typing.Generic
+
+    ### Static methods
+
+    `combine_values(values: Sequence[BlobInformation]) ‑> superlinked.framework.common.schema.blob_information.BlobInformation`
+    :
+
 `Float(name: str, schema_obj: SchemaObjectT)`
 :   Field of a schema that represents a float.
 
@@ -91,6 +108,7 @@ Classes
     * superlinked.framework.common.schema.event_schema_object.CreatedAtField
     * superlinked.framework.common.schema.event_schema_object.SchemaReference
     * superlinked.framework.common.schema.id_schema_object.IdField
+    * superlinked.framework.common.schema.schema_object.Blob
     * superlinked.framework.common.schema.schema_object.FloatList
     * superlinked.framework.common.schema.schema_object.Number
     * superlinked.framework.common.schema.schema_object.String

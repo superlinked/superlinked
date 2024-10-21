@@ -15,11 +15,11 @@ Classes
 
     ### Methods
 
-    `query(self, query_obj: superlinked.framework.dsl.query.query.QueryObj, **params: Any) ‑> superlinked.framework.dsl.query.result.Result`
-    :   Execute a query using the provided QueryObj and additional parameters.
+    `query(self, query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor, **params: Any) ‑> superlinked.framework.dsl.query.result.Result`
+    :   Execute a query using the provided QueryDescriptor and additional parameters.
         
         Args:
-            query_obj (QueryObj): The query object containing the query details.
+            query_descriptor (QueryDescriptor): The query object containing the query details.
             **params (Any): Additional parameters for the query execution.
         
         Returns:

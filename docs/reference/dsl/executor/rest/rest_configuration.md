@@ -69,12 +69,12 @@ Classes
     `add_slash_to_api_root_path(values: dict) ‑> dict`
     :
 
-`RestQuery(rest_descriptor: superlinked.framework.dsl.executor.rest.rest_descriptor.RestDescriptor, query_obj: superlinked.framework.dsl.query.query.QueryObj)`
-:   RestQuery(rest_descriptor: superlinked.framework.dsl.executor.rest.rest_descriptor.RestDescriptor, query_obj: superlinked.framework.dsl.query.query.QueryObj)
+`RestQuery(rest_descriptor: superlinked.framework.dsl.executor.rest.rest_descriptor.RestDescriptor, query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor)`
+:   RestQuery(rest_descriptor: superlinked.framework.dsl.executor.rest.rest_descriptor.RestDescriptor, query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor)
 
     ### Class variables
 
-    `query_obj: superlinked.framework.dsl.query.query.QueryObj`
+    `query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :
 
     `rest_descriptor: superlinked.framework.dsl.executor.rest.rest_descriptor.RestDescriptor`
