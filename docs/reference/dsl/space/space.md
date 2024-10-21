@@ -11,6 +11,9 @@ Classes
 
     ### Ancestors (in MRO)
 
+    * superlinked.framework.common.space.interface.has_transformation_config.HasTransformationConfig
+    * superlinked.framework.common.interface.has_length.HasLength
+    * typing.Generic
     * abc.ABC
 
     ### Descendants
@@ -24,4 +27,7 @@ Classes
     ### Instance variables
 
     `annotation: str`
+    :
+
+    `length: int`
     :

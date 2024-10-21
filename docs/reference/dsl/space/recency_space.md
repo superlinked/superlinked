@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.space.recency_space
 Classes
 -------
 
-`RecencySpace(timestamp: superlinked.framework.common.schema.schema_object.Timestamp | list[superlinked.framework.common.schema.schema_object.Timestamp], time_period_hour_offset: datetime.timedelta = datetime.timedelta(0), period_time_list: list[superlinked.framework.common.dag.period_time.PeriodTime] | superlinked.framework.common.dag.period_time.PeriodTime | None = None, aggregation_mode: superlinked.framework.common.space.aggregation.InputAggregationMode = InputAggregationMode.INPUT_AVERAGE, negative_filter: float = 0.0)`
+`RecencySpace(timestamp: superlinked.framework.common.schema.schema_object.Timestamp | list[superlinked.framework.common.schema.schema_object.Timestamp], time_period_hour_offset: datetime.timedelta = datetime.timedelta(0), period_time_list: list[superlinked.framework.common.dag.period_time.PeriodTime] | superlinked.framework.common.dag.period_time.PeriodTime | None = None, aggregation_mode: superlinked.framework.dsl.space.input_aggregation_mode.InputAggregationMode = InputAggregationMode.INPUT_AVERAGE, negative_filter: float = 0.0)`
 :   Recency space encodes timestamp type data measured in seconds and in unix timestamp format.
     Recency space is utilized to encode how recent items are. Use period_time_list
     to mark the time periods of interest.
@@ -50,7 +50,10 @@ Classes
     ### Ancestors (in MRO)
 
     * superlinked.framework.dsl.space.space.Space
-    * superlinked.framework.common.interface.has_space_field_set.HasSpaceFieldSet
+    * superlinked.framework.common.space.interface.has_transformation_config.HasTransformationConfig
+    * superlinked.framework.common.interface.has_length.HasLength
+    * typing.Generic
+    * superlinked.framework.dsl.space.has_space_field_set.HasSpaceFieldSet
     * abc.ABC
 
     ### Instance variables
@@ -58,8 +61,8 @@ Classes
     `annotation: str`
     :
 
-    `embedding_config: superlinked.framework.common.space.config.recency_embedding_config.RecencyEmbeddingConfig`
+    `space_field_set: superlinked.framework.dsl.space.space_field_set.SpaceFieldSet`
     :
 
-    `space_field_set: superlinked.framework.dsl.space.space_field_set.SpaceFieldSet`
+    `transformation_config: superlinked.framework.common.space.config.transformation_config.TransformationConfig[int, int]`
     :

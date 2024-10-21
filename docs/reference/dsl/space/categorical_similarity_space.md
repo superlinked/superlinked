@@ -64,7 +64,10 @@ Classes
     ### Ancestors (in MRO)
 
     * superlinked.framework.dsl.space.space.Space
-    * superlinked.framework.common.interface.has_space_field_set.HasSpaceFieldSet
+    * superlinked.framework.common.space.interface.has_transformation_config.HasTransformationConfig
+    * superlinked.framework.common.interface.has_length.HasLength
+    * typing.Generic
+    * superlinked.framework.dsl.space.has_space_field_set.HasSpaceFieldSet
     * abc.ABC
 
     ### Instance variables
@@ -76,6 +79,9 @@ Classes
     :
 
     `space_field_set: superlinked.framework.dsl.space.space_field_set.SpaceFieldSet`
+    :
+
+    `transformation_config: superlinked.framework.common.space.config.transformation_config.TransformationConfig[superlinked.framework.common.data_types.Vector, list[str]]`
     :
 
     `uncategorized_as_category: bool`
