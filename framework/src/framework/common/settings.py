@@ -41,6 +41,7 @@ class Settings(BaseSettings):
     QUEUE_CLASS_ARGS: dict[str, Any] | None = None
     INGESTION_TOPIC_NAME: str | None = None
     QUEUE_MESSAGE_VERSION: int = 1
+    REQUEST_TIMEOUT: int = 600  # 10min
 
     model_config = SettingsConfigDict(env_file=".env")
 

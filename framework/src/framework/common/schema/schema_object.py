@@ -22,6 +22,7 @@ from typing_extensions import override
 
 from superlinked.framework.common.data_types import PythonTypes
 from superlinked.framework.common.interface.comparison_operand import ComparisonOperand
+from superlinked.framework.common.schema.blob_information import BlobInformation
 
 # Exclude from documentation.
 # A better approach would be to separate this file into atomic objects,
@@ -155,6 +156,21 @@ class Timestamp(SchemaField[int]):
         return int(sum(values) / len(values))
 
 
+class Blob(SchemaField[BlobInformation]):
+    """
+    Field of a schema that represents a local/remote file path or an utf-8 encoded bytes string.
+
+    e.g.: `ImageSpace` expects a blob field as an input.
+    """
+
+    def __init__(self, name: str, schema_obj: SchemaObjectT) -> None:
+        super().__init__(name, schema_obj, BlobInformation)
+
+    @staticmethod
+    def combine_values(values: Sequence[BlobInformation]) -> BlobInformation:
+        raise ValueError("Cannot combine 2 blobs.")
+
+
 NSFT = TypeVar("NSFT", float, int)
 
 
@@ -232,7 +248,9 @@ class StringList(SchemaField[list[str]]):
         return [", ".join(current_values) for current_values in zip(*values)]
 
 
-ConcreteSchemaField = String | Timestamp | Float | Integer | FloatList | StringList
+ConcreteSchemaField = (
+    String | Timestamp | Float | Integer | FloatList | StringList | Blob
+)
 ConcreteSchemaFieldT = TypeVar("ConcreteSchemaFieldT", bound="ConcreteSchemaField")
 
 

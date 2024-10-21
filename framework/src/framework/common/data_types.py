@@ -23,6 +23,7 @@ from superlinked.framework.common.exception import (
     MismatchingDimensionException,
     NegativeFilterException,
 )
+from superlinked.framework.common.schema.blob_information import BlobInformation
 
 Json = Mapping[str, Any]
 NPArray = np.ndarray[
@@ -279,4 +280,4 @@ class Vector:
         return Vector([0] * length)
 
 
-PythonTypes = float | int | str | Vector | list[float] | list[str]
+PythonTypes = float | int | str | Vector | list[float] | list[str] | BlobInformation

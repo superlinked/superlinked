@@ -69,7 +69,7 @@ class RestExecutor(Executor[RestSource | DataLoaderSource]):
                 context_data, environment=ExecutionEnvironment.ONLINE
             ),
         )
-
+        self._prohibit_bytes_input()
         self._queries = queries
         self._endpoint_configuration = (
             endpoint_configuration or RestEndpointConfiguration()

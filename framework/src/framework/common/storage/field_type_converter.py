@@ -15,6 +15,7 @@
 from beartype.typing import Any, Sequence, cast
 
 from superlinked.framework.common.data_types import PythonTypes, Vector
+from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.schema.schema_object import (
     ConcreteSchemaField,
     Float,
@@ -47,7 +48,7 @@ FIELD_DATA_TYPE_BY_PYTHON_TYPE: dict[type[PythonTypes], FieldDataType] = {
 }
 
 VALID_TYPE_BY_FIELD_DATA_TYPE: dict[FieldDataType, Sequence[type[PythonTypes]]] = {
-    FieldDataType.BLOB: [str],
+    FieldDataType.BLOB: [str, BlobInformation],
     FieldDataType.DOUBLE: [int, float],
     FieldDataType.INT: [int],
     FieldDataType.FLOAT_LIST: [list[float]],

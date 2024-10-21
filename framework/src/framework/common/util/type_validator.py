@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from types import UnionType
+
 from beartype import BeartypeConf, beartype
 from beartype.typing import Any, Callable, TypeAlias, TypeVar, cast
 from beartype.vale import Is
@@ -116,7 +118,9 @@ class TypeValidator:
         return Is[validator]
 
     @staticmethod
-    def dict_validator(key_type: type[KT], value_type: type[VT]) -> BeartypeValidator:
+    def dict_validator(
+        key_type: type[KT], value_type: type[VT] | UnionType
+    ) -> BeartypeValidator:
         """
         Returns a beartype-compliant validator for dictionaries, which checks if
             the annotated object is a dictionary and, if it is,

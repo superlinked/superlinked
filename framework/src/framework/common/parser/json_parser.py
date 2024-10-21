@@ -31,7 +31,7 @@ from superlinked.framework.common.schema.event_schema_object import (
     SchemaReference,
 )
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObjectT
-from superlinked.framework.common.schema.schema_object import SFT, SchemaField
+from superlinked.framework.common.schema.schema_object import SFT, Blob, SchemaField
 from superlinked.framework.common.util.dot_separated_path_util import (
     DotSeparatedPathUtil,
     ValuedDotSeparatedPath,
@@ -107,15 +107,18 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, dict[str,
         ]
 
     def __construct_json(
-        self, parsed_schema_field: list[ParsedSchemaField]
+        self, parsed_schema_fields: list[ParsedSchemaField]
     ) -> dict[str, Any]:
+        altered_parsed_schema_fields = self._handle_parsed_schema_fields(
+            parsed_schema_fields
+        )
         return DotSeparatedPathUtil.to_dict(
             [
                 ValuedDotSeparatedPath(
                     self._get_path(field.schema_field),
                     field.value,
                 )
-                for field in parsed_schema_field
+                for field in altered_parsed_schema_fields
             ]
         )
 
@@ -139,10 +142,16 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, dict[str,
         self, field: SchemaField[SFT], data: dict[str, Any]
     ) -> SFT | None:
         path: str = self._get_path(field)
-        parsed_schema_field_value = DotSeparatedPathUtil.get(data, path)
+        parsed_value = DotSeparatedPathUtil.get(data, path)
+
         if isinstance(field, SchemaReference):
-            parsed_schema_field_value = cast(SFT, str(parsed_schema_field_value))
-        return parsed_schema_field_value
+            return cast(SFT, str(parsed_value))
+
+        if isinstance(field, Blob):
+            blob_input = cast(str, parsed_value)
+            return cast(SFT, self.blob_loader.load(blob_input))
+
+        return parsed_value
 
     def __get_all_fields_from_parsed_schema(
         self, parsed_schema: ParsedSchema

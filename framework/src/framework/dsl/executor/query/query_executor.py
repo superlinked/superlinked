@@ -36,7 +36,7 @@ from superlinked.framework.common.storage_manager.search_result_item import (
 )
 from superlinked.framework.dsl.executor.executor import App
 from superlinked.framework.dsl.query.nlq_param_evaluator import NLQParamEvaluator
-from superlinked.framework.dsl.query.query import QueryObj
+from superlinked.framework.dsl.query.query_descriptor import QueryDescriptor
 from superlinked.framework.dsl.query.query_filter_information import (
     QueryFilterInformation,
 )
@@ -58,7 +58,7 @@ class QueryExecutor:
     def __init__(
         self,
         app: App,
-        query_obj: QueryObj,
+        query_descriptor: QueryDescriptor,
         query_vector_factory: QueryVectorFactory,
     ) -> None:
         """
@@ -66,16 +66,16 @@ class QueryExecutor:
 
         Args:
             app: An instance of the App class.
-            query_obj: An instance of the QueryObj class representing the query to be executed.
+            query_descriptor: An instance of the QueryDescriptor class representing the query to be executed.
             evaluator: An instance of the QueryDagEvaluator class used to evaluate the query.
         """
         self.app = app
-        self.query_obj = query_obj
+        self.query_descriptor = query_descriptor
         self.query_vector_factory = query_vector_factory
         self._logger = logger.bind(
-            schema=self.query_obj.schema._schema_name,
-            limit=self.query_obj.limit,
-            radius=self.query_obj.radius,
+            schema=self.query_descriptor.schema._schema_name,
+            limit=self.query_descriptor.limit,
+            radius=self.query_descriptor.radius,
         )
 
     def query(self, **params: Any) -> Result:
@@ -93,10 +93,10 @@ class QueryExecutor:
         """
         self.__check_executor_has_index()
         query_param_info: QueryParamInformation = self._fill_query_param_info(
-            self.query_obj.query_param_info, params
+            self.query_descriptor.query_param_info, params
         )
         knn_search_params = self._produce_knn_search_params(
-            self.query_obj.query_filter_info, query_param_info
+            self.query_descriptor.query_filter_info, query_param_info
         )
         entities: Sequence[SearchResultItem] = self._knn_search(knn_search_params)
         self._logger.info(
@@ -109,8 +109,10 @@ class QueryExecutor:
             pii_natural_query=query_param_info.natural_query,
         )
         return Result(
-            self.query_obj.schema,
-            self._map_entities_to_result_entries(self.query_obj.schema, entities),
+            self.query_descriptor.schema,
+            self._map_entities_to_result_entries(
+                self.query_descriptor.schema, entities
+            ),
             query_param_info.knn_params,
         )
 
@@ -143,7 +145,7 @@ class QueryExecutor:
     ) -> dict[str, Any]:
         param_evaluator = NLQParamEvaluator(query_param_info.nlq_param_infos)
         natural_query = query_param_info.natural_query
-        client_config = self.query_obj.natural_query_client_config
+        client_config = self.query_descriptor.natural_query_client_config
         nlq_values = param_evaluator.evaluate_param_infos(natural_query, client_config)
         return nlq_values
 
@@ -155,10 +157,10 @@ class QueryExecutor:
         query_filters = self._get_query_filters(query_filter_info, query_param_info)
         space_weight_map = query_param_info.space_weight_map
         return self.query_vector_factory.produce_vector(
-            self.query_obj.index._node_id,
+            self.query_descriptor.index._node_id,
             query_filters,
             space_weight_map,
-            self.query_obj.schema,
+            self.query_descriptor.schema,
             self._create_query_context_base(),
         )
 
@@ -178,7 +180,7 @@ class QueryExecutor:
             data=self.app._context.data,
             now_strategy=NowStrategy.CONTEXT_TIME,
         )
-        context_time = self.query_obj._override_now or self.app._context.now()
+        context_time = self.query_descriptor._override_now or self.app._context.now()
         eval_context.update_data({CONTEXT_COMMON: {CONTEXT_COMMON_NOW: context_time}})
         return eval_context
 
@@ -187,7 +189,10 @@ class QueryExecutor:
         knn_search_params: KNNSearchParams,
     ) -> Sequence[SearchResultItem]:
         return self.app.storage_manager.knn_search(
-            self.query_obj.index._node, self.query_obj.schema, [], knn_search_params
+            self.query_descriptor.index._node,
+            self.query_descriptor.schema,
+            [],
+            knn_search_params,
         )
 
     def _map_entities_to_result_entries(
@@ -214,8 +219,8 @@ class QueryExecutor:
         return stored_object
 
     def __check_executor_has_index(self) -> None:
-        if self.query_obj.index not in self.app._indices:
+        if self.query_descriptor.index not in self.app._indices:
             raise QueryException(
-                f"Query index {self.query_obj.index} is not amongst "
+                f"Query index {self.query_descriptor.index} is not amongst "
                 + f"the executor's indices {self.app._indices}"
             )

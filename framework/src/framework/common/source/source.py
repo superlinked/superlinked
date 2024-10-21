@@ -14,11 +14,20 @@
 
 from beartype.typing import Generic, TypeVar
 
+from superlinked.framework.common.parser.data_parser import DataParser
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObjectT
+from superlinked.framework.common.source.types import SourceTypeT
 
 SourceT = TypeVar("SourceT", bound="Source")
 
 
-class Source(Generic[IdSchemaObjectT]):
-    def __init__(self, schema: IdSchemaObjectT) -> None:
+class Source(Generic[IdSchemaObjectT, SourceTypeT]):
+    def __init__(
+        self, schema: IdSchemaObjectT, parser: DataParser[IdSchemaObjectT, SourceTypeT]
+    ) -> None:
         self._schema = schema
+        self._parser: DataParser[IdSchemaObjectT, SourceTypeT] = parser
+
+    @property
+    def parser(self) -> DataParser[IdSchemaObjectT, SourceTypeT]:
+        return self._parser

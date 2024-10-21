@@ -18,7 +18,7 @@ from pydantic import model_validator
 
 from superlinked.framework.common.util.immutable_model import ImmutableBaseModel
 from superlinked.framework.dsl.executor.rest.rest_descriptor import RestDescriptor
-from superlinked.framework.dsl.query.query import QueryObj
+from superlinked.framework.dsl.query.query_descriptor import QueryDescriptor
 
 
 class RestEndpointConfiguration(ImmutableBaseModel):
@@ -37,7 +37,7 @@ class RestEndpointConfiguration(ImmutableBaseModel):
 @dataclass(frozen=True)
 class RestQuery:
     rest_descriptor: RestDescriptor
-    query_obj: QueryObj
+    query_descriptor: QueryDescriptor
 
     @property
     def path(self) -> str | None:

@@ -17,6 +17,7 @@ import numpy as np
 from beartype.typing import Any, Callable, cast
 
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.storage.exception import EncoderException
 from superlinked.framework.common.storage.field import Field
 from superlinked.framework.common.storage.field_data import FieldData
@@ -47,8 +48,8 @@ class RedisFieldEncoder:
             FieldDataType.VECTOR: self._decode_vector,
         }
 
-    def _encode_blob(self, blob: str) -> str:
-        return blob
+    def _encode_blob(self, blob: BlobInformation) -> str | None:
+        return blob.path
 
     def _decode_blob(self, blob: bytes) -> str:
         return blob.decode("utf-8")

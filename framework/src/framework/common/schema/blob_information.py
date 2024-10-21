@@ -14,11 +14,12 @@
 
 from dataclasses import dataclass
 
-from superlinked.framework.dsl.query.query_descriptor import QueryDescriptor
 
+@dataclass(frozen=True)
+class BlobInformation:
+    data: bytes
+    path: str | None = None
 
-@dataclass
-class RestDescriptor:
-    query_path: str | None = None
-    query_descriptor: QueryDescriptor | None = None
-    source_path: str | None = None
+    @property
+    def original(self) -> str:
+        return self.path if self.path is not None else self.data.decode("utf-8")

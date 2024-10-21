@@ -32,7 +32,7 @@ logger = structlog.get_logger()
 class OnlineSource(
     Generic[IdSchemaObjectT, SourceTypeT],
     TransformerPublisher[SourceTypeT, ParsedSchema],
-    Source[IdSchemaObjectT],
+    Source[IdSchemaObjectT, SourceTypeT],
 ):
     def __init__(
         self,
@@ -40,8 +40,7 @@ class OnlineSource(
         parser: DataParser[IdSchemaObjectT, SourceTypeT],
     ) -> None:
         TransformerPublisher.__init__(self, chunk_size=Settings().ONLINE_PUT_CHUNK_SIZE)
-        Source.__init__(self, schema)
-        self.parser = parser
+        Source.__init__(self, schema, parser)
         self._logger = logger.bind(
             schema=schema._schema_name,
         )

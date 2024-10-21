@@ -20,7 +20,7 @@ from superlinked.framework.common.storage_manager.storage_manager import Storage
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.executor.query.query_executor import QueryExecutor
 from superlinked.framework.dsl.index.index import Index
-from superlinked.framework.dsl.query.query import QueryObj
+from superlinked.framework.dsl.query.query_descriptor import QueryDescriptor
 from superlinked.framework.dsl.query.query_vector_factory import QueryVectorFactory
 from superlinked.framework.dsl.query.result import Result
 
@@ -51,12 +51,12 @@ class QueryMixin:
             for index in indices
         }
 
-    def query(self, query_obj: QueryObj, **params: Any) -> Result:
+    def query(self, query_descriptor: QueryDescriptor, **params: Any) -> Result:
         """
-        Execute a query using the provided QueryObj and additional parameters.
+        Execute a query using the provided QueryDescriptor and additional parameters.
 
         Args:
-            query_obj (QueryObj): The query object containing the query details.
+            query_descriptor (QueryDescriptor): The query object containing the query details.
             **params (Any): Additional parameters for the query execution.
 
         Returns:
@@ -66,14 +66,14 @@ class QueryMixin:
             QueryException: If the query index is not found among the executor's indices.
         """
         if query_vector_factory := self._query_vector_factory_by_index.get(
-            query_obj.index
+            query_descriptor.index
         ):
             # 'self' is an App instance; MyPy can't infer the inheriting class. See [FAI-2085].
-            return QueryExecutor(self, query_obj, query_vector_factory).query(**params)  # type: ignore
+            return QueryExecutor(self, query_descriptor, query_vector_factory).query(**params)  # type: ignore
 
         raise QueryException(
             (
-                f"Query index {query_obj.index} is not amongst the executor's indices: ",
+                f"Query index {query_descriptor.index} is not amongst the executor's indices: ",
                 f" {list(self._query_vector_factory_by_index.keys())}",
             )
         )

@@ -17,11 +17,16 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from math import isfinite
 
-from beartype.typing import Generic, Mapping, cast
+from beartype.typing import Generic, Mapping, Sequence, cast
 
 from superlinked.framework.common.exception import InitializationException
+from superlinked.framework.common.parser.blob_loader import BlobLoader
 from superlinked.framework.common.parser.exception import InvalidMappingException
-from superlinked.framework.common.parser.parsed_schema import ParsedSchema
+from superlinked.framework.common.parser.parsed_schema import (
+    ParsedSchema,
+    ParsedSchemaField,
+)
+from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.schema.event_schema_object import EventSchemaObject
 from superlinked.framework.common.schema.exception import SchemaMismatchException
 from superlinked.framework.common.schema.id_schema_object import (
@@ -29,7 +34,7 @@ from superlinked.framework.common.schema.id_schema_object import (
     IdSchemaObjectT,
     SchemaField,
 )
-from superlinked.framework.common.schema.schema_object import SFT
+from superlinked.framework.common.schema.schema_object import SFT, Blob
 from superlinked.framework.common.source.types import SourceTypeT
 
 
@@ -73,6 +78,18 @@ class DataParser(ABC, Generic[IdSchemaObjectT, SourceTypeT]):
             self._created_at_name = self._get_path(
                 cast(EventSchemaObject, schema).created_at
             )
+        self.__allow_bytes_input = True
+
+    @property
+    def blob_loader(self) -> BlobLoader:
+        return BlobLoader(allow_bytes=self.allow_bytes_input)
+
+    @property
+    def allow_bytes_input(self) -> bool:
+        return self.__allow_bytes_input
+
+    def set_allow_bytes_input(self, value: bool) -> None:
+        self.__allow_bytes_input = value
 
     @classmethod
     def _is_id_value_valid(cls, value_to_check: str | float | int | None) -> bool:
@@ -106,7 +123,8 @@ class DataParser(ABC, Generic[IdSchemaObjectT, SourceTypeT]):
 
     @classmethod
     def _is_created_at_value_valid(cls, value_to_check: int | None) -> bool:
-        """Function to check if value is not missing (NaN, infinity, None or empty)
+        """Function to check if value is
+        not missing (NaN, infinity, None or empty)
 
         Args:
             value_to_check: created at value to validate
@@ -176,6 +194,23 @@ class DataParser(ABC, Generic[IdSchemaObjectT, SourceTypeT]):
             raise InvalidMappingException(
                 f"{invalid_key_names} don't belong to the {schema._base_class_name} schema."
             )
+
+    def _handle_parsed_schema_fields(
+        self, parsed_schema_fields: Sequence[ParsedSchemaField]
+    ) -> list[ParsedSchemaField]:
+        return [
+            DataParser._re_parse_if_blob(parsed_field)
+            for parsed_field in parsed_schema_fields
+        ]
+
+    @staticmethod
+    def _re_parse_if_blob(parsed_field: ParsedSchemaField) -> ParsedSchemaField:
+        if isinstance(parsed_field.schema_field, Blob):
+            parsed_field = cast(ParsedSchemaField[BlobInformation], parsed_field)
+            parsed_field = ParsedSchemaField(
+                parsed_field.schema_field, parsed_field.value.original
+            )
+        return parsed_field
 
     def __check_parsed_schemas(self, parsed_schemas: list[ParsedSchema]) -> None:
         if not_valid_schema_base_class_names := [

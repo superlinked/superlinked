@@ -36,7 +36,7 @@ from superlinked.framework.common.schema.id_schema_object import (
     IdSchemaObjectT,
     SchemaField,
 )
-from superlinked.framework.common.schema.schema_object import Timestamp
+from superlinked.framework.common.schema.schema_object import Blob, Timestamp
 
 
 class DataFrameParser(
@@ -67,6 +67,15 @@ class DataFrameParser(
             key for key, value in schema_cols.items() if isinstance(value, Timestamp)
         ]:
             data_copy[timestamp_cols] = data_copy[timestamp_cols].astype(int)
+
+        if blob_cols := [
+            key for key, value in schema_cols.items() if isinstance(value, Blob)
+        ]:
+            data_copy[blob_cols] = data_copy[
+                blob_cols
+            ].applymap(  # type:ignore[operator]
+                self.blob_loader.load
+            )
 
         data_copy[self._id_name] = data_copy[self._id_name].astype(str)
         if self._is_event_data_parser:
@@ -129,9 +138,15 @@ class DataFrameParser(
         return [pd.DataFrame.from_records(records)]  # type: ignore[attr-defined]
 
     def __create_record_dict(self, parsed_schema: ParsedSchema) -> dict:
+        altered_parsed_schema_fields = self._handle_parsed_schema_fields(
+            parsed_schema.fields
+        )
         record_dict = {
             **{self._id_name: parsed_schema.id_},
-            **{field.schema_field.name: field.value for field in parsed_schema.fields},
+            **{
+                field.schema_field.name: field.value
+                for field in altered_parsed_schema_fields
+            },
         }
         if self._is_event_data_parser:
             if not isinstance(parsed_schema, EventParsedSchema):
