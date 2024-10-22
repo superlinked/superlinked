@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from beartype.typing import Any, Mapping, Sequence
 
+from superlinked.framework.blob.blob_handler_factory import BlobHandlerFactory
 from superlinked.framework.common.dag.context import (
     ContextValue,
     ExecutionContext,
@@ -75,6 +76,7 @@ class RestExecutor(Executor[RestSource | DataLoaderSource]):
             endpoint_configuration or RestEndpointConfiguration()
         )
         self._queue = QueueFactory.create_queue(dict[str, Any])
+        self._blob_handler = BlobHandlerFactory.create_blob_handler()
 
     def run(self) -> RestApp:
         """
@@ -91,4 +93,5 @@ class RestExecutor(Executor[RestSource | DataLoaderSource]):
             self._context,
             self._endpoint_configuration,
             self._queue,
+            self._blob_handler,
         )

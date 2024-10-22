@@ -15,6 +15,7 @@
 
 from beartype.typing import Sequence
 
+from superlinked.framework.blob.blob_handler import BlobHandler
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.dsl.app.online.online_app import OnlineApp
 from superlinked.framework.dsl.executor.rest.rest_configuration import (
@@ -45,6 +46,7 @@ class RestApp(OnlineApp[RestSource | DataLoaderSource]):
         context: ExecutionContext,
         endpoint_configuration: RestEndpointConfiguration,
         queue: Queue[MessageBody[dict]] | None = None,
+        blob_handler: BlobHandler | None = None,
     ):
         """
         Initialize the RestApp from a RestExecutor.
@@ -65,6 +67,7 @@ class RestApp(OnlineApp[RestSource | DataLoaderSource]):
             vector_database,
             context,
             queue,
+            blob_handler,
         )
         self._endpoint_configuration = endpoint_configuration
         self._queries = queries
