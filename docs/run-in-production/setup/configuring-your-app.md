@@ -142,7 +142,7 @@ executor = RestExecutor(
 ```
 
 > Name of your data loader: The `name` parameter in `DataLoaderConfig` is optional. By default, it adopts the snake_case version of your schema's name used in `DataLoaderSource`. If you have multiple data loaders for the same schema or prefer a different name, simply set the `name` parameter accordingly.
-> Note that the name will always be converted to snake_case. To see the configured data loaders in your system, refer to the [API documentation](api.md#see-available-data-loaders).
+> Note that the name will always be converted to snake_case. To see the configured data loaders in your system, refer to the [API documentation](interacting-with-app-via-api.md#see-available-data-loaders).
 
 The data loader is now configured but **it only runs if you send a request to the data loader endpoint!** To see how to trigger it, check the API documentation [here](api.md#trigger-the-data-load)
 
