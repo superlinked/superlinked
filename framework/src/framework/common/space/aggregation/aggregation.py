@@ -18,7 +18,7 @@ from abc import ABC, abstractmethod
 from functools import reduce
 
 import numpy as np
-from beartype.typing import Generic, Sequence, TypeVar
+from beartype.typing import Generic, Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.const import constants
@@ -29,6 +29,7 @@ from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationConfig,
     AggregationInputT,
+    NumberAggregationInputT,
 )
 
 VALUE_UNAFFECTING_AGGREGATION = 0
@@ -104,9 +105,6 @@ class VectorAggregation(Aggregation[Vector]):
                 )
             return negative_filter_values.pop()
         return VALUE_UNAFFECTING_AGGREGATION
-
-
-NumberAggregationInputT = TypeVar("NumberAggregationInputT", float, int)
 
 
 class NumberAggregation(

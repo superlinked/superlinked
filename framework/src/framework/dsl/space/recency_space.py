@@ -27,9 +27,9 @@ from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.schema.schema_object import SchemaObject, Timestamp
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationConfig,
-)
-from superlinked.framework.common.space.config.aggregation.aggregation_type import (
-    AggregationType,
+    AvgAggregationConfig,
+    MaxAggregationConfig,
+    MinAggregationConfig,
 )
 from superlinked.framework.common.space.config.embedding.recency_embedding_config import (
     RecencyEmbeddingConfig,
@@ -108,7 +108,9 @@ class RecencySpace(
                 Defaults to 0.0.
         """
         super().__init__(timestamp, Timestamp)
-        self._aggregation_type_by_mode = self.__init_aggregation_type_by_mode()
+        self._aggregation_config_type_by_mode = (
+            self.__init_aggregation_config_type_by_mode()
+        )
         self.timestamp = SpaceFieldSet(self, self._field_set)
         recency_periods: list[PeriodTime] = (
             period_time_list
@@ -121,15 +123,10 @@ class RecencySpace(
         )
         self._aggregation_mode: InputAggregationMode = aggregation_mode
         self._embedding_config = RecencyEmbeddingConfig(
+            int,
             recency_periods,
             time_period_hour_offset,
             negative_filter,
-        )
-        self._aggregation_config = AggregationConfig(
-            self._aggregation_type_by_mode[self._aggregation_mode], int
-        )
-        self._normalization_config = ConstantNormConfig(
-            math.sqrt(sum(period_time.weight**2 for period_time in recency_periods))
         )
         self._transformation_config = self._init_transformation_config(
             self._embedding_config, self._aggregation_mode, recency_periods
@@ -158,13 +155,13 @@ class RecencySpace(
     def transformation_config(self) -> TransformationConfig[int, int]:
         return self._transformation_config
 
-    def __init_aggregation_type_by_mode(
+    def __init_aggregation_config_type_by_mode(
         self,
-    ) -> dict[InputAggregationMode, AggregationType]:
+    ) -> dict[InputAggregationMode, type[AggregationConfig]]:
         return {
-            InputAggregationMode.INPUT_AVERAGE: AggregationType.AVERAGE,
-            InputAggregationMode.INPUT_MINIMUM: AggregationType.MINIMUM,
-            InputAggregationMode.INPUT_MAXIMUM: AggregationType.MAXIMUM,
+            InputAggregationMode.INPUT_AVERAGE: AvgAggregationConfig,
+            InputAggregationMode.INPUT_MINIMUM: MinAggregationConfig,
+            InputAggregationMode.INPUT_MAXIMUM: MaxAggregationConfig,
         }
 
     @property
@@ -201,8 +198,8 @@ class RecencySpace(
         aggregation_mode: InputAggregationMode,
         recency_periods: Sequence[PeriodTime],
     ) -> TransformationConfig[int, int]:
-        aggregation_config = AggregationConfig(
-            self._aggregation_type_by_mode[aggregation_mode], int
+        aggregation_config = self._aggregation_config_type_by_mode[aggregation_mode](
+            int
         )
         normalization_config = ConstantNormConfig(
             math.sqrt(sum(period_time.weight**2 for period_time in recency_periods))

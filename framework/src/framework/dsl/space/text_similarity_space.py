@@ -145,8 +145,8 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
     def _init_transformation_config(
         self, model: str, cache_size: int, length: int
     ) -> TransformationConfig[Vector, str]:
-        embedding_config = TextSimilarityEmbeddingConfig(model, cache_size, length)
-        aggregation_config = VectorAggregationConfig()
+        embedding_config = TextSimilarityEmbeddingConfig(str, model, cache_size, length)
+        aggregation_config = VectorAggregationConfig(Vector)
         normalization_config = L2NormConfig()
         return TransformationConfig(
             normalization_config, aggregation_config, embedding_config

@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+from dataclasses import asdict
+
 from beartype.typing import Any, Generic
 from typing_extensions import override
 
@@ -57,5 +59,5 @@ class EmbeddingNode(
     @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
         return {
-            "transformation_config": str(self.transformation_config.to_dict()),
+            "transformation_config": asdict(self.transformation_config),
         }

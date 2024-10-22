@@ -12,23 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Any
+from dataclasses import dataclass
+
 from typing_extensions import override
 
 from superlinked.framework.common.space.config.embedding.embedding_config import (
     EmbeddingConfig,
 )
-from superlinked.framework.common.space.config.embedding.embedding_type import (
-    EmbeddingType,
-)
 
 
+@dataclass(frozen=True)
 class TextSimilarityEmbeddingConfig(EmbeddingConfig[str]):
-    def __init__(self, model_name: str, cache_size: int, length_to_use: int) -> None:
-        super().__init__(EmbeddingType.TEXT, str)
-        self.model_name = model_name
-        self.cache_size = cache_size
-        self.length_to_use = length_to_use
+    model_name: str
+    cache_size: int
+    length_to_use: int
+
+    def __post_init__(self) -> None:
         if self.cache_size < 0:
             raise ValueError("cache_size must be non-negative")
 
@@ -36,11 +35,3 @@ class TextSimilarityEmbeddingConfig(EmbeddingConfig[str]):
     @override
     def length(self) -> int:
         return self.length_to_use
-
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        return super().to_dict() | {
-            "model_name": self.model_name,
-            "cache_size": self.cache_size,
-            "length_to_use": self.length_to_use,
-        }

@@ -15,16 +15,12 @@
 from dataclasses import dataclass
 from enum import Enum
 
-from beartype.typing import Any
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.space.config.embedding.embedding_config import (
     EmbeddingConfig,
-)
-from superlinked.framework.common.space.config.embedding.embedding_type import (
-    EmbeddingType,
 )
 
 
@@ -53,23 +49,16 @@ class LogarithmicScale(Scale):
             raise ValueError("Logarithmic function base must be larger than 1.")
 
 
+@dataclass(frozen=True)
 class NumberEmbeddingConfig(EmbeddingConfig[float]):
-    def __init__(
-        self,
-        min_value: float,
-        max_value: float,
-        mode: Mode,
-        scale: Scale,
-        negative_filter: float,
-    ) -> None:
-        super().__init__(EmbeddingType.NUMBER, float)
-        self.min_value = min_value
-        self.max_value = max_value
-        self.mode = mode
-        self.scale = scale
-        self.negative_filter = negative_filter
+    min_value: float
+    max_value: float
+    mode: Mode
+    scale: Scale
+    negative_filter: float
+
+    def __post_init__(self) -> None:
         self._validate_input()
-        self._default_vector = self.__init_default_vector()
 
     def _validate_input(self) -> None:
         if isinstance(self.scale, LogarithmicScale) and self.min_value < 0:
@@ -87,7 +76,13 @@ class NumberEmbeddingConfig(EmbeddingConfig[float]):
                 f"The negative filter value should not be more than 0. Value is: {self.negative_filter}"
             )
 
-    def __init_default_vector(self) -> Vector:
+    @property
+    @override
+    def length(self) -> int:
+        return 3
+
+    @property
+    def default_vector(self) -> Vector:
         if self.mode == Mode.SIMILAR:
             default_values = [0.0, 0.0, 0.0]
         elif self.mode == Mode.MINIMUM:
@@ -97,15 +92,6 @@ class NumberEmbeddingConfig(EmbeddingConfig[float]):
         else:
             raise ValueError(f"Unsupported mode: {self.mode}")
         return Vector(default_values)
-
-    @property
-    @override
-    def length(self) -> int:
-        return 3
-
-    @property
-    def default_vector(self) -> Vector:
-        return self._default_vector
 
     @override
     def should_return_default(self, context: ExecutionContext) -> bool:
@@ -117,13 +103,3 @@ class NumberEmbeddingConfig(EmbeddingConfig[float]):
                 Mode.MAXIMUM,
             }
         )
-
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        return super().to_dict() | {
-            "min_value": self.min_value,
-            "max_value": self.max_value,
-            "mode": self.mode,
-            "scale": self.scale,
-            "negative_filter": self.negative_filter,
-        }

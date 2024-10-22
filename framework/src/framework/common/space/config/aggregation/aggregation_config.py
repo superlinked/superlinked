@@ -12,27 +12,46 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from abc import ABC
 from dataclasses import dataclass
 
 from beartype.typing import Generic, TypeVar
 
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.space.config.aggregation.aggregation_type import (
-    AggregationType,
-)
 
 AggregationInputT = TypeVar("AggregationInputT")
 
 
 @dataclass(frozen=True)
-class AggregationConfig(Generic[AggregationInputT]):
-    aggregation_type: AggregationType
+class AggregationConfig(ABC, Generic[AggregationInputT]):
     aggregation_input_type: type[AggregationInputT]
 
 
 AggregationConfigT = TypeVar("AggregationConfigT", bound=AggregationConfig)
+NumberAggregationInputT = TypeVar("NumberAggregationInputT", float, int)
 
 
+@dataclass(frozen=True)
 class VectorAggregationConfig(AggregationConfig[Vector]):
-    def __init__(self) -> None:
-        super().__init__(AggregationType.VECTOR, Vector)
+    pass
+
+
+@dataclass(frozen=True)
+class AvgAggregationConfig(
+    Generic[NumberAggregationInputT], AggregationConfig[NumberAggregationInputT]
+):
+    pass
+
+
+@dataclass(frozen=True)
+class MinAggregationConfig(
+    Generic[NumberAggregationInputT], AggregationConfig[NumberAggregationInputT]
+):
+    pass
+
+
+@dataclass(frozen=True)
+class MaxAggregationConfig(
+    Generic[NumberAggregationInputT], AggregationConfig[NumberAggregationInputT]
+):
+    pass

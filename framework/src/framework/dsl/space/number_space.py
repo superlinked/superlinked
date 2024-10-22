@@ -23,9 +23,9 @@ from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.schema.schema_object import Number, SchemaObject
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationConfig,
-)
-from superlinked.framework.common.space.config.aggregation.aggregation_type import (
-    AggregationType,
+    AvgAggregationConfig,
+    MaxAggregationConfig,
+    MinAggregationConfig,
 )
 from superlinked.framework.common.space.config.embedding.number_embedding_config import (
     LinearScale,
@@ -110,8 +110,11 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
         """
         self._aggregation_mode = aggregation_mode  # this must be set before super init for _handle_node_not_present
         super().__init__(number, Number)
-        self._aggregation_type_by_mode = self.__init_aggregation_type_by_mode()
+        self._aggregation_config_type_by_mode = (
+            self.__init_aggregation_config_type_by_mode()
+        )
         self._embedding_config = NumberEmbeddingConfig(
+            float,
             float(min_value),
             float(max_value),
             mode,
@@ -151,13 +154,13 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
     def transformation_config(self) -> TransformationConfig[float, float]:
         return self._transformation_config
 
-    def __init_aggregation_type_by_mode(
+    def __init_aggregation_config_type_by_mode(
         self,
-    ) -> dict[InputAggregationMode, AggregationType]:
+    ) -> dict[InputAggregationMode, type[AggregationConfig]]:
         return {
-            InputAggregationMode.INPUT_AVERAGE: AggregationType.AVERAGE,
-            InputAggregationMode.INPUT_MINIMUM: AggregationType.MINIMUM,
-            InputAggregationMode.INPUT_MAXIMUM: AggregationType.MAXIMUM,
+            InputAggregationMode.INPUT_AVERAGE: AvgAggregationConfig,
+            InputAggregationMode.INPUT_MINIMUM: MinAggregationConfig,
+            InputAggregationMode.INPUT_MAXIMUM: MaxAggregationConfig,
         }
 
     @property
@@ -226,8 +229,8 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
         embedding_config: NumberEmbeddingConfig,
         aggregation_mode: InputAggregationMode,
     ) -> TransformationConfig[float, float]:
-        aggregation_config = AggregationConfig(
-            self._aggregation_type_by_mode[aggregation_mode], float
+        aggregation_config = self._aggregation_config_type_by_mode[aggregation_mode](
+            float
         )
         normalization_config = NoNormConfig()
         return TransformationConfig(

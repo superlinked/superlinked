@@ -107,8 +107,8 @@ class CustomSpace(Space[Vector, Vector], HasSpaceFieldSet):
     def _init_transformation_config(
         self, length: int
     ) -> TransformationConfig[Vector, Vector]:
-        embedding_config = CustomEmbeddingConfig(length)
-        aggregation_config = VectorAggregationConfig()
+        embedding_config = CustomEmbeddingConfig(Vector, length)
+        aggregation_config = VectorAggregationConfig(Vector)
         normalization_config = L2NormConfig()
         return TransformationConfig(
             normalization_config, aggregation_config, embedding_config

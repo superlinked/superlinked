@@ -12,38 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Any, Sequence
+from dataclasses import dataclass
+
+from beartype.typing import Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.space.config.embedding.embedding_config import (
     EmbeddingConfig,
 )
-from superlinked.framework.common.space.config.embedding.embedding_type import (
-    EmbeddingType,
-)
 
 
+@dataclass(frozen=True)
 class CategoricalSimilarityEmbeddingConfig(EmbeddingConfig[list[str]]):
-    def __init__(
-        self,
-        categories: Sequence[str],
-        uncategorized_as_category: bool,
-        negative_filter: float = 0.0,
-    ) -> None:
-        super().__init__(EmbeddingType.CATEGORICAL, list[str])
-        self.categories = categories
-        self.uncategorized_as_category = uncategorized_as_category
-        self.negative_filter = negative_filter
+    categories: Sequence[str]
+    uncategorized_as_category: bool
+    negative_filter: float = 0.0
 
     @property
     @override
     def length(self) -> int:
         return len(self.categories) + 1
-
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        return super().to_dict() | {
-            "categories": self.categories,
-            "uncategorized_as_category": self.uncategorized_as_category,
-            "negative_filter": self.negative_filter,
-        }

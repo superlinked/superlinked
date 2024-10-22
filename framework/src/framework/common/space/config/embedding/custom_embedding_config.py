@@ -12,22 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Any
+from dataclasses import dataclass
+
 from typing_extensions import override
 
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.space.config.embedding.embedding_config import (
     EmbeddingConfig,
 )
-from superlinked.framework.common.space.config.embedding.embedding_type import (
-    EmbeddingType,
-)
 
 
+@dataclass(frozen=True)
 class CustomEmbeddingConfig(EmbeddingConfig[Vector]):
-    def __init__(self, vector_length: int) -> None:
-        super().__init__(EmbeddingType.CUSTOM, Vector)
-        self.vector_length = vector_length
+    vector_length: int
+
+    def __post_init__(self) -> None:
         if self.vector_length < 1:
             raise ValueError("Vector length must be greater than 0.")
 
@@ -35,9 +34,3 @@ class CustomEmbeddingConfig(EmbeddingConfig[Vector]):
     @override
     def length(self) -> int:
         return self.vector_length
-
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        return super().to_dict() | {
-            "vector_length": self.vector_length,
-        }

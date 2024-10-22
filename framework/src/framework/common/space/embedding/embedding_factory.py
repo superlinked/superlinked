@@ -15,12 +15,24 @@
 
 from beartype.typing import Any, Mapping
 
+from superlinked.framework.common.space.config.embedding.categorical_similarity_embedding_config import (
+    CategoricalSimilarityEmbeddingConfig,
+)
+from superlinked.framework.common.space.config.embedding.custom_embedding_config import (
+    CustomEmbeddingConfig,
+)
 from superlinked.framework.common.space.config.embedding.embedding_config import (
     EmbeddingConfig,
     EmbeddingInputT,
 )
-from superlinked.framework.common.space.config.embedding.embedding_type import (
-    EmbeddingType,
+from superlinked.framework.common.space.config.embedding.number_embedding_config import (
+    NumberEmbeddingConfig,
+)
+from superlinked.framework.common.space.config.embedding.recency_embedding_config import (
+    RecencyEmbeddingConfig,
+)
+from superlinked.framework.common.space.config.embedding.text_similarity_embedding_config import (
+    TextSimilarityEmbeddingConfig,
 )
 from superlinked.framework.common.space.embedding.categorical_similarity_embedding import (
     CategoricalSimilarityEmbedding,
@@ -39,12 +51,12 @@ from superlinked.framework.common.space.embedding.sentence_transformer_embedding
     SentenceTransformerEmbedding,
 )
 
-EMBEDDING_BY_EMBEDDING_TYPE: Mapping[EmbeddingType, type[Embedding]] = {
-    EmbeddingType.CATEGORICAL: CategoricalSimilarityEmbedding,
-    EmbeddingType.CUSTOM: CustomEmbedding,
-    EmbeddingType.NUMBER: NumberEmbedding,
-    EmbeddingType.RECENCY: RecencyEmbedding,
-    EmbeddingType.TEXT: SentenceTransformerEmbedding,
+EMBEDDING_BY_CONFIG_CLASS: Mapping[type[EmbeddingConfig], type[Embedding]] = {
+    CategoricalSimilarityEmbeddingConfig: CategoricalSimilarityEmbedding,
+    CustomEmbeddingConfig: CustomEmbedding,
+    NumberEmbeddingConfig: NumberEmbedding,
+    RecencyEmbeddingConfig: RecencyEmbedding,
+    TextSimilarityEmbeddingConfig: SentenceTransformerEmbedding,
 }
 
 
@@ -53,8 +65,8 @@ class EmbeddingFactory:
     def create_embedding(
         embedding_config: EmbeddingConfig[EmbeddingInputT],
     ) -> Embedding[EmbeddingInputT, Any]:
-        if embedding_class := EMBEDDING_BY_EMBEDDING_TYPE.get(
-            embedding_config.embedding_type
-        ):
+        if embedding_class := EMBEDDING_BY_CONFIG_CLASS.get(type(embedding_config)):
             return embedding_class(embedding_config)
-        raise ValueError(f"Unknown embedding mode: {embedding_config.embedding_type}")
+        raise ValueError(
+            f"Unknown embedding config type: {type(embedding_config).__name__}"
+        )

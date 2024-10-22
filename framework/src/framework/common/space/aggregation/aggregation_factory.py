@@ -25,16 +25,17 @@ from superlinked.framework.common.space.aggregation.aggregation import (
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationConfig,
     AggregationInputT,
-)
-from superlinked.framework.common.space.config.aggregation.aggregation_type import (
-    AggregationType,
+    AvgAggregationConfig,
+    MaxAggregationConfig,
+    MinAggregationConfig,
+    VectorAggregationConfig,
 )
 
-AGGREGATION_BY_AGG_TYPE: Mapping[AggregationType, type[Aggregation]] = {
-    AggregationType.VECTOR: VectorAggregation,
-    AggregationType.AVERAGE: AvgAggregation,
-    AggregationType.MINIMUM: MinAggregation,
-    AggregationType.MAXIMUM: MaxAggregation,
+AGGREGATION_BY_CONFIG_CLASS: Mapping[type[AggregationConfig], type[Aggregation]] = {
+    VectorAggregationConfig: VectorAggregation,
+    AvgAggregationConfig: AvgAggregation,
+    MinAggregationConfig: MinAggregation,
+    MaxAggregationConfig: MaxAggregation,
 }
 
 
@@ -43,10 +44,10 @@ class AggregationFactory:
     def create_aggregation(
         aggregation_config: AggregationConfig[AggregationInputT],
     ) -> Aggregation[AggregationInputT]:
-        if aggregation_class := AGGREGATION_BY_AGG_TYPE.get(
-            aggregation_config.aggregation_type
+        if aggregation_class := AGGREGATION_BY_CONFIG_CLASS.get(
+            type(aggregation_config)
         ):
             return aggregation_class(aggregation_config)
         raise ValueError(
-            f"Unknown aggregation mode: {aggregation_config.aggregation_type}"
+            f"Unknown aggregation config type: {type(aggregation_config).__name__}"
         )

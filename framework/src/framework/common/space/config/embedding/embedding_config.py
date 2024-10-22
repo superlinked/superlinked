@@ -12,33 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from abc import ABC
 from dataclasses import dataclass
 
-from beartype.typing import Any, Generic, TypeVar
+from beartype.typing import Generic, TypeVar
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import PythonTypes
 from superlinked.framework.common.interface.has_default_vector import HasDefaultVector
-from superlinked.framework.common.space.config.embedding.embedding_type import (
-    EmbeddingType,
-)
 
 EmbeddingInputT = TypeVar("EmbeddingInputT", bound=PythonTypes)
 
 
 @dataclass(frozen=True)
-class EmbeddingConfig(HasDefaultVector, Generic[EmbeddingInputT]):
-    embedding_type: EmbeddingType
+class EmbeddingConfig(HasDefaultVector, Generic[EmbeddingInputT], ABC):
     embedding_input_type: type[EmbeddingInputT]
 
     def should_return_default(self, context: ExecutionContext) -> bool:
         return context.should_load_default_node_input
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "embedding_type": self.embedding_type.value,
-            "embedding_input_type": self.embedding_input_type.__name__,
-        }
 
 
 EmbeddingConfigT = TypeVar("EmbeddingConfigT", bound=EmbeddingConfig)

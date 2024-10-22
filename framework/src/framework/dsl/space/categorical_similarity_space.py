@@ -119,6 +119,7 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
             String | StringList,  # type: ignore[misc] # interface supports only one type
         )
         self._embedding_config = CategoricalSimilarityEmbeddingConfig(
+            list[str],
             categories=categories,
             uncategorized_as_category=uncategorized_as_category,
             negative_filter=negative_filter,
@@ -149,7 +150,7 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
     def _init_transformation_config(
         self, embedding_config: CategoricalSimilarityEmbeddingConfig
     ) -> TransformationConfig[Vector, list[str]]:
-        aggregation_config = VectorAggregationConfig()
+        aggregation_config = VectorAggregationConfig(Vector)
         normalization_config = L2NormConfig()
         return TransformationConfig(
             normalization_config, aggregation_config, embedding_config

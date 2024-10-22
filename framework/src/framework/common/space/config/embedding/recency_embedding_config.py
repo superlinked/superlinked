@@ -12,36 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from dataclasses import dataclass
 from datetime import timedelta
 
 import structlog
-from beartype.typing import Any, Sequence
+from beartype.typing import Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.period_time import PeriodTime
 from superlinked.framework.common.space.config.embedding.embedding_config import (
     EmbeddingConfig,
 )
-from superlinked.framework.common.space.config.embedding.embedding_type import (
-    EmbeddingType,
-)
 
 logger = structlog.getLogger()
 
 
+@dataclass(frozen=True)
 class RecencyEmbeddingConfig(EmbeddingConfig[int]):
-    def __init__(
+    period_time_list: Sequence[PeriodTime]
+    time_period_hour_offset: timedelta
+    negative_filter: float = 0.0
+
+    def __post_init__(
         self,
-        period_time_list: Sequence[PeriodTime],
-        time_period_hour_offset: timedelta,
-        negative_filter: float = 0.0,
     ) -> None:
-        super().__init__(EmbeddingType.RECENCY, int)
-        self.period_time_list = period_time_list
-        self.time_period_hour_offset = time_period_hour_offset
-        self.negative_filter = negative_filter
         self._validate_input()
-        self._length = self.__init_length()
 
     def _validate_input(self) -> None:
         if self.negative_filter > 0:
@@ -78,19 +73,8 @@ class RecencyEmbeddingConfig(EmbeddingConfig[int]):
         if self.time_period_hour_offset >= timedelta(hours=24):
             raise ValueError("Time period hour offset must be less than a day.")
 
-    def __init_length(self) -> int:
-        # a sin-cos pair for every period_time plus a dimension for negative filter or 0
-        return len(self.period_time_list) * 2 + 1
-
     @property
     @override
     def length(self) -> int:
-        return self._length
-
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        return super().to_dict() | {
-            "period_time_list": self.period_time_list,
-            "time_period_hour_offset": self.time_period_hour_offset,
-            "negative_filter": self.negative_filter,
-        }
+        # a sin-cos pair for every period_time plus a dimension for negative filter or 0
+        return len(self.period_time_list) * 2 + 1

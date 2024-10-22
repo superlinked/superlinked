@@ -14,9 +14,9 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 
-from beartype.typing import Any, Generic
+from beartype.typing import Generic
 from typing_extensions import override
 
 from superlinked.framework.common.interface.has_length import HasLength
@@ -43,10 +43,3 @@ class TransformationConfig(HasLength, Generic[AggregationInputT, EmbeddingInputT
     @override
     def length(self) -> int:
         return self.embedding_config.length
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "normalization_config": self.normalization_config.to_dict(),
-            "aggregation_config": asdict(self.aggregation_config),
-            "embedding_config": self.embedding_config.to_dict(),
-        }

@@ -12,47 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from abc import ABC
 from dataclasses import dataclass
-
-from beartype.typing import Any
-from typing_extensions import override
-
-from superlinked.framework.common.space.config.normalization.normalization_type import (
-    NormalizationType,
-)
 
 
 @dataclass(frozen=True)
-class NormalizationConfig:
-    normalization_type: NormalizationType
-
-    def to_dict(self) -> dict[str, Any]:
-        return {"normalization_type": self.normalization_type.value}
+class NormalizationConfig(ABC):
+    pass
 
 
+@dataclass(frozen=True)
 class L2NormConfig(NormalizationConfig):
-    def __init__(self) -> None:
-        super().__init__(NormalizationType.L2_NORM)
+    pass
 
 
+@dataclass(frozen=True)
 class ConstantNormConfig(NormalizationConfig):
-    def __init__(self, length: float) -> None:
-        super().__init__(NormalizationType.CONSTANT_NORM)
-        self.length = length
-
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        return super().to_dict() | {"length": self.length}
-
-    @override
-    def __eq__(self, other: Any) -> bool:
-        return isinstance(other, type(self)) and self.length == other.length
-
-    @override
-    def __hash__(self) -> int:
-        return hash((self.length, hash(super())))
+    length: float
 
 
+@dataclass(frozen=True)
 class NoNormConfig(NormalizationConfig):
-    def __init__(self) -> None:
-        super().__init__(NormalizationType.NO_NORM)
+    pass

@@ -16,10 +16,10 @@
 from beartype.typing import Any, Mapping
 
 from superlinked.framework.common.space.config.normalization.normalization_config import (
+    ConstantNormConfig,
+    L2NormConfig,
+    NoNormConfig,
     NormalizationConfig,
-)
-from superlinked.framework.common.space.config.normalization.normalization_type import (
-    NormalizationType,
 )
 from superlinked.framework.common.space.normalization.normalization import (
     ConstantNorm,
@@ -28,10 +28,10 @@ from superlinked.framework.common.space.normalization.normalization import (
     Normalization,
 )
 
-NORMALIZATION_BY_TYPE: Mapping[NormalizationType, type[Normalization]] = {
-    NormalizationType.L2_NORM: L2Norm,
-    NormalizationType.CONSTANT_NORM: ConstantNorm,
-    NormalizationType.NO_NORM: NoNorm,
+NORMALIZATION_BY_TYPE: Mapping[type[NormalizationConfig], type[Normalization]] = {
+    L2NormConfig: L2Norm,
+    ConstantNormConfig: ConstantNorm,
+    NoNormConfig: NoNorm,
 }
 
 
@@ -40,8 +40,8 @@ class NormalizationFactory:
     def create_normalization(
         normalization_config: NormalizationConfig,
     ) -> Normalization[Any]:
-        if normalization_class := NORMALIZATION_BY_TYPE.get(
-            normalization_config.normalization_type
-        ):
+        if normalization_class := NORMALIZATION_BY_TYPE.get(type(normalization_config)):
             return normalization_class(normalization_config)
-        raise ValueError(f"Unknown normalization mode: {normalization_config}")
+        raise ValueError(
+            f"Unknown normalization config type: {type(normalization_config)}"
+        )
