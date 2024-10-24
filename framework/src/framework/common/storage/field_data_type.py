@@ -19,6 +19,7 @@ class FieldDataType(Enum):
     BLOB = "BLOB"
     DOUBLE = "DOUBLE"
     INT = "INT"
+    JSON = "JSON"
     FLOAT_LIST = "FLOAT_LIST"
     STRING_LIST = "STRING_LIST"
     STRING = "STRING"

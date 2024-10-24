@@ -30,6 +30,6 @@ class OnlineObjectWriter(Subscriber[ParsedSchema]):
             parser = JsonParser(message.schema)
             data = parser.marshal(message)
             for data_element in data:
-                self.__storage_manager.write_object_blob(
+                self.__storage_manager.write_object_json(
                     message.schema, message.id_, data_element
                 )

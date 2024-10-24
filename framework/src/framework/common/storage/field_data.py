@@ -15,7 +15,7 @@
 
 from __future__ import annotations
 
-from beartype.typing import Generic, Sequence, TypeVar, get_args
+from beartype.typing import Any, Generic, Sequence, TypeVar, get_args
 
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.storage.field import Field
@@ -65,6 +65,11 @@ class DoubleFieldData(FieldData[float]):
 class IntFieldData(FieldData[int]):
     def __init__(self, name: str, value: int) -> None:
         super().__init__(FieldDataType.INT, name, value)
+
+
+class JsonFieldData(FieldData[dict[str, Any]]):
+    def __init__(self, name: str, value: dict[str, Any]) -> None:
+        super().__init__(FieldDataType.JSON, name, value)
 
 
 class FloatListFieldData(FieldData[Sequence[float]]):  # TODO currently unused

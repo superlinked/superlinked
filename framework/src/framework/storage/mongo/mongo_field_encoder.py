@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+
 import numpy as np
 from beartype.typing import Any, Callable, Sequence
 
-from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.data_types import Json, Vector
 from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.storage.exception import EncoderException
 from superlinked.framework.common.storage.field import Field
@@ -33,6 +35,7 @@ class MongoFieldEncoder:
             FieldDataType.DOUBLE: self._encode_double,
             FieldDataType.FLOAT_LIST: self._encode_float_list,
             FieldDataType.INT: self._encode_int,
+            FieldDataType.JSON: self._encode_json,
             FieldDataType.STRING: self._encode_string,
             FieldDataType.STRING_LIST: self._encode_string_list,
             FieldDataType.VECTOR: self._encode_vector,
@@ -42,6 +45,7 @@ class MongoFieldEncoder:
             FieldDataType.DOUBLE: self._decode_double,
             FieldDataType.FLOAT_LIST: self._decode_float_list,
             FieldDataType.INT: self._decode_int,
+            FieldDataType.JSON: self._decode_json,
             FieldDataType.STRING: self._decode_string,
             FieldDataType.STRING_LIST: self._decode_string_list,
             FieldDataType.VECTOR: self._decode_vector,
@@ -50,8 +54,8 @@ class MongoFieldEncoder:
     def _encode_blob(self, blob: BlobInformation) -> str | None:
         return blob.path
 
-    def _decode_blob(self, blob: str) -> str:
-        return blob
+    def _decode_blob(self, blob: str) -> BlobInformation:
+        return BlobInformation(path=blob)
 
     def _encode_double(self, double: float) -> float:
         return double
@@ -70,6 +74,12 @@ class MongoFieldEncoder:
 
     def _decode_int(self, int_: int) -> int:
         return int_
+
+    def _encode_json(self, json_: Json) -> str:
+        return json.dumps(json_, ensure_ascii=True)
+
+    def _decode_json(self, json_: str) -> Json:
+        return json.loads(json_) if json_ else {}
 
     def _encode_string(self, string: str) -> str:
         return string

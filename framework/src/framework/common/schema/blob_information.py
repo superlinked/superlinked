@@ -17,9 +17,20 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class BlobInformation:
-    data: bytes
+    data: bytes | None = None
     path: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.data is None and self.path is None:
+            raise ValueError(
+                f"{type(self).__name__} must have a non-null data or path."
+            )
 
     @property
     def original(self) -> str:
-        return self.path if self.path is not None else self.data.decode("utf-8")
+        return_value = ""
+        if self.path is not None:
+            return_value = self.path
+        elif self.data is not None:
+            return_value = self.data.decode("utf-8")
+        return return_value

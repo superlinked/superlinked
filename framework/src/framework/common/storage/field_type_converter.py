@@ -17,6 +17,7 @@ from beartype.typing import Any, Sequence, cast
 from superlinked.framework.common.data_types import PythonTypes, Vector
 from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.schema.schema_object import (
+    Blob,
     ConcreteSchemaField,
     Float,
     FloatList,
@@ -30,6 +31,7 @@ from superlinked.framework.common.storage.field_data_type import FieldDataType
 from superlinked.framework.common.util.generic_class_util import GenericClassUtil
 
 FIELD_DATA_TYPE_BY_SCHEMA_FIELD_TYPE: dict[type[ConcreteSchemaField], FieldDataType] = {
+    Blob: FieldDataType.BLOB,
     FloatList: FieldDataType.FLOAT_LIST,
     StringList: FieldDataType.STRING_LIST,
     Float: FieldDataType.DOUBLE,
@@ -38,7 +40,8 @@ FIELD_DATA_TYPE_BY_SCHEMA_FIELD_TYPE: dict[type[ConcreteSchemaField], FieldDataT
     Timestamp: FieldDataType.INT,
 }
 
-FIELD_DATA_TYPE_BY_PYTHON_TYPE: dict[type[PythonTypes], FieldDataType] = {
+FIELD_DATA_TYPE_BY_PYTHON_TYPE: dict[type[PythonTypes | dict], FieldDataType] = {
+    dict: FieldDataType.JSON,
     float: FieldDataType.DOUBLE,
     int: FieldDataType.INT,
     str: FieldDataType.STRING,
@@ -47,10 +50,13 @@ FIELD_DATA_TYPE_BY_PYTHON_TYPE: dict[type[PythonTypes], FieldDataType] = {
     Vector: FieldDataType.VECTOR,
 }
 
-VALID_TYPE_BY_FIELD_DATA_TYPE: dict[FieldDataType, Sequence[type[PythonTypes]]] = {
-    FieldDataType.BLOB: [str, BlobInformation],
+VALID_TYPE_BY_FIELD_DATA_TYPE: dict[
+    FieldDataType, Sequence[type[PythonTypes | dict]]
+] = {
+    FieldDataType.BLOB: [BlobInformation],
     FieldDataType.DOUBLE: [int, float],
     FieldDataType.INT: [int],
+    FieldDataType.JSON: [dict],
     FieldDataType.FLOAT_LIST: [list[float]],
     FieldDataType.STRING_LIST: [list[str]],
     FieldDataType.STRING: [str],

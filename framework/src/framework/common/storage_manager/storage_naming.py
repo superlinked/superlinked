@@ -20,7 +20,7 @@ class StorageNaming:
     INDEX_PREFIX = "idx_"
     NODE_DATA_PREFIX = "__node_data__"
     OBJECT_ID_INDEX_NAME = "__object_id__"
-    OBJECT_BLOB_INDEX_NAME = "__object_blob__"
+    OBJECT_JSON_INDEX_NAME = "__object_json__"
     ORIGIN_ID_INDEX_NAME = "__origin_id__"
     SCHEMA_INDEX_NAME = "__schema__"
     SCHEMA_FIELD_PREFIX = "__schema_field__"

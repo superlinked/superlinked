@@ -18,7 +18,7 @@ from itertools import groupby
 from beartype.typing import Any, Iterator, Sequence, TypeVar, cast
 
 from superlinked.framework.common.dag.index_node import IndexNode
-from superlinked.framework.common.data_types import Json, PythonTypes
+from superlinked.framework.common.data_types import PythonTypes
 from superlinked.framework.common.exception import InvalidSchemaException
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
@@ -201,18 +201,18 @@ class StorageManager:
             for filter_ in filters
         ] + [self._entity_builder._admin_fields.schema_id.field == schema._schema_name]
 
-    def write_object_blob(
-        self, schema: SchemaObject, object_id: str, object_blob: Json
+    def write_object_json(
+        self, schema: SchemaObject, object_id: str, object_json: dict[str, Any]
     ) -> None:
-        if object_blob_data_field := (
-            self._entity_builder._admin_fields.create_object_blob_field_data(
-                object_blob
+        if object_json_data_field := (
+            self._entity_builder._admin_fields.create_object_json_field_data(
+                object_json
             )
         ):
             entity_data = self._entity_builder.compose_entity_data(
                 schema._schema_name,
                 object_id,
-                [object_blob_data_field],
+                [object_json_data_field],
             )
             self._vdb_connector.write_entities([entity_data])
 
@@ -292,17 +292,17 @@ class StorageManager:
             [EntityData(entity_id, {fd.name: fd for fd in field_data})]
         )
 
-    def read_object_blob(
+    def read_object_json(
         self, schema: SchemaObject, object_id: str
     ) -> dict[str, Any] | None:
         entity = self._entity_builder.compose_entity(
             self._entity_builder.compose_entity_id(schema._schema_name, object_id),
-            [self._entity_builder._admin_fields.object_blob.field],
+            [self._entity_builder._admin_fields.object_json.field],
         )
         entity_data = self._vdb_connector.read_entities([entity])
         if not entity_data:
             return None
-        return self._entity_builder._admin_fields.extract_object_blob_field_data(
+        return self._entity_builder._admin_fields.extract_object_json_field_data(
             entity_data[0].field_data
         )
 

@@ -211,7 +211,7 @@ class QueryExecutor:
     def _get_stored_object_or_raise(
         self, schema: IdSchemaObject, object_id: str
     ) -> dict[str, Any]:
-        stored_object = self.app.storage_manager.read_object_blob(schema, object_id)
+        stored_object = self.app.storage_manager.read_object_json(schema, object_id)
         if not stored_object:
             raise QueryException(
                 f"No stored {schema._schema_name} object found for the given object_id: {object_id}"
