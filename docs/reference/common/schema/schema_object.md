@@ -21,6 +21,17 @@ Classes
     `combine_values(values: Sequence[BlobInformation]) ‑> superlinked.framework.common.schema.blob_information.BlobInformation`
     :
 
+`DescribedBlob(blob: Blob, description: String)`
+:   DescribedBlob(blob: 'Blob', description: 'String')
+
+    ### Class variables
+
+    `blob: superlinked.framework.common.schema.schema_object.Blob`
+    :
+
+    `description: superlinked.framework.common.schema.schema_object.String`
+    :
+
 `Float(name: str, schema_obj: SchemaObjectT)`
 :   Field of a schema that represents a float.
 

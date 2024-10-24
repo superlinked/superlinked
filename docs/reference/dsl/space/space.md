@@ -20,6 +20,7 @@ Classes
 
     * superlinked.framework.dsl.space.categorical_similarity_space.CategoricalSimilaritySpace
     * superlinked.framework.dsl.space.custom_space.CustomSpace
+    * superlinked.framework.dsl.space.image_space.ImageSpace
     * superlinked.framework.dsl.space.number_space.NumberSpace
     * superlinked.framework.dsl.space.recency_space.RecencySpace
     * superlinked.framework.dsl.space.text_similarity_space.TextSimilaritySpace

@@ -79,7 +79,7 @@ Classes
         Raises:
             ValueError: If the radius is not between 0 and 1.
 
-    `similar(self, space_field_set: superlinked.framework.dsl.space.has_space_field_set.HasSpaceFieldSet | superlinked.framework.dsl.space.space_field_set.SpaceFieldSet, param: collections.abc.Sequence[str] | collections.abc.Sequence[float] | str | int | float | bool | None | superlinked.framework.dsl.query.param.Param, weight: float | int | superlinked.framework.dsl.query.param.Param = 1.0) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    `similar(self, space_field_set: superlinked.framework.dsl.space.has_space_field_set.HasSpaceFieldSet | superlinked.framework.dsl.space.space_field_set.SpaceFieldSet, param: collections.abc.Sequence[str] | collections.abc.Sequence[float] | str | int | float | bool | None | tuple[str | None, str | None] | superlinked.framework.dsl.query.param.Param, weight: float | int | superlinked.framework.dsl.query.param.Param = 1.0) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :   Add a 'similar' clause to the query. Similar queries compile query inputs (like query text) into vectors
         using a space and then use the query_vector (weighted with weight param) to search
         in the referenced space of the index.
@@ -106,7 +106,7 @@ Classes
         Returns:
             Self: The query object itself.
 
-    `with_vector(self, schema_obj: Union[superlinked.framework.common.schema.id_schema_object.IdSchemaObject, ~T], id_param: collections.abc.Sequence[str] | collections.abc.Sequence[float] | str | int | float | bool | None | superlinked.framework.dsl.query.param.Param, weight: float | int | superlinked.framework.dsl.query.param.Param = 1.0) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    `with_vector(self, schema_obj: Union[superlinked.framework.common.schema.id_schema_object.IdSchemaObject, ~T], id_param: collections.abc.Sequence[str] | collections.abc.Sequence[float] | str | int | float | bool | None | tuple[str | None, str | None] | superlinked.framework.dsl.query.param.Param, weight: float | int | superlinked.framework.dsl.query.param.Param = 1.0) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :   Add a 'with_vector' clause to the query. This fetches an object with id_param
         from the db and uses the vector of that item for search purposes. Weighting
         happens at the space level (and if there is also a .similar query present,
