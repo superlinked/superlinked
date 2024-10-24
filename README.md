@@ -118,7 +118,7 @@ index = Index([review_text_space, rating_maximizer_space], fields=[review.rating
 
 # fill this with your API key - this will drive param extraction
 openai_config = OpenAIClientConfig(
-    api_key="YOUR_OPENAI_API_KEY", model="gpt-4o"
+    api_key=os.environ["OPEN_AI_API_KEY"], model="gpt-4o"
 )
 
 # it is possible now to add descriptions to a `Param` to aid the parsing of information from natural language queries.
@@ -153,15 +153,15 @@ app = executor.run()
 
 # Download dataset.
 data = [
-    {"id": 1, "review_text": "Useless product", "rating": 1},
-    {"id": 2, "review_text": "Great product I am so happy!", "rating": 5},
-    {"id": 3, "review_text": "Mediocre stuff fits the purpose", "rating": 3},
+    {"id": 1, "review_text": "Utterly useless makes my teeth cry!!!", "rating": 1},
+    {"id": 2, "review_text": "Awesome product never again miss brushing my teeth", "rating": 5},
+    {"id": 3, "review_text": "A mediocre toothbrush that fits it's purpose but nothing extra.", "rating": 3},
 ]
 
 # Ingest data to the framework.
 source.put(data)
 
-result = app.query(query, natural_query="Show me the best product", limit=1)
+result = app.query(query, natural_query="good toothbrushes", limit=1)
 
 # examine the extracted parameters from your query
 print(json.dumps(result.knn_params, indent=2))
