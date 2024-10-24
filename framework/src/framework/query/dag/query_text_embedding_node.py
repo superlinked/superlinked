@@ -12,9 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
 
-from superlinked.framework.common.dag.embedding_node import EmbeddingNode
+from beartype.typing import Sequence
+
+from superlinked.framework.common.dag.text_embedding_node import TextEmbeddingNode
+from superlinked.framework.common.data_types import Vector
+from superlinked.framework.query.dag.query_embedding_node import QueryEmbeddingNode
+from superlinked.framework.query.dag.query_node import QueryNode
 
 
-class NumberEmbeddingNode(EmbeddingNode[float, float]):
-    pass
+class QueryTextEmbeddingNode(QueryEmbeddingNode[Vector, str]):
+    def __init__(self, node: TextEmbeddingNode, parents: Sequence[QueryNode]) -> None:
+        super().__init__(node, parents, str)

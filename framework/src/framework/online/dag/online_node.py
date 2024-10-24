@@ -18,7 +18,7 @@ from abc import ABC, ABCMeta, abstractmethod
 from functools import partial
 
 import structlog
-from beartype.typing import Generic, TypeVar
+from beartype.typing import Generic
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.exception import ParentCountException
@@ -32,8 +32,6 @@ from superlinked.framework.online.dag.evaluation_result import (
     SingleEvaluationResult,
 )
 from superlinked.framework.online.dag.parent_validator import ParentValidationType
-
-ONT = TypeVar("ONT", bound="OnlineNode")
 
 logger = structlog.get_logger()
 

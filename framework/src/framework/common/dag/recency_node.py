@@ -12,13 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Generic
-
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
-from superlinked.framework.common.space.config.aggregation.aggregation_config import (
-    AggregationInputT,
-)
 
 
-class RecencyNode(Generic[AggregationInputT], EmbeddingNode[AggregationInputT, int]):
+class RecencyNode(EmbeddingNode[int, int]):
     pass

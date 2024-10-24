@@ -34,7 +34,7 @@ from superlinked.framework.online.dag.online_concatenation_node import (
     OnlineConcatenationNode,
 )
 from superlinked.framework.online.dag.online_constant_node import OnlineConstantNode
-from superlinked.framework.online.dag.online_custom_node import (
+from superlinked.framework.online.dag.online_custom_vector_embedding_node import (
     OnlineCustomVectorEmbeddingNode,
 )
 from superlinked.framework.online.dag.online_event_aggregation_node import (

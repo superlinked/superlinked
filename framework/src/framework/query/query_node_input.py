@@ -12,9 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from dataclasses import dataclass
 
-from superlinked.framework.common.dag.embedding_node import EmbeddingNode
+from beartype.typing import Generic
+
+from superlinked.framework.common.dag.node import NodeDataT
+from superlinked.framework.common.interface.weighted import Weighted
 
 
-class NumberEmbeddingNode(EmbeddingNode[float, float]):
-    pass
+@dataclass(frozen=True)
+class QueryNodeInput(Generic[NodeDataT]):
+    value: Weighted[NodeDataT]
+    to_invert: bool

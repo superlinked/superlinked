@@ -101,9 +101,7 @@ class ExecutionContext:
     def has_environment(self, environment: ExecutionEnvironment) -> bool:
         return self.__environment == environment
 
-    def get_node_context_value(
-        self, node_id: str, key: str, _type: type[T]
-    ) -> T | None:
+    def get_node_context_value(self, node_id: str, key: str, _: type[T]) -> T | None:
         value = self.__node_context(node_id).get(key)
         if value is None:
             return None

@@ -13,8 +13,15 @@
 # limitations under the License.
 
 
-from superlinked.framework.common.dag.embedding_node import EmbeddingNode
+from superlinked.framework.common.exception import (
+    DagEvaluationException,
+    InitializationException,
+)
 
 
-class NumberEmbeddingNode(EmbeddingNode[float, float]):
+class QueryDagInitializationException(InitializationException):
+    pass
+
+
+class QueryEvaluationException(DagEvaluationException):
     pass
