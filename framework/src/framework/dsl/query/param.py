@@ -47,7 +47,14 @@ class Param:
 
 
 ParamInputType: TypeAlias = (
-    Sequence[str] | Sequence[float] | str | int | float | bool | None
+    Sequence[str]
+    | Sequence[float]
+    | str
+    | int
+    | float
+    | bool
+    | None
+    | tuple[str | None, str | None]
 )
 ParamType: TypeAlias = ParamInputType | Param
 StringParamType: TypeAlias = str | Param

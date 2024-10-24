@@ -18,7 +18,7 @@ from itertools import groupby
 from beartype.typing import Any, Iterator, Sequence, TypeVar, cast
 
 from superlinked.framework.common.dag.index_node import IndexNode
-from superlinked.framework.common.data_types import PythonTypes
+from superlinked.framework.common.data_types import NodeDataTypes, PythonTypes
 from superlinked.framework.common.exception import InvalidSchemaException
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
@@ -250,7 +250,7 @@ class StorageManager:
         schema: SchemaObject,
         object_id: str,
         node_id: str,
-        result: PythonTypes,
+        result: NodeDataTypes,
         origin_id: str | None = None,
     ) -> None:
         entity_id = self._entity_builder.compose_entity_id(

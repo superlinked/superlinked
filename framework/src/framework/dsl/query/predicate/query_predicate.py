@@ -32,6 +32,14 @@ OPT = TypeVar("OPT", bound=Enum)
 class QueryPredicate(Generic[OPT]):
     op: OPT
     params: list[
-        SchemaField | Param | Sequence[str] | Sequence[float] | str | int | float | None
+        SchemaField
+        | Param
+        | Sequence[str]
+        | Sequence[float]
+        | str
+        | int
+        | float
+        | None
+        | tuple[str | None, str | None]
     ]
     weight_param: NumericParamType

@@ -17,10 +17,10 @@ from dataclasses import dataclass, field
 
 from beartype.typing import Generic, TypeVar
 
-from superlinked.framework.common.data_types import PythonTypes
+from superlinked.framework.common.data_types import NodeDataTypes
 
 # EvaluationResultType
-ERT = TypeVar("ERT", bound=PythonTypes)
+ERT = TypeVar("ERT", bound=NodeDataTypes)
 
 
 @dataclass(frozen=True)

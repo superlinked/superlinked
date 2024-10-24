@@ -25,6 +25,9 @@ from superlinked.framework.common.space.config.embedding.embedding_config import
     EmbeddingConfig,
     EmbeddingInputT,
 )
+from superlinked.framework.common.space.config.embedding.image_embedding_config import (
+    ImageEmbeddingConfig,
+)
 from superlinked.framework.common.space.config.embedding.number_embedding_config import (
     NumberEmbeddingConfig,
 )
@@ -41,6 +44,7 @@ from superlinked.framework.common.space.embedding.custom_embedding import (
     CustomEmbedding,
 )
 from superlinked.framework.common.space.embedding.embedding import Embedding
+from superlinked.framework.common.space.embedding.image_embedding import ImageEmbedding
 from superlinked.framework.common.space.embedding.number_embedding import (
     NumberEmbedding,
 )
@@ -57,6 +61,7 @@ EMBEDDING_BY_CONFIG_CLASS: Mapping[type[EmbeddingConfig], type[Embedding]] = {
     NumberEmbeddingConfig: NumberEmbedding,
     RecencyEmbeddingConfig: RecencyEmbedding,
     TextSimilarityEmbeddingConfig: SentenceTransformerEmbedding,
+    ImageEmbeddingConfig: ImageEmbedding,
 }
 
 

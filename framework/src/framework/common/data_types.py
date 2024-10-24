@@ -24,6 +24,7 @@ from superlinked.framework.common.exception import (
     NegativeFilterException,
 )
 from superlinked.framework.common.schema.blob_information import BlobInformation
+from superlinked.framework.common.schema.image_data import ImageData
 
 Json = Mapping[str, Any]
 NPArray = np.ndarray[
@@ -281,3 +282,4 @@ class Vector:
 
 
 PythonTypes = float | int | str | Vector | list[float] | list[str] | BlobInformation
+NodeDataTypes = PythonTypes | ImageData

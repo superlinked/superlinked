@@ -12,16 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from enum import Enum
+from dataclasses import dataclass
+
+from PIL.ImageFile import ImageFile
 
 
-class FieldDataType(Enum):
-    BLOB = "BLOB"
-    DOUBLE = "DOUBLE"
-    INT = "INT"
-    JSON = "JSON"
-    FLOAT_LIST = "FLOAT_LIST"
-    STRING_LIST = "STRING_LIST"
-    STRING = "STRING"
-    VECTOR = "VECTOR"
-    IMAGE_DATA = "IMAGE_DATA"
+@dataclass(frozen=True)
+class ImageData:
+    image: ImageFile | None
+    description: str | None

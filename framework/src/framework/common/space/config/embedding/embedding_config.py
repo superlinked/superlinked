@@ -18,10 +18,10 @@ from dataclasses import dataclass
 from beartype.typing import Generic, TypeVar
 
 from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.data_types import PythonTypes
+from superlinked.framework.common.data_types import NodeDataTypes
 from superlinked.framework.common.interface.has_default_vector import HasDefaultVector
 
-EmbeddingInputT = TypeVar("EmbeddingInputT", bound=PythonTypes)
+EmbeddingInputT = TypeVar("EmbeddingInputT", bound=NodeDataTypes)
 
 
 @dataclass(frozen=True)

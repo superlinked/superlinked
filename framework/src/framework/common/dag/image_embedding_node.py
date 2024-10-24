@@ -12,16 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from enum import Enum
+from superlinked.framework.common.dag.embedding_node import EmbeddingNode
+from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.schema.image_data import ImageData
 
 
-class FieldDataType(Enum):
-    BLOB = "BLOB"
-    DOUBLE = "DOUBLE"
-    INT = "INT"
-    JSON = "JSON"
-    FLOAT_LIST = "FLOAT_LIST"
-    STRING_LIST = "STRING_LIST"
-    STRING = "STRING"
-    VECTOR = "VECTOR"
-    IMAGE_DATA = "IMAGE_DATA"
+class ImageEmbeddingNode(EmbeddingNode[Vector, ImageData]):
+    pass

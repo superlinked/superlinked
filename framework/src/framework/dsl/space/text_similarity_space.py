@@ -35,8 +35,8 @@ from superlinked.framework.common.space.config.normalization.normalization_confi
 from superlinked.framework.common.space.config.transformation_config import (
     TransformationConfig,
 )
-from superlinked.framework.common.space.embedding.sentence_transformer_embedding import (
-    SentenceTransformerEmbedding,
+from superlinked.framework.common.space.embedding.sentence_transformer_manager import (
+    SentenceTransformerManager,
 )
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.space.has_space_field_set import HasSpaceFieldSet
@@ -71,7 +71,7 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
             cache_size (int): The number of embeddings to be stored in an inmemory LRU cache.
             Set it to 0, to disable caching. Defaults to 10000.
         """
-        length = SentenceTransformerEmbedding.calculate_length(model)
+        length = SentenceTransformerManager.calculate_length(model)
         self._transformation_config = self._init_transformation_config(
             model, cache_size, length
         )

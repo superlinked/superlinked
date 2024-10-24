@@ -18,6 +18,7 @@ from __future__ import annotations
 from beartype.typing import Any, Generic, Sequence, TypeVar, get_args
 
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.schema.image_data import ImageData
 from superlinked.framework.common.storage.field import Field
 from superlinked.framework.common.storage.field_data_type import FieldDataType
 from superlinked.framework.common.storage.field_type_converter import (
@@ -36,7 +37,7 @@ class FieldData(Field, Generic[FT]):
         self.value = value
 
     def __validate_value(self, data_type: FieldDataType, value: FT) -> None:
-        valid_types = FieldTypeConverter.get_valid_python_types(data_type)
+        valid_types = FieldTypeConverter.get_valid_node_data_types(data_type)
         error_msg = "Invalid value {value} for the given field data type {data_type}"
         if not isinstance(value, tuple(valid_types)):
             raise ValueError(error_msg.format(value=value, data_type=data_type))
@@ -55,6 +56,11 @@ class FieldData(Field, Generic[FT]):
 class BlobFieldData(FieldData[str]):
     def __init__(self, name: str, value: str) -> None:
         super().__init__(FieldDataType.BLOB, name, value)
+
+
+class ImageDataFieldData(FieldData[ImageData]):
+    def __init__(self, name: str, value: ImageData) -> None:
+        super().__init__(FieldDataType.IMAGE_DATA, name, value)
 
 
 class DoubleFieldData(FieldData[float]):

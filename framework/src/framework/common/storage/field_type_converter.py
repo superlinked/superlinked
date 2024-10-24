@@ -14,8 +14,9 @@
 
 from beartype.typing import Any, Sequence, cast
 
-from superlinked.framework.common.data_types import PythonTypes, Vector
+from superlinked.framework.common.data_types import NodeDataTypes, Vector
 from superlinked.framework.common.schema.blob_information import BlobInformation
+from superlinked.framework.common.schema.image_data import ImageData
 from superlinked.framework.common.schema.schema_object import (
     Blob,
     ConcreteSchemaField,
@@ -40,7 +41,7 @@ FIELD_DATA_TYPE_BY_SCHEMA_FIELD_TYPE: dict[type[ConcreteSchemaField], FieldDataT
     Timestamp: FieldDataType.INT,
 }
 
-FIELD_DATA_TYPE_BY_PYTHON_TYPE: dict[type[PythonTypes | dict], FieldDataType] = {
+FIELD_DATA_TYPE_BY_NODE_DATA_TYPE: dict[type[NodeDataTypes | dict], FieldDataType] = {
     dict: FieldDataType.JSON,
     float: FieldDataType.DOUBLE,
     int: FieldDataType.INT,
@@ -48,10 +49,12 @@ FIELD_DATA_TYPE_BY_PYTHON_TYPE: dict[type[PythonTypes | dict], FieldDataType] = 
     list[float]: FieldDataType.FLOAT_LIST,
     list[str]: FieldDataType.STRING_LIST,
     Vector: FieldDataType.VECTOR,
+    ImageData: FieldDataType.IMAGE_DATA,
+    BlobInformation: FieldDataType.BLOB,
 }
 
 VALID_TYPE_BY_FIELD_DATA_TYPE: dict[
-    FieldDataType, Sequence[type[PythonTypes | dict]]
+    FieldDataType, Sequence[type[NodeDataTypes | dict]]
 ] = {
     FieldDataType.BLOB: [BlobInformation],
     FieldDataType.DOUBLE: [int, float],
@@ -61,6 +64,7 @@ VALID_TYPE_BY_FIELD_DATA_TYPE: dict[
     FieldDataType.STRING_LIST: [list[str]],
     FieldDataType.STRING: [str],
     FieldDataType.VECTOR: [Vector],
+    FieldDataType.IMAGE_DATA: [ImageData],
 }
 
 
@@ -78,15 +82,17 @@ class FieldTypeConverter:
         )
 
     @staticmethod
-    def convert_python_type(type_: type[PythonTypes]) -> FieldDataType:
-        if field_data_type := FIELD_DATA_TYPE_BY_PYTHON_TYPE.get(
-            cast(type[PythonTypes], type_)
+    def convert_node_data_type(type_: type[NodeDataTypes]) -> FieldDataType:
+        if field_data_type := FIELD_DATA_TYPE_BY_NODE_DATA_TYPE.get(
+            cast(type[NodeDataTypes], type_)
         ):
             return field_data_type
         raise NotImplementedError(f"Unknown python type: {type_}")
 
     @staticmethod
-    def get_valid_python_types(data_type: FieldDataType) -> Sequence[type[PythonTypes]]:
+    def get_valid_node_data_types(
+        data_type: FieldDataType,
+    ) -> Sequence[type[NodeDataTypes]]:
         return [
             GenericClassUtil.if_not_class_get_origin(type_)
             for type_ in VALID_TYPE_BY_FIELD_DATA_TYPE[data_type]

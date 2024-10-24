@@ -22,12 +22,12 @@ from typing_extensions import Self
 
 from superlinked.framework.common.dag.dag_effect import DagEffect
 from superlinked.framework.common.dag.persistence_params import PersistenceParams
-from superlinked.framework.common.data_types import PythonTypes
+from superlinked.framework.common.data_types import NodeDataTypes
 from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.storage.persistence_type import PersistenceType
 from superlinked.framework.common.util.string_util import StringUtil
 
-NodeDataT = TypeVar("NodeDataT", bound=PythonTypes)
+NodeDataT = TypeVar("NodeDataT", bound=NodeDataTypes)
 # NodeType
 NT = TypeVar("NT", bound="Node")
 

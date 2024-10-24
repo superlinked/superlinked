@@ -40,6 +40,12 @@ from superlinked.framework.online.dag.online_custom_vector_embedding_node import
 from superlinked.framework.online.dag.online_event_aggregation_node import (
     OnlineEventAggregationNode,
 )
+from superlinked.framework.online.dag.online_image_embedding_node import (
+    OnlineImageEmbeddingNode,
+)
+from superlinked.framework.online.dag.online_image_information_node import (
+    OnlineImageInformationNode,
+)
 from superlinked.framework.online.dag.online_index_node import OnlineIndexNode
 from superlinked.framework.online.dag.online_named_function_node import (
     OnlineNamedFunctionNode,
@@ -72,6 +78,8 @@ DEFAULT_NODE_TYPES: list[type[OnlineNode]] = [
     OnlineRecencyNode,
     OnlineSchemaFieldNode,
     OnlineTextEmbeddingNode,
+    OnlineImageEmbeddingNode,
+    OnlineImageInformationNode,
     # * Add new OnlineNode implementations here
 ]
 

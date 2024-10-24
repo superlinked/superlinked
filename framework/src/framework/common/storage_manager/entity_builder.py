@@ -15,7 +15,7 @@
 
 from beartype.typing import Any, Sequence
 
-from superlinked.framework.common.data_types import PythonTypes
+from superlinked.framework.common.data_types import NodeDataTypes, PythonTypes
 from superlinked.framework.common.parser.parsed_schema import (
     ParsedSchema,
     ParsedSchemaField,
@@ -123,15 +123,15 @@ class EntityBuilder:
         field_value_type: type,
     ) -> Field:
         return Field(
-            FieldTypeConverter.convert_python_type(field_value_type),
+            FieldTypeConverter.convert_node_data_type(field_value_type),
             field_name,
         )
 
     def compose_field_data(
-        self, field_name: str, field_value: PythonTypes
+        self, field_name: str, field_value: NodeDataTypes
     ) -> FieldData:
         return FieldData(
-            FieldTypeConverter.convert_python_type(type(field_value)),
+            FieldTypeConverter.convert_node_data_type(type(field_value)),
             field_name,
             field_value,
         )
@@ -141,7 +141,7 @@ class EntityBuilder:
     ) -> Sequence[FieldData]:
         return [
             FieldData(
-                FieldTypeConverter.convert_python_type(type(value)),
+                FieldTypeConverter.convert_node_data_type(type(value)),
                 self._storage_naming.generate_node_data_field_name(node_id, key),
                 value,
             )

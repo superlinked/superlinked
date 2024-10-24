@@ -12,16 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from enum import Enum
+from dataclasses import dataclass
+
+from typing_extensions import override
+
+from superlinked.framework.common.schema.image_data import ImageData
+from superlinked.framework.common.space.config.embedding.embedding_config import (
+    EmbeddingConfig,
+)
 
 
-class FieldDataType(Enum):
-    BLOB = "BLOB"
-    DOUBLE = "DOUBLE"
-    INT = "INT"
-    JSON = "JSON"
-    FLOAT_LIST = "FLOAT_LIST"
-    STRING_LIST = "STRING_LIST"
-    STRING = "STRING"
-    VECTOR = "VECTOR"
-    IMAGE_DATA = "IMAGE_DATA"
+@dataclass(frozen=True)
+class ImageEmbeddingConfig(EmbeddingConfig[ImageData]):
+    model_name: str
+    length_to_use: int
+
+    @property
+    @override
+    def length(self) -> int:
+        return self.length_to_use

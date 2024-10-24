@@ -140,6 +140,11 @@ class String(SchemaField[str]):
     def combine_values(values: Sequence[str]) -> str:
         return ", ".join(values)
 
+    def __add__(self, other: Blob) -> DescribedBlob:
+        if not isinstance(other, String):
+            raise TypeError("Operand must be of type Blob")
+        return DescribedBlob(blob=other, description=self)
+
 
 class Timestamp(SchemaField[int]):
     """
@@ -168,7 +173,14 @@ class Blob(SchemaField[BlobInformation]):
 
     @staticmethod
     def combine_values(values: Sequence[BlobInformation]) -> BlobInformation:
-        raise ValueError("Cannot combine 2 blobs.")
+        if len(values) == 1:
+            return values[0]
+        raise ValueError("Cannot combine blobs.")
+
+    def __add__(self, other: String) -> DescribedBlob:
+        if not isinstance(other, String):
+            raise TypeError("Operand must be of type String")
+        return DescribedBlob(blob=self, description=other)
 
 
 NSFT = TypeVar("NSFT", float, int)
@@ -246,6 +258,12 @@ class StringList(SchemaField[list[str]]):
         values: Sequence[list[str]],
     ) -> list[str]:
         return [", ".join(current_values) for current_values in zip(*values)]
+
+
+@dataclass(frozen=True)
+class DescribedBlob:
+    blob: Blob
+    description: String
 
 
 ConcreteSchemaField = (

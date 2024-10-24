@@ -178,15 +178,13 @@ class QueryDescriptor:  # pylint: disable=too-many-instance-attributes
 
         if not self.__is_indexed_space(field_set.space):
             raise QueryException("Space isn't present in the index.")
-
-        if self.__is_space_bound(field_set.space):
-            raise QueryException("Space attempted to bound in query multiple times.")
-
         relevant_field = field_set.get_field_for_schema(self.schema)
         if not relevant_field:
             raise InvalidSchemaException(
                 f"'find' ({type(self.schema)}) is not in similarity field's schema types."
             )
+        if self.__is_space_bound(field_set.space, relevant_field):
+            raise QueryException("Space attempted to bound in query multiple times.")
         similar_filter_param = WeightedParamInfo.init_with(
             ParamGroup.SIMILAR_FILTER_VALUE,
             ParamGroup.SIMILAR_FILTER_WEIGHT,
@@ -393,9 +391,10 @@ class QueryDescriptor:  # pylint: disable=too-many-instance-attributes
     def __is_indexed_space(self, space: Space) -> bool:
         return self.index.has_space(space)
 
-    def __is_space_bound(self, space: Space) -> bool:
+    def __is_space_bound(self, space: Space, schema_field: SchemaField) -> bool:
         return any(
             similar_filter_info.space == space
+            and isinstance(similar_filter_info.schema_field, type(schema_field))
             for similar_filter_info in self.query_filter_info.similar_filter_infos
         )
 

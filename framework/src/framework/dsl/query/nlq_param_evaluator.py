@@ -20,6 +20,7 @@ from pydantic.fields import FieldInfo
 
 from superlinked.framework.common.exception import QueryException
 from superlinked.framework.common.nlq.open_ai import OpenAIClient, OpenAIClientConfig
+from superlinked.framework.common.schema.schema_object import Blob
 from superlinked.framework.dsl.query.nlq_pydantic_model_builder import (
     NLQPydanticModelBuilder,
 )
@@ -35,7 +36,11 @@ QUERY_MODEL_NAME = "QueryModel"
 
 class NLQParamEvaluator:
     def __init__(self, param_infos: Sequence[ParamInfo]) -> None:
-        self.param_infos = param_infos
+        self.param_infos = [
+            param_info
+            for param_info in param_infos
+            if not isinstance(param_info.schema_field, Blob)
+        ]
         self.model_builder = NLQPydanticModelBuilder(self.param_infos)
 
     def evaluate_param_infos(
