@@ -36,7 +36,7 @@ from superlinked.framework.common.schema.id_schema_object import (
     IdSchemaObjectT,
     SchemaField,
 )
-from superlinked.framework.common.schema.schema_object import Blob, Timestamp
+from superlinked.framework.common.schema.schema_object import Blob, String, Timestamp
 
 
 class DataFrameParser(
@@ -63,10 +63,10 @@ class DataFrameParser(
         if self._is_event_data_parser:
             self.__ensure_created_at(data_copy)
 
-        if timestamp_cols := [
-            key for key, value in schema_cols.items() if isinstance(value, Timestamp)
-        ]:
-            data_copy[timestamp_cols] = data_copy[timestamp_cols].astype(int)
+        data_copy[self._id_name] = data_copy[self._id_name].astype(str)
+        self._convert_columns_to_type(data_copy, schema_cols, Timestamp)
+        self._convert_columns_to_type(data_copy, schema_cols, String)
+        self._convert_columns_to_type(data_copy, schema_cols, SchemaReference)
 
         if blob_cols := [
             key for key, value in schema_cols.items() if isinstance(value, Blob)
@@ -77,17 +77,10 @@ class DataFrameParser(
                 self.blob_loader.load
             )
 
-        data_copy[self._id_name] = data_copy[self._id_name].astype(str)
         if self._is_event_data_parser:
             data_copy[self._created_at_name] = data_copy[self._created_at_name].astype(
                 int
             )
-        schema_ref_cols = [
-            key
-            for key, value in schema_cols.items()
-            if isinstance(value, SchemaReference)
-        ]
-        data_copy[schema_ref_cols] = data_copy[schema_ref_cols].astype(str)
         schema_data = cast(pd.DataFrame, data_copy[list(schema_cols.keys())])
         records = cast(list[dict[str, Any]], schema_data.to_dict(orient="records"))
         return [self.__create_parsed_schema(record, schema_cols) for record in records]
@@ -202,3 +195,13 @@ class DataFrameParser(
         mask = data[self._id_name]
         duplicate_mask = mask.duplicated()
         return list(mask[duplicate_mask].unique())
+
+    def _convert_columns_to_type(
+        self,
+        data: pd.DataFrame,
+        schema_cols: dict[str, SchemaField],
+        schema_field_type: type[SchemaField],
+    ) -> None:
+        for column_name, schema_field in schema_cols.items():
+            if isinstance(schema_field, schema_field_type):
+                data[column_name] = data[column_name].astype(schema_field.type_)
