@@ -4,19 +4,25 @@ Module superlinked.framework.dsl.query.result
 Classes
 -------
 
-`Result(schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject, entries: collections.abc.Sequence[superlinked.framework.dsl.query.result.ResultEntry], knn_params: collections.abc.Mapping[str, typing.Any] | None = None)`
+`Result(entries: collections.abc.Sequence[superlinked.framework.dsl.query.result.ResultEntry], query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor)`
 :   A class representing the result of a query.
     
     Attributes:
         schema (IdSchemaObject): The schema of the result.
         entries (Sequence[ResultEntry]): A list of result entries.
+        query_descriptor (QueryDescriptor): The final form of QueryDescriptor used in the query.
 
     ### Class variables
 
     `entries: collections.abc.Sequence[superlinked.framework.dsl.query.result.ResultEntry]`
     :
 
-    `knn_params: collections.abc.Mapping[str, typing.Any] | None`
+    `query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    :
+
+    ### Instance variables
+
+    `knn_params: dict[str, typing.Any]`
     :
 
     `schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject`

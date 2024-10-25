@@ -10,12 +10,13 @@ Sub-modules
 * superlinked.framework.dsl.query.param
 * superlinked.framework.dsl.query.predicate
 * superlinked.framework.dsl.query.query
+* superlinked.framework.dsl.query.query_clause
 * superlinked.framework.dsl.query.query_descriptor
-* superlinked.framework.dsl.query.query_filter_information
 * superlinked.framework.dsl.query.query_filter_validator
 * superlinked.framework.dsl.query.query_filters
 * superlinked.framework.dsl.query.query_mixin
 * superlinked.framework.dsl.query.query_param_information
+* superlinked.framework.dsl.query.query_param_value_setter
 * superlinked.framework.dsl.query.query_vector_factory
 * superlinked.framework.dsl.query.query_weighting
 * superlinked.framework.dsl.query.result

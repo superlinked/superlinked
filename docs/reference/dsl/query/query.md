@@ -22,7 +22,7 @@ Classes
 
     ### Methods
 
-    `find(self, schema: IdSchemaObject) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    `find(self, schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :   Find a schema in the query.
         
         Args:

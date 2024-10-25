@@ -4,28 +4,30 @@ Module superlinked.framework.dsl.query.query_descriptor
 Classes
 -------
 
-`QueryDescriptor(index: superlinked.framework.dsl.index.index.Index, schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject, query_param_info: superlinked.framework.dsl.query.query_param_information.QueryParamInformation | None = None, query_filter_info: superlinked.framework.dsl.query.query_filter_information.QueryFilterInformation | None = None, override_now: int | None = None, natural_query_client_config: superlinked.framework.common.nlq.open_ai.OpenAIClientConfig | None = None)`
+`QueryDescriptor(index: superlinked.framework.dsl.index.index.Index, schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject, clauses: collections.abc.Sequence[superlinked.framework.dsl.query.query_clause.QueryClause] | None = None)`
 :   A class representing a query object. Use .with_vector to run queries using a stored
     vector, or use .similar for queries where you supply the query at query-time. Or combine
     them, or even combine multiple .similar to supply different queries for each space in the
     Index.
-    
-    Attributes:
-        builder (Query): The query builder.
-        schema (SchemaObject): The schema object.
-    
-    Initialize the QueryDescriptor.
-    
-    Args:
-        builder (Query): The query builder.
-        schema (IdSchemaObject): The schema object.
 
-    ### Static methods
+    ### Instance variables
 
-    `init(cls, index: superlinked.framework.dsl.index.index.Index, schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject, weight_by_space: collections.abc.Mapping[superlinked.framework.dsl.space.space.Space, float | int | superlinked.framework.dsl.query.param.Param]) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    `clauses: collections.abc.Sequence[superlinked.framework.dsl.query.query_clause.QueryClause]`
+    :
+
+    `index: superlinked.framework.dsl.index.index.Index`
+    :
+
+    `schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject`
     :
 
     ### Methods
+
+    `append_missing_mandatory_clauses(self) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    :
+
+    `calculate_value_by_param_name(self) ‑> dict[str, typing.Any]`
+    :
 
     `filter(self, comparison_operation: Union[superlinked.framework.common.interface.comparison_operand.ComparisonOperation[superlinked.framework.common.schema.schema_object.SchemaField], superlinked.framework.common.interface.comparison_operand._Or]) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :   Add a 'filter' clause to the query. This filters the results from the db
@@ -49,6 +51,39 @@ Classes
         Returns:
             Self: The query object itself.
 
+    `get_clause_by_type(self, clause_type: type[~QueryClauseT]) ‑> Optional[~QueryClauseT]`
+    :
+
+    `get_clauses_by_type(self, clause_type: type[~QueryClauseT]) ‑> list[~QueryClauseT]`
+    :
+
+    `get_context_time(self, default: int | typing.Any) ‑> int`
+    :
+
+    `get_hard_filters(self) ‑> list[superlinked.framework.common.interface.comparison_operand.ComparisonOperation[superlinked.framework.common.schema.schema_object.SchemaField]]`
+    :
+
+    `get_limit(self) ‑> int`
+    :
+
+    `get_looks_like_filter(self) ‑> Optional[superlinked.framework.dsl.query.predicate.binary_predicate.EvaluatedBinaryPredicate[superlinked.framework.dsl.query.predicate.binary_predicate.LooksLikePredicate]]`
+    :
+
+    `get_mandatory_clause_by_type(self, clause_type: type[~QueryClauseT]) ‑> ~QueryClauseT`
+    :
+
+    `get_radius(self) ‑> float | None`
+    :
+
+    `get_similar_filters(self) ‑> dict[superlinked.framework.dsl.space.space.Space, list[superlinked.framework.dsl.query.predicate.binary_predicate.EvaluatedBinaryPredicate[superlinked.framework.dsl.query.predicate.binary_predicate.SimilarPredicate]]]`
+    :
+
+    `get_weighted_clauses(self) ‑> list[superlinked.framework.dsl.query.query_clause.WeightedQueryClause]`
+    :
+
+    `get_weights_by_space(self) ‑> dict[superlinked.framework.dsl.space.space.Space, float]`
+    :
+
     `limit(self, limit: int | superlinked.framework.dsl.query.param.Param | None) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :   Set a limit to the number of results returned by the query.
         If the limit is None, -1 will be used, which is not handled by all databases.
@@ -58,7 +93,7 @@ Classes
         Returns:
             Self: The query object itself.
 
-    `override_now(self, now: int) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    `override_now(self, now: int | superlinked.framework.dsl.query.param.Param) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :
 
     `radius(self, radius: float | int | superlinked.framework.dsl.query.param.Param | None) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
@@ -79,6 +114,9 @@ Classes
         Raises:
             ValueError: If the radius is not between 0 and 1.
 
+    `replace_clauses(self, clauses: collections.abc.Sequence[superlinked.framework.dsl.query.query_clause.QueryClause]) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    :
+
     `similar(self, space_field_set: superlinked.framework.dsl.space.has_space_field_set.HasSpaceFieldSet | superlinked.framework.dsl.space.space_field_set.SpaceFieldSet, param: collections.abc.Sequence[str] | collections.abc.Sequence[float] | str | int | float | bool | None | tuple[str | None, str | None] | superlinked.framework.dsl.query.param.Param, weight: float | int | superlinked.framework.dsl.query.param.Param = 1.0) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :   Add a 'similar' clause to the query. Similar queries compile query inputs (like query text) into vectors
         using a space and then use the query_vector (weighted with weight param) to search
@@ -97,6 +135,9 @@ Classes
             QueryException: If the space is already bound in the query.
             InvalidSchemaException: If the schema is not in the similarity field's schema types.
 
+    `space_weights(self, weight_by_space: collections.abc.Mapping[superlinked.framework.dsl.space.space.Space, float | int | superlinked.framework.dsl.query.param.Param]) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    :
+
     `with_natural_query(self, natural_query: str | superlinked.framework.dsl.query.param.Param, client_config: superlinked.framework.common.nlq.open_ai.OpenAIClientConfig) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :   Sets a natural language query based on which empty Params will have values set.
         
@@ -106,7 +147,7 @@ Classes
         Returns:
             Self: The query object itself.
 
-    `with_vector(self, schema_obj: Union[superlinked.framework.common.schema.id_schema_object.IdSchemaObject, ~T], id_param: collections.abc.Sequence[str] | collections.abc.Sequence[float] | str | int | float | bool | None | tuple[str | None, str | None] | superlinked.framework.dsl.query.param.Param, weight: float | int | superlinked.framework.dsl.query.param.Param = 1.0) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    `with_vector(self, schema_obj: superlinked.framework.common.schema.id_schema_object.IdSchemaObject, id_param: collections.abc.Sequence[str] | collections.abc.Sequence[float] | str | int | float | bool | None | tuple[str | None, str | None] | superlinked.framework.dsl.query.param.Param, weight: float | int | superlinked.framework.dsl.query.param.Param = 1.0) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :   Add a 'with_vector' clause to the query. This fetches an object with id_param
         from the db and uses the vector of that item for search purposes. Weighting
         happens at the space level (and if there is also a .similar query present,
@@ -121,3 +162,11 @@ Classes
         
         Returns:
             Self: The query object itself.
+
+`QueryDescriptorValidator()`
+:   
+
+    ### Static methods
+
+    `validate(query_descriptor: QueryDescriptor) ‑> None`
+    :
