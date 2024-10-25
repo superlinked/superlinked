@@ -38,23 +38,22 @@ class LocalResourceHandler(ResourceHandler):
         notification_needed = False
         for root, _, files in os.walk(self.app_location.path):
             for file in files:
-                if file not in self.poller_config.allowed_files:
-                    logger.debug("skipped file", filename=file, allowed_files=self.poller_config.allowed_files)
+                file_name = os.path.basename(file)
+                if file_name not in self.poller_config.allowed_files:
+                    logger.info("skipped file", filename=file_name, allowed_files=self.poller_config.allowed_files)
                     continue
-                file_path = os.path.join(root, file)
-                notification_needed |= self._process_file(file_path)
+                notification_needed |= self._process_file(root, file_name)
         if notification_needed:
             self.notify_executor()
 
-    def _process_file(self, file_path: str) -> bool:
+    def _process_file(self, root_path: str, file: str) -> bool:
+        file_path = os.path.join(root_path, file)
         file_time = datetime.fromtimestamp(os.path.getmtime(file_path), tz=timezone.utc)
         file_changed = False
         try:
-            if self.is_object_outdated(file_time, file_path):
-                destination_path = self.get_destination_path(file_path)
-                self.download_file(self.get_bucket(), file_path, destination_path)
-                logger.info("downloaded file", source=file_path, destination=destination_path)
+            if self.is_object_outdated(file_time, file):
+                self.download_file(self.get_bucket(), file_path, self.get_destination_path(file))
                 file_changed = True
         except (FileNotFoundError, PermissionError):
-            logger.exception("failed to download file", path=file_path)
+            logger.exception("failed to download file", path=file)
         return file_changed

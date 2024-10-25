@@ -61,8 +61,8 @@ class AppLocationParser:
                 bucket, path = self._get_bucket_and_path_or_raise(pattern, app_location)
             case app_location if "amazonaws.com" in app_location:
                 # Handle both AWS S3 URL formats
-                if re.match(r"https?://[a-z0-9-]+\.s3\.[a-z0-9-]+\.amazonaws\.com/.+", app_location):
-                    pattern = r"https?://([^/.]+)\.s3\.[a-z0-9-]+\.amazonaws\.com/(.+)"
+                if re.match(r"https?://[a-z0-9-]+\.s3\.?[a-z0-9-]*\.amazonaws\.com/.+", app_location):
+                    pattern = r"https?://([^/.]+)\.s3\.?[a-z0-9-]*\.amazonaws\.com/(.+)"
                 else:
                     pattern = r"https?://s3\.[a-z0-9-]+\.amazonaws\.com/([^/]+)/(.+)"
                 type_ = StorageType.S3

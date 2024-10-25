@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import time
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
 
@@ -61,11 +62,10 @@ class ResourceHandler(ABC):
         return self.convert_to_utc(object_time) > self.__get_local_file_last_modified_date(object_name)
 
     def get_destination_path(self, object_name: str) -> str:
-        filename = os.path.basename(object_name.lstrip("/"))
-        return os.path.join(self.poller_config.download_location, filename)
+        return os.path.join(self.poller_config.download_location, object_name)
 
     def __get_local_file_last_modified_date(self, object_name: str) -> datetime:
-        path = self.get_destination_path(object_name)
+        path = self.get_destination_path(os.path.basename(object_name))
         if not os.path.exists(path):
             return datetime.fromtimestamp(0, tz=timezone.utc)
         return datetime.fromtimestamp(os.path.getmtime(path), tz=timezone.utc)
@@ -85,20 +85,25 @@ class ResourceHandler(ABC):
         except requests.RequestException:
             logger.exception("failed to notify executor", notification_event="file_change", url=api_url)
 
-    def check_api_health(self, *, verbose: bool = True) -> bool:
+    def check_api_health(self) -> bool:
         """
         Check the health of the API and return True if it's healthy, False otherwise.
+        Retries the request up to 10 times with a 5-second delay between attempts.
         """
         api_endpoint = f"{self.poller_config.executor_url}:{self.poller_config.executor_port}/health"
-        try:
-            response = requests.get(api_endpoint, timeout=5)
-            response.raise_for_status()
-        except (requests.HTTPError, requests.RequestException) as e:
-            if verbose:
+        max_retries = 10
+        for attempt in range(max_retries):
+            try:
+                response = requests.get(api_endpoint, timeout=5)
+                response.raise_for_status()
+                return True  # noqa: TRY300
+            except (requests.HTTPError, requests.RequestException) as e:  # noqa: PERF203
                 logger.warning(
-                    "executor is unreachable, possibly restarting",
+                    "executor is unreachable, possibly starting up",
                     reason=str(e),
                     status_code=getattr(e.response, "status_code", "No status code available"),
+                    attempt=attempt + 1,
+                    max_retries=max_retries,
                 )
-            return False
-        return True
+                time.sleep(5)
+        return False

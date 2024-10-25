@@ -38,7 +38,7 @@ config_schema = {
             {"type": "string", "regex": r"gs://([^/]+)/(.+)"},
             {
                 "type": "string",
-                "regex": r"https?://(?:s3)[^/]*\.amazonaws\.com/([^/]+)/(.+)",
+                "regex": r"https?://([^/.]+)\.s3\.?[a-z0-9-]*\.amazonaws\.com/(.+)",
             },
             {
                 "type": "string",

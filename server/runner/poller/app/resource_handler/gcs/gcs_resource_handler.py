@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 import structlog
 from google.auth.exceptions import DefaultCredentialsError
 from google.cloud import storage  # type: ignore[attr-defined]
@@ -55,11 +57,12 @@ class GCSResourceHandler(ResourceHandler):
         blobs = bucket.list_blobs(prefix=self.app_location.path)
         notification_needed = False
         for blob in blobs:
-            if blob.name not in self.poller_config.allowed_files:
-                logger.debug("skipped file", filename=blob.name, allowed_files=self.poller_config.allowed_files)
+            file_name = os.path.basename(blob)
+            if file_name not in self.poller_config.allowed_files:
+                logger.debug("skipped file", filename=file_name, allowed_files=self.poller_config.allowed_files)
                 continue
             if self.is_object_outdated(blob.updated, blob.name):
-                self.download_file(bucket_name, blob.name, self.get_destination_path(blob.name))
+                self.download_file(bucket_name, blob.name, self.get_destination_path(file_name))
                 notification_needed = True
 
             if notification_needed:

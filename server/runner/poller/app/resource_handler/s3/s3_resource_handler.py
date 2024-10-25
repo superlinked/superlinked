@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import json
+import os
 
 import boto3
 import structlog
@@ -67,11 +68,12 @@ class S3ResourceHandler(ResourceHandler):
         bucket_name = self.get_bucket()
         bucket = self.resource.Bucket(bucket_name)
         for obj in bucket.objects.filter(Prefix=self.app_location.path):
-            if obj.key not in self.poller_config.allowed_files:
-                logger.debug("skipped file", filename=obj.key, allowed_files=self.poller_config.allowed_files)
+            file_name = os.path.basename(obj.key)
+            if file_name not in self.poller_config.allowed_files:
+                logger.debug("skipped file", filename=file_name, allowed_files=self.poller_config.allowed_files)
                 continue
             if self.is_object_outdated(obj.last_modified, obj.key):
-                self.download_file(bucket_name, obj.key, self.get_destination_path(obj.key))
+                self.download_file(bucket_name, obj.key, self.get_destination_path(file_name))
                 notification_needed = True
 
         if notification_needed:

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 import time
 from threading import Thread
 
@@ -24,7 +23,6 @@ from poller.app.app_location_parser.app_location_parser import (
     AppLocationParser,
 )
 from poller.app.config.poller_config import PollerConfig
-from poller.app.resource_handler.resource_handler import ResourceHandler
 from poller.app.resource_handler.resource_handler_factory import ResourceHandlerFactory
 
 logger = structlog.getLogger(__name__)
@@ -56,24 +54,7 @@ class Poller(Thread):
         Start the polling process.
         """
         resource_handler = ResourceHandlerFactory.get_resource_handler(self.app_location_config)
-        self._initial_wait(resource_handler)
         while True:
             if resource_handler.check_api_health():
                 resource_handler.poll()
             time.sleep(self.poller_config.poll_interval_seconds)
-
-    def _initial_wait(self, resource_handler: ResourceHandler) -> None:
-        """
-        Perform an initial wait with retries for up to 10 times. The initial wait period is between
-        5-10 seconds, depending on whether the request times out or does not receive a 200 response
-        immediately. If the server cannot be reached within 10 retries, which totals between 50 and
-        100 seconds, the application will shut down.
-        """
-        for i in range(10):
-            logger.info("waiting for executor", retries=i + 1)
-            if resource_handler.check_api_health(verbose=False):
-                break
-            time.sleep(5)
-        else:
-            logger.error("executor failed to start, check the configuration files", retries=i + 1)
-            sys.exit(1)
