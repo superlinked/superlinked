@@ -12,16 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from functools import partial
 
 import structlog
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.dag import Dag
+from superlinked.framework.common.dag.dag_effect import DagEffect
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import (
-    DagEvaluationException,
+    InvalidDagEffectException,
     InvalidSchemaException,
 )
 from superlinked.framework.common.parser.parsed_schema import (
@@ -40,13 +40,14 @@ from superlinked.framework.online.dag.online_schema_dag import OnlineSchemaDag
 logger = structlog.get_logger()
 
 
-class QueryDagEvaluator:
+class OnlineDagEvaluator:
     def __init__(
         self,
         dag: Dag,
         schemas: set[SchemaObject],
         storage_manager: StorageManager,
     ) -> None:
+        super().__init__()
         self._dag = dag
         self._schemas = schemas
         self._schema_online_schema_dag_mapper = (
@@ -54,10 +55,27 @@ class QueryDagEvaluator:
                 self._schemas, self._dag, storage_manager
             )
         )
+        self._dag_effect_online_schema_dag_mapper = (
+            self.__init_dag_effect_online_schema_dag_mapper(self._dag, storage_manager)
+        )
+        self._log_dag_init()
+
+    def _log_dag_init(self) -> None:
         for schema, online_schema_dag in self._schema_online_schema_dag_mapper.items():
             logger.info(
                 "initialized entity dag",
                 schema=schema._schema_name,
+                node_ids=[node.node_id for node in online_schema_dag.nodes],
+                node_types=[node.class_name for node in online_schema_dag.nodes],
+            )
+        for (
+            dag_effect,
+            online_schema_dag,
+        ) in self._dag_effect_online_schema_dag_mapper.items():
+            logger.info(
+                "initialized event dag",
+                affected_schema=dag_effect.resolved_affected_schema_reference.schema._schema_name,
+                affecting_schema=dag_effect.resolved_affecting_schema_reference.schema._schema_name,
                 node_ids=[node.node_id for node in online_schema_dag.nodes],
                 node_types=[node.class_name for node in online_schema_dag.nodes],
             )
@@ -97,6 +115,24 @@ class QueryDagEvaluator:
             f"Schema ({index_schema._schema_name}) isn't present in the index."
         )
 
+    def evaluate_by_dag_effect(
+        self,
+        parsed_schema_with_event: ParsedSchemaWithEvent,
+        context: ExecutionContext,
+        dag_effect: DagEffect,
+    ) -> EvaluationResult[Vector]:
+        if (
+            online_schema_dag := self._dag_effect_online_schema_dag_mapper.get(
+                dag_effect
+            )
+        ) is not None:
+            result = online_schema_dag.evaluate([parsed_schema_with_event], context)[0]
+            self._log_evaluated_event(parsed_schema_with_event, result)
+            return result
+        raise InvalidDagEffectException(
+            f"DagEffect ({dag_effect}) isn't present in the index."
+        )
+
     def _log_evaluated_event(
         self, parsed_schema_with_event: ParsedSchemaWithEvent, result: EvaluationResult
     ) -> None:
@@ -126,34 +162,19 @@ class QueryDagEvaluator:
             for schema in schemas
         }
 
-    def evaluate_single(
-        self,
-        parsed_schema: ParsedSchema,
-        context: ExecutionContext,
-    ) -> EvaluationResult[Vector]:
-        result = self.evaluate([parsed_schema], context)[0]
-        QueryDagEvaluator.__check_evaluation(result)
-        return result
-
-    @staticmethod
-    def __check_evaluation(evaluation: EvaluationResult[Vector]) -> None:
-        if len(evaluation.chunks) > 0:
-            raise DagEvaluationException(
-                "Evaluation cannot have chunked parts in query context."
+    def __init_dag_effect_online_schema_dag_mapper(
+        self, dag: Dag, storage_manager: StorageManager
+    ) -> dict[DagEffect, OnlineSchemaDag]:
+        dag_effect_schema_dag_map = {
+            dag_effect: dag.project_to_dag_effect(dag_effect)
+            for dag_effect in dag.dag_effects
+        }
+        return {
+            dag_effect: OnlineSchemaDagCompiler(
+                set(schema_dag.nodes)
+            ).compile_schema_dag(
+                schema_dag,
+                storage_manager,
             )
-
-    def re_weight_vector(
-        self,
-        schema: SchemaObject,
-        vector: Vector,
-        context: ExecutionContext,
-    ) -> Vector:
-        if (
-            online_schema_dag := self._schema_online_schema_dag_mapper.get(schema)
-        ) is not None:
-            return online_schema_dag.leaf_node._re_weight_vector(
-                schema, vector, context
-            )
-        raise InvalidSchemaException(
-            f"Schema ({schema._schema_name}) isn't present in the index."
-        )
+            for dag_effect, schema_dag in dag_effect_schema_dag_map.items()
+        }

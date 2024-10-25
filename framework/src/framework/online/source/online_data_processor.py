@@ -26,7 +26,7 @@ from superlinked.framework.common.parser.parsed_schema import (
 )
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.dsl.index.index import Index
-from superlinked.framework.evaluator.online_dag_evaluator import OnlineDagEvaluator
+from superlinked.framework.online.online_dag_evaluator import OnlineDagEvaluator
 
 logger = structlog.get_logger()
 

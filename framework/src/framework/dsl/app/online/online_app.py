@@ -25,7 +25,7 @@ from superlinked.framework.dsl.app.app import App
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.query.query_mixin import QueryMixin
 from superlinked.framework.dsl.storage.vector_database import VectorDatabase
-from superlinked.framework.evaluator.online_dag_evaluator import OnlineDagEvaluator
+from superlinked.framework.online.online_dag_evaluator import OnlineDagEvaluator
 from superlinked.framework.online.source.online_data_processor import (
     OnlineDataProcessor,
 )

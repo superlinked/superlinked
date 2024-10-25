@@ -64,7 +64,7 @@ class OnlineSchemaDag:
         return self.leaf_node.evaluate_next(parsed_schemas, context)
 
     def __validate(self, schema: SchemaObject, nodes: list[OnlineNode]) -> None:
-        class_name = self.__class__.__name__
+        class_name = type(self).__name__
         leaf_nodes = [node for node in nodes if len(node.children) == 0]
         if len(leaf_nodes) != 1:
             raise LeafNodeCountException(
