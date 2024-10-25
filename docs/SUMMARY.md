@@ -43,6 +43,8 @@
     * [Superlinked Registry](reference/dsl/registry/superlinked_registry.md)
     * [Exception](reference/dsl/registry/exception.md)
   * [Query](reference/dsl/query/index.md)
+    * [Query Clause](reference/dsl/query/query_clause.md)
+    * [Query Param Value Setter](reference/dsl/query/query_param_value_setter.md)
     * [Param](reference/dsl/query/param.md)
     * [Result](reference/dsl/query/result.md)
     * [Query Weighting](reference/dsl/query/query_weighting.md)
