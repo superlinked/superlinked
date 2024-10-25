@@ -82,6 +82,7 @@ Example on combining Text with Numerical encoders to get correct results with LL
 
 ```python
 import json
+import os
 
 from superlinked.framework.common.embedding.number_embedding import Mode
 from superlinked.framework.common.nlq.open_ai import OpenAIClientConfig
@@ -100,21 +101,21 @@ from superlinked.framework.dsl.executor.in_memory.in_memory_executor import (
 )
 
 @schema
-class Review:
+class Product:
     id: IdField
-    review_text: String
+    description: String
     rating: Integer
 
 
-review = Review()
+product = Product()
 
-review_text_space = TextSimilaritySpace(
-    text=review.review_text, model="Alibaba-NLP/gte-large-en-v1.5"
+description_space = TextSimilaritySpace(
+    text=product.description, model="Alibaba-NLP/gte-large-en-v1.5"
 )
 rating_maximizer_space = NumberSpace(
-    number=review.rating, min_value=1, max_value=5, mode=Mode.MAXIMUM
+    number=product.rating, min_value=1, max_value=5, mode=Mode.MAXIMUM
 )
-index = Index([review_text_space, rating_maximizer_space], fields=[review.rating])
+index = Index([description_space, rating_maximizer_space], fields=[product.rating])
 
 # fill this with your API key - this will drive param extraction
 openai_config = OpenAIClientConfig(
@@ -124,7 +125,7 @@ openai_config = OpenAIClientConfig(
 # it is possible now to add descriptions to a `Param` to aid the parsing of information from natural language queries.
 text_similar_param = Param(
     "query_text",
-    description="The text in the user's query that is used to search in the reviews' body. Extract info that does apply to other spaces or params.",
+    description="The text in the user's query that refers to product descriptions.",
 )
 
 # Define your query using dynamic parameters for query text and weights.
@@ -133,35 +134,36 @@ query = (
     Query(
         index,
         weights={
-            review_text_space: Param("review_text_weight"),
+            description_space: Param("description_weight"),
             rating_maximizer_space: Param("rating_maximizer_weight"),
         },
     )
-    .find(review)
+    .find(product)
     .similar(
-        review_text_space.text,
+        description_space,
         text_similar_param,
+        Param("description_similar_clause_weight")
     )
     .limit(Param("limit"))
     .with_natural_query(Param("natural_query"), openai_config)
 )
 
 # Run the app.
-source: InMemorySource = InMemorySource(review)
+source: InMemorySource = InMemorySource(product)
 executor = InMemoryExecutor(sources=[source], indices=[index])
 app = executor.run()
 
 # Download dataset.
 data = [
-    {"id": 1, "review_text": "Utterly useless makes my teeth cry!!!", "rating": 1},
-    {"id": 2, "review_text": "Awesome product never again miss brushing my teeth", "rating": 5},
-    {"id": 3, "review_text": "A mediocre toothbrush that fits it's purpose but nothing extra.", "rating": 3},
+    {"id": 1, "description": "Utterly useless makes my teeth cry!!!", "rating": 1},
+    {"id": 2, "description": "Awesome product never again miss brushing my teeth", "rating": 5},
+    {"id": 3, "description": "A mediocre toothbrush that fits it's purpose but nothing extra.", "rating": 3},
 ]
 
 # Ingest data to the framework.
 source.put(data)
 
-result = app.query(query, natural_query="good toothbrushes", limit=1)
+result = app.query(query, natural_query="best toothbrushes", limit=1)
 
 # examine the extracted parameters from your query
 print(json.dumps(result.knn_params, indent=2))
