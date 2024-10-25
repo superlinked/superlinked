@@ -24,6 +24,7 @@ from superlinked.framework.dsl.query.query_descriptor import QueryDescriptor
 from superlinked.framework.dsl.space.space import Space
 
 
+@TypeValidator.wrap
 class Query:
     """
     A class representing a query. Build queries using Params as placeholders for weights or query text,
@@ -35,7 +36,6 @@ class Query:
             Defaults to None, which is equal weight for each space.
     """
 
-    @TypeValidator.wrap
     def __init__(
         self, index: Index, weights: Mapping[Space, NumericParamType] | None = None
     ) -> None:
@@ -63,4 +63,4 @@ class Query:
         Raises:
             QueryException: If the index does not have the queried schema.
         """
-        return QueryDescriptor.init(self.index, schema, self.weight_by_space)
+        return QueryDescriptor(self.index, schema).space_weights(self.weight_by_space)

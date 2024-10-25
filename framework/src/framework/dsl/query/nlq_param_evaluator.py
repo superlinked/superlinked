@@ -14,17 +14,28 @@
 
 from collections import defaultdict
 
-from beartype.typing import Any, Sequence
+from beartype.typing import Any, cast
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 
 from superlinked.framework.common.exception import QueryException
 from superlinked.framework.common.nlq.open_ai import OpenAIClient, OpenAIClientConfig
-from superlinked.framework.common.schema.schema_object import Blob
+from superlinked.framework.common.schema.schema_object import Blob, SchemaField
 from superlinked.framework.dsl.query.nlq_pydantic_model_builder import (
     NLQPydanticModelBuilder,
 )
-from superlinked.framework.dsl.query.query_param_information import ParamInfo
+from superlinked.framework.dsl.query.query_clause import (
+    HardFilterClause,
+    LooksLikeFilterClause,
+    SimilarFilterClause,
+    SpaceWeightClause,
+)
+from superlinked.framework.dsl.query.query_descriptor import QueryDescriptor
+from superlinked.framework.dsl.query.query_param_information import (
+    ParamGroup,
+    ParamInfo,
+    WeightedParamInfo,
+)
 from superlinked.framework.dsl.space.space import Space
 
 # Exclude from documentation.
@@ -35,23 +46,73 @@ QUERY_MODEL_NAME = "QueryModel"
 
 
 class NLQParamEvaluator:
-    def __init__(self, param_infos: Sequence[ParamInfo]) -> None:
-        self.param_infos = [
-            param_info
-            for param_info in param_infos
-            if not isinstance(param_info.schema_field, Blob)
-        ]
+    def __init__(self, query_descriptor: QueryDescriptor) -> None:
+        self.param_infos = self.calculate_param_infos(query_descriptor)
         self.model_builder = NLQPydanticModelBuilder(self.param_infos)
 
-    def evaluate_param_infos(
-        self, natural_query: str | None, client_config: OpenAIClientConfig | None
-    ) -> dict[str, Any]:
-        if natural_query is None or self._all_params_have_value_set():
-            return {}
-        if client_config is None:
-            raise QueryException(
-                "Natural language query supplied without client config."
+    def calculate_param_infos(
+        self, query_descriptor: QueryDescriptor
+    ) -> list[ParamInfo]:
+        space_weight_params = [
+            ParamInfo.init_with(
+                ParamGroup.SPACE_WEIGHT,
+                clause.value_param,
+                None,
+                clause.space,
             )
+            for clause in query_descriptor.get_clauses_by_type(SpaceWeightClause)
+        ]
+        hard_filter_params = [
+            ParamInfo.init_with(
+                ParamGroup.HARD_FILTER,
+                clause.value_param,
+                cast(SchemaField, clause.operand),
+                None,
+                clause.op,
+            )
+            for clause in query_descriptor.get_clauses_by_type(HardFilterClause)
+        ]
+        similar_filter_params = [
+            WeightedParamInfo.init_with(
+                ParamGroup.SIMILAR_FILTER_VALUE,
+                ParamGroup.SIMILAR_FILTER_WEIGHT,
+                clause.value_param,
+                clause.weight_param,
+                clause.schema_field,
+                clause.space,
+            )
+            for clause in query_descriptor.get_clauses_by_type(SimilarFilterClause)
+            if not isinstance(clause.schema_field, Blob)
+        ]
+        if (
+            looks_like_clause := query_descriptor.get_clause_by_type(
+                LooksLikeFilterClause
+            )
+        ) is not None:
+            looks_like = WeightedParamInfo.init_with(
+                ParamGroup.LOOKS_LIKE_FILTER_VALUE,
+                ParamGroup.LOOKS_LIKE_FILTER_WEIGHT,
+                looks_like_clause.value_param,
+                looks_like_clause.weight_param,
+                looks_like_clause.schema_field,
+            )
+        else:
+            looks_like = None
+
+        nested_params = [
+            space_weight_params,
+            hard_filter_params,
+            [weighted.value_param for weighted in similar_filter_params],
+            [weighted.weight_param for weighted in similar_filter_params],
+            ([looks_like.value_param, looks_like.weight_param] if looks_like else []),
+        ]
+        return [param for param_list in nested_params for param in param_list]
+
+    def evaluate_param_infos(
+        self, natural_query: str, client_config: OpenAIClientConfig
+    ) -> dict[str, Any]:
+        if self._all_params_have_value_set():
+            return {}
         model_class = self.model_builder.build()
         instructor_prompt = self._calculate_instructor_prompt(model_class)
         try:

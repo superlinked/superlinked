@@ -12,13 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Sequence
+import base64
+
+import structlog
+from beartype.typing import Sequence, cast
 
 from superlinked.framework.blob.blob_handler import BlobHandler
 from superlinked.framework.blob.blob_id_generator import BlobIdGenerator
 from superlinked.framework.common.observable import Subscriber
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
+from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.schema.schema_object import Blob
+
+logger = structlog.getLogger()
 
 
 class BlobHandlerSubscriber(Subscriber[ParsedSchema]):
@@ -39,4 +45,15 @@ class BlobHandlerSubscriber(Subscriber[ParsedSchema]):
                     message.id_,
                     blob_field.schema_field.name,
                 )
-                self.__blob_handler.upload(object_path, blob_field.value)
+                blob_info = cast(BlobInformation, blob_field.value)
+                if blob_info.data is None:
+                    logger.warning(
+                        "Blob data is None, download likely failed.",
+                        path=blob_info.path,
+                    )
+                    continue
+                metadata = self.__blob_handler.calculate_metadata(blob_info)
+
+                self.__blob_handler.upload(
+                    object_path, base64.b64decode(blob_info.data), metadata
+                )

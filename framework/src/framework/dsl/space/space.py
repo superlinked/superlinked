@@ -112,3 +112,6 @@ class Space(
         self,
     ) -> set[EmbeddingNode[AggregationInputT, EmbeddingInputT]]:
         return set(self._node_by_schema.values())
+
+    def __str__(self) -> str:
+        return f"{type(self).__name__}_{str(hash(self))}"

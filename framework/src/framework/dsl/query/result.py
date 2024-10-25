@@ -14,13 +14,14 @@
 
 from dataclasses import dataclass
 
-from beartype.typing import Any, Mapping, Sequence
+from beartype.typing import Any, Sequence
 from pandas import DataFrame
 
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.storage_manager.search_result_item import (
     SearchResultItem,
 )
+from superlinked.framework.dsl.query.query_descriptor import QueryDescriptor
 
 DEFAULT_SCORE_FIELD_NAME = "similarity_score"
 DEFAULT_RANK_FIELD_NAME = "rank"
@@ -53,11 +54,19 @@ class Result:
     Attributes:
         schema (IdSchemaObject): The schema of the result.
         entries (Sequence[ResultEntry]): A list of result entries.
+        query_descriptor (QueryDescriptor): The final form of QueryDescriptor used in the query.
     """
 
-    schema: IdSchemaObject
     entries: Sequence[ResultEntry]
-    knn_params: Mapping[str, Any] | None = None
+    query_descriptor: QueryDescriptor
+
+    @property
+    def schema(self) -> IdSchemaObject:
+        return self.query_descriptor.schema
+
+    @property
+    def knn_params(self) -> dict[str, Any]:
+        return self.query_descriptor.calculate_value_by_param_name()
 
     def to_pandas(self) -> DataFrame:
         """

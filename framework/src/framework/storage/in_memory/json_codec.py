@@ -18,20 +18,29 @@ import numpy as np
 from beartype.typing import Any
 
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.schema.blob_information import BlobInformation
 
 
 class JsonEncoder(json.JSONEncoder):
     def default(self, o: object) -> dict[str, str | list]:
-        if isinstance(o, Vector):
-            return {"type": "__Vector__", "value": o.value.tolist()}
-        return super().default(o)
+        object_ = o  # `o` cannot be renamed because it would break the JsonEncoder.default's interface
+        if isinstance(object_, Vector):
+            return {"type": "__Vector__", "value": object_.value.tolist()}
+        if isinstance(object_, BlobInformation):
+            return {"type": "__BlobInformation__", "value": object_.path or ""}
+        return super().default(object_)
 
 
 class JsonDecoder(json.JSONDecoder):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(object_hook=self.decode_dict, *args, **kwargs)
 
-    def decode_dict(self, dct: dict[str, Any]) -> Vector | dict[str, Any]:
-        if "type" in dct and dct["type"] == "__Vector__":
-            return Vector(np.array(dct["value"]))
-        return dct
+    def decode_dict(
+        self, dict_: dict[str, Any]
+    ) -> Vector | BlobInformation | dict[str, Any]:
+        if "type" in dict_:
+            if dict_["type"] == "__Vector__":
+                return Vector(np.array(dict_["value"]))
+            if dict_["type"] == "__BlobInformation__":
+                return BlobInformation(path=dict_["value"])
+        return dict_

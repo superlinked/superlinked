@@ -13,11 +13,14 @@
 # limitations under the License.
 
 from concurrent.futures import Future, ThreadPoolExecutor
+from dataclasses import asdict
 
 import structlog
+from beartype.typing import Any
 from google.cloud import storage
 
 from superlinked.framework.blob.blob_handler import BlobHandler
+from superlinked.framework.blob.blob_metadata import BlobMetadata
 
 logger = structlog.getLogger()
 
@@ -30,14 +33,22 @@ class GcsBlobHandler(BlobHandler):
         self._executor = ThreadPoolExecutor()
         self._logger = logger.bind(bucket=self.__destination_bucket_name)
 
-    def upload(self, name: str, data: bytes) -> None:
-        future = self._executor.submit(self._upload_sync, name, data)
+    def upload(
+        self, name: str, data: bytes, metadata: BlobMetadata | None = None
+    ) -> None:
+        future = self._executor.submit(self._upload_sync, name, data, metadata)
         future.add_done_callback(lambda f: self._task_done_callback(f, name, data))
 
-    def _upload_sync(self, name: str, data: bytes) -> None:
+    def _upload_sync(
+        self, name: str, data: bytes, metadata: BlobMetadata | None
+    ) -> None:
         bucket = self.__client.bucket(self.__destination_bucket_name)
         blob = bucket.blob(name)
-        blob.upload_from_file(data)
+        upload_args: dict[str, Any] = {"data": data}
+        if metadata is not None:
+            upload_args.update({"content_type": metadata.content_type})
+            blob.metadata = asdict(metadata)
+        blob.upload_from_string(**upload_args)
 
     def _task_done_callback(self, future: Future, name: str, data: bytes) -> None:
         try:

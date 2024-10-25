@@ -13,7 +13,13 @@
 # limitations under the License.
 
 
+from __future__ import annotations
+
 from beartype.typing import Any, Sequence, TypeAlias, TypeVar
+
+from superlinked.framework.common.interface.evaluated import Evaluated
+
+UNSET_PARAM_NAME = "__UNSET_PARAM_NAME_"
 
 
 class Param:
@@ -44,6 +50,16 @@ class Param:
         self.name = name
         self.description = description
         self.default = default
+
+    @staticmethod
+    def init_evaluated(value: Any) -> Evaluated[Param]:
+        if isinstance(value, Evaluated) and isinstance(value.item, Param):
+            return Evaluated(value.item, value)
+        return Evaluated(Param.init_default(), value)
+
+    @staticmethod
+    def init_default(default: Any | None = None) -> Param:
+        return Param(UNSET_PARAM_NAME, None, default)
 
 
 ParamInputType: TypeAlias = (
