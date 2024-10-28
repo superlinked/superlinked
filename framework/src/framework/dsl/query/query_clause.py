@@ -17,8 +17,8 @@ from __future__ import annotations
 from abc import abstractmethod
 from dataclasses import dataclass, replace
 
-from beartype.typing import Any, Generic, Self, TypeVar, cast
-from typing_extensions import override
+from beartype.typing import Any, Generic, TypeVar, cast
+from typing_extensions import Self, override
 
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.data_types import PythonTypes
