@@ -14,7 +14,7 @@
 
 import mimetypes
 from abc import abstractmethod
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 from superlinked.framework.blob.blob_metadata import BlobMetadata
 from superlinked.framework.common.schema.blob_information import BlobInformation
@@ -40,7 +40,7 @@ class BlobHandler:
         if isinstance(path, bytes):
             path = path.decode("utf-8")
 
-        return path.rsplit("/", 1)[-1] if path else None
+        return unquote(path).rsplit("/", 1)[-1] if path else None
 
     def _determine_content_type(self, last_url_segment: str | None) -> str:
         content_type = "application/octet-stream"
