@@ -12,17 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import annotations
+from dataclasses import dataclass
 
-from beartype.typing import Sequence
+from beartype.typing import Generic, TypeVar
 
-from superlinked.framework.common.dag.recency_node import RecencyNode
-from superlinked.framework.query.dag.query_embedding_orphan_node import (
-    QueryEmbeddingOrphanNode,
-)
-from superlinked.framework.query.dag.query_node import QueryNode
+from superlinked.framework.common.data_types import NodeDataTypes
+from superlinked.framework.common.interface.weighted import Weighted
+
+QueryEvaluationResultT = TypeVar("QueryEvaluationResultT", bound=NodeDataTypes)
 
 
-class QueryRecencyNode(QueryEmbeddingOrphanNode[int, int]):
-    def __init__(self, node: RecencyNode, parents: Sequence[QueryNode]) -> None:
-        super().__init__(node, parents, int)
+@dataclass(frozen=True)
+class QueryEvaluationResult(Generic[QueryEvaluationResultT]):
+    value: (
+        QueryEvaluationResultT
+        | list[QueryEvaluationResultT]
+        | Weighted[QueryEvaluationResultT]
+        | list[Weighted[QueryEvaluationResultT]]
+    )

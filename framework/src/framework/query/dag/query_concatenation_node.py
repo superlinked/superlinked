@@ -22,7 +22,7 @@ from typing_extensions import override
 from superlinked.framework.common.dag.concatenation_node import ConcatenationNode
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import Node
-from superlinked.framework.common.data_types import PythonTypes, Vector
+from superlinked.framework.common.data_types import NodeDataTypes, Vector
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.space.normalization.normalization import L2Norm
@@ -30,6 +30,9 @@ from superlinked.framework.common.util.weight_arithmetics import WeightArithmeti
 from superlinked.framework.query.dag.exception import QueryEvaluationException
 from superlinked.framework.query.dag.invert_if_addressed_query_node import (
     InvertIfAddressedQueryNode,
+)
+from superlinked.framework.query.dag.query_evaluation_data_types import (
+    QueryEvaluationResult,
 )
 from superlinked.framework.query.dag.query_node import QueryNode
 from superlinked.framework.query.query_node_input import QueryNodeInput
@@ -45,7 +48,7 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
 
     @override
     def invert_and_readdress(
-        self, node_inputs: Sequence[Weighted[PythonTypes]]
+        self, node_inputs: Sequence[Weighted[NodeDataTypes]]
     ) -> dict[str, list[QueryNodeInput]]:
         # All of the inputs are vectors having the same dimension as the CN.
         self._validate_iputs_to_be_inverted(node_inputs)
@@ -58,7 +61,7 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
         return self._address_split_weighted_vectors(split_weighted_vectors)
 
     def _validate_iputs_to_be_inverted(
-        self, node_inputs: Sequence[Weighted[PythonTypes]]
+        self, node_inputs: Sequence[Weighted[NodeDataTypes]]
     ) -> None:
         if any(
             invalid_inputs := [
@@ -105,12 +108,14 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
             for i, parent in enumerate(self.parents)
         }
 
-    def _validate_parent_results(self, parent_results: list[PythonTypes]) -> None:
+    def _validate_parent_results(
+        self, parent_results: Sequence[QueryEvaluationResult]
+    ) -> None:
         super()._validate_parent_results(parent_results)
         if invalid_parent_result_types := {
-            type(parent_result).__name__
+            type(parent_result.value).__name__
             for parent_result in parent_results
-            if not isinstance(parent_result, Vector)
+            if not isinstance(parent_result.value, Vector)
         }:
             raise QueryEvaluationException(
                 f"Parent results must be vectors, got {invalid_parent_result_types}"
@@ -118,10 +123,10 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
 
     @override
     def _evaluate_parent_results(
-        self, parent_results: list[PythonTypes], context: ExecutionContext
-    ) -> Vector:
+        self, parent_results: Sequence[QueryEvaluationResult], context: ExecutionContext
+    ) -> QueryEvaluationResult[Vector]:
         vectors_with_parents = [
-            (cast(Vector, result), self.parents[i])
+            (cast(Vector, result.value), self.parents[i])
             for i, result in enumerate(parent_results)
         ]
         weighted_vectors = [
@@ -130,7 +135,7 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
         ]
         vector = reduce(lambda a, b: a.concatenate(b), weighted_vectors)
         compensation_factor = self._calculate_compensation_factor(weighted_vectors)
-        return vector * compensation_factor
+        return QueryEvaluationResult(vector * compensation_factor)
 
     def _calculate_compensation_factor(
         self, weighted_vectors: Sequence[Vector]

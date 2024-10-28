@@ -20,8 +20,11 @@ from typing_extensions import override
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.index_node import IndexNode
 from superlinked.framework.common.dag.node import Node
-from superlinked.framework.common.data_types import PythonTypes, Vector
+from superlinked.framework.common.data_types import Vector
 from superlinked.framework.query.dag.exception import QueryEvaluationException
+from superlinked.framework.query.dag.query_evaluation_data_types import (
+    QueryEvaluationResult,
+)
 from superlinked.framework.query.dag.query_node import QueryNode
 from superlinked.framework.query.dag.query_node_with_parent import QueryNodeWithParent
 from superlinked.framework.query.query_node_input import QueryNodeInput
@@ -67,22 +70,24 @@ class QueryIndexNode(QueryNodeWithParent[IndexNode, Vector]):
     @override
     def _evaluate_parents(
         self, inputs: Mapping[str, Sequence[QueryNodeInput]], context: ExecutionContext
-    ) -> list[PythonTypes]:
+    ) -> list[QueryEvaluationResult[Vector]]:
         active_parent = self._get_active_parent(context)
         return [active_parent.evaluate_with_validation(inputs, context)]
 
     @override
     def _evaluate_parent_results(
-        self, parent_results: list[PythonTypes], context: ExecutionContext
-    ) -> Vector:
+        self,
+        parent_results: Sequence[QueryEvaluationResult],
+        context: ExecutionContext,
+    ) -> QueryEvaluationResult[Vector]:
         if (count := len(parent_results)) != 1:
             raise QueryEvaluationException(
                 f"Query index must receive exactly 1 parent result, got {count}."
             )
-        if not isinstance(parent_results[0], Vector):
+        if not isinstance(parent_results[0].value, Vector):
             raise QueryEvaluationException(
                 "Query index's parent result must be a vector, "
-                + f"got {type(parent_results[0]).__name__}."
+                + f"got {type(parent_results[0].value).__name__}."
             )
         return parent_results[0]
 

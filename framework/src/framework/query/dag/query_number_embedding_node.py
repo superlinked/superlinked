@@ -17,10 +17,12 @@ from __future__ import annotations
 from beartype.typing import Sequence
 
 from superlinked.framework.common.dag.number_embedding_node import NumberEmbeddingNode
-from superlinked.framework.query.dag.query_embedding_node import QueryEmbeddingNode
+from superlinked.framework.query.dag.query_embedding_orphan_node import (
+    QueryEmbeddingOrphanNode,
+)
 from superlinked.framework.query.dag.query_node import QueryNode
 
 
-class QueryNumberEmbeddingNode(QueryEmbeddingNode[float, float]):
+class QueryNumberEmbeddingNode(QueryEmbeddingOrphanNode[float, float]):
     def __init__(self, node: NumberEmbeddingNode, parents: Sequence[QueryNode]) -> None:
         super().__init__(node, parents, float)

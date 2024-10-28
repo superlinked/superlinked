@@ -18,10 +18,12 @@ from beartype.typing import Sequence
 
 from superlinked.framework.common.dag.text_embedding_node import TextEmbeddingNode
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.query.dag.query_embedding_node import QueryEmbeddingNode
+from superlinked.framework.query.dag.query_embedding_orphan_node import (
+    QueryEmbeddingOrphanNode,
+)
 from superlinked.framework.query.dag.query_node import QueryNode
 
 
-class QueryTextEmbeddingNode(QueryEmbeddingNode[Vector, str]):
+class QueryTextEmbeddingNode(QueryEmbeddingOrphanNode[Vector, str]):
     def __init__(self, node: TextEmbeddingNode, parents: Sequence[QueryNode]) -> None:
         super().__init__(node, parents, str)

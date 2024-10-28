@@ -17,6 +17,7 @@ from beartype.typing import Mapping, Sequence
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.exception import LeafNodeCountException
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.query.dag.exception import QueryEvaluationException
 from superlinked.framework.query.dag.query_index_node import QueryIndexNode
 from superlinked.framework.query.dag.query_node import QueryNode
 from superlinked.framework.query.query_node_input import QueryNodeInput
@@ -36,7 +37,13 @@ class QueryDag:
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,
     ) -> Vector:
-        return self.leaf_node.evaluate_with_validation(inputs, context)
+        result = self.leaf_node.evaluate_with_validation(inputs, context).value
+        if not isinstance(result, Vector):
+            raise QueryEvaluationException(
+                f"{type(self.leaf_node).__name__} must return a vector, "
+                + f"got {type(result).__name__}."
+            )
+        return result
 
     def __validate_and_get_leaf_node(
         self, nodes: Sequence[QueryNode]

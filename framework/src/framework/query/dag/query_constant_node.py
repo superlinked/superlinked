@@ -20,6 +20,9 @@ from typing_extensions import override
 from superlinked.framework.common.dag.constant_node import ConstantNode
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import NodeDataT
+from superlinked.framework.query.dag.query_evaluation_data_types import (
+    QueryEvaluationResult,
+)
 from superlinked.framework.query.dag.query_node import QueryNode
 from superlinked.framework.query.query_node_input import QueryNodeInput
 
@@ -37,5 +40,5 @@ class QueryConstantNode(
         self,
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,
-    ) -> NodeDataT:
-        return self.node.value
+    ) -> QueryEvaluationResult[NodeDataT]:
+        return QueryEvaluationResult(self.node.value)

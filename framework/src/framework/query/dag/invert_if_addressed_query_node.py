@@ -18,21 +18,27 @@ from beartype.typing import Generic, Mapping, Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.dag.node import NT, NodeDataT
-from superlinked.framework.common.data_types import PythonTypes
+from superlinked.framework.common.dag.node import NT
+from superlinked.framework.common.data_types import NodeDataTypes
 from superlinked.framework.common.interface.weighted import Weighted
+from superlinked.framework.query.dag.query_evaluation_data_types import (
+    QueryEvaluationResult,
+    QueryEvaluationResultT,
+)
 from superlinked.framework.query.dag.query_node_with_parent import QueryNodeWithParent
 from superlinked.framework.query.query_node_input import QueryNodeInput
 
 
 class InvertIfAddressedQueryNode(
-    QueryNodeWithParent[NT, NodeDataT], ABC, Generic[NT, NodeDataT]
+    QueryNodeWithParent[NT, QueryEvaluationResultT],
+    ABC,
+    Generic[NT, QueryEvaluationResultT],
 ):
     @override
     def _evaluate_parents(
         self, inputs: Mapping[str, Sequence[QueryNodeInput]], context: ExecutionContext
-    ) -> list[PythonTypes]:
-        node_inputs: list[Weighted[PythonTypes]] = [
+    ) -> list[QueryEvaluationResult]:
+        node_inputs: list[Weighted[NodeDataTypes]] = [
             node_input.value for node_input in inputs.get(self.node_id, [])
         ]
         inverted_inputs = self.invert_and_readdress(node_inputs)
@@ -41,6 +47,6 @@ class InvertIfAddressedQueryNode(
 
     @abstractmethod
     def invert_and_readdress(
-        self, node_inputs: Sequence[Weighted[PythonTypes]]
+        self, node_inputs: Sequence[Weighted[NodeDataTypes]]
     ) -> dict[str, list[QueryNodeInput]]:
         pass

@@ -22,28 +22,21 @@ from superlinked.framework.common.dag.categorical_similarity_node import (
 )
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.interface.weighted import Weighted
-from superlinked.framework.query.dag.query_embedding_node import QueryEmbeddingNode
+from superlinked.framework.query.dag.query_embedding_orphan_node import (
+    QueryEmbeddingOrphanNode,
+)
 from superlinked.framework.query.dag.query_node import QueryNode
 from superlinked.framework.query.query_node_input import QueryNodeInput
 
 
-class QueryCategoricalSimilarityNode(QueryEmbeddingNode[Vector, list[str]]):
+class QueryCategoricalSimilarityNode(QueryEmbeddingOrphanNode[Vector, list[str]]):
     def __init__(
         self, node: CategoricalSimilarityNode, parents: Sequence[QueryNode]
     ) -> None:
         super().__init__(node, parents, list[str])
 
     @override
-    def pre_process_node_input(
-        self, node_inputs: Sequence[QueryNodeInput]
-    ) -> Sequence[QueryNodeInput]:
-        return [
-            QueryCategoricalSimilarityNode.make_single_list_input(node_input)
-            for node_input in node_inputs
-        ]
-
-    @staticmethod
-    def make_single_list_input(node_input: QueryNodeInput) -> QueryNodeInput:
+    def _pre_process_node_input(self, node_input: QueryNodeInput) -> QueryNodeInput:
         if isinstance(node_input.value, list):
             return node_input
         return QueryNodeInput(
