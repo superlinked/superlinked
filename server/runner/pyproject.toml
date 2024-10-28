@@ -42,7 +42,7 @@ pydantic = "^2.6.3"
 pydantic-settings = "^2.5.2"
 typing-inspect = "^0.9.0"
 tqdm = "^4.66.3" # Dependency of superlinked. Here because of security vulnerability [FAI-1841]
-superlinked = {version = "^10.1.0", extras = ["redis", "mongo", "pub-sub"]}
+superlinked = {version = "^12.9.0", extras = ["redis", "mongo", "pub-sub", "storage"]}
 gunicorn = "^23.0.0"
 python-json-logger = "^2.0.7"
 asgi-correlation-id = "^4.3.3"
