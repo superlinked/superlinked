@@ -46,6 +46,21 @@ def on_error(exception: Exception) -> None:
     logger.exception(exception)
 
 
+def on_publish_done(future: pubsub_v1.publisher.futures.Future) -> None:
+    try:
+        message_id = future.result()
+        logger.debug(
+            "published message",
+            message_id=message_id,
+        )
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        logger.exception(
+            "failed to publish",
+            error_type=type(e).__name__,
+            error_details=str(e),
+        )
+
+
 class PubSubQueue(Queue[MessageT], Generic[MessageT]):
     DEFAULT_TIMEOUT = 60.0
 
@@ -74,11 +89,12 @@ class PubSubQueue(Queue[MessageT], Generic[MessageT]):
     def publish(self, topic_name: str, message: QueueMessage[MessageT]) -> None:
         topic_path = self._publisher.topic_path(self._project_id, topic_name)
 
-        self._publisher.publish(
+        future = self._publisher.publish(
             topic_path,
             data=self._message_to_bytes(message),
             retry=self._retry,
         )
+        future.add_done_callback(on_publish_done)
 
     def _message_to_bytes(self, message: QueueMessage[MessageT]) -> bytes:
         message_dict = asdict(message)
