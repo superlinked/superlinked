@@ -29,8 +29,8 @@ from superlinked.framework.common.settings import Settings
 from superlinked.framework.common.util.gpu_embedding_util import GpuEmbeddingUtil
 
 SENTENCE_TRANSFORMERS_ORG_NAME = "sentence-transformers"
-SENTENCE_TRANSFORMERS_MODEL_DIR: Path = (
-    Path.home() / ".cache" / SENTENCE_TRANSFORMERS_ORG_NAME
+DEFAULT_SENTENCE_TRANSFORMERS_MODEL_DIR = (
+    (Path.home() / ".cache" / SENTENCE_TRANSFORMERS_ORG_NAME).absolute().as_posix()
 )
 
 logger = structlog.getLogger()
@@ -105,7 +105,7 @@ class SentenceTransformerManager:
             trust_remote_code=True,
             local_files_only=local_files_only,
             device=device,
-            cache_folder=str(SENTENCE_TRANSFORMERS_MODEL_DIR),
+            cache_folder=str(cls._get_cache_folder()),
         )
 
     @classmethod
@@ -114,7 +114,7 @@ class SentenceTransformerManager:
             any(
                 cls._is_valid_model_directory(model_dir)
                 for model_dir in [
-                    SENTENCE_TRANSFORMERS_MODEL_DIR / model_name,
+                    cls._get_cache_folder() / model_name,
                     cls._get_model_folder_path(model_name),
                 ]
             )
@@ -140,6 +140,13 @@ class SentenceTransformerManager:
             if "/" not in model_name
             else model_name
         )
-        return SENTENCE_TRANSFORMERS_MODEL_DIR / repo_folder_name(
+        return cls._get_cache_folder() / repo_folder_name(
             repo_id=repo_id, repo_type="model"
+        )
+
+    @classmethod
+    def _get_cache_folder(cls) -> Path:
+        return Path(
+            Settings().SENTENCE_TRANSFORMERS_MODEL_DIR
+            or DEFAULT_SENTENCE_TRANSFORMERS_MODEL_DIR
         )

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pathlib import Path
 
 import structlog
 from beartype.typing import Sequence
@@ -27,11 +26,6 @@ from superlinked.framework.common.space.embedding.embedding import Embedding
 from superlinked.framework.common.space.embedding.embedding_cache import EmbeddingCache
 from superlinked.framework.common.space.embedding.sentence_transformer_manager import (
     SentenceTransformerManager,
-)
-
-SENTENCE_TRANSFORMERS_ORG_NAME = "sentence-transformers"
-SENTENCE_TRANSFORMERS_MODEL_DIR: Path = (
-    Path.home() / ".cache" / SENTENCE_TRANSFORMERS_ORG_NAME
 )
 
 logger = structlog.getLogger()
