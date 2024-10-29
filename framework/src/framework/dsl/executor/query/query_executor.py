@@ -117,8 +117,12 @@ class QueryExecutor:
         query_filters = self._get_query_filters(query_descriptor)
         weight_by_space = query_descriptor.get_weights_by_space()
         context = self._create_query_context_base(query_descriptor)
+        query_node_inputs_by_node_id = (
+            query_descriptor.calculate_query_node_inputs_by_node_id()
+        )
         return self.query_vector_factory.produce_vector(
             query_descriptor.index._node_id,
+            query_node_inputs_by_node_id,
             query_filters,
             weight_by_space,
             query_descriptor.schema,

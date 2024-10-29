@@ -23,10 +23,13 @@ from superlinked.framework.common.dag.image_information_node import ImageInforma
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.exception import QueryException
+from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.schema.image_data import ImageData
 from superlinked.framework.common.schema.schema_object import (
     Blob,
     DescribedBlob,
+    SchemaField,
     SchemaObject,
     String,
 )
@@ -117,11 +120,25 @@ class ImageSpace(Space[Vector, ImageData]):
         self.description = SpaceFieldSet(
             self, set(described.description for described in described_blobs)
         )
-        self._schema_node_map: dict[SchemaObject, EmbeddingNode[Vector, ImageData]] = {
-            described_blob.blob.schema_obj: self._generate_embedding_node(
-                described_blob
+
+        self._schema_field_nodes_by_schema: dict[
+            SchemaObject, tuple[SchemaFieldNode[BlobInformation], SchemaFieldNode[str]]
+        ] = {
+            described_blob.blob.schema_obj: (
+                SchemaFieldNode(described_blob.blob),
+                SchemaFieldNode(described_blob.description),
             )
             for described_blob in described_blobs
+        }
+        self._schema_node_map: dict[SchemaObject, EmbeddingNode[Vector, ImageData]] = {
+            schema: ImageEmbeddingNode(
+                parent=ImageInformationNode(image_blob_node, description_node),
+                transformation_config=self.transformation_config,
+            )
+            for schema, (
+                image_blob_node,
+                description_node,
+            ) in self._schema_field_nodes_by_schema.items()
         }
         self._model = model
         logger.warning(
@@ -140,18 +157,15 @@ class ImageSpace(Space[Vector, ImageData]):
         )
         return DescribedBlob(image, description)
 
-    def _generate_embedding_node(
-        self, described_blob: DescribedBlob
-    ) -> ImageEmbeddingNode:
-        image_information_node = ImageInformationNode(
-            SchemaFieldNode(described_blob.blob),
-            SchemaFieldNode(described_blob.description),
-        )
-        embedding_node = ImageEmbeddingNode(
-            parent=image_information_node,
-            transformation_config=self.transformation_config,
-        )
-        return embedding_node
+    def get_node_id(self, schema_field: SchemaField) -> str:
+        image_node, description_node = self._schema_field_nodes_by_schema[
+            schema_field.schema_obj
+        ]
+        if schema_field == image_node.schema_field:
+            return image_node.node_id
+        if schema_field == description_node.schema_field:
+            return description_node.node_id
+        raise QueryException("Invalid field for the given schema.")
 
     @property
     @override

@@ -21,6 +21,7 @@ import structlog
 from beartype.typing import Any, Sequence, Type, cast
 
 from superlinked.framework.common.const import constants
+from superlinked.framework.common.data_types import NodeDataTypes
 from superlinked.framework.common.exception import (
     InvalidSchemaException,
     QueryException,
@@ -30,6 +31,7 @@ from superlinked.framework.common.interface.comparison_operand import (
     _Or,
 )
 from superlinked.framework.common.interface.evaluated import Evaluated
+from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.nlq.open_ai import OpenAIClientConfig
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import (
@@ -73,6 +75,7 @@ from superlinked.framework.dsl.space.categorical_similarity_space import (
 from superlinked.framework.dsl.space.has_space_field_set import HasSpaceFieldSet
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
+from superlinked.framework.query.query_node_input import QueryNodeInput
 
 logger = structlog.getLogger()
 
@@ -153,7 +156,6 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
             if isinstance(space_field_set, HasSpaceFieldSet)
             else space_field_set
         )
-        space = field_set.space
         schema_field = field_set.get_field_for_schema(self.schema)
         if not schema_field:
             raise InvalidSchemaException(
@@ -161,7 +163,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
             )
         value_param = self.__to_param(param)
         weight_param = self.__to_param(weight)
-        clause = SimilarFilterClause(value_param, weight_param, space, schema_field)
+        clause = SimilarFilterClause(value_param, weight_param, field_set, schema_field)
         altered_query_descriptor = self.__append_clause(clause)
         return altered_query_descriptor
 
@@ -420,6 +422,43 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         return [
             clause for clause in self.clauses if isinstance(clause, WeightedQueryClause)
         ]
+
+    def calculate_query_node_inputs_by_node_id(self) -> dict[str, list[QueryNodeInput]]:
+        inputs: defaultdict = defaultdict(list)
+
+        def add_input(
+            node_id: str,
+            clause: SimilarFilterClause | LooksLikeFilterClause,
+            to_invert: bool,
+        ) -> None:
+            inputs[node_id].append(
+                QueryNodeInput(
+                    Weighted(
+                        cast(NodeDataTypes, clause.get_value()), clause.get_weight()
+                    ),
+                    to_invert,
+                )
+            )
+
+        looks_like_clause = self.get_clause_by_type(LooksLikeFilterClause)
+        if looks_like_clause and looks_like_clause.evaluate():
+            add_input(self.index._node_id, looks_like_clause, True)
+
+        for similar_clause in self.get_clauses_by_type(SimilarFilterClause):
+            space_and_similar_filter = similar_clause.evaluate()
+            if not space_and_similar_filter:
+                continue
+            space = space_and_similar_filter[0]
+            schema_field = similar_clause.field_set.get_field_for_schema(self.schema)
+            if schema_field is None:
+                raise QueryException(
+                    f"No field found in schema '{self.schema._schema_name}' "
+                    f"for the similar clause '{similar_clause}'"
+                )
+            node_id = space.get_node_id(schema_field)
+            add_input(node_id, similar_clause, False)
+
+        return inputs
 
     def __append_clause(self, clause: QueryClause) -> QueryDescriptor:
         return self.__append_clauses([clause])

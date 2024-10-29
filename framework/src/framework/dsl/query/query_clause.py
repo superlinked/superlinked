@@ -44,6 +44,7 @@ from superlinked.framework.dsl.query.predicate.binary_predicate import (
 )
 from superlinked.framework.dsl.query.query_filter_validator import QueryFilterValidator
 from superlinked.framework.dsl.space.space import Space
+from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
 EvaluatedQueryT = TypeVar("EvaluatedQueryT")
 
@@ -173,8 +174,12 @@ class LooksLikeFilterClause(
 class SimilarFilterClause(
     WeightedQueryClause[tuple[Space, EvaluatedBinaryPredicate[SimilarPredicate]] | None]
 ):
-    space: Space
+    field_set: SpaceFieldSet
     schema_field: SchemaField
+
+    @property
+    def space(self) -> Space:
+        return self.field_set.space
 
     @override
     def evaluate(

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from collections import defaultdict
+from collections.abc import Mapping
 from dataclasses import dataclass
 from functools import reduce
 from math import sqrt
@@ -42,6 +43,7 @@ from superlinked.framework.dsl.query.query_filters import QueryFilters
 from superlinked.framework.dsl.query.query_weighting import QueryWeighting
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.evaluator.query_dag_evaluator import QueryDagEvaluator
+from superlinked.framework.query.query_node_input import QueryNodeInput
 
 # Exclude from documentation.
 __pdoc__ = {}
@@ -65,14 +67,20 @@ class QueryVectorFactory:
         self._storage_manager = storage_manager
         self._query_weighting = QueryWeighting(dag)
 
-    def produce_vector(
+    def produce_vector(  # pylint: disable=too-many-arguments
         self,
         index_node_id: str,
+        query_node_inputs_by_node_id: Mapping[str, Sequence[QueryNodeInput]],
         query_filters: QueryFilters,
         global_space_weight_map: dict[Space, float],
         schema: IdSchemaObject,
         context_base: ExecutionContext,
     ) -> Vector:
+        # TODO FAI-2503 use this in dag evaluation
+        inputs = query_node_inputs_by_node_id
+        if not inputs:
+            pass
+
         # Generate vector from LOOKS_LIKE filters.
         looks_like_vector: Vector | None = self._get_looks_like_vector(
             index_node_id, query_filters

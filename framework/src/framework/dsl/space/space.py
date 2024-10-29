@@ -101,6 +101,9 @@ class Space(
             return node
         return self._handle_node_not_present(schema)
 
+    def get_node_id(self, schema_field: SchemaField) -> str:
+        return self._node_by_schema[schema_field.schema_obj].node_id
+
     def _handle_node_not_present(
         self, schema: SchemaObject
     ) -> EmbeddingNode[AggregationInputT, EmbeddingInputT]:
