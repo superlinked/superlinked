@@ -155,9 +155,9 @@ app = executor.run()
 
 # Download dataset.
 data = [
-    {"id": 1, "description": "Utterly useless makes my teeth cry!!!", "rating": 1},
-    {"id": 2, "description": "Awesome product never again miss brushing my teeth", "rating": 5},
-    {"id": 3, "description": "A mediocre toothbrush that fits it's purpose but nothing extra.", "rating": 3},
+    {"id": 1, "description": "Budget toothbrush in black color.", "rating": 1},
+    {"id": 2, "description": "High-end toothbrush created with no compromises.", "rating": 5},
+    {"id": 3, "description": "A toothbrush created for the smart 21st century man.", "rating": 3},
 ]
 
 # Ingest data to the framework.
