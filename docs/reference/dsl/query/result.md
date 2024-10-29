@@ -22,6 +22,9 @@ Classes
 
     ### Instance variables
 
+    `entities: list[superlinked.framework.common.storage_manager.search_result_item.SearchResultItem]`
+    :
+
     `knn_params: dict[str, typing.Any]`
     :
 
