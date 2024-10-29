@@ -14,10 +14,12 @@
 
 
 import base64
+import tempfile
 from urllib.parse import urlparse
 
 import requests
 from beartype.typing import Any, cast
+from PIL.ImageFile import ImageFile
 
 from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.settings import Settings
@@ -27,11 +29,19 @@ class BlobLoader:
     def __init__(self, allow_bytes: bool) -> None:
         self.allow_bytes = allow_bytes
 
-    def load(self, blob_like_input: str | Any) -> BlobInformation:
-        if not isinstance(blob_like_input, str):
+    def load(self, blob_like_input: str | ImageFile | Any) -> BlobInformation:
+        if not isinstance(blob_like_input, str | ImageFile):
             raise ValueError(
-                f"Blob field must contain str input, got: {type(blob_like_input).__name__}."
+                f"Blob field must contain str or PIL.ImageFile input, got: {type(blob_like_input).__name__}."
             )
+        if isinstance(blob_like_input, ImageFile):
+            with tempfile.NamedTemporaryFile(
+                suffix=f".{blob_like_input.format}", delete=True
+            ) as temp:
+                temp_filename = temp.name
+                blob_like_input.save(temp_filename)
+                loaded_file = self.load_from_local(temp_filename)
+            blob_like_input = base64.b64encode(loaded_file).decode("utf-8")
         if self.allow_bytes:
             try:
                 decoded_bytes = base64.b64decode(blob_like_input, validate=True)
