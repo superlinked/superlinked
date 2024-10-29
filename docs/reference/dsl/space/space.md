@@ -32,3 +32,8 @@ Classes
 
     `length: int`
     :
+
+    ### Methods
+
+    `get_node_id(self, schema_field: SchemaField) ‑> str`
+    :

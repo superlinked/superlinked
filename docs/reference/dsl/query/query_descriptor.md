@@ -26,6 +26,9 @@ Classes
     `append_missing_mandatory_clauses(self) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :
 
+    `calculate_query_node_inputs_by_node_id(self) ‑> dict[str, list[superlinked.framework.query.query_node_input.QueryNodeInput]]`
+    :
+
     `calculate_value_by_param_name(self) ‑> dict[str, typing.Any]`
     :
 

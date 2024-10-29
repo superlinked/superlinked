@@ -62,3 +62,8 @@ Classes
 
     `transformation_config: superlinked.framework.common.space.config.transformation_config.TransformationConfig[superlinked.framework.common.data_types.Vector, superlinked.framework.common.schema.image_data.ImageData]`
     :
+
+    ### Methods
+
+    `get_node_id(self, schema_field: superlinked.framework.common.schema.schema_object.SchemaField) ‑> str`
+    :
