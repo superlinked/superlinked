@@ -72,8 +72,9 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
         return weighted_vectors
 
     def re_weight_vector(self, vector: Vector, context: ExecutionContext) -> Vector:
-        parts = self._split_vector(vector)
-        vector_and_nodes = list(zip(parts, self.parents))
+        parents_without_duplicates = list(dict.fromkeys(self.parents))
+        parts = self._split_vector(vector, parents_without_duplicates)
+        vector_and_nodes = list(zip(parts, parents_without_duplicates))
         weighted_vector = self._apply_weights_and_concatenate(vector_and_nodes, context)
         normalized_vector = self._norm.normalize(weighted_vector)
         return normalized_vector
@@ -104,8 +105,9 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
                 f"{self.class_name} can only process `Vector` inputs."
             )
 
-    def _split_vector(self, vector: Vector) -> list[Vector]:
-        parents_without_duplicates = list(dict.fromkeys(self.parents))
+    def _split_vector(
+        self, vector: Vector, parents_without_duplicates: Sequence[OnlineNode]
+    ) -> list[Vector]:
         lengths = [
             cast(HasLength, parent).length for parent in parents_without_duplicates
         ]

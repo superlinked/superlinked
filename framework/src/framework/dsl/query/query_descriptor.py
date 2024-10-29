@@ -362,18 +362,31 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
             clauses.append(LimitClause(Param.init_evaluated(constants.DEFAULT_LIMIT)))
         if self.get_clause_by_type(RadiusClause) is None:
             clauses.append(RadiusClause(Param.init_evaluated(None)))
+        weight_to_set_by_space = self._calculate_weight_by_missing_space()
+        clauses.extend(
+            SpaceWeightClause(Param.init_evaluated(weight), space)
+            for space, weight in weight_to_set_by_space.items()
+        )
+        return self.__append_clauses(clauses)
+
+    def _calculate_weight_by_missing_space(self) -> dict[Space, float]:
         spaces_with_weights = {
             clause.space for clause in self.get_clauses_by_type(SpaceWeightClause)
         }
         missing_spaces = {
             space for space in self.index._spaces if space not in spaces_with_weights
         }
-        clauses.extend(
-            SpaceWeightClause(Param.init_evaluated(constants.DEFAULT_WEIGHT), space)
+        if self.get_looks_like_filter() is not None:
+            return {space: constants.DEFAULT_WEIGHT for space in missing_spaces}
+        similar_filter_spaces = self.get_similar_filters().keys()
+        return {
+            space: (
+                constants.DEFAULT_WEIGHT
+                if space in similar_filter_spaces
+                else constants.DEFAULT_NOT_AFFECTING_WEIGHT
+            )
             for space in missing_spaces
-        )
-
-        return self.__append_clauses(clauses)
+        }
 
     def get_clause_by_type(
         self, clause_type: Type[QueryClauseT]
