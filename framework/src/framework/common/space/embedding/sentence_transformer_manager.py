@@ -13,11 +13,14 @@
 # limitations under the License.
 
 import os
+from functools import lru_cache
 from pathlib import Path
+from time import sleep
 
 import numpy as np
 import structlog
 from beartype.typing import Any, Sequence
+from filelock import FileLock
 from huggingface_hub.file_download import (  # type:ignore[import-untyped]
     repo_folder_name,
 )
@@ -89,6 +92,7 @@ class SentenceTransformerManager:
         return result
 
     @classmethod
+    @lru_cache(maxsize=128)
     def calculate_length(cls, model_name: str) -> int:
         # TODO FAI-2357 find better solution
         local_files_only = cls._is_model_downloaded(model_name)
@@ -100,12 +104,37 @@ class SentenceTransformerManager:
     def _initialize_model(
         cls, model_name: str, local_files_only: bool, device: str
     ) -> SentenceTransformer:
-        return SentenceTransformer(
-            model_name,
-            trust_remote_code=True,
-            local_files_only=local_files_only,
-            device=device,
-            cache_folder=str(cls._get_cache_folder()),
+        cache_folder = str(cls._get_cache_folder())
+
+        def load_model() -> SentenceTransformer:
+            return SentenceTransformer(
+                model_name,
+                trust_remote_code=True,
+                local_files_only=local_files_only,
+                device=device,
+                cache_folder=cache_folder,
+            )
+
+        if local_files_only:
+            return load_model()
+
+        lock_file_path = os.path.join(cache_folder, f"loading_{model_name}.lock")
+        settings = Settings()
+        max_retries = settings.SENTENCE_TRANSFORMERS_MODEL_LOCK_MAX_RETRIES
+        retry_delay = settings.SENTENCE_TRANSFORMERS_MODEL_LOCK_RETRY_DELAY
+        timeout = max((max_retries * retry_delay) - 10, 1)
+        for attempt in range(max_retries):
+            try:
+                with FileLock(lock_file_path, timeout=timeout):
+                    return load_model()
+            except TimeoutError:
+                logger.warning(
+                    f"Attempt {attempt + 1}/{max_retries}: Timeout acquiring lock"
+                    f" for {model_name}, retrying in {retry_delay} seconds..."
+                )
+                sleep(retry_delay)
+        raise RuntimeError(
+            f"Failed to acquire lock for {model_name} after {max_retries} attempts."
         )
 
     @classmethod

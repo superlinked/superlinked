@@ -29,6 +29,8 @@ logger = structlog.getLogger()
 class Settings(BaseSettings):
     ONLINE_PUT_CHUNK_SIZE: int = 10000
     SENTENCE_TRANSFORMERS_MODEL_DIR: str | None = None
+    SENTENCE_TRANSFORMERS_MODEL_LOCK_MAX_RETRIES: int = 10
+    SENTENCE_TRANSFORMERS_MODEL_LOCK_RETRY_DELAY: int = 1
     GPU_EMBEDDING_THRESHOLD: int = 0
     DISABLE_RICH_TRACEBACK: bool = False
     SUPERLINKED_LOG_LEVEL: int | None = None
