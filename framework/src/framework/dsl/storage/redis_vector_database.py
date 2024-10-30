@@ -43,8 +43,8 @@ class RedisVectorDatabase(VectorDatabase[RedisVDBConnector]):
             **extra_params (Any): Additional parameters for the Redis connection.
         """
         super().__init__()
-        self.__connection_params = RedisConnectionParams(host, port, **extra_params)
-        self.__settings = VDBSettings(default_query_limit)
+        self._connection_params = RedisConnectionParams(host, port, **extra_params)
+        self._settings = VDBSettings(default_query_limit)
 
     @property
     def _vdb_connector(self) -> RedisVDBConnector:
@@ -54,4 +54,4 @@ class RedisVectorDatabase(VectorDatabase[RedisVDBConnector]):
         Returns:
             RedisVDBConnector: The Redis vector database connector instance.
         """
-        return RedisVDBConnector(self.__connection_params, self.__settings)
+        return RedisVDBConnector(self._connection_params, self._settings)

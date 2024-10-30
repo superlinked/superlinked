@@ -101,6 +101,8 @@ class EventAggregator:
             if max_age_delta
             else now - effect_oldest_ts
         )
+        if max_age_delta_seconds == 0:
+            return 1.0
         avg_effect_delta = now - effect_avg_ts
         if max_age_delta_seconds < avg_effect_delta:
             return 0.0

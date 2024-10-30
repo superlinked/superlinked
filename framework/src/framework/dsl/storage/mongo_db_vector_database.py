@@ -58,7 +58,7 @@ class MongoDBVectorDatabase(VectorDatabase[MongoVDBConnector]):
             **extra_params (Any): Additional parameters for the MongoDB connection.
         """
         super().__init__()
-        self.__connection_params = MongoConnectionParams(
+        self._connection_params = MongoConnectionParams(
             host,
             db_name,
             MongoAdminParams(
@@ -66,7 +66,7 @@ class MongoDBVectorDatabase(VectorDatabase[MongoVDBConnector]):
             ),
             **extra_params
         )
-        self.__settings = VDBSettings(default_query_limit)
+        self._settings = VDBSettings(default_query_limit)
 
     @property
     def _vdb_connector(self) -> MongoVDBConnector:
@@ -76,4 +76,4 @@ class MongoDBVectorDatabase(VectorDatabase[MongoVDBConnector]):
         Returns:
             MongoVDBConnector: The MongoDB vector database connector instance.
         """
-        return MongoVDBConnector(self.__connection_params, self.__settings)
+        return MongoVDBConnector(self._connection_params, self._settings)
