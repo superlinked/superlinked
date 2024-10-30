@@ -97,7 +97,9 @@ class SentenceTransformerManager:
         # TODO FAI-2357 find better solution
         local_files_only = cls._is_model_downloaded(model_name)
         embedding_model = cls._initialize_model(model_name, local_files_only, "cpu")
-        length = embedding_model.get_sentence_embedding_dimension() or 0
+        length = embedding_model.get_sentence_embedding_dimension() or len(
+            embedding_model.encode("")
+        )
         return length
 
     @classmethod
