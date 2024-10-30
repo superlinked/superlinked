@@ -13,7 +13,11 @@
 # limitations under the License.
 
 
-from superlinked.evaluation.charts.recency_plotter import RecencyPlotter
+try:
+    # altair dependency is optional
+    from superlinked.evaluation.charts.recency_plotter import RecencyPlotter
+except ImportError:
+    pass
 from superlinked.evaluation.vector_sampler import VectorSampler
 from superlinked.framework.common.dag.context import CONTEXT_COMMON, CONTEXT_COMMON_NOW
 from superlinked.framework.common.dag.period_time import PeriodTime
