@@ -12,14 +12,132 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+from superlinked.evaluation.charts.recency_plotter import RecencyPlotter
+from superlinked.evaluation.vector_sampler import VectorSampler
+from superlinked.framework.common.dag.context import CONTEXT_COMMON, CONTEXT_COMMON_NOW
+from superlinked.framework.common.dag.period_time import PeriodTime
+from superlinked.framework.common.nlq.open_ai import OpenAIClientConfig
+from superlinked.framework.common.parser.dataframe_parser import DataFrameParser
+from superlinked.framework.common.parser.json_parser import JsonParser
+from superlinked.framework.common.schema.event_schema import EventSchema, event_schema
+from superlinked.framework.common.schema.event_schema_object import (
+    CreatedAtField,
+    SchemaReference,
+)
+from superlinked.framework.common.schema.id_schema_object import IdField
+from superlinked.framework.common.schema.schema import Schema, schema
+from superlinked.framework.common.schema.schema_object import (
+    Blob,
+    Float,
+    FloatList,
+    Integer,
+    String,
+    StringList,
+    Timestamp,
+)
+from superlinked.framework.common.space.config.embedding.number_embedding_config import (
+    Mode,
+)
+from superlinked.framework.common.util.interactive_util import get_altair_renderer
+from superlinked.framework.dsl.app.interactive.interactive_app import InteractiveApp
+from superlinked.framework.dsl.executor.in_memory.in_memory_executor import (
+    InMemoryApp,
+    InMemoryExecutor,
+)
+from superlinked.framework.dsl.executor.interactive.interactive_executor import (
+    InteractiveExecutor,
+)
+from superlinked.framework.dsl.index.effect import Effect
+from superlinked.framework.dsl.index.index import Index
+from superlinked.framework.dsl.query.param import Param
+from superlinked.framework.dsl.query.query import Query
+from superlinked.framework.dsl.query.result import Result
+from superlinked.framework.dsl.source.in_memory_source import InMemorySource
+from superlinked.framework.dsl.source.interactive_source import InteractiveSource
+from superlinked.framework.dsl.space.categorical_similarity_space import (
+    CategoricalSimilaritySpace,
+)
+from superlinked.framework.dsl.space.custom_space import CustomSpace
+from superlinked.framework.dsl.space.image_space import ImageSpace
+from superlinked.framework.dsl.space.number_space import (
+    LinearScale,
+    LogarithmicScale,
+    NumberSpace,
+)
+from superlinked.framework.dsl.space.recency_space import RecencySpace
+from superlinked.framework.dsl.space.text_similarity_space import (
+    TextSimilaritySpace,
+    chunk,
+)
+
+__all__ = [
+    # Evaluation
+    "RecencyPlotter",
+    "VectorSampler",
+    # Framework Common recency
+    "CONTEXT_COMMON",
+    "CONTEXT_COMMON_NOW",
+    "PeriodTime",
+    # Framework Common nlq
+    "OpenAIClientConfig",
+    # Framework Common util
+    "get_altair_renderer",
+    # Framework Common parsers
+    "DataFrameParser",
+    "JsonParser",
+    # Framework Common schema parents
+    "EventSchema",
+    "Schema",
+    # Framework Common schema decorators
+    "event_schema",
+    "schema",
+    # Framework Common Fields
+    "Blob",
+    "CreatedAtField",
+    "Float",
+    "FloatList",
+    "IdField",
+    "Integer",
+    "SchemaReference",
+    "String",
+    "StringList",
+    "Timestamp",
+    # Number Space Config
+    "Mode",
+    # DSL App
+    "InteractiveApp",
+    "InMemoryApp",
+    # DSL Executor
+    "InMemoryExecutor",
+    "InteractiveExecutor",
+    # DSL Source
+    "InteractiveSource",
+    "InMemorySource",
+    # DSL Index
+    "Effect",
+    "Index",
+    # DSL Query
+    "Param",
+    "Query",
+    "Result",
+    # DSL Space
+    "CategoricalSimilaritySpace",
+    "CustomSpace",
+    "ImageSpace",
+    "NumberSpace",
+    "RecencySpace",
+    "TextSimilaritySpace",
+    # DSL TextSimilaritySpace util
+    "chunk",
+    # DSL NumberSpace util
+    "LinearScale",
+    "LogarithmicScale",
+]
+
+
 from superlinked.framework.common.superlinked_logging import (
     SuperlinkedLoggerConfigurator,
 )
 
-__version__ = "0.0.0"  # This will be updated by semantic-release
-
 SuperlinkedLoggerConfigurator.configure_default_logger()
-
-
-def get_version() -> str:
-    return __version__
