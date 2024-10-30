@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from beartype.typing import Sequence
+from beartype.typing import Mapping, Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.categorical_similarity_node import (
@@ -29,13 +29,23 @@ from superlinked.framework.query.dag.query_node import QueryNode
 from superlinked.framework.query.query_node_input import QueryNodeInput
 
 
-class QueryCategoricalSimilarityNode(QueryEmbeddingOrphanNode[Vector, list[str]]):
+class QueryCategoricalSimilarityNode(
+    QueryEmbeddingOrphanNode[Vector, CategoricalSimilarityNode, list[str]]
+):
     def __init__(
         self, node: CategoricalSimilarityNode, parents: Sequence[QueryNode]
     ) -> None:
         super().__init__(node, parents, list[str])
 
     @override
+    def _pre_process_node_inputs(
+        self, inputs: Mapping[str, Sequence[QueryNodeInput]]
+    ) -> Sequence[QueryNodeInput]:
+        return [
+            self._pre_process_node_input(input_)
+            for input_ in inputs.get(self.node_id) or []
+        ]
+
     def _pre_process_node_input(self, node_input: QueryNodeInput) -> QueryNodeInput:
         if isinstance(node_input.value, list):
             return node_input

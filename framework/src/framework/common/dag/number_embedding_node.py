@@ -14,7 +14,16 @@
 
 
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
+from superlinked.framework.common.dag.node import Node
+from superlinked.framework.common.space.config.transformation_config import (
+    TransformationConfig,
+)
 
 
 class NumberEmbeddingNode(EmbeddingNode[float, float]):
-    pass
+    def __init__(
+        self,
+        parent: Node[float],
+        transformation_config: TransformationConfig[float, float],
+    ) -> None:
+        super().__init__([parent], transformation_config)

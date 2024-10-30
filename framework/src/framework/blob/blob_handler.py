@@ -23,8 +23,16 @@ from superlinked.framework.common.schema.blob_information import BlobInformation
 class BlobHandler:
     @abstractmethod
     def upload(
-        self, name: str, data: bytes, metadata: BlobMetadata | None = None
+        self, object_key: str, data: bytes, metadata: BlobMetadata | None = None
     ) -> None:
+        pass
+
+    @abstractmethod
+    def download(self, object_key: str) -> bytes:
+        pass
+
+    @abstractmethod
+    def get_supported_cloud_storage_scheme(self) -> str:
         pass
 
     def calculate_metadata(self, blob_info: BlobInformation) -> BlobMetadata:

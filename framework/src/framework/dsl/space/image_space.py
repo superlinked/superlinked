@@ -13,14 +13,11 @@
 # limitations under the License.
 
 import structlog
-from beartype.typing import Sequence, cast
+from beartype.typing import Sequence
 from typing_extensions import override
 
-from superlinked.framework.common.dag.constant_node import ConstantNode
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.image_embedding_node import ImageEmbeddingNode
-from superlinked.framework.common.dag.image_information_node import ImageInformationNode
-from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import QueryException
@@ -132,7 +129,8 @@ class ImageSpace(Space[Vector, ImageData]):
         }
         self._schema_node_map: dict[SchemaObject, EmbeddingNode[Vector, ImageData]] = {
             schema: ImageEmbeddingNode(
-                parent=ImageInformationNode(image_blob_node, description_node),
+                image_blob_node=image_blob_node,
+                description_node=description_node,
                 transformation_config=self.transformation_config,
             )
             for schema, (
@@ -181,9 +179,7 @@ class ImageSpace(Space[Vector, ImageData]):
     def _create_default_node(
         self, schema: SchemaObject
     ) -> EmbeddingNode[Vector, ImageData]:
-        default_value = ImageData(None, None)
-        constant_node = cast(Node, ConstantNode(value=default_value, schema=schema))
-        default_node = ImageEmbeddingNode(constant_node, self._transformation_config)
+        default_node = ImageEmbeddingNode(None, None, self._transformation_config)
         return default_node
 
     @property

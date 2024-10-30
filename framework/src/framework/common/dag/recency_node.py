@@ -13,7 +13,14 @@
 # limitations under the License.
 
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
+from superlinked.framework.common.dag.node import Node
+from superlinked.framework.common.space.config.transformation_config import (
+    TransformationConfig,
+)
 
 
 class RecencyNode(EmbeddingNode[int, int]):
-    pass
+    def __init__(
+        self, parent: Node[int], transformation_config: TransformationConfig[int, int]
+    ) -> None:
+        super().__init__([parent], transformation_config)

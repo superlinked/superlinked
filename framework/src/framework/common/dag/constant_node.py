@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Any
+from beartype.typing import Any, Generic
 from typing_extensions import override
 
 from superlinked.framework.common.dag.node import Node, NodeDataT
 from superlinked.framework.common.schema.schema_object import SchemaObject
 
 
-class ConstantNode(Node[NodeDataT]):
+class ConstantNode(Generic[NodeDataT], Node[NodeDataT]):
     def __init__(self, value: NodeDataT, schema: SchemaObject) -> None:
         super().__init__(type(value), [], schemas={schema})
         self.value = value

@@ -24,6 +24,6 @@ from superlinked.framework.query.dag.query_embedding_orphan_node import (
 from superlinked.framework.query.dag.query_node import QueryNode
 
 
-class QueryTextEmbeddingNode(QueryEmbeddingOrphanNode[Vector, str]):
+class QueryTextEmbeddingNode(QueryEmbeddingOrphanNode[Vector, TextEmbeddingNode, str]):
     def __init__(self, node: TextEmbeddingNode, parents: Sequence[QueryNode]) -> None:
         super().__init__(node, parents, str)

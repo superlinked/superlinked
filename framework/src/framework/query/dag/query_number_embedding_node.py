@@ -23,6 +23,8 @@ from superlinked.framework.query.dag.query_embedding_orphan_node import (
 from superlinked.framework.query.dag.query_node import QueryNode
 
 
-class QueryNumberEmbeddingNode(QueryEmbeddingOrphanNode[float, float]):
+class QueryNumberEmbeddingNode(
+    QueryEmbeddingOrphanNode[float, NumberEmbeddingNode, float]
+):
     def __init__(self, node: NumberEmbeddingNode, parents: Sequence[QueryNode]) -> None:
         super().__init__(node, parents, float)

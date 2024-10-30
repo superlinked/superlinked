@@ -18,12 +18,12 @@ from beartype.typing import Generic, Mapping, Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.dag.embedding_node import EmbeddingNode
+from superlinked.framework.common.dag.embedding_node import EmbeddingNodeT
 from superlinked.framework.common.dag.node import NodeDataT
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationInputT,
 )
-from superlinked.framework.query.dag.exception import QueryEvaluationException
+from superlinked.framework.query.dag.exception import QueryDagInitializationException
 from superlinked.framework.query.dag.query_embedding_node import QueryEmbeddingNode
 from superlinked.framework.query.dag.query_evaluation_data_types import (
     QueryEvaluationResult,
@@ -33,13 +33,13 @@ from superlinked.framework.query.query_node_input import QueryNodeInput
 
 
 class QueryEmbeddingOrphanNode(
-    QueryEmbeddingNode[AggregationInputT, NodeDataT],
-    Generic[AggregationInputT, NodeDataT],
+    QueryEmbeddingNode[AggregationInputT, EmbeddingNodeT, NodeDataT],
+    Generic[AggregationInputT, EmbeddingNodeT, NodeDataT],
 ):
 
     def __init__(
         self,
-        node: EmbeddingNode[AggregationInputT, NodeDataT],
+        node: EmbeddingNodeT,
         parents: Sequence[QueryNode],
         input_type: type[AggregationInputT | NodeDataT],
     ) -> None:
@@ -48,7 +48,7 @@ class QueryEmbeddingOrphanNode(
 
     def _validate_self(self) -> None:
         if self.parents:
-            raise QueryEvaluationException(
+            raise QueryDagInitializationException(
                 f"{type(self).__name__} cannot have parents."
             )
 

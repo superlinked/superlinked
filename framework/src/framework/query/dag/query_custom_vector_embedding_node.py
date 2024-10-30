@@ -24,7 +24,9 @@ from superlinked.framework.query.dag.query_embedding_orphan_node import (
 from superlinked.framework.query.dag.query_node import QueryNode
 
 
-class QueryCustomVectorEmbeddingNode(QueryEmbeddingOrphanNode[Vector, Vector]):
+class QueryCustomVectorEmbeddingNode(
+    QueryEmbeddingOrphanNode[Vector, CustomVectorEmbeddingNode, Vector]
+):
     def __init__(
         self, node: CustomVectorEmbeddingNode, parents: Sequence[QueryNode]
     ) -> None:

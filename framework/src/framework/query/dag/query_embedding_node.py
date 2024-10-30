@@ -20,7 +20,7 @@ from beartype.typing import Generic, Mapping, Sequence, cast
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.dag.embedding_node import EmbeddingNode
+from superlinked.framework.common.dag.embedding_node import EmbeddingNodeT
 from superlinked.framework.common.dag.node import NodeDataT
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.interface.weighted import Weighted
@@ -40,13 +40,13 @@ from superlinked.framework.query.query_node_input import QueryNodeInput
 
 
 class QueryEmbeddingNode(
-    Generic[AggregationInputT, NodeDataT],
-    QueryNode[EmbeddingNode[AggregationInputT, NodeDataT], Vector],
+    Generic[AggregationInputT, EmbeddingNodeT, NodeDataT],
+    QueryNode[EmbeddingNodeT, Vector],
     ABC,
 ):
     def __init__(
         self,
-        node: EmbeddingNode[AggregationInputT, NodeDataT],
+        node: EmbeddingNodeT,
         parents: Sequence[QueryNode],
         input_type: type[AggregationInputT | NodeDataT],
     ) -> None:
@@ -64,9 +64,7 @@ class QueryEmbeddingNode(
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,
     ) -> QueryEvaluationResult[Vector]:
-        weighted_node_input_items = self._validate_and_cast_node_inputs(
-            inputs.get(self.node_id) or []
-        )
+        weighted_node_input_items = self._validate_and_cast_node_inputs(inputs)
         weighted_parent_result_items = self._validate_and_cast_parent_results(
             self._evaluate_parents(inputs, context)
         )
@@ -81,8 +79,10 @@ class QueryEmbeddingNode(
             self.node.transformation_config.embedding_config.default_vector
         )
 
-    def _pre_process_node_input(self, node_input: QueryNodeInput) -> QueryNodeInput:
-        return node_input
+    def _pre_process_node_inputs(
+        self, inputs: Mapping[str, Sequence[QueryNodeInput]]
+    ) -> Sequence[QueryNodeInput]:
+        return inputs.get(self.node_id) or []
 
     @abstractmethod
     def _evaluate_parents(
@@ -93,10 +93,10 @@ class QueryEmbeddingNode(
         pass
 
     def _validate_and_cast_node_inputs(
-        self, node_inputs: Sequence[QueryNodeInput]
+        self, inputs: Mapping[str, Sequence[QueryNodeInput]]
     ) -> list[Weighted[AggregationInputT]] | list[Weighted[NodeDataT]]:
         weighted_input_items = [
-            self._pre_process_node_input(node_input).value for node_input in node_inputs
+            node_input.value for node_input in self._pre_process_node_inputs(inputs)
         ]
         return self._validate_and_cast_items(weighted_input_items)
 

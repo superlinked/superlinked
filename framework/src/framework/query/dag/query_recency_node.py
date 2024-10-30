@@ -23,6 +23,6 @@ from superlinked.framework.query.dag.query_embedding_orphan_node import (
 from superlinked.framework.query.dag.query_node import QueryNode
 
 
-class QueryRecencyNode(QueryEmbeddingOrphanNode[int, int]):
+class QueryRecencyNode(QueryEmbeddingOrphanNode[int, RecencyNode, int]):
     def __init__(self, node: RecencyNode, parents: Sequence[QueryNode]) -> None:
         super().__init__(node, parents, int)
