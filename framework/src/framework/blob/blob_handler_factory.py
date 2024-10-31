@@ -28,21 +28,21 @@ class BlobHandlerFactory:
         module_path = Settings().BLOB_HANDLER_MODULE_PATH
         class_name = Settings().BLOB_HANDLER_CLASS_NAME
         if module_path is None or class_name is None:
-            logger.warning(
-                "blob module path or class name is not set",
-                module_path=module_path,
-                class_name=class_name,
-            )
             return None
         blob_handler_class = ClassHelper.get_class(module_path, class_name)
         if blob_handler_class is None:
             logger.warning(
-                "couldn't find queue implementation",
+                "couldn't find blob implementation",
                 module_path=module_path,
                 class_name=class_name,
             )
             return None
-        return cast(
-            BlobHandler,
-            blob_handler_class(**(Settings().BLOB_HANDLER_CLASS_ARGS or {})),
+        args = Settings().BLOB_HANDLER_CLASS_ARGS or {}
+        initialized_class = blob_handler_class(**args)
+        logger.info(
+            "initialized blob handler",
+            module_path=module_path,
+            class_name=class_name,
+            args=args,
         )
+        return cast(BlobHandler, initialized_class)
