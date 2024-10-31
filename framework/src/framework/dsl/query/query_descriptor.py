@@ -16,7 +16,6 @@ from __future__ import annotations
 
 from collections import defaultdict
 from collections.abc import Mapping
-from itertools import chain
 
 import structlog
 from beartype.typing import Any, Sequence, Type, cast
@@ -339,11 +338,6 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
             if space_and_similar_filter is not None:
                 space, similar = space_and_similar_filter
                 similar_filters_by_space[space].append(similar)
-        if all(
-            similar_filter.weight == constants.DEFAULT_NOT_AFFECTING_WEIGHT
-            for similar_filter in chain.from_iterable(similar_filters_by_space.values())
-        ):
-            return {}
         return dict(similar_filters_by_space)
 
     def get_context_time(self, default: int | Any) -> int:
