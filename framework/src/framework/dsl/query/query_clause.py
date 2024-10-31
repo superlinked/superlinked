@@ -45,6 +45,7 @@ from superlinked.framework.dsl.query.predicate.binary_predicate import (
 from superlinked.framework.dsl.query.query_filter_validator import QueryFilterValidator
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
+from superlinked.framework.dsl.space.text_similarity_space import TextSimilaritySpace
 
 EvaluatedQueryT = TypeVar("EvaluatedQueryT")
 
@@ -188,7 +189,10 @@ class SimilarFilterClause(
         value = self.get_value()
         weight = self.get_weight()
         if value is None:
-            return None
+            if not isinstance(self.space, TextSimilaritySpace):
+                return None
+            value = ""
+            weight = constants.DEFAULT_NOT_AFFECTING_WEIGHT
         node = self.space._get_node(self.schema_field.schema_obj)
         similar_filter = EvaluatedBinaryPredicate(
             SimilarPredicate(
