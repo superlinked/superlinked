@@ -28,7 +28,7 @@ Classes
         Raises:
             QueryException: If the query index is not found among the executor's indices.
 
-    `setup_query_execution(self, indices: collections.abc.Sequence[superlinked.framework.dsl.index.index.Index], storage_manager: superlinked.framework.common.storage_manager.storage_manager.StorageManager) ‑> None`
+    `setup_query_execution(self, indices: collections.abc.Sequence[superlinked.framework.dsl.index.index.Index]) ‑> None`
     :   Set up the query execution environment by initializing a mapping between indices
         and their corresponding QueryVectorFactory instances.
         

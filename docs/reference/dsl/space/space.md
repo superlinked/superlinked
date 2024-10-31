@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.space.space
 Classes
 -------
 
-`Space(fields: SIT | list[SIT], type_: type | TypeAlias)`
+`Space(fields: SpaceSchemaFieldT | list[SpaceSchemaFieldT], type_: type | TypeAlias)`
 :   Abstract base class for a space.
     
     This class defines the interface for a space in the context of the application.
@@ -31,9 +31,4 @@ Classes
     :
 
     `length: int`
-    :
-
-    ### Methods
-
-    `get_node_id(self, schema_field: SchemaField) ‑> str`
     :

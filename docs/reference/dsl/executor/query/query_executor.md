@@ -16,6 +16,9 @@ Classes
 
     ### Methods
 
+    `calculate_query_node_inputs_by_node_id(self, query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor) ‑> dict[str, list[superlinked.framework.query.query_node_input.QueryNodeInput]]`
+    :
+
     `query(self, **params: Any) ‑> superlinked.framework.dsl.query.result.Result`
     :   Execute a query with keyword parameters.
         
