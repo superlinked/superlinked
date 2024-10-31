@@ -33,6 +33,7 @@ from superlinked.framework.common.space.config.aggregation.aggregation_config im
 )
 from superlinked.framework.common.space.config.embedding.image_embedding_config import (
     ImageEmbeddingConfig,
+    ModelHandler,
 )
 from superlinked.framework.common.space.config.normalization.normalization_config import (
     L2NormConfig,
@@ -40,9 +41,7 @@ from superlinked.framework.common.space.config.normalization.normalization_confi
 from superlinked.framework.common.space.config.transformation_config import (
     TransformationConfig,
 )
-from superlinked.framework.common.space.embedding.sentence_transformer_manager import (
-    SentenceTransformerManager,
-)
+from superlinked.framework.common.space.embedding.image_embedding import ImageEmbedding
 from superlinked.framework.dsl.space.exception import InvalidSpaceParamException
 from superlinked.framework.dsl.space.image_space_field_set import (
     ImageDescriptionSpaceFieldSet,
@@ -57,57 +56,48 @@ DEFAULT_DESCRIPTION_FIELD_PREFIX = "__SL_DEFAULT_DESCRIPTION_"
 
 class ImageSpace(Space[Vector, ImageData]):
     """
-    Initialize the ImageSpace instance.
-
-    This constructor sets up an ImageSpace, which is used to generate
-    vector representations from images for search and retrieval tasks.
-    It supports models from the (OpenCLIP)[https://github.com/mlfoundations/open_clip] project.
+    Initialize the ImageSpace instance for generating vector representations
+    from images, supporting models from the OpenCLIP project.
 
     Args:
-        image (Blob): The image content encapsulated as a Blob object.
-            This represents the raw image data to be processed.
-        description (String, optional): A description of the image content.
-            This should be a SchemaFieldObject of type String, not a standard
-            Python string. It provides additional context for the image.
-            If not provided, a default description field is used.
-        model (str, optional): The identifier for the model used to generate
-            image embeddings. Defaults to "clip-ViT-B-32". This model
-            determines the method of embedding the image into a vector space.
+        image (Blob | DescribedBlob | Sequence[Blob | DescribedBlob]):
+            The image content as a Blob or DescribedBlob (write image+description), or a sequence of them.
+        model (str, optional): The model identifier for generating image embeddings.
+            Defaults to "clip-ViT-B-32".
+        model_handler (ModelHandler, optional): The handler for the model,
+            defaults to ModelHandler.SENTENCE_TRANSFORMERS.
 
     Raises:
-        InvalidSpaceParamException: If the image and description fields
-            do not belong to the same schema.
+        InvalidSpaceParamException: If the image and description fields are not
+            from the same schema.
     """
 
     def __init__(
         self,
         image: Blob | DescribedBlob | Sequence[Blob | DescribedBlob],
         model: str = "clip-ViT-B-32",
+        model_handler: ModelHandler = ModelHandler.SENTENCE_TRANSFORMERS,
     ) -> None:
         """
-        Initialize the ImageSpace instance.
-
-        This constructor sets up an ImageSpace, which is used to generate
-        vector representations from images for search and retrieval tasks.
-        It supports models from the (OpenCLIP)[https://github.com/mlfoundations/open_clip] project.
+        Initialize the ImageSpace instance for generating vector representations
+        from images, supporting models from the OpenCLIP project.
 
         Args:
-            image (Blob): The image content encapsulated as a Blob object.
-                This represents the raw image data to be processed.
-            description (String, optional): A description of the image content.
-                This should be a SchemaFieldObject of type String, not a standard
-                Python string. It provides additional context for the image.
-                If not provided, a default description field is used.
-            model (str, optional): The identifier for the model used to generate
-                image embeddings. Defaults to "clip-ViT-B-32". This model
-                determines the method of embedding the image into a vector space.
+            image (Blob | DescribedBlob | Sequence[Blob | DescribedBlob]):
+                The image content as a Blob or DescribedBlob (write image+description), or a sequence of them.
+            model (str, optional): The model identifier for generating image embeddings.
+                Defaults to "clip-ViT-B-32".
+            model_handler (ModelHandler, optional): The handler for the model,
+                defaults to ModelHandler.SENTENCE_TRANSFORMERS.
 
         Raises:
-            InvalidSpaceParamException: If the image and description fields
-                do not belong to the same schema.
+            InvalidSpaceParamException: If the image and description fields are not
+                from the same schema.
         """
-        length = SentenceTransformerManager.calculate_length(model)
-        self._transformation_config = self._init_transformation_config(model, length)
+        length = ImageEmbedding.get_manager_type(model_handler).calculate_length(model)
+        self._transformation_config = self._init_transformation_config(
+            model, length, model_handler
+        )
         described_blobs = [
             self._get_described_blob(img)
             for img in (image if isinstance(image, Sequence) else [image])
@@ -140,9 +130,6 @@ class ImageSpace(Space[Vector, ImageData]):
             ) in self._schema_field_nodes_by_schema.items()
         }
         self._model = model
-        logger.warning(
-            "Image space is experimental and isn't ready for production use."
-        )
 
     def _get_described_blob(self, image: Blob | DescribedBlob) -> DescribedBlob:
         if isinstance(image, DescribedBlob):
@@ -190,9 +177,9 @@ class ImageSpace(Space[Vector, ImageData]):
         return False
 
     def _init_transformation_config(
-        self, model: str, length: int
+        self, model: str, length: int, model_handler: ModelHandler
     ) -> TransformationConfig[Vector, ImageData]:
-        embedding_config = ImageEmbeddingConfig(ImageData, model, length)
+        embedding_config = ImageEmbeddingConfig(ImageData, model, model_handler, length)
         aggregation_config = VectorAggregationConfig(Vector)
         normalization_config = L2NormConfig()
         return TransformationConfig(

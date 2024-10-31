@@ -26,21 +26,22 @@ from huggingface_hub.file_download import (  # type:ignore[import-untyped]
 )
 from PIL.ImageFile import ImageFile
 from sentence_transformers import SentenceTransformer
+from typing_extensions import override
 
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.settings import Settings
-from superlinked.framework.common.util.gpu_embedding_util import GpuEmbeddingUtil
-
-SENTENCE_TRANSFORMERS_ORG_NAME = "sentence-transformers"
-DEFAULT_SENTENCE_TRANSFORMERS_MODEL_DIR = (
-    (Path.home() / ".cache" / SENTENCE_TRANSFORMERS_ORG_NAME).absolute().as_posix()
+from superlinked.framework.common.space.embedding.model_manager import (
+    SENTENCE_TRANSFORMERS_ORG_NAME,
+    ModelManager,
 )
+from superlinked.framework.common.util.gpu_embedding_util import GpuEmbeddingUtil
 
 logger = structlog.getLogger()
 
 
-class SentenceTransformerManager:
+class SentenceTransformerManager(ModelManager):
     def __init__(self, model_name: str) -> None:
+        super().__init__(model_name)
         local_files_only = self._is_model_downloaded(model_name)
         self._gpu_embedding_util = GpuEmbeddingUtil(Settings().GPU_EMBEDDING_THRESHOLD)
         self._embedding_model = self._initialize_model(
@@ -77,22 +78,17 @@ class SentenceTransformerManager:
     ) -> list[Vector]:
         return [input_ for input_ in self.embed(inputs) if input_ is not None]
 
-    def embed(self, inputs: Sequence[str | ImageFile | None]) -> list[Vector | None]:
-        inputs_without_nones = [input_ for input_ in inputs if input_ is not None]
-        none_indices = [i for i, input_ in enumerate(inputs) if input_ is None]
-        if not inputs_without_nones:
-            return [None] * len(none_indices)
-        model = self._get_embedding_model(len(inputs_without_nones))
-        embeddings = model.encode(inputs_without_nones)  # type: ignore[arg-type]
-        result: list[Vector | None] = [
-            Vector(embedding.astype(np.float64)) for embedding in embeddings
-        ]
-        for index in none_indices:
-            result.insert(index, None)
-        return result
+    @override
+    def _embed(
+        self, inputs: list[str | ImageFile]
+    ) -> list[list[float]] | list[np.ndarray]:
+        model = self._get_embedding_model(len(inputs))
+        embeddings = model.encode(inputs)  # type: ignore[arg-type]
+        return embeddings.tolist()
 
     @classmethod
     @lru_cache(maxsize=128)
+    @override
     def calculate_length(cls, model_name: str) -> int:
         # TODO FAI-2357 find better solution
         local_files_only = cls._is_model_downloaded(model_name)
@@ -173,11 +169,4 @@ class SentenceTransformerManager:
         )
         return cls._get_cache_folder() / repo_folder_name(
             repo_id=repo_id, repo_type="model"
-        )
-
-    @classmethod
-    def _get_cache_folder(cls) -> Path:
-        return Path(
-            Settings().SENTENCE_TRANSFORMERS_MODEL_DIR
-            or DEFAULT_SENTENCE_TRANSFORMERS_MODEL_DIR
         )

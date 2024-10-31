@@ -26,8 +26,13 @@ from superlinked.framework.common.space.config.aggregation.aggregation_config im
 )
 from superlinked.framework.common.space.config.embedding.image_embedding_config import (
     ImageEmbeddingConfig,
+    ModelHandler,
 )
 from superlinked.framework.common.space.embedding.embedding import Embedding
+from superlinked.framework.common.space.embedding.model_manager import ModelManager
+from superlinked.framework.common.space.embedding.open_clip_manager import (
+    OpenClipManager,
+)
 from superlinked.framework.common.space.embedding.sentence_transformer_manager import (
     SentenceTransformerManager,
 )
@@ -38,7 +43,9 @@ logger = structlog.getLogger()
 class ImageEmbedding(Embedding[ImageData, ImageEmbeddingConfig]):
     def __init__(self, embedding_config: ImageEmbeddingConfig) -> None:
         super().__init__(embedding_config)
-        self.manager = SentenceTransformerManager(self._config.model_name)
+        self.manager = self.get_manager_type(self._config.model_handler)(
+            self._config.model_name
+        )
 
     @override
     def embed_multiple(
@@ -74,3 +81,14 @@ class ImageEmbedding(Embedding[ImageData, ImageEmbeddingConfig]):
     @override
     def length(self) -> int:
         return self._config.length
+
+    @classmethod
+    def get_manager_type(cls, model_handler: ModelHandler) -> type[ModelManager]:
+        manager_by_handler = {
+            ModelHandler.SENTENCE_TRANSFORMERS: SentenceTransformerManager,
+            ModelHandler.OPEN_CLIP: OpenClipManager,
+        }
+        try:
+            return manager_by_handler[model_handler]
+        except KeyError as e:
+            raise ValueError(f"Unsupported model handler: {model_handler}") from e

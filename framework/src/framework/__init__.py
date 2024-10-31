@@ -40,6 +40,9 @@ from superlinked.framework.common.schema.schema_object import (
     StringList,
     Timestamp,
 )
+from superlinked.framework.common.space.config.embedding.image_embedding_config import (
+    ModelHandler,
+)
 from superlinked.framework.common.space.config.embedding.number_embedding_config import (
     Mode,
 )
@@ -132,6 +135,8 @@ __all__ = [
     "NumberSpace",
     "RecencySpace",
     "TextSimilaritySpace",
+    # DSL ImageSpace util
+    "ModelHandler",
     # DSL TextSimilaritySpace util
     "chunk",
     # DSL NumberSpace util

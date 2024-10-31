@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from dataclasses import dataclass
+from enum import Enum
 
 from typing_extensions import override
 
@@ -22,9 +23,15 @@ from superlinked.framework.common.space.config.embedding.embedding_config import
 )
 
 
+class ModelHandler(Enum):
+    SENTENCE_TRANSFORMERS = "sentence_transformers"
+    OPEN_CLIP = "open_clip"
+
+
 @dataclass(frozen=True)
 class ImageEmbeddingConfig(EmbeddingConfig[ImageData]):
     model_name: str
+    model_handler: ModelHandler
     length_to_use: int
 
     @property
