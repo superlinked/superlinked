@@ -68,7 +68,7 @@ class ExecutionContext:
         return self
 
     def now(self) -> int:
-        match self.__now_strategy:
+        match self.now_strategy:
             case NowStrategy.CONTEXT_OR_SYSTEM_TIME:
                 return (
                     self.__data_now() or time_util.now()
@@ -87,12 +87,16 @@ class ExecutionContext:
                 return time_util.now()
             case _:
                 raise NotImplementedException(
-                    f"Unknown now strategy: {self.__now_strategy}"
+                    f"Unknown now strategy: {self.now_strategy}"
                 )
 
     @property
     def environment(self) -> ExecutionEnvironment:
         return self.__environment
+
+    @property
+    def now_strategy(self) -> NowStrategy:
+        return self.__now_strategy
 
     @property
     def data(self) -> Mapping[str, Mapping[str, ContextValue]]:
@@ -144,10 +148,12 @@ class ExecutionContext:
     def is_query_context(self) -> bool:
         return self.has_environment(ExecutionEnvironment.QUERY)
 
+    # TODO [FAI-2453] remove this!
     @property
     def should_load_default_node_input(self) -> bool:
         return bool(self.__data[CONTEXT_COMMON].get(LOAD_DEFAULT_NODE_INPUT))
 
+    # TODO [FAI-2453] remove this!
     def set_load_default_node_input(self, load_default_node_input: bool) -> None:
         self.update_data(
             {CONTEXT_COMMON: {LOAD_DEFAULT_NODE_INPUT: load_default_node_input}}

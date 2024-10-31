@@ -111,7 +111,7 @@ class InMemorySearch:
                 f"Indexed vector field contains non-vectors: {wrong_types}"
             )
         if wrong_dimensions := {
-            value
+            value.dimension
             for value in filtered_unchecked_vectors.values()
             if value.dimension != vector.dimension
         }:

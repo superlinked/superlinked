@@ -12,18 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections import defaultdict
+
 import structlog
-from beartype.typing import Sequence, cast
+from beartype.typing import Mapping, Sequence, cast
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.dag_effect import DagEffect
 from superlinked.framework.common.exception import InvalidDagEffectException
 from superlinked.framework.common.observable import Subscriber
+from superlinked.framework.common.parser.exception import MissingFieldException
 from superlinked.framework.common.parser.parsed_schema import (
     EventParsedSchema,
     ParsedSchema,
     ParsedSchemaWithEvent,
 )
+from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.online.online_dag_evaluator import OnlineDagEvaluator
@@ -48,9 +52,24 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
         self.effect_schemas = set(index._effect_schemas)
         self._schema_type_schema_mapper = index._schema_type_schema_mapper
         self._dag_effects = index._dag_effects
+        self._mandatory_field_names_by_schema: Mapping[SchemaObject, Sequence[str]] = (
+            self._init_mandatory_field_names_by_schema(index)
+        )
+
+    def _init_mandatory_field_names_by_schema(
+        self, index: Index
+    ) -> defaultdict[SchemaObject, list[str]]:
+        mandatory_field_names_by_schema: defaultdict[SchemaObject, list[str]] = (
+            defaultdict(list)
+        )
+        for field in index._fields:
+            mandatory_field_names_by_schema[field.schema_obj].append(field.name)
+        return mandatory_field_names_by_schema
 
     def update(self, messages: Sequence[ParsedSchema]) -> None:
         regular_msgs: list[ParsedSchema] = []
+        for message in messages:
+            self._validate_mandatory_fields_are_present(message)
         for message in messages:
             if message.schema in self.effect_schemas:
                 self._process_event(cast(EventParsedSchema, message))
@@ -70,6 +89,21 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
             ),
             n_records=len(messages),
         )
+
+    def _validate_mandatory_fields_are_present(self, message: ParsedSchema) -> None:
+        field_names = [field.schema_field.name for field in message.fields]
+        missing_fields = [
+            field_name
+            for field_name in self._mandatory_field_names_by_schema.get(
+                message.schema, []
+            )
+            if field_name not in field_names
+        ]
+        if missing_fields:
+            missing_fields_text = ", ".join(missing_fields)
+            raise MissingFieldException(
+                f"Message with id '{message.id_}' is missing mandatory index fields: {missing_fields_text}."
+            )
 
     def _process_event(
         self,

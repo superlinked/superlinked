@@ -61,3 +61,16 @@ class QueryNode(ABC, Generic[NT, QueryEvaluationResultT]):
         self, inputs: Mapping[str, Sequence[QueryNodeInput]]
     ) -> None:
         pass
+
+    def _merge_inputs(
+        self,
+        inputs: Sequence[Mapping[str, Sequence[QueryNodeInput]]],
+    ) -> dict[str, Sequence[QueryNodeInput]]:
+        if not inputs:
+            return {}
+        merged_inputs_dict = dict(inputs[0])
+        for inputs_item in inputs[1:]:
+            for node_id, input_ in inputs_item.items():
+                node_inputs = list(merged_inputs_dict.get(node_id, [])) + list(input_)
+                merged_inputs_dict.update({node_id: node_inputs})
+        return merged_inputs_dict

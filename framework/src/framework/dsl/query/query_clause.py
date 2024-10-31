@@ -176,6 +176,7 @@ class SimilarFilterClause(
     WeightedQueryClause[tuple[Space, EvaluatedBinaryPredicate[SimilarPredicate]] | None]
 ):
     field_set: SpaceFieldSet
+    # TODO [FAI-2453] remove this!
     schema_field: SchemaField
 
     @property
@@ -193,7 +194,7 @@ class SimilarFilterClause(
                 return None
             value = ""
             weight = constants.DEFAULT_NOT_AFFECTING_WEIGHT
-        node = self.space._get_node(self.schema_field.schema_obj)
+        node = self.space._get_embedding_node(self.schema_field.schema_obj)
         similar_filter = EvaluatedBinaryPredicate(
             SimilarPredicate(
                 self.schema_field, cast(ParamInputType, value), weight, node

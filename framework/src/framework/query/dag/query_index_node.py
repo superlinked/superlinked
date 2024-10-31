@@ -75,6 +75,15 @@ class QueryIndexNode(QueryNodeWithParent[IndexNode, Vector]):
         return [active_parent.evaluate_with_validation(inputs, context)]
 
     @override
+    def _validate_parent_results(
+        self, parent_results: Sequence[QueryEvaluationResult]
+    ) -> None:
+        if len(parent_results) != 1:
+            raise QueryEvaluationException(
+                f"{type(self).__name__} must have exactly 1 parent result."
+            )
+
+    @override
     def _evaluate_parent_results(
         self,
         parent_results: Sequence[QueryEvaluationResult],

@@ -20,13 +20,11 @@ from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.image_embedding_node import ImageEmbeddingNode
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.exception import QueryException
 from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.schema.image_data import ImageData
 from superlinked.framework.common.schema.schema_object import (
     Blob,
     DescribedBlob,
-    SchemaField,
     SchemaObject,
     String,
 )
@@ -46,8 +44,11 @@ from superlinked.framework.common.space.embedding.sentence_transformer_manager i
     SentenceTransformerManager,
 )
 from superlinked.framework.dsl.space.exception import InvalidSpaceParamException
+from superlinked.framework.dsl.space.image_space_field_set import (
+    ImageDescriptionSpaceFieldSet,
+    ImageSpaceFieldSet,
+)
 from superlinked.framework.dsl.space.space import Space
-from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
 logger = structlog.getLogger()
 
@@ -113,8 +114,8 @@ class ImageSpace(Space[Vector, ImageData]):
         ]
         image_fields = [described.blob for described in described_blobs]
         super().__init__(image_fields, Blob)
-        self.image = SpaceFieldSet(self, set(image_fields))
-        self.description = SpaceFieldSet(
+        self.image = ImageSpaceFieldSet(self, set(image_fields))
+        self.description = ImageDescriptionSpaceFieldSet(
             self, set(described.description for described in described_blobs)
         )
 
@@ -154,16 +155,6 @@ class ImageSpace(Space[Vector, ImageData]):
             DEFAULT_DESCRIPTION_FIELD_PREFIX + image.name, image.schema_obj
         )
         return DescribedBlob(image, description)
-
-    def get_node_id(self, schema_field: SchemaField) -> str:
-        image_node, description_node = self._schema_field_nodes_by_schema[
-            schema_field.schema_obj
-        ]
-        if schema_field == image_node.schema_field:
-            return image_node.node_id
-        if schema_field == description_node.schema_field:
-            return description_node.node_id
-        raise QueryException("Invalid field for the given schema.")
 
     @property
     @override

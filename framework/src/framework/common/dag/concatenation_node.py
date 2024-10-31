@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import math
+
 from beartype.typing import Any, Sequence, cast
 from typing_extensions import override
 
@@ -23,6 +25,9 @@ from superlinked.framework.common.dag.persistence_params import PersistenceParam
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.schema.schema_object import SchemaObject
+from superlinked.framework.common.space.config.normalization.normalization_config import (
+    ConstantNormConfig,
+)
 
 
 class ConcatenationNode(Node[Vector], HasLength):
@@ -68,3 +73,10 @@ class ConcatenationNode(Node[Vector], HasLength):
         if dag_effect in self.dag_effects:
             return self.parents
         return []
+
+    def create_normalization_config(
+        self, weights: Sequence[float]
+    ) -> ConstantNormConfig:
+        return ConstantNormConfig(
+            math.sqrt(sum(weight**2 for weight in weights)) or 1.0
+        )

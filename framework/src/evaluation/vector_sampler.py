@@ -114,7 +114,7 @@ class VectorSampler:
         lengths = np.array(
             [
                 node.length
-                for node in [space._get_node(schema) for space in spaces]
+                for node in [space._get_embedding_node(schema) for space in spaces]
                 if isinstance(node, HasLength)
             ]
         )

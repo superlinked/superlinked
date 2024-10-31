@@ -22,7 +22,6 @@ from superlinked.framework.common.dag.node import NT
 from superlinked.framework.common.data_types import NodeDataTypes
 from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.query.dag.query_evaluation_data_types import (
-    QueryEvaluationResult,
     QueryEvaluationResultT,
 )
 from superlinked.framework.query.dag.query_node_with_parent import QueryNodeWithParent
@@ -35,15 +34,17 @@ class InvertIfAddressedQueryNode(
     Generic[NT, QueryEvaluationResultT],
 ):
     @override
-    def _evaluate_parents(
-        self, inputs: Mapping[str, Sequence[QueryNodeInput]], context: ExecutionContext
-    ) -> list[QueryEvaluationResult]:
-        node_inputs: list[Weighted[NodeDataTypes]] = [
-            node_input.value for node_input in inputs.get(self.node_id, [])
+    def _propagate_inputs_to_invert(
+        self,
+        inputs: Mapping[str, Sequence[QueryNodeInput]],
+        context: ExecutionContext,  # pylint: disable=unused-argument
+    ) -> dict[str, Sequence[QueryNodeInput]]:
+        inputs_to_invert = [
+            input_.value for input_ in inputs.get(self.node_id, []) if input_.to_invert
         ]
-        inverted_inputs = self.invert_and_readdress(node_inputs)
+        inverted_inputs = self.invert_and_readdress(inputs_to_invert)
         new_inputs = self._merge_inputs([inputs, inverted_inputs])
-        return super()._evaluate_parents(new_inputs, context)
+        return new_inputs
 
     @abstractmethod
     def invert_and_readdress(

@@ -20,6 +20,7 @@ from beartype.typing import Generic, TypeAlias, TypeVar
 from typing_extensions import override
 
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
+from superlinked.framework.common.data_types import NodeDataTypes
 from superlinked.framework.common.schema.schema_object import SchemaField, SchemaObject
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationInputT,
@@ -34,7 +35,8 @@ from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.space.exception import InvalidSpaceParamException
 
 # SpaceInputType
-SIT = TypeVar("SIT", bound=SchemaField)
+SIT = TypeVar("SIT", bound=NodeDataTypes)
+SpaceSchemaFieldT = TypeVar("SpaceSchemaFieldT", bound=SchemaField)
 
 
 class Space(
@@ -48,14 +50,20 @@ class Space(
     This class defines the interface for a space in the context of the application.
     """
 
-    def __init__(self, fields: SIT | list[SIT], type_: type | TypeAlias) -> None:
+    def __init__(
+        self,
+        fields: SpaceSchemaFieldT | list[SpaceSchemaFieldT],
+        type_: type | TypeAlias,
+    ) -> None:
         super().__init__()
-        field_list: list[SIT] = fields if isinstance(fields, list) else [fields]
+        field_list: list[SpaceSchemaFieldT] = (
+            fields if isinstance(fields, list) else [fields]
+        )
         TypeValidator.validate_list_item_type(field_list, type_, "field_list")
         self.__validate_fields(field_list)
         self._field_set = set(field_list)
 
-    def __validate_fields(self, field_list: list[SIT]) -> None:
+    def __validate_fields(self, field_list: list[SpaceSchemaFieldT]) -> None:
         if not self._allow_empty_fields and not field_list:
             raise InvalidSpaceParamException(
                 f"{self.__class__.__name__} field input must not be empty."
@@ -94,15 +102,12 @@ class Space(
         self,
     ) -> dict[SchemaObject, EmbeddingNode[AggregationInputT, EmbeddingInputT]]: ...
 
-    def _get_node(
+    def _get_embedding_node(
         self, schema: SchemaObject
     ) -> EmbeddingNode[AggregationInputT, EmbeddingInputT]:
         if node := self._node_by_schema.get(schema):
             return node
         return self._handle_node_not_present(schema)
-
-    def get_node_id(self, schema_field: SchemaField) -> str:
-        return self._node_by_schema[schema_field.schema_obj].node_id
 
     def _handle_node_not_present(
         self, schema: SchemaObject

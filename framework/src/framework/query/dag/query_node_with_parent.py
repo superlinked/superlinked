@@ -59,7 +59,7 @@ class QueryNodeWithParent(
                     + f"be inverted {inputs_to_invert} is prohibited."
                 )
             if len(self.parents) == 1:
-                return QueryNodeWithParent._merge_inputs(
+                return self._merge_inputs(
                     [inputs, {self.parents[0].node_id: inputs_to_invert}]
                 )
         return dict(inputs)
@@ -85,16 +85,3 @@ class QueryNodeWithParent(
         self, parent_results: Sequence[QueryEvaluationResult], context: ExecutionContext
     ) -> QueryEvaluationResult[QueryEvaluationResultT]:
         pass
-
-    @staticmethod
-    def _merge_inputs(
-        inputs: Sequence[Mapping[str, Sequence[QueryNodeInput]]],
-    ) -> dict[str, Sequence[QueryNodeInput]]:
-        if not inputs:
-            return {}
-        merged_inputs_dict = dict(inputs[0])
-        for inputs_item in inputs[1:]:
-            for node_id, input_ in inputs_item.items():
-                node_inputs = list(merged_inputs_dict.get(node_id, [])) + list(input_)
-                merged_inputs_dict.update({node_id: node_inputs})
-        return merged_inputs_dict

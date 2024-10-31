@@ -13,10 +13,11 @@
 # limitations under the License.
 
 
+from collections import defaultdict
 from functools import partial
 
 import structlog
-from beartype.typing import Any, Sequence
+from beartype.typing import Any, Sequence, cast
 
 from superlinked.framework.common.dag.context import (
     CONTEXT_COMMON,
@@ -25,8 +26,9 @@ from superlinked.framework.common.dag.context import (
     ExecutionEnvironment,
     NowStrategy,
 )
-from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.data_types import NodeDataTypes, Vector
 from superlinked.framework.common.exception import QueryException
+from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.storage_manager.knn_search_params import (
     KNNSearchParams,
@@ -35,13 +37,17 @@ from superlinked.framework.common.storage_manager.search_result_item import (
     SearchResultItem,
 )
 from superlinked.framework.dsl.executor.executor import App
+from superlinked.framework.dsl.query.query_clause import (
+    LooksLikeFilterClause,
+    SimilarFilterClause,
+)
 from superlinked.framework.dsl.query.query_descriptor import QueryDescriptor
-from superlinked.framework.dsl.query.query_filters import QueryFilters
 from superlinked.framework.dsl.query.query_param_value_setter import (
     QueryParamValueSetter,
 )
 from superlinked.framework.dsl.query.query_vector_factory import QueryVectorFactory
 from superlinked.framework.dsl.query.result import Result, ResultEntry
+from superlinked.framework.query.query_node_input import QueryNodeInput
 
 logger = structlog.getLogger()
 
@@ -114,25 +120,17 @@ class QueryExecutor:
         return KNNSearchParams(query_vector, limit, hard_filters, radius)
 
     def _produce_query_vector(self, query_descriptor: QueryDescriptor) -> Vector:
-        query_filters = self._get_query_filters(query_descriptor)
         weight_by_space = query_descriptor.get_weights_by_space()
         context = self._create_query_context_base(query_descriptor)
-        query_node_inputs_by_node_id = (
-            query_descriptor.calculate_query_node_inputs_by_node_id()
+        query_node_inputs_by_node_id = self.calculate_query_node_inputs_by_node_id(
+            query_descriptor
         )
         return self.query_vector_factory.produce_vector(
             query_descriptor.index._node_id,
             query_node_inputs_by_node_id,
-            query_filters,
             weight_by_space,
             query_descriptor.schema,
             context,
-        )
-
-    def _get_query_filters(self, query_descriptor: QueryDescriptor) -> QueryFilters:
-        return QueryFilters(
-            query_descriptor.get_looks_like_filter(),
-            query_descriptor.get_similar_filters(),
         )
 
     def _create_query_context_base(
@@ -146,6 +144,59 @@ class QueryExecutor:
         context_time = query_descriptor.get_context_time(self.app._context.now())
         eval_context.update_data({CONTEXT_COMMON: {CONTEXT_COMMON_NOW: context_time}})
         return eval_context
+
+    def calculate_query_node_inputs_by_node_id(
+        self, query_descriptor: QueryDescriptor
+    ) -> dict[str, list[QueryNodeInput]]:
+        inputs: defaultdict = defaultdict(list)
+
+        def add_input(
+            node_id: str,
+            value: Any,
+            weight: float,
+            to_invert: bool,
+        ) -> None:
+            inputs[node_id].append(
+                QueryNodeInput(
+                    Weighted(cast(NodeDataTypes, value), weight),
+                    to_invert,
+                )
+            )
+
+        looks_like_clause = query_descriptor.get_clause_by_type(LooksLikeFilterClause)
+        if looks_like_clause and looks_like_clause.evaluate():
+            index_node_id = query_descriptor.index._node_id
+            if vector := self.__get_looks_like_vector(index_node_id, looks_like_clause):
+                add_input(index_node_id, vector, looks_like_clause.get_weight(), True)
+
+        for similar_clause in query_descriptor.get_clauses_by_type(SimilarFilterClause):
+            value = similar_clause.get_value()
+            weight = similar_clause.get_weight()
+            if value is None or not weight:
+                continue
+            node_id = similar_clause.space._get_embedding_node(
+                query_descriptor.schema
+            ).node_id
+            add_input(
+                node_id,
+                similar_clause.field_set._generate_space_input(value),
+                weight,
+                False,
+            )
+
+        return inputs
+
+    def __get_looks_like_vector(
+        self,
+        index_node_id: str,
+        looks_like_clause: LooksLikeFilterClause,
+    ) -> Vector | None:
+        return self.app._storage_manager.read_node_result(
+            looks_like_clause.schema_field.schema_obj,
+            str(looks_like_clause.get_value()),
+            index_node_id,
+            Vector,
+        )
 
     def _knn_search(
         self, knn_search_params: KNNSearchParams, query_descriptor: QueryDescriptor

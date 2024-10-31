@@ -25,8 +25,10 @@ from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import NodeDataTypes, Vector
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.interface.weighted import Weighted
-from superlinked.framework.common.space.normalization.normalization import L2Norm
-from superlinked.framework.common.util.weight_arithmetics import WeightArithmetics
+from superlinked.framework.common.space.normalization.normalization import (
+    ConstantNorm,
+    L2Norm,
+)
 from superlinked.framework.query.dag.exception import QueryEvaluationException
 from superlinked.framework.query.dag.invert_if_addressed_query_node import (
     InvertIfAddressedQueryNode,
@@ -45,6 +47,12 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
         parents: Sequence[QueryNode[Node[Vector], Vector]],
     ) -> None:
         super().__init__(node, parents)
+        self._denormalizer = self._create_denormalizer()
+
+    def _create_denormalizer(self) -> ConstantNorm:
+        return ConstantNorm(
+            self.node.create_normalization_config([1.0] * len(self.node.parents))
+        )
 
     @override
     def invert_and_readdress(
@@ -95,7 +103,10 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
             cast(HasLength, parent.node).length for parent in parents_without_duplicates
         ]
         vectors = vector.split(lengths)
-        return [Weighted(vector, weighted_vector.weight) for vector in vectors]
+        return [
+            Weighted(self._denormalizer.denormalize(vector), weighted_vector.weight)
+            for vector in vectors
+        ]
 
     def _address_split_weighted_vectors(
         self, split_weighted_vectors: Sequence[Sequence[Weighted[Vector]]]
@@ -125,15 +136,20 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
     def _evaluate_parent_results(
         self, parent_results: Sequence[QueryEvaluationResult], context: ExecutionContext
     ) -> QueryEvaluationResult[Vector]:
-        vectors_with_parents = [
-            (cast(Vector, result.value), self.parents[i])
+        vectors_with_weights = [
+            (
+                cast(Vector, result.value),
+                context.get_weight_of_node(self.parents[i].node_id),
+            )
             for i, result in enumerate(parent_results)
         ]
-        weighted_vectors = [
-            WeightArithmetics.apply_vector_weight(vector, parent.node_id, context)
-            for vector, parent in vectors_with_parents
-        ]
-        vector = reduce(lambda a, b: a.concatenate(b), weighted_vectors)
+        weighted_vectors = [vector * weight for vector, weight in vectors_with_weights]
+        norm = ConstantNorm(
+            self.node.create_normalization_config(
+                [weight for _, weight in vectors_with_weights]
+            )
+        )
+        vector = norm.normalize(reduce(lambda a, b: a.concatenate(b), weighted_vectors))
         compensation_factor = self._calculate_compensation_factor(weighted_vectors)
         return QueryEvaluationResult(vector * compensation_factor)
 

@@ -35,7 +35,7 @@ class QueryCategoricalSimilarityNode(
     def __init__(
         self, node: CategoricalSimilarityNode, parents: Sequence[QueryNode]
     ) -> None:
-        super().__init__(node, parents, list[str])
+        super().__init__(node, parents, list)
 
     @override
     def _pre_process_node_inputs(
@@ -47,7 +47,7 @@ class QueryCategoricalSimilarityNode(
         ]
 
     def _pre_process_node_input(self, node_input: QueryNodeInput) -> QueryNodeInput:
-        if isinstance(node_input.value, list):
+        if isinstance(node_input.value.item, list):
             return node_input
         return QueryNodeInput(
             Weighted([node_input.value.item], node_input.value.weight),

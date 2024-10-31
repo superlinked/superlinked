@@ -16,7 +16,6 @@
 from beartype.typing import Any, Sequence
 
 from superlinked.framework.common.exception import QueryException
-from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.executor.query.query_executor import QueryExecutor
 from superlinked.framework.dsl.index.index import Index
@@ -33,9 +32,7 @@ class QueryMixin:
     using a storage manager.
     """
 
-    def setup_query_execution(
-        self, indices: Sequence[Index], storage_manager: StorageManager
-    ) -> None:
+    def setup_query_execution(self, indices: Sequence[Index]) -> None:
         """
         Set up the query execution environment by initializing a mapping between indices
         and their corresponding QueryVectorFactory instances.
@@ -45,10 +42,7 @@ class QueryMixin:
             storage_manager (StorageManager): The storage manager instance to be used.
         """
         self._query_vector_factory_by_index = {
-            index: QueryVectorFactory(
-                index._dag, set(index._space_schemas), storage_manager
-            )
-            for index in indices
+            index: QueryVectorFactory(index._dag) for index in indices
         }
 
     def query(self, query_descriptor: QueryDescriptor, **params: Any) -> Result:

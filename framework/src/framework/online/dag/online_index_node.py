@@ -27,9 +27,6 @@ from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
-from superlinked.framework.online.dag.online_concatenation_node import (
-    OnlineConcatenationNode,
-)
 from superlinked.framework.online.dag.online_node import OnlineNode
 
 
@@ -91,14 +88,3 @@ class OnlineIndexNode(OnlineNode[IndexNode, Vector], HasLength):
             )
             for parent_result in parent_results
         ]
-
-    def _re_weight_vector(
-        self,
-        schema: SchemaObject,
-        vector: Vector,
-        context: ExecutionContext,
-    ) -> Vector:
-        online_parent_node = self.get_parent_for_schema(schema)
-        if isinstance(online_parent_node, OnlineConcatenationNode):
-            return online_parent_node.re_weight_vector(vector, context)
-        return vector

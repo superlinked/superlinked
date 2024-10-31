@@ -34,6 +34,7 @@ __pdoc__["QueryFilters"] = False
 SUPPORTED_BINARY_OPS = {BinaryOp.SIMILAR, BinaryOp.LOOKS_LIKE}
 
 
+# TODO [FAI-2453] remove this whole file!
 class QueryFilters:
     def __init__(
         self,

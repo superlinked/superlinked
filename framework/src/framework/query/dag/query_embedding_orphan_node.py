@@ -23,12 +23,10 @@ from superlinked.framework.common.dag.node import NodeDataT
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationInputT,
 )
-from superlinked.framework.query.dag.exception import QueryDagInitializationException
 from superlinked.framework.query.dag.query_embedding_node import QueryEmbeddingNode
 from superlinked.framework.query.dag.query_evaluation_data_types import (
     QueryEvaluationResult,
 )
-from superlinked.framework.query.dag.query_node import QueryNode
 from superlinked.framework.query.query_node_input import QueryNodeInput
 
 
@@ -36,22 +34,6 @@ class QueryEmbeddingOrphanNode(
     QueryEmbeddingNode[AggregationInputT, EmbeddingNodeT, NodeDataT],
     Generic[AggregationInputT, EmbeddingNodeT, NodeDataT],
 ):
-
-    def __init__(
-        self,
-        node: EmbeddingNodeT,
-        parents: Sequence[QueryNode],
-        input_type: type[AggregationInputT | NodeDataT],
-    ) -> None:
-        super().__init__(node, parents, input_type)
-        self._validate_self()
-
-    def _validate_self(self) -> None:
-        if self.parents:
-            raise QueryDagInitializationException(
-                f"{type(self).__name__} cannot have parents."
-            )
-
     @override
     def _evaluate_parents(
         self,

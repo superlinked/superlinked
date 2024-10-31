@@ -25,6 +25,7 @@ from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.schema.schema_object import (
+    SchemaField,
     SchemaObject,
     String,
     StringList,
@@ -127,13 +128,20 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
         self._transformation_config = self._init_transformation_config(
             self._embedding_config
         )
-        self.__category = SpaceFieldSet(self, self._field_set)
+        self.__category = SpaceFieldSet[list[str]](
+            self,
+            set(
+                category_input if isinstance(category_input, list) else [category_input]
+            ),
+        )
         unchecked_category_node_map = {
             single_category: CategoricalSimilarityNode(
-                parent=SchemaFieldNode(single_category),
+                parent=SchemaFieldNode(cast(SchemaField, single_category)),
                 transformation_config=self.transformation_config,
             )
-            for single_category in self._field_set
+            for single_category in (
+                category_input if isinstance(category_input, list) else [category_input]
+            )
         }
         self.__schema_node_map: dict[SchemaObject, EmbeddingNode[Vector, list[str]]] = {
             schema_field.schema_obj: node
