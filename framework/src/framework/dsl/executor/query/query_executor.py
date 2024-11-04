@@ -168,7 +168,6 @@ class QueryExecutor:
             index_node_id = query_descriptor.index._node_id
             if vector := self.__get_looks_like_vector(index_node_id, looks_like_clause):
                 add_input(index_node_id, vector, looks_like_clause.get_weight(), True)
-
         for similar_clause in query_descriptor.get_clauses_by_type(SimilarFilterClause):
             value = similar_clause.get_value()
             weight = similar_clause.get_weight()
@@ -190,13 +189,19 @@ class QueryExecutor:
         self,
         index_node_id: str,
         looks_like_clause: LooksLikeFilterClause,
-    ) -> Vector | None:
-        return self.app._storage_manager.read_node_result(
+    ) -> Vector:
+        object_id = str(looks_like_clause.get_value())
+        vector: Vector | None = self.app._storage_manager.read_node_result(
             looks_like_clause.schema_field.schema_obj,
-            str(looks_like_clause.get_value()),
+            object_id,
             index_node_id,
             Vector,
         )
+        if vector is None:
+            raise QueryException(
+                f"Entity not found object_id: {object_id} node_id: {index_node_id}"
+            )
+        return vector
 
     def _knn_search(
         self, knn_search_params: KNNSearchParams, query_descriptor: QueryDescriptor
