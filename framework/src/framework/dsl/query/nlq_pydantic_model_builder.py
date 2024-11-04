@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Any, Sequence
+from beartype.typing import Any, Sequence, get_origin
 from pydantic import BaseModel, Field, create_model, model_validator
 
 from superlinked.framework.common.const import constants
@@ -219,7 +219,11 @@ class NLQPydanticModelBuilder:
         if schema_field:
             type_should_be_list = op is not None and op in LIST_TYPE_COMPATIBLE_TYPES
             type_ = GenericClassUtil.get_single_generic_type(schema_field)
-            return list[type_] if type_should_be_list else type_  # type: ignore[valid-type]
+            return (
+                list[type_]  # type: ignore[valid-type]
+                if type_should_be_list and get_origin(type_) != list
+                else type_
+            )
         if value is not None:
             return type(value)
         raise QueryException("NLQ field type cannot be determined.")
