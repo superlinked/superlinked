@@ -104,7 +104,7 @@ class WeightedQueryClause(QueryClause[EvaluatedQueryT]):
     def get_weight(self) -> float:
         weight = self.get_param_value(self.weight_param)
         if weight is None:
-            weight = constants.DEFAULT_NOT_AFFECTING_WEIGHT
+            weight = constants.DEFAULT_WEIGHT
         if not isinstance(weight, (int, float)):
             raise QueryException(
                 f"Clause weight should be numeric, got {type(weight).__name__}."
