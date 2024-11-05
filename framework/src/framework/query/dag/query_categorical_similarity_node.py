@@ -47,6 +47,8 @@ class QueryCategoricalSimilarityNode(
         ]
 
     def _pre_process_node_input(self, node_input: QueryNodeInput) -> QueryNodeInput:
+        if isinstance(node_input.value.item, Vector):
+            return node_input
         if isinstance(node_input.value.item, list):
             return node_input
         return QueryNodeInput(
