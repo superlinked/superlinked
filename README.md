@@ -84,46 +84,32 @@ Example on combining Text with Numerical encoders to get correct results with LL
 import json
 import os
 
-from superlinked.framework.common.embedding.number_embedding import Mode
-from superlinked.framework.common.nlq.open_ai import OpenAIClientConfig
-from superlinked.framework.common.parser.dataframe_parser import DataFrameParser
-from superlinked.framework.common.schema.schema import schema
-from superlinked.framework.common.schema.schema_object import Integer, String
-from superlinked.framework.common.schema.id_schema_object import IdField
-from superlinked.framework.dsl.space.number_space import NumberSpace
-from superlinked.framework.dsl.space.text_similarity_space import TextSimilaritySpace
-from superlinked.framework.dsl.index.index import Index
-from superlinked.framework.dsl.query.param import Param
-from superlinked.framework.dsl.query.query import Query
-from superlinked.framework.dsl.source.in_memory_source import InMemorySource
-from superlinked.framework.dsl.executor.in_memory.in_memory_executor import (
-    InMemoryExecutor,
-)
+from superlinked import framework as sl
 
-@schema
-class Product:
-    id: IdField
-    description: String
-    rating: Integer
+
+class Product(sl.Schema):
+    id: sl.IdField
+    description: sl.String
+    rating: sl.Integer
 
 
 product = Product()
 
-description_space = TextSimilaritySpace(
+description_space = sl.TextSimilaritySpace(
     text=product.description, model="Alibaba-NLP/gte-large-en-v1.5"
 )
-rating_maximizer_space = NumberSpace(
-    number=product.rating, min_value=1, max_value=5, mode=Mode.MAXIMUM
+rating_maximizer_space = sl.NumberSpace(
+    number=product.rating, min_value=1, max_value=5, mode=sl.Mode.MAXIMUM
 )
-index = Index([description_space, rating_maximizer_space], fields=[product.rating])
+index = sl.Index([description_space, rating_maximizer_space], fields=[product.rating])
 
 # fill this with your API key - this will drive param extraction
-openai_config = OpenAIClientConfig(
+openai_config = sl.OpenAIClientConfig(
     api_key=os.environ["OPEN_AI_API_KEY"], model="gpt-4o"
 )
 
 # it is possible now to add descriptions to a `Param` to aid the parsing of information from natural language queries.
-text_similar_param = Param(
+text_similar_param = sl.Param(
     "query_text",
     description="The text in the user's query that refers to product descriptions.",
 )
@@ -131,26 +117,26 @@ text_similar_param = Param(
 # Define your query using dynamic parameters for query text and weights.
 # we will have our LLM fill them based on our natural language query
 query = (
-    Query(
+    sl.Query(
         index,
         weights={
-            description_space: Param("description_weight"),
-            rating_maximizer_space: Param("rating_maximizer_weight"),
+            description_space: sl.Param("description_weight"),
+            rating_maximizer_space: sl.Param("rating_maximizer_weight"),
         },
     )
     .find(product)
     .similar(
         description_space,
         text_similar_param,
-        Param("description_similar_clause_weight")
+        sl.Param("description_similar_clause_weight")
     )
-    .limit(Param("limit"))
-    .with_natural_query(Param("natural_query"), openai_config)
+    .limit(sl.Param("limit"))
+    .with_natural_query(sl.Param("natural_query"), openai_config)
 )
 
 # Run the app.
-source: InMemorySource = InMemorySource(product)
-executor = InMemoryExecutor(sources=[source], indices=[index])
+source = sl.InMemorySource(product)
+executor = sl.InMemoryExecutor(sources=[source], indices=[index])
 app = executor.run()
 
 # Download dataset.
