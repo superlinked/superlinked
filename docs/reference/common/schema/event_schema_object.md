@@ -14,11 +14,6 @@ Classes
     * abc.ABC
     * typing.Generic
 
-    ### Static methods
-
-    `combine_values(values: Sequence[int]) ‑> int`
-    :
-
 `EventSchemaObject(base_cls: type, id_field_name: str, created_at_field_name: str)`
 :   Custom decorated event schema class.
     Event schemas can be used to reference other schema and to define interactions between schemas.
@@ -62,8 +57,3 @@ Classes
     * superlinked.framework.common.interface.has_multiplier.HasMultiplier
     * abc.ABC
     * typing.Generic
-
-    ### Static methods
-
-    `combine_values(values: Sequence[str]) ‑> str`
-    :

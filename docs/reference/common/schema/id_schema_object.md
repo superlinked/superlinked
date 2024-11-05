@@ -14,11 +14,6 @@ Classes
     * abc.ABC
     * typing.Generic
 
-    ### Static methods
-
-    `combine_values(values: collections.abc.Sequence[str]) ‑> str`
-    :
-
 `IdSchemaObject(base_cls: type, id_field_name: str)`
 :   Schema object with required ID field.
 
