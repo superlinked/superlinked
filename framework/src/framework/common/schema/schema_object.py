@@ -14,7 +14,6 @@
 
 from __future__ import annotations
 
-from abc import abstractmethod
 from dataclasses import dataclass
 
 from beartype.typing import Any, Generic, Sequence, TypeVar, cast
@@ -120,11 +119,6 @@ class SchemaField(ComparisonOperand, Generic[SFT]):
     ) -> bool:
         return not SchemaField._built_in_equal(left_operand, right_operand)
 
-    @staticmethod
-    @abstractmethod
-    def combine_values(values: Sequence[SFT]) -> SFT:
-        pass
-
 
 class String(SchemaField[str]):
     """
@@ -135,10 +129,6 @@ class String(SchemaField[str]):
 
     def __init__(self, name: str, schema_obj: SchemaObjectT) -> None:
         super().__init__(name, schema_obj, str)
-
-    @staticmethod
-    def combine_values(values: Sequence[str]) -> str:
-        return ", ".join(values)
 
     def __add__(self, other: Blob) -> DescribedBlob:
         if not isinstance(other, String):
@@ -156,10 +146,6 @@ class Timestamp(SchemaField[int]):
     def __init__(self, name: str, schema_obj: SchemaObjectT) -> None:
         super().__init__(name, schema_obj, int)
 
-    @staticmethod
-    def combine_values(values: Sequence[int]) -> int:
-        return int(sum(values) / len(values))
-
 
 class Blob(SchemaField[BlobInformation]):
     """
@@ -170,12 +156,6 @@ class Blob(SchemaField[BlobInformation]):
 
     def __init__(self, name: str, schema_obj: SchemaObjectT) -> None:
         super().__init__(name, schema_obj, BlobInformation)
-
-    @staticmethod
-    def combine_values(values: Sequence[BlobInformation]) -> BlobInformation:
-        if len(values) == 1:
-            return values[0]
-        raise ValueError("Cannot combine blobs.")
 
     def __add__(self, other: String) -> DescribedBlob:
         if not isinstance(other, String):
@@ -202,10 +182,6 @@ class Float(Number[float]):
     def __init__(self, name: str, schema_obj: SchemaObjectT) -> None:
         super().__init__(name, schema_obj, float)
 
-    @staticmethod
-    def combine_values(values: Sequence[float]) -> float:
-        return sum(values) / len(values)
-
 
 class Integer(Number[int]):
     """
@@ -214,10 +190,6 @@ class Integer(Number[int]):
 
     def __init__(self, name: str, schema_obj: SchemaObjectT) -> None:
         super().__init__(name, schema_obj, int)
-
-    @staticmethod
-    def combine_values(values: Sequence[int]) -> int:
-        return int(sum(values) / len(values))
 
 
 class FloatList(SchemaField[list[float]]):
@@ -232,14 +204,6 @@ class FloatList(SchemaField[list[float]]):
     def parse(self, value: list[float]) -> list[float]:
         return value if isinstance(value, list) else [cast(float, value)]
 
-    @staticmethod
-    def combine_values(
-        values: Sequence[list[float]],
-    ) -> list[float]:
-        return [
-            sum(current_values) / len(current_values) for current_values in zip(*values)
-        ]
-
 
 class StringList(SchemaField[list[str]]):
     """
@@ -252,12 +216,6 @@ class StringList(SchemaField[list[str]]):
     @override
     def parse(self, value: list[str]) -> list[str]:
         return value if isinstance(value, list) else [cast(str, value)]
-
-    @staticmethod
-    def combine_values(
-        values: Sequence[list[str]],
-    ) -> list[str]:
-        return [", ".join(current_values) for current_values in zip(*values)]
 
 
 @dataclass(frozen=True)

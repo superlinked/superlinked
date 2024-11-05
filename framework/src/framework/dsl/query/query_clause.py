@@ -175,7 +175,6 @@ class SimilarFilterClause(
     WeightedQueryClause[tuple[Space, EvaluatedBinaryPredicate[SimilarPredicate]] | None]
 ):
     field_set: SpaceFieldSet
-    # TODO [FAI-2453] remove this!
     schema_field: SchemaField
 
     @property
@@ -200,7 +199,6 @@ class SimilarFilterClause(
 
     @override
     def get_default_value_param_name(self) -> str:
-
         return f"similar_filter_{str(self.space)}_{self.schema_field.name}_value_param"
 
     @override

@@ -480,7 +480,6 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
 
 
 class QueryDescriptorValidator:
-
     @staticmethod
     def validate(query_descriptor: QueryDescriptor) -> None:
         QueryDescriptorValidator.__validate_schema(query_descriptor)
@@ -519,15 +518,7 @@ class QueryDescriptorValidator:
     @staticmethod
     def __validate_similar_clauses(query_descriptor: QueryDescriptor) -> None:
         clauses = query_descriptor.get_clauses_by_type(SimilarFilterClause)
-        space_schema_pairs = set()
-        for clause in clauses:
-            space_schema_pair = (clause.space, type(clause.schema_field))
-            if space_schema_pair in space_schema_pairs:
-                raise QueryException(
-                    f"Attempted to bound similar clause for {type(clause.space).__name__} in Query multiple times."
-                )
-            space_schema_pairs.add(space_schema_pair)
-        for space, _ in space_schema_pairs:
+        for space in [clause.field_set.space for clause in clauses]:
             if not query_descriptor.index.has_space(space):
                 raise QueryException(
                     f"Space isn't present in the index: {type(space).__name__}."

@@ -78,11 +78,7 @@ class OnlineCategoricalSimilarityNode(
         parsed_schema: ParsedSchema,
         context: ExecutionContext,
     ) -> EvaluationResult[Vector]:
-        if self.node.transformation_config.embedding_config.should_return_default(
-            context
-        ):
-            result = self.node.transformation_config.embedding_config.default_vector
-        elif len(self.parents) == 0:
+        if len(self.parents) == 0:
             result = self.load_stored_result_or_raise_exception(parsed_schema)
         else:
             input_: str | list[str] = (

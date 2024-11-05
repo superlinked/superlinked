@@ -39,6 +39,5 @@ class SpaceFieldSet(Generic[SIT]):
     def _generate_space_input(self, value: PythonTypes) -> SIT:
         return cast(SIT, value)
 
-    # TODO [FAI-2453]
     def get_field_for_schema(self, schema_: Any) -> SchemaField | None:
         return self.__schema_field_map.get(schema_)

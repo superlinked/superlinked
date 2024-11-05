@@ -93,13 +93,8 @@ class NumberEmbeddingConfig(EmbeddingConfig[float]):
             raise ValueError(f"Unsupported mode: {self.mode}")
         return Vector(default_values)
 
-    @override
     def should_return_default(self, context: ExecutionContext) -> bool:
-        return super().should_return_default(context) or (
-            context.is_query_context
-            and self.mode
-            in {
-                Mode.MINIMUM,
-                Mode.MAXIMUM,
-            }
-        )
+        return context.is_query_context and self.mode in {
+            Mode.MINIMUM,
+            Mode.MAXIMUM,
+        }

@@ -102,9 +102,6 @@ class ExecutionContext:
     def data(self) -> Mapping[str, Mapping[str, ContextValue]]:
         return self.__data
 
-    def has_environment(self, environment: ExecutionEnvironment) -> bool:
-        return self.__environment == environment
-
     def get_node_context_value(self, node_id: str, key: str, _: type[T]) -> T | None:
         value = self.__node_context(node_id).get(key)
         if value is None:
@@ -146,18 +143,7 @@ class ExecutionContext:
 
     @property
     def is_query_context(self) -> bool:
-        return self.has_environment(ExecutionEnvironment.QUERY)
-
-    # TODO [FAI-2453] remove this!
-    @property
-    def should_load_default_node_input(self) -> bool:
-        return bool(self.__data[CONTEXT_COMMON].get(LOAD_DEFAULT_NODE_INPUT))
-
-    # TODO [FAI-2453] remove this!
-    def set_load_default_node_input(self, load_default_node_input: bool) -> None:
-        self.update_data(
-            {CONTEXT_COMMON: {LOAD_DEFAULT_NODE_INPUT: load_default_node_input}}
-        )
+        return self.environment == ExecutionEnvironment.QUERY
 
     @classmethod
     def from_context_data(
