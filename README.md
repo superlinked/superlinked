@@ -82,6 +82,7 @@ Example on combining Text with Numerical encoders to get correct results with LL
 
 ```python
 import json
+import os
 
 from superlinked import framework as sl
 
