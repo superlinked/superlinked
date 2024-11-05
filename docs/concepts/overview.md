@@ -66,6 +66,13 @@ icon: bullseye-arrow
         <td><a href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/hard_filtering.ipynb" target="_blank">hard_filtering</a></td>
     </tr>
     <tr>
+        <td><strong>Image Embedding</strong></td>
+        <td>Embed text or images into a multi-modal vector space.</td>
+        <td></td>
+        <td><a href="../.gitbook/assets/concept-thumbnails/Image Embedding.png">Image Embedding.png</a></td>
+        <td><a href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/image_embedding.ipynb" target="_blank">image_embedding</a></td>
+    </tr>
+    <tr>
         <td><strong>Natural Language Querying</strong></td>
         <td>Perform similarity searches using natural language queries instead of vector representations.</td>
         <td></td>
