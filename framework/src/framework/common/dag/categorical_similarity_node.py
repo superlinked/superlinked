@@ -24,7 +24,8 @@ from superlinked.framework.common.space.config.transformation_config import (
 class CategoricalSimilarityNode(EmbeddingNode[Vector, list[str]]):
     def __init__(
         self,
-        parent: Node[list[str]],
+        parent: Node[list[str]] | None,
         transformation_config: TransformationConfig[Vector, list[str]],
     ) -> None:
-        super().__init__([parent], transformation_config)
+        parents = [parent] if parent is not None else []
+        super().__init__(parents, transformation_config)

@@ -68,6 +68,13 @@ class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasL
         return super().evaluate_self(parsed_schemas, context)
 
     @override
+    def get_fallback_result(self, parsed_schema: ParsedSchema) -> Vector:
+        stored_result = self.load_stored_result(parsed_schema.id_, parsed_schema.schema)
+        if stored_result is not None:
+            return stored_result
+        return Vector.init_zero_vector(self.node.length)
+
+    @override
     def _evaluate_singles(
         self,
         parent_results: list[dict[OnlineNode, SingleEvaluationResult[str]]],

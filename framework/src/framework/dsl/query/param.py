@@ -16,7 +16,7 @@
 from __future__ import annotations
 
 from beartype.typing import Any, Sequence, TypeAlias, TypeVar
-from PIL.ImageFile import ImageFile
+from PIL.Image import Image
 
 from superlinked.framework.common.interface.evaluated import Evaluated
 
@@ -66,7 +66,7 @@ class Param:
 ParamInputType: TypeAlias = (
     Sequence[str]
     | Sequence[float]
-    | ImageFile
+    | Image
     | str
     | int
     | float

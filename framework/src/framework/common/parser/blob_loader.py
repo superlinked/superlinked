@@ -14,12 +14,12 @@
 
 
 import base64
-import tempfile
+import io
 from urllib.parse import urlparse
 
 import requests
 from beartype.typing import Any, Callable, cast
-from PIL.ImageFile import ImageFile
+from PIL.Image import Image
 
 from superlinked.framework.blob.blob_handler_factory import BlobHandlerFactory
 from superlinked.framework.common.schema.blob_information import BlobInformation
@@ -40,19 +40,15 @@ class BlobLoader:
                 handler.get_supported_cloud_storage_scheme()
             ] = handler.download
 
-    def load(self, blob_like_input: str | ImageFile | Any) -> BlobInformation:
-        if not isinstance(blob_like_input, str | ImageFile):
+    def load(self, blob_like_input: str | Image | Any) -> BlobInformation:
+        if not isinstance(blob_like_input, str | Image):
             raise ValueError(
-                f"Blob field must contain str or PIL.ImageFile input, got: {type(blob_like_input).__name__}."
+                f"Blob field must contain str or PIL.Image.Image input, got: {type(blob_like_input).__name__}."
             )
-        if isinstance(blob_like_input, ImageFile):
-            with tempfile.NamedTemporaryFile(
-                suffix=f".{blob_like_input.format}", delete=True
-            ) as temp:
-                temp_filename = temp.name
-                blob_like_input.save(temp_filename)
-                loaded_file = self.load_from_local(temp_filename)
-            blob_like_input = base64.b64encode(loaded_file).decode("utf-8")
+        if isinstance(blob_like_input, Image):
+            with io.BytesIO() as buffer:
+                blob_like_input.save(buffer, format=blob_like_input.format or "PNG")
+                blob_like_input = base64.b64encode(buffer.getvalue()).decode("utf-8")
         if self.allow_bytes:
             try:
                 decoded_bytes = base64.b64decode(blob_like_input, validate=True)

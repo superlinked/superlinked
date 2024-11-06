@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import os
 from functools import lru_cache
 from pathlib import Path
@@ -21,46 +22,43 @@ import numpy as np
 import structlog
 from beartype.typing import Any, Sequence
 from filelock import FileLock
-from huggingface_hub.file_download import (  # type:ignore[import-untyped]
-    repo_folder_name,
-)
-from PIL.ImageFile import ImageFile
+from huggingface_hub import snapshot_download
+from huggingface_hub.file_download import repo_folder_name
+from PIL.Image import Image
 from sentence_transformers import SentenceTransformer
 from typing_extensions import override
 
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.settings import Settings
-from superlinked.framework.common.space.embedding.model_manager import (
-    SENTENCE_TRANSFORMERS_ORG_NAME,
-    ModelManager,
-)
+from superlinked.framework.common.space.embedding.model_manager import ModelManager
 from superlinked.framework.common.util.gpu_embedding_util import GpuEmbeddingUtil
 
 logger = structlog.getLogger()
+
+MODEL_DIMENSION = "hidden_size"
+MAIN_REF_FILE_PATH = "{model_folder}/refs/main"
+CONFIG_FILE_PATH = "{model_folder}/snapshots/{snapshot}/config.json"
+SENTENCE_TRANSFORMERS_ORG_NAME = "sentence-transformers"
 
 
 class SentenceTransformerManager(ModelManager):
     def __init__(self, model_name: str) -> None:
         super().__init__(model_name)
-        local_files_only = self._is_model_downloaded(model_name)
         self._gpu_embedding_util = GpuEmbeddingUtil(Settings().GPU_EMBEDDING_THRESHOLD)
-        self._embedding_model = self._initialize_model(
-            model_name, local_files_only, "cpu"
-        )
+        self._embedding_model = self._initialize_model(model_name, "cpu")
         self._bulk_embedding_model = None
         if self._gpu_embedding_util.is_gpu_embedding_enabled:
             try:
                 self._bulk_embedding_model = self._initialize_model(
                     model_name,
-                    local_files_only,
                     self._gpu_embedding_util.gpu_device_type,
                 )
             except FileNotFoundError:
                 logger.exception("Cached model not found, downloading model.")
                 self._bulk_embedding_model = self._initialize_model(
                     model_name,
-                    False,
                     self._gpu_embedding_util.gpu_device_type,
+                    False,
                 )
 
     def _get_embedding_model(self, number_of_inputs: int) -> SentenceTransformer:
@@ -73,66 +71,95 @@ class SentenceTransformerManager(ModelManager):
             else self._embedding_model
         )
 
-    def embed_without_nones(
-        self, inputs: Sequence[str | ImageFile | None]
-    ) -> list[Vector]:
+    def embed_without_nones(self, inputs: Sequence[str | Image | None]) -> list[Vector]:
         return [input_ for input_ in self.embed(inputs) if input_ is not None]
 
     @override
-    def _embed(
-        self, inputs: list[str | ImageFile]
-    ) -> list[list[float]] | list[np.ndarray]:
+    def _embed(self, inputs: list[str | Image]) -> list[list[float]] | list[np.ndarray]:
         model = self._get_embedding_model(len(inputs))
         embeddings = model.encode(inputs)  # type: ignore[arg-type]
         return embeddings.tolist()
 
     @classmethod
-    @lru_cache(maxsize=128)
+    @lru_cache(maxsize=32)
     @override
     def calculate_length(cls, model_name: str) -> int:
-        # TODO FAI-2357 find better solution
-        local_files_only = cls._is_model_downloaded(model_name)
-        embedding_model = cls._initialize_model(model_name, local_files_only, "cpu")
-        length = embedding_model.get_sentence_embedding_dimension() or len(
-            embedding_model.encode("")
-        )
-        return length
-
-    @classmethod
-    def _initialize_model(
-        cls, model_name: str, local_files_only: bool, device: str
-    ) -> SentenceTransformer:
-        cache_folder = str(cls._get_cache_folder())
-
-        def load_model() -> SentenceTransformer:
-            return SentenceTransformer(
-                model_name,
-                trust_remote_code=True,
-                local_files_only=local_files_only,
-                device=device,
-                cache_folder=cache_folder,
+        cls._ensure_model_downloaded(model_name)
+        try:
+            if length := cls._get_length_from_cached_model(model_name):
+                return length
+        except (FileNotFoundError, AttributeError, json.JSONDecodeError) as e:
+            logger.debug(
+                f"unable to read {MODEL_DIMENSION} from config.json",
+                model_name=model_name,
+                reason=str(e),
             )
 
-        if local_files_only:
-            return load_model()
+        embedding_model = cls._initialize_model(model_name, "cpu")
+        return embedding_model.get_sentence_embedding_dimension() or len(
+            embedding_model.encode("")
+        )
 
+    @classmethod
+    def _get_length_from_cached_model(cls, model_name: str) -> int | None:
+        with open(cls._get_local_path(model_name), encoding="utf-8") as file:
+            return json.load(file).get(MODEL_DIMENSION, None)
+
+    @classmethod
+    def _get_local_path(cls, model_name: str) -> str:
+        model_folder = cls._get_model_folder_path(model_name)
+        with open(
+            MAIN_REF_FILE_PATH.format(model_folder=model_folder), "r", encoding="utf-8"
+        ) as file:
+            snapshot_value = file.read().strip()
+        return CONFIG_FILE_PATH.format(
+            model_folder=model_folder,
+            snapshot=snapshot_value,
+        )
+
+    @classmethod
+    def _ensure_model_downloaded(cls, model_name: str) -> None:
+        if cls._is_model_downloaded(model_name):
+            return
+
+        cache_folder = str(cls._get_cache_folder())
         lock_file_path = os.path.join(cache_folder, f"loading_{model_name}.lock")
         settings = Settings()
+
         max_retries = settings.SENTENCE_TRANSFORMERS_MODEL_LOCK_MAX_RETRIES
         retry_delay = settings.SENTENCE_TRANSFORMERS_MODEL_LOCK_RETRY_DELAY
-        timeout = max((max_retries * retry_delay) - 10, 1)
+        timeout = max((max_retries * retry_delay) - 10, 5)
+
         for attempt in range(max_retries):
             try:
                 with FileLock(lock_file_path, timeout=timeout):
-                    return load_model()
+                    snapshot_download(
+                        repo_id=cls._get_repo_id(model_name),
+                        cache_dir=cache_folder,
+                    )
+                    return
             except TimeoutError:
                 logger.warning(
                     f"Attempt {attempt + 1}/{max_retries}: Timeout acquiring lock"
-                    f" for {model_name}, retrying in {retry_delay} seconds..."
+                    f" for downloading {model_name}, retrying in {retry_delay} seconds..."
                 )
                 sleep(retry_delay)
+
         raise RuntimeError(
-            f"Failed to acquire lock for {model_name} after {max_retries} attempts."
+            f"Failed to acquire lock for downloading {model_name} after {max_retries} attempts."
+        )
+
+    @classmethod
+    def _initialize_model(
+        cls, model_name: str, device: str, local_files_only: bool = True
+    ) -> SentenceTransformer:
+        cls._ensure_model_downloaded(model_name)
+        return SentenceTransformer(
+            model_name,
+            trust_remote_code=True,
+            local_files_only=local_files_only,
+            device=device,
+            cache_folder=str(cls._get_cache_folder()),
         )
 
     @classmethod
@@ -161,12 +188,15 @@ class SentenceTransformerManager(ModelManager):
             os.remove(incomplete_download)
 
     @classmethod
-    def _get_model_folder_path(cls, model_name: str) -> Path:
-        repo_id = (
+    def _get_repo_id(cls, model_name: str) -> str:
+        return (
             SENTENCE_TRANSFORMERS_ORG_NAME + "/" + model_name
             if "/" not in model_name
             else model_name
         )
+
+    @classmethod
+    def _get_model_folder_path(cls, model_name: str) -> Path:
         return cls._get_cache_folder() / repo_folder_name(
-            repo_id=repo_id, repo_type="model"
+            repo_id=cls._get_repo_id(model_name), repo_type="model"
         )

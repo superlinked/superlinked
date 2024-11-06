@@ -17,22 +17,19 @@ from pathlib import Path
 
 import numpy as np
 from beartype.typing import Sequence
-from PIL.ImageFile import ImageFile
+from PIL.Image import Image
 
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.settings import Settings
 
-SENTENCE_TRANSFORMERS_ORG_NAME = "sentence-transformers"
-DEFAULT_SENTENCE_TRANSFORMERS_MODEL_DIR = (
-    (Path.home() / ".cache" / SENTENCE_TRANSFORMERS_ORG_NAME).absolute().as_posix()
-)
+DEFAULT_MODEL_CACHE_DIR = (Path.home() / ".cache" / "models").absolute().as_posix()
 
 
 class ModelManager(ABC):
     def __init__(self, model_name: str) -> None:
         self._model_name = model_name
 
-    def embed(self, inputs: Sequence[str | ImageFile | None]) -> list[Vector | None]:
+    def embed(self, inputs: Sequence[str | Image | None]) -> list[Vector | None]:
         inputs_without_nones = [input_ for input_ in inputs if input_ is not None]
         if not inputs_without_nones:
             return [None] * len(inputs)
@@ -45,7 +42,7 @@ class ModelManager(ABC):
 
     @abstractmethod
     def _embed(
-        self, inputs: list[str | ImageFile]
+        self, inputs: list[str | Image]
     ) -> list[list[float]] | list[np.ndarray]: ...
 
     @classmethod
@@ -54,7 +51,4 @@ class ModelManager(ABC):
 
     @classmethod
     def _get_cache_folder(cls) -> Path:
-        return Path(
-            Settings().SENTENCE_TRANSFORMERS_MODEL_DIR
-            or DEFAULT_SENTENCE_TRANSFORMERS_MODEL_DIR
-        )
+        return Path(Settings().MODEL_CACHE_DIR or DEFAULT_MODEL_CACHE_DIR)

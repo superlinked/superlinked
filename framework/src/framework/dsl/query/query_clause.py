@@ -237,13 +237,28 @@ class NLQClause(QueryClause[str | None]):
         return "natural_query_param"
 
     @override
-    def evaluate(
-        self,
-    ) -> str | None:
+    def evaluate(self) -> str | None:
         value = self.get_value()
         if value is not None and not isinstance(value, str):
             raise QueryException(
                 f"NLQ prompt should be str, got {type(value).__name__}."
+            )
+        return value
+
+
+@dataclass(frozen=True)
+class NLQSystemPromptClause(QueryClause[str | None]):
+
+    @override
+    def get_default_value_param_name(self) -> str:
+        return "system_prompt_param"
+
+    @override
+    def evaluate(self) -> str | None:
+        value = self.get_value()
+        if value is not None and not isinstance(value, str):
+            raise QueryException(
+                f"NLQ system prompt should be str, got {type(value).__name__}."
             )
         return value
 

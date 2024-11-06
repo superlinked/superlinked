@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from beartype.typing import Generic, Sequence, TypeVar
-from PIL.ImageFile import ImageFile
+from PIL.Image import Image
 
 from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.dsl.query.param import NumericParamType, Param
@@ -37,7 +37,7 @@ class QueryPredicate(Generic[OPT]):
         | Param
         | Sequence[str]
         | Sequence[float]
-        | ImageFile
+        | Image
         | str
         | int
         | float

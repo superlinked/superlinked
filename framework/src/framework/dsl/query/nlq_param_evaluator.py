@@ -109,12 +109,17 @@ class NLQParamEvaluator:
         return [param for param_list in nested_params for param in param_list]
 
     def evaluate_param_infos(
-        self, natural_query: str, client_config: OpenAIClientConfig
+        self,
+        natural_query: str,
+        client_config: OpenAIClientConfig,
+        system_prompt: str | None = None,
     ) -> dict[str, Any]:
         if self._all_params_have_value_set():
             return {}
         model_class = self.model_builder.build()
-        instructor_prompt = self._calculate_instructor_prompt(model_class)
+        instructor_prompt = self._calculate_instructor_prompt(
+            model_class, system_prompt
+        )
         try:
             client = OpenAIClient(client_config)
             filled_values = client.query(natural_query, instructor_prompt, model_class)
@@ -128,7 +133,9 @@ class NLQParamEvaluator:
             for param_info in self.param_infos
         )
 
-    def _calculate_instructor_prompt(self, model_class: type[BaseModel]) -> str:
+    def _calculate_instructor_prompt(
+        self, model_class: type[BaseModel], system_prompt: str | None = None
+    ) -> str:
         persona_description = """You are helping a user translate their natural language query to a structured
         Superlinked query. A Superlinked query is a knn search using a query vector, ran against a knowledgebase of items using
         cosine (dot-product) similarity.
@@ -166,6 +173,10 @@ class NLQParamEvaluator:
                 action_text,
             )
         )
+        if system_prompt:
+            instructor_prompt += (
+                f"\n\n####\nAdditional context from query creator:\n{system_prompt}"
+            )
         return instructor_prompt
 
     def _group_param_infos_by_space_and_annotation(

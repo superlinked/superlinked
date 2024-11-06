@@ -32,7 +32,6 @@ from superlinked.framework.common.transform.transformation_factory import (
 )
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
-from superlinked.framework.online.dag.parent_validator import ParentValidationType
 
 
 class OnlineNumberEmbeddingNode(
@@ -45,12 +44,7 @@ class OnlineNumberEmbeddingNode(
         parents: list[OnlineNode],
         storage_manager: StorageManager,
     ) -> None:
-        super().__init__(
-            node,
-            parents,
-            storage_manager,
-            ParentValidationType.LESS_THAN_TWO_PARENTS,
-        )
+        super().__init__(node, parents, storage_manager)
         self._embedding_transformation = (
             TransformationFactory.create_embedding_transformation(
                 self.node.transformation_config

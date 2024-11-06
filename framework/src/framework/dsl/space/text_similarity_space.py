@@ -16,7 +16,6 @@ from beartype.typing import cast
 from typing_extensions import override
 
 from superlinked.framework.common.dag.chunking_node import ChunkingNode
-from superlinked.framework.common.dag.constant_node import ConstantNode
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
@@ -122,9 +121,7 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
 
     @override
     def _create_default_node(self, schema: SchemaObject) -> EmbeddingNode[Vector, str]:
-        zero_vector = Vector.init_zero_vector(self.transformation_config.length)
-        constant_node = cast(Node, ConstantNode(value=zero_vector, schema=schema))
-        default_node = TextEmbeddingNode(constant_node, self._transformation_config)
+        default_node = TextEmbeddingNode(None, self._transformation_config)
         return default_node
 
     @property

@@ -17,6 +17,7 @@ from beartype.typing import Sequence
 from superlinked.framework.common.observable import Subscriber
 from superlinked.framework.common.parser.json_parser import JsonParser
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
+from superlinked.framework.common.schema.event_schema_object import EventSchemaObject
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 
 
@@ -26,7 +27,9 @@ class OnlineObjectWriter(Subscriber[ParsedSchema]):
         self.__storage_manager = storage_manager
 
     def update(self, messages: Sequence[ParsedSchema]) -> None:
-        for message in messages:
+        for message in [
+            m for m in messages if not isinstance(m.schema, EventSchemaObject)
+        ]:
             parser = JsonParser(message.schema)
             data = parser.marshal(message)
             for data_element in data:

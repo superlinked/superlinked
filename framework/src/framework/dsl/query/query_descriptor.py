@@ -58,6 +58,7 @@ from superlinked.framework.dsl.query.query_clause import (
     LimitClause,
     LooksLikeFilterClause,
     NLQClause,
+    NLQSystemPromptClause,
     OverriddenNowClause,
     QueryClause,
     QueryClauseT,
@@ -184,7 +185,10 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         return altered_query_descriptor
 
     def with_natural_query(
-        self, natural_query: StringParamType, client_config: OpenAIClientConfig
+        self,
+        natural_query: StringParamType,
+        client_config: OpenAIClientConfig,
+        system_prompt: StringParamType | None = None,
     ) -> QueryDescriptor:
         """
         Sets a natural language query based on which empty Params will have values set.
@@ -192,12 +196,15 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         Args:
             natural_query (StringParamType): Query containing desired characteristics.
             client_config (OpenAIClientConfig): Client config to initialize the client with.
+            system_prompt (StringParamType | None): Custom system prompt to use for the query. Defaults to None.
         Returns:
             Self: The query object itself.
         """
         param = self.__to_param(natural_query)
-        clause = NLQClause(param, client_config)
-        altered_query_descriptor = self.__append_clause(clause)
+        clauses: list[QueryClause] = [NLQClause(param, client_config)]
+        if system_prompt:
+            clauses.append(NLQSystemPromptClause(self.__to_param(system_prompt)))
+        altered_query_descriptor = self.__append_clauses(clauses)
         self.__warn_if_nlq_is_used_without_recommended_param_descriptions(
             altered_query_descriptor
         )

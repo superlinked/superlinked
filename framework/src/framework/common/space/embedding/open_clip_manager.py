@@ -19,7 +19,7 @@ import torch
 from beartype.typing import Any, cast
 from open_clip.factory import create_model_and_transforms, get_tokenizer
 from open_clip.model import CLIP
-from PIL.ImageFile import ImageFile
+from PIL.Image import Image
 from torchvision.transforms.transforms import Compose  # type:ignore[import-untyped]
 from typing_extensions import override
 
@@ -54,9 +54,7 @@ class OpenClipManager(ModelManager):
         )
 
     @override
-    def _embed(
-        self, inputs: list[str | ImageFile]
-    ) -> list[list[float]] | list[np.ndarray]:
+    def _embed(self, inputs: list[str | Image]) -> list[list[float]] | list[np.ndarray]:
         embedding_model, preprocess_val = self._get_embedding_model(len(inputs))
         text_inputs, image_inputs = self._categorize_inputs(inputs)
         self._validate_inputs(inputs)
@@ -69,15 +67,15 @@ class OpenClipManager(ModelManager):
         return [self._normalize_encoding(encoding).tolist() for encoding in encodings]
 
     def _categorize_inputs(
-        self, inputs: list[str | ImageFile]
-    ) -> tuple[list[str], list[ImageFile]]:
+        self, inputs: list[str | Image]
+    ) -> tuple[list[str], list[Image]]:
         text_inputs = [inp for inp in inputs if isinstance(inp, str)]
-        image_inputs = [inp for inp in inputs if isinstance(inp, ImageFile)]
+        image_inputs = [inp for inp in inputs if isinstance(inp, Image)]
         return text_inputs, image_inputs
 
-    def _validate_inputs(self, inputs: list[str | ImageFile]) -> None:
+    def _validate_inputs(self, inputs: list[str | Image]) -> None:
         unsupported_item = next(
-            (inp for inp in inputs if not isinstance(inp, (str, ImageFile))), None
+            (inp for inp in inputs if not isinstance(inp, (str, Image))), None
         )
         if unsupported_item:
             raise ValueError(
@@ -86,7 +84,7 @@ class OpenClipManager(ModelManager):
 
     def _combine_encodings(
         self,
-        inputs: list[str | ImageFile],
+        inputs: list[str | Image],
         text_encodings: torch.Tensor,
         image_encodings: torch.Tensor,
     ) -> list[torch.Tensor]:

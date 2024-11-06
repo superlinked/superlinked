@@ -31,7 +31,6 @@ from superlinked.framework.common.transform.transformation_factory import (
 )
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
-from superlinked.framework.online.dag.parent_validator import ParentValidationType
 
 
 class OnlineCustomVectorEmbeddingNode(
@@ -43,12 +42,7 @@ class OnlineCustomVectorEmbeddingNode(
         parents: list[OnlineNode],
         storage_manager: StorageManager,
     ) -> None:
-        super().__init__(
-            node,
-            parents,
-            storage_manager,
-            ParentValidationType.LESS_THAN_TWO_PARENTS,
-        )
+        super().__init__(node, parents, storage_manager)
         self._embedding_transformation = (
             TransformationFactory.create_embedding_transformation(
                 self.node.transformation_config
@@ -78,19 +72,19 @@ class OnlineCustomVectorEmbeddingNode(
         context: ExecutionContext,
     ) -> EvaluationResult[Vector]:
         if len(self.parents) == 0:
-            stored_result = self.load_stored_result_or_raise_exception(parsed_schema)
-            return EvaluationResult(self._get_single_evaluation_result(stored_result))
-
-        input_: EvaluationResult[list[float]] = cast(
-            OnlineNode[Node[Vector], list[float]], self.parents[0]
-        ).evaluate_next_single(parsed_schema, context)
-        input_value = input_.main.value
-        self._validate_input_value(input_value)
-        transformed_input_value = self.embedding_transformation.transform(
-            Vector(input_value), context
-        )
-        main = self._get_single_evaluation_result(transformed_input_value)
-        return EvaluationResult(main)
+            result = self.load_stored_result(parsed_schema.id_, parsed_schema.schema)
+            if result is None:
+                result = Vector.init_zero_vector(self.node.length)
+        else:
+            input_: EvaluationResult[list[float]] = cast(
+                OnlineNode[Node[Vector], list[float]], self.parents[0]
+            ).evaluate_next_single(parsed_schema, context)
+            input_value = input_.main.value
+            self._validate_input_value(input_value)
+            result = self.embedding_transformation.transform(
+                Vector(input_value), context
+            )
+        return EvaluationResult(self._get_single_evaluation_result(result))
 
     def _validate_input_value(self, input_value: list[float]) -> None:
         if len(input_value) != self.length:

@@ -14,10 +14,10 @@
 
 from dataclasses import dataclass
 
-from PIL.ImageFile import ImageFile
+from PIL.Image import Image
 
 
 @dataclass(frozen=True)
 class ImageData:
-    image: ImageFile | None
+    image: Image | None
     description: str | None

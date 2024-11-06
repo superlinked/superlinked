@@ -16,8 +16,8 @@ import base64
 import io
 from dataclasses import dataclass
 
-from PIL import Image
-from PIL.ImageFile import ImageFile
+import PIL
+import PIL.Image
 from typing_extensions import override
 
 from superlinked.framework.common.data_types import PythonTypes
@@ -32,14 +32,16 @@ blob_loader = BlobLoader(allow_bytes=True)
 class ImageSpaceFieldSet(SpaceFieldSet[ImageData]):
     @override
     def _generate_space_input(self, value: PythonTypes) -> ImageData:
-        if not isinstance(value, (str, ImageFile)):
+        if not isinstance(value, (str, PIL.Image.Image)):
             raise ValueError(
                 f"Invalid type of input for {type(self).__name__}: {type(value)}"
             )
         loaded_image = blob_loader.load(value)
-        opened_image: ImageFile | None = None
+        opened_image: PIL.Image.Image | None = None
         if loaded_image.data:
-            opened_image = Image.open(io.BytesIO(base64.b64decode(loaded_image.data)))
+            opened_image = PIL.Image.open(
+                io.BytesIO(base64.b64decode(loaded_image.data))
+            )
         return ImageData(image=opened_image, description=None)
 
 

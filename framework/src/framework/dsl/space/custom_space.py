@@ -15,7 +15,6 @@
 
 from typing_extensions import override
 
-from superlinked.framework.common.dag.constant_node import ConstantNode
 from superlinked.framework.common.dag.custom_node import CustomVectorEmbeddingNode
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
@@ -120,12 +119,7 @@ class CustomSpace(Space[Vector, Vector], HasSpaceFieldSet):
     def _create_default_node(
         self, schema: SchemaObject
     ) -> EmbeddingNode[Vector, Vector]:
-        zero_vector = Vector.init_zero_vector(self._length)
-        constant_node = ConstantNode(value=zero_vector, schema=schema)
-        default_node = CustomVectorEmbeddingNode(
-            constant_node, self.transformation_config
-        )
-        return default_node
+        return CustomVectorEmbeddingNode(None, self.transformation_config)
 
     def _calculate_schema_node_map(
         self, transformation_config: TransformationConfig

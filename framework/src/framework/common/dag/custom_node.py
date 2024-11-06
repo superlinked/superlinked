@@ -23,7 +23,8 @@ from superlinked.framework.common.space.config.transformation_config import (
 class CustomVectorEmbeddingNode(EmbeddingNode[Vector, Vector]):
     def __init__(
         self,
-        parent: Node[Vector],
+        parent: Node[Vector] | None,
         transformation_config: TransformationConfig[Vector, Vector],
     ) -> None:
-        super().__init__([parent], transformation_config)
+        parents = [parent] if parent is not None else []
+        super().__init__(parents, transformation_config)

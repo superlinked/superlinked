@@ -20,6 +20,7 @@ from beartype.typing import Any
 from superlinked.framework.dsl.query.nlq_param_evaluator import NLQParamEvaluator
 from superlinked.framework.dsl.query.query_clause import (
     NLQClause,
+    NLQSystemPromptClause,
     QueryClause,
     WeightedQueryClause,
 )
@@ -70,7 +71,15 @@ class QueryParamValueSetter:
     ) -> dict[str, Any]:
         nlq_clause = query_descriptor.get_clause_by_type(NLQClause)
         if nlq_clause is not None and (natural_query := nlq_clause.evaluate()):
+            nlq_system_prompt_clause = query_descriptor.get_clause_by_type(
+                NLQSystemPromptClause
+            )
+            system_prompt = (
+                nlq_system_prompt_clause.evaluate()
+                if nlq_system_prompt_clause is not None
+                else None
+            )
             return NLQParamEvaluator(query_descriptor).evaluate_param_infos(
-                natural_query, nlq_clause.client_config
+                natural_query, nlq_clause.client_config, system_prompt
             )
         return {}

@@ -19,9 +19,7 @@ from typing_extensions import override
 from superlinked.framework.common.dag.categorical_similarity_node import (
     CategoricalSimilarityNode,
 )
-from superlinked.framework.common.dag.constant_node import ConstantNode
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
-from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.schema.schema_object import (
@@ -168,12 +166,7 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
     def _create_default_node(
         self, schema: SchemaObject
     ) -> EmbeddingNode[Vector, list[str]]:
-        zero_vector = Vector.init_zero_vector(self.length)
-        constant_node = cast(Node, ConstantNode(value=zero_vector, schema=schema))
-        default_node = CategoricalSimilarityNode(
-            constant_node, self.transformation_config
-        )
-        return default_node
+        return CategoricalSimilarityNode(None, self.transformation_config)
 
     @property
     @override

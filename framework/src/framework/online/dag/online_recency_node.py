@@ -33,7 +33,6 @@ from superlinked.framework.online.dag.evaluation_result import (
     SingleEvaluationResult,
 )
 from superlinked.framework.online.dag.online_node import OnlineNode
-from superlinked.framework.online.dag.parent_validator import ParentValidationType
 
 DAY_IN_SECONDS: int = 24 * 60 * 60
 
@@ -45,12 +44,7 @@ class OnlineRecencyNode(DefaultOnlineNode[RecencyNode, Vector], HasLength):
         parents: list[OnlineNode],
         storage_manager: StorageManager,
     ) -> None:
-        super().__init__(
-            node,
-            parents,
-            storage_manager,
-            ParentValidationType.EXACTLY_ONE_PARENT,
-        )
+        super().__init__(node, parents, storage_manager)
         self._embedding_transformation = (
             TransformationFactory.create_embedding_transformation(
                 self.node.transformation_config

@@ -32,7 +32,6 @@ from superlinked.framework.common.transform.transformation_factory import (
 )
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
-from superlinked.framework.online.dag.parent_validator import ParentValidationType
 
 
 class OnlineCategoricalSimilarityNode(
@@ -44,12 +43,7 @@ class OnlineCategoricalSimilarityNode(
         parents: list[OnlineNode],
         storage_manager: StorageManager,
     ) -> None:
-        super().__init__(
-            node,
-            parents,
-            storage_manager,
-            ParentValidationType.LESS_THAN_TWO_PARENTS,
-        )
+        super().__init__(node, parents, storage_manager)
         self._embedding_transformation = (
             TransformationFactory.create_embedding_transformation(
                 self.node.transformation_config
@@ -79,7 +73,9 @@ class OnlineCategoricalSimilarityNode(
         context: ExecutionContext,
     ) -> EvaluationResult[Vector]:
         if len(self.parents) == 0:
-            result = self.load_stored_result_or_raise_exception(parsed_schema)
+            result = self.load_stored_result(parsed_schema.id_, parsed_schema.schema)
+            if result is None:
+                result = Vector.init_zero_vector(self.node.length)
         else:
             input_: str | list[str] = (
                 cast(
