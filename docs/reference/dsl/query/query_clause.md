@@ -96,6 +96,22 @@ Classes
     `get_default_value_param_name(self) ‑> str`
     :
 
+`NLQSystemPromptClause(value_param: Param | Evaluated[Param])`
+:   NLQSystemPromptClause(value_param: 'Param | Evaluated[Param]')
+
+    ### Ancestors (in MRO)
+
+    * superlinked.framework.dsl.query.query_clause.QueryClause
+    * typing.Generic
+
+    ### Methods
+
+    `evaluate(self) ‑> str | None`
+    :
+
+    `get_default_value_param_name(self) ‑> str`
+    :
+
 `OverriddenNowClause(value_param: Param | Evaluated[Param])`
 :   OverriddenNowClause(value_param: 'Param | Evaluated[Param]')
 
@@ -124,6 +140,7 @@ Classes
     * superlinked.framework.dsl.query.query_clause.HardFilterClause
     * superlinked.framework.dsl.query.query_clause.LimitClause
     * superlinked.framework.dsl.query.query_clause.NLQClause
+    * superlinked.framework.dsl.query.query_clause.NLQSystemPromptClause
     * superlinked.framework.dsl.query.query_clause.OverriddenNowClause
     * superlinked.framework.dsl.query.query_clause.RadiusClause
     * superlinked.framework.dsl.query.query_clause.SpaceWeightClause
