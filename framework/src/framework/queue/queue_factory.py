@@ -29,11 +29,6 @@ class QueueFactory:
         module_path = Settings().QUEUE_MODULE_PATH
         class_name = Settings().QUEUE_CLASS_NAME
         if module_path is None or class_name is None:
-            logger.warning(
-                "queue module path or class name is not set",
-                module_path=module_path,
-                class_name=class_name,
-            )
             return None
         queue_class = ClassHelper.get_class(module_path, class_name)
         if queue_class is None:
@@ -43,7 +38,12 @@ class QueueFactory:
                 class_name=class_name,
             )
             return None
-        return cast(
-            Queue[MessageBody[PayloadT]],
-            queue_class(**(Settings().QUEUE_CLASS_ARGS or {})),
+        args = Settings().QUEUE_CLASS_ARGS or {}
+        initialized_class = queue_class(**args)
+        logger.info(
+            "initialized queue",
+            module_path=module_path,
+            class_name=class_name,
+            args=args,
         )
+        return cast(Queue[MessageBody[PayloadT]], initialized_class)

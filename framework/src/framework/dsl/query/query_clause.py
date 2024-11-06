@@ -17,8 +17,8 @@ from __future__ import annotations
 from abc import abstractmethod
 from dataclasses import dataclass, replace
 
-from beartype.typing import Any, Generic, Self, TypeVar, cast
-from typing_extensions import override
+from beartype.typing import Any, Generic, TypeVar, cast
+from typing_extensions import Self, override
 
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.data_types import PythonTypes
@@ -44,6 +44,7 @@ from superlinked.framework.dsl.query.predicate.binary_predicate import (
 )
 from superlinked.framework.dsl.query.query_filter_validator import QueryFilterValidator
 from superlinked.framework.dsl.space.space import Space
+from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
 EvaluatedQueryT = TypeVar("EvaluatedQueryT")
 
@@ -103,7 +104,7 @@ class WeightedQueryClause(QueryClause[EvaluatedQueryT]):
     def get_weight(self) -> float:
         weight = self.get_param_value(self.weight_param)
         if weight is None:
-            weight = constants.DEFAULT_NOT_AFFECTING_WEIGHT
+            weight = constants.DEFAULT_WEIGHT
         if not isinstance(weight, (int, float)):
             raise QueryException(
                 f"Clause weight should be numeric, got {type(weight).__name__}."
@@ -173,8 +174,12 @@ class LooksLikeFilterClause(
 class SimilarFilterClause(
     WeightedQueryClause[tuple[Space, EvaluatedBinaryPredicate[SimilarPredicate]] | None]
 ):
-    space: Space
+    field_set: SpaceFieldSet
     schema_field: SchemaField
+
+    @property
+    def space(self) -> Space:
+        return self.field_set.space
 
     @override
     def evaluate(
@@ -182,9 +187,9 @@ class SimilarFilterClause(
     ) -> tuple[Space, EvaluatedBinaryPredicate[SimilarPredicate]] | None:
         value = self.get_value()
         weight = self.get_weight()
-        if value is None:
+        if value is None or weight == constants.DEFAULT_NOT_AFFECTING_WEIGHT:
             return None
-        node = self.space._get_node(self.schema_field.schema_obj)
+        node = self.space._get_embedding_node(self.schema_field.schema_obj)
         similar_filter = EvaluatedBinaryPredicate(
             SimilarPredicate(
                 self.schema_field, cast(ParamInputType, value), weight, node
@@ -194,7 +199,6 @@ class SimilarFilterClause(
 
     @override
     def get_default_value_param_name(self) -> str:
-
         return f"similar_filter_{str(self.space)}_{self.schema_field.name}_value_param"
 
     @override

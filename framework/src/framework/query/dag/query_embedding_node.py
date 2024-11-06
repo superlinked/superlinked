@@ -14,11 +14,13 @@
 
 from __future__ import annotations
 
-from beartype.typing import Generic, Mapping, Sequence, cast
+from abc import ABC, abstractmethod
+
+from beartype.typing import Generic, Mapping, Sequence, TypeVar, cast
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.dag.embedding_node import EmbeddingNode
+from superlinked.framework.common.dag.embedding_node import EmbeddingNodeT
 from superlinked.framework.common.dag.node import NodeDataT
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.interface.weighted import Weighted
@@ -29,58 +31,150 @@ from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
 )
 from superlinked.framework.query.dag.exception import QueryEvaluationException
+from superlinked.framework.query.dag.query_evaluation_data_types import (
+    QueryEvaluationResult,
+    QueryEvaluationResultT,
+)
 from superlinked.framework.query.dag.query_node import QueryNode
 from superlinked.framework.query.query_node_input import QueryNodeInput
 
+T = TypeVar("T")
+
 
 class QueryEmbeddingNode(
-    QueryNode[EmbeddingNode[AggregationInputT, NodeDataT], Vector],
-    Generic[AggregationInputT, NodeDataT],
+    Generic[AggregationInputT, EmbeddingNodeT, NodeDataT],
+    QueryNode[EmbeddingNodeT, Vector],
+    ABC,
 ):
-
     def __init__(
         self,
-        node: EmbeddingNode[AggregationInputT, NodeDataT],
+        node: EmbeddingNodeT,
         parents: Sequence[QueryNode],
-        input_type: type[AggregationInputT | NodeDataT],
+        input_type: type,
     ) -> None:
         super().__init__(node, parents)
-        self._validate_self()
         self._input_type = input_type
-        self._aggregated_embedding_transformation = (
-            TransformationFactory.create_aggregated_embedding_transformation(
-                self.node.transformation_config,
+        self._multi_embedding_transformation = (
+            TransformationFactory.create_multi_embedding_transformation(
+                self.node.transformation_config
             )
         )
-
-    def _validate_self(self) -> None:
-        if self.parents:
-            raise QueryEvaluationException(
-                f"{type(self).__name__} cannot have parents."
+        self._aggregation_transformation = (
+            TransformationFactory.create_aggregation_transformation(
+                self.node.transformation_config
             )
+        )
 
     @override
     def evaluate(
         self,
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,
-    ) -> Vector:
-        if node_inputs := inputs.get(self.node_id):
-            weighted_items = [node_input.value for node_input in node_inputs]
-            if any(
-                weighted_item
-                for weighted_item in weighted_items
-                if not isinstance(weighted_item.item, self._input_type)
-            ):
-                raise QueryEvaluationException(
-                    f"{type(self).__name__} can only evaluate {self._input_type.__name__}."
+    ) -> QueryEvaluationResult[Vector]:
+        weighted_node_inputs, weighted_node_input_vectors = (
+            self._validate_and_cast_node_inputs(inputs)
+        )
+        weighted_parent_results = self._validate_and_cast_parent_results(
+            self._evaluate_parents(inputs, context)
+        )
+        weighted_embeddings = (
+            self._embed_inputs(weighted_node_inputs, weighted_parent_results, context)
+            + weighted_node_input_vectors
+        )
+        if weighted_embeddings:
+            return QueryEvaluationResult(
+                self._aggregation_transformation.transform(
+                    cast(Sequence[Weighted], weighted_embeddings), context
                 )
-            return self._aggregated_embedding_transformation.transform(
-                cast(Sequence[Weighted], weighted_items), context
             )
-        return self.node.transformation_config.embedding_config.default_vector
+        return QueryEvaluationResult(
+            self.node.transformation_config.embedding_config.default_vector
+        )
 
-    def pre_process_node_input(
-        self, node_inputs: Sequence[QueryNodeInput]
+    @abstractmethod
+    def _evaluate_parents(
+        self,
+        inputs: Mapping[str, Sequence[QueryNodeInput]],
+        context: ExecutionContext,
+    ) -> list[QueryEvaluationResult]:
+        pass
+
+    def _pre_process_node_inputs(
+        self, inputs: Mapping[str, Sequence[QueryNodeInput]]
     ) -> Sequence[QueryNodeInput]:
-        return node_inputs
+        return inputs.get(self.node_id) or []
+
+    def _validate_and_cast_node_inputs(
+        self, inputs: Mapping[str, Sequence[QueryNodeInput]]
+    ) -> tuple[list[Weighted], list[Weighted[Vector]]]:
+        pre_processed_node_inputs = self._pre_process_node_inputs(inputs)
+        simple_inputs = [
+            input_ for input_ in pre_processed_node_inputs if not input_.to_invert
+        ]
+        weighted_input_items = [node_input.value for node_input in simple_inputs]
+        inputs_to_be_inverted = [
+            input_.value for input_ in pre_processed_node_inputs if input_.to_invert
+        ]
+        return self._validate_and_cast_items(
+            weighted_input_items, self._input_type
+        ), self._validate_and_cast_items(inputs_to_be_inverted, Vector)
+
+    def _validate_and_cast_parent_results(
+        self, parent_results: Sequence[QueryEvaluationResult]
+    ) -> list[Weighted]:
+        single_items = QueryEmbeddingNode._flat_parent_result_values(parent_results)
+        weighted_single_items = [
+            (
+                single_item
+                if isinstance(single_item, Weighted)
+                else Weighted(single_item)
+            )
+            for single_item in single_items
+        ]
+        return self._validate_and_cast_items(weighted_single_items, self._input_type)
+
+    def _validate_and_cast_items(
+        self,
+        weighted_items: Sequence[Weighted],
+        input_type: type[T],
+    ) -> list[Weighted[T]]:
+        if wrong_types := [
+            type(weighted_item.item).__name__
+            for weighted_item in weighted_items
+            if not isinstance(weighted_item.item, input_type)
+        ]:
+            raise QueryEvaluationException(
+                f"{type(self).__name__} can only evaluate {input_type.__name__}, "
+                + f"got {wrong_types}."
+            )
+        return cast(list[Weighted[T]], weighted_items)
+
+    def _embed_inputs(
+        self,
+        weighted_node_inputs: Sequence[Weighted],
+        weighted_parent_results: Sequence[Weighted],
+        context: ExecutionContext,
+    ) -> list[Weighted[Vector]]:
+        if weighted_node_inputs or weighted_parent_results:
+            weighted_items = list(weighted_node_inputs) + list(weighted_parent_results)
+            embedding_inputs = [weighted_item.item for weighted_item in weighted_items]
+            embeddings = self._multi_embedding_transformation.transform(
+                embedding_inputs, context
+            )
+            return [
+                Weighted(embedding, weighted_item.weight)
+                for weighted_item, embedding in zip(weighted_items, embeddings)
+            ]
+        return []
+
+    @staticmethod
+    def _flat_parent_result_values(
+        parent_results: Sequence[QueryEvaluationResult[QueryEvaluationResultT]],
+    ) -> list[QueryEvaluationResultT | Weighted[QueryEvaluationResultT]]:
+        single_items = list[QueryEvaluationResultT | Weighted[QueryEvaluationResultT]]()
+        for parent_result in parent_results:
+            if isinstance(parent_result.value, list):
+                single_items.extend(parent_result.value)
+            else:
+                single_items.append(parent_result.value)
+        return single_items

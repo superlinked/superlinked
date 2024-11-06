@@ -88,6 +88,10 @@ class ConstantNorm(Normalization[ConstantNormConfig]):
         return self._config.length
 
     @override
+    def denormalize(self, vector: Vector) -> Vector:
+        return vector.normalize(1 / self._config.length)
+
+    @override
     def __eq__(self, other: Any) -> bool:
         return (
             isinstance(other, type(self))

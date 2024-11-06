@@ -23,6 +23,9 @@ from superlinked.framework.common.dag.node import NodeDataT
 from superlinked.framework.common.util.named_function_evaluator import (
     NamedFunctionEvaluator,
 )
+from superlinked.framework.query.dag.query_evaluation_data_types import (
+    QueryEvaluationResult,
+)
 from superlinked.framework.query.dag.query_node import QueryNode
 from superlinked.framework.query.query_node_input import QueryNodeInput
 
@@ -40,8 +43,10 @@ class QueryNamedFunctionNode(
         self,
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,
-    ) -> NodeDataT:
-        return cast(
-            NodeDataT,
-            NamedFunctionEvaluator().evaluate(self.node.named_function, context),
+    ) -> QueryEvaluationResult[NodeDataT]:
+        return QueryEvaluationResult(
+            cast(
+                NodeDataT,
+                NamedFunctionEvaluator().evaluate(self.node.named_function, context),
+            )
         )

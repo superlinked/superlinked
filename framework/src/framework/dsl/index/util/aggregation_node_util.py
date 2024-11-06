@@ -60,7 +60,7 @@ class AggregationNodeUtil:
         weighted_eans: list[Weighted[Node[Vector]]] = [
             Weighted(parent, effect_modifier.temperature) for parent in eans
         ]
-        affected_node = aggregation_effect_group.space._get_node(
+        affected_node = aggregation_effect_group.space._get_embedding_node(
             aggregation_effect_group.affected_schema
         )
         if not isinstance(affected_node, EmbeddingNode):

@@ -14,8 +14,17 @@
 
 
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
+from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.space.config.transformation_config import (
+    TransformationConfig,
+)
 
 
 class CategoricalSimilarityNode(EmbeddingNode[Vector, list[str]]):
-    pass
+    def __init__(
+        self,
+        parent: Node[list[str]],
+        transformation_config: TransformationConfig[Vector, list[str]],
+    ) -> None:
+        super().__init__([parent], transformation_config)

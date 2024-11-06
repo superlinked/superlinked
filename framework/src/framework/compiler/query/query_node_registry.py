@@ -24,6 +24,9 @@ from superlinked.framework.query.dag.query_constant_node import QueryConstantNod
 from superlinked.framework.query.dag.query_custom_vector_embedding_node import (
     QueryCustomVectorEmbeddingNode,
 )
+from superlinked.framework.query.dag.query_image_embedding_node import (
+    QueryImageEmbeddingNode,
+)
 from superlinked.framework.query.dag.query_index_node import QueryIndexNode
 from superlinked.framework.query.dag.query_named_function_node import (
     QueryNamedFunctionNode,
@@ -43,7 +46,7 @@ DEFAULT_NODE_TYPES: list[type[QueryNode]] = [
     QueryConcatenationNode,
     QueryConstantNode,
     QueryCustomVectorEmbeddingNode,
-    # TODO [FAI-2485]
+    QueryImageEmbeddingNode,
     QueryIndexNode,
     QueryNamedFunctionNode,
     QueryNumberEmbeddingNode,

@@ -52,7 +52,7 @@ class EventAggregationNodeUtil:
             raise InitializationException(
                 "EventAggregationNode initialization needs a not empty set of Effects."
             )
-        input_to_aggregate = effect_group.key.space._get_node(
+        input_to_aggregate = effect_group.key.space._get_embedding_node(
             effect_group.key.resolved_affecting_schema
         )
         if not isinstance(input_to_aggregate, EmbeddingNode):

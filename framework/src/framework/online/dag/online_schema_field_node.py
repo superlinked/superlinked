@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from beartype.typing import Generic, cast
+from beartype.typing import Generic
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
@@ -23,7 +23,7 @@ from superlinked.framework.common.parser.parsed_schema import (
     ParsedSchema,
     ParsedSchemaField,
 )
-from superlinked.framework.common.schema.schema_object import SFT, Timestamp
+from superlinked.framework.common.schema.schema_object import SFT
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.exception import ValueNotProvidedException
@@ -51,12 +51,11 @@ class OnlineSchemaFieldNode(Generic[SFT], OnlineNode[SchemaFieldNode, SFT]):
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
     ) -> list[EvaluationResult[SFT]]:
-        return [self.evaluate_self_single(schema, context) for schema in parsed_schemas]
+        return [self.evaluate_self_single(schema) for schema in parsed_schemas]
 
     def evaluate_self_single(
         self,
         parsed_schema: ParsedSchema,
-        context: ExecutionContext,
     ) -> EvaluationResult[SFT]:
         parsed_nodes: list[ParsedSchemaField] = [
             field
@@ -67,19 +66,16 @@ class OnlineSchemaFieldNode(Generic[SFT], OnlineNode[SchemaFieldNode, SFT]):
         if parsed_nodes:
             result = parsed_nodes[0].value
         else:
-            result = self.__get_default_result(parsed_schema, context)
+            result = self.__get_default_result(parsed_schema)
         return EvaluationResult(self._get_single_evaluation_result(result))
 
     def __get_default_result(
         self,
         parsed_schema: ParsedSchema,
-        context: ExecutionContext,
     ) -> SFT:
         stored_result = self.load_stored_result(parsed_schema.id_, parsed_schema.schema)
         if stored_result:
             return stored_result
-        if isinstance(self.node.schema_field, Timestamp):
-            return cast(SFT, context.now())
         field_name = ".".join(
             [
                 self.node.schema_field.schema_obj._schema_name,

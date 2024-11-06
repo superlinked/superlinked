@@ -24,9 +24,8 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import ValidationException
 from superlinked.framework.common.interface.has_length import HasLength
-from superlinked.framework.common.space.normalization.normalization import L2Norm
+from superlinked.framework.common.space.normalization.normalization import ConstantNorm
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
-from superlinked.framework.common.util.weight_arithmetics import WeightArithmetics
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
 from superlinked.framework.online.dag.evaluation_result import SingleEvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
@@ -43,7 +42,9 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
         super().__init__(
             node, parents, storage_manager, ParentValidationType.AT_LEAST_ONE_PARENT
         )
-        self._norm = L2Norm()
+        self._norm = ConstantNorm(
+            self.node.create_normalization_config([1.0] * len(self.node.parents))
+        )
 
     @property
     def length(self) -> int:
@@ -64,19 +65,7 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
             self._apply_weights_and_concatenate(vector_and_nodes, context)
             for vector_and_nodes in vector_and_nodes_list
         ]
-        if not context.is_query_context:
-            normalized_vectors = [
-                self._norm.normalize(vector) for vector in weighted_vectors
-            ]
-            return normalized_vectors
-        return weighted_vectors
-
-    def re_weight_vector(self, vector: Vector, context: ExecutionContext) -> Vector:
-        parts = self._split_vector(vector)
-        vector_and_nodes = list(zip(parts, self.parents))
-        weighted_vector = self._apply_weights_and_concatenate(vector_and_nodes, context)
-        normalized_vector = self._norm.normalize(weighted_vector)
-        return normalized_vector
+        return [self._norm.normalize(vector) for vector in weighted_vectors]
 
     def _apply_weights_and_concatenate(
         self,
@@ -84,7 +73,7 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
         context: ExecutionContext,
     ) -> Vector:
         weighted_vectors = (
-            WeightArithmetics.apply_vector_weight(vector, parent.node_id, context)
+            vector * context.get_weight_of_node(parent.node_id)
             for vector, parent in vector_and_nodes
         )
         vector = reduce(lambda a, b: a.concatenate(b), weighted_vectors)
@@ -104,8 +93,9 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
                 f"{self.class_name} can only process `Vector` inputs."
             )
 
-    def _split_vector(self, vector: Vector) -> list[Vector]:
-        parents_without_duplicates = list(dict.fromkeys(self.parents))
+    def _split_vector(
+        self, vector: Vector, parents_without_duplicates: Sequence[OnlineNode]
+    ) -> list[Vector]:
         lengths = [
             cast(HasLength, parent).length for parent in parents_without_duplicates
         ]

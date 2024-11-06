@@ -129,9 +129,9 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
                 parent=SchemaFieldNode(num),
                 transformation_config=self._transformation_config,
             )
-            for num in self._field_set
+            for num in (number if isinstance(number, list) else [number])
         }
-        self.number = SpaceFieldSet(self, set(number_node_map.keys()))
+        self.number = SpaceFieldSet[float](self, set(number_node_map.keys()))
         self.__schema_node_map: dict[SchemaObject, EmbeddingNode[float, float]] = {
             schema_field.schema_obj: node
             for schema_field, node in number_node_map.items()

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Any, Sequence
+from beartype.typing import Any, Sequence, get_origin
 from pydantic import BaseModel, Field, create_model, model_validator
 
 from superlinked.framework.common.const import constants
@@ -27,12 +27,14 @@ from superlinked.framework.dsl.query.query_param_information import ParamInfo
 from superlinked.framework.dsl.space.categorical_similarity_space import (
     CategoricalSimilaritySpace,
 )
+from superlinked.framework.dsl.space.space import Space
 
 # Exclude from documentation.
 __pdoc__ = {}
 __pdoc__["NLQPydanticModelBuilder"] = False
 
 QUERY_MODEL_NAME = "QueryModel"
+UNAFFECTING_VALUES = [constants.DEFAULT_NOT_AFFECTING_WEIGHT, None]
 
 
 class NLQPydanticModelBuilder:
@@ -47,8 +49,15 @@ class NLQPydanticModelBuilder:
         return model
 
     def _get_model_validators_dict(self) -> dict[str, dict[str, Any]]:
+        space_weight_by_space: dict[Space, str] = {
+            param_info.space: param_info.name
+            for param_info in self.param_infos
+            if param_info.is_weight
+            and param_info.space is not None
+            and param_info.schema_field is None
+        }
         similar_and_space_weight_param_names = (
-            self._calculate_similar_and_space_weight_param_names()
+            self._calculate_similar_and_space_weight_param_names(space_weight_by_space)
         )
         categories_by_category_param: dict[str, Sequence[str]] = {
             param_info.name: param_info.space._embedding_config.categories
@@ -56,6 +65,16 @@ class NLQPydanticModelBuilder:
             if isinstance(param_info.space, CategoricalSimilaritySpace)
             and not param_info.is_weight
         }
+        with_vector_weight_param = next(
+            (
+                param_info.name
+                for param_info in self.param_infos
+                if param_info.is_weight
+                and param_info.space is None
+                and param_info.schema_field is not None
+            ),
+            None,
+        )
 
         @model_validator(mode="after")
         def check_space_weights_filled_when_similar_weight_filled(
@@ -72,13 +91,43 @@ class NLQPydanticModelBuilder:
                     model, space, constants.DEFAULT_NOT_AFFECTING_WEIGHT
                 )
                 if (
-                    similar_value != constants.DEFAULT_NOT_AFFECTING_WEIGHT
-                    and space_value == constants.DEFAULT_NOT_AFFECTING_WEIGHT
+                    similar_value not in UNAFFECTING_VALUES
+                    and space_value in UNAFFECTING_VALUES
                 ):
                     raise ValueError(
                         f"If {similar} is not {constants.DEFAULT_NOT_AFFECTING_WEIGHT}/None,"
-                        " then {space} must not be {constants.DEFAULT_NOT_AFFECTING_WEIGHT}/None too."
+                        f" then set the value 1 for the following field: {space}."
                     )
+            return model
+
+        @model_validator(mode="after")
+        def check_space_weights_filled_when_with_vector_filled(
+            model: Any,
+        ) -> Any:
+            if not isinstance(model, BaseModel) or not with_vector_weight_param:
+                return model
+            with_vector_weight = getattr(
+                model,
+                with_vector_weight_param,
+                constants.DEFAULT_NOT_AFFECTING_WEIGHT,
+            )
+            if with_vector_weight in UNAFFECTING_VALUES:
+                return model
+            none_space_weight_params = [
+                space_weight_param_name
+                for space_weight_param_name in space_weight_by_space.values()
+                if getattr(
+                    model,
+                    space_weight_param_name,
+                    constants.DEFAULT_NOT_AFFECTING_WEIGHT,
+                )
+                in UNAFFECTING_VALUES
+            ]
+            if none_space_weight_params:
+                raise ValueError(
+                    f"If {with_vector_weight_param} is not {constants.DEFAULT_NOT_AFFECTING_WEIGHT}/None,"
+                    f" then set the value 1 for the following fields: {str(none_space_weight_params)}."
+                )
             return model
 
         @model_validator(mode="after")
@@ -107,26 +156,22 @@ class NLQPydanticModelBuilder:
 
         return {
             "__validators__": {
-                "check_weights": check_space_weights_filled_when_similar_weight_filled,
+                "check_similar_weights": check_space_weights_filled_when_similar_weight_filled,
+                "check_with_vector_weights": check_space_weights_filled_when_with_vector_filled,
                 "check_category_is_defined": check_category_is_defined,
             }
         }
 
-    def _calculate_similar_and_space_weight_param_names(self) -> list[tuple[str, str]]:
-        space_weight_by_schema_field: dict[SchemaField, str] = {
-            param_info.schema_field: param_info.name
-            for param_info in self.param_infos
-            if param_info.is_weight
-            and param_info.space is None
-            and param_info.schema_field is not None
-        }
+    def _calculate_similar_and_space_weight_param_names(
+        self, space_weight_by_space: dict[Space, str]
+    ) -> list[tuple[str, str]]:
         similar_and_space_weight_param_names: list[tuple[str, str]] = [
-            (param_info.name, space_weight_by_schema_field[param_info.schema_field])
+            (param_info.name, space_weight_by_space[param_info.space])
             for param_info in self.param_infos
             if param_info.is_weight
             and param_info.space is not None
             and param_info.schema_field is not None
-            and param_info.schema_field in space_weight_by_schema_field
+            and param_info.space in space_weight_by_space
         ]
         return similar_and_space_weight_param_names
 
@@ -174,7 +219,11 @@ class NLQPydanticModelBuilder:
         if schema_field:
             type_should_be_list = op is not None and op in LIST_TYPE_COMPATIBLE_TYPES
             type_ = GenericClassUtil.get_single_generic_type(schema_field)
-            return list[type_] if type_should_be_list else type_  # type: ignore[valid-type]
+            return (
+                list[type_]  # type: ignore[valid-type]
+                if type_should_be_list and get_origin(type_) != list
+                else type_
+            )
         if value is not None:
             return type(value)
         raise QueryException("NLQ field type cannot be determined.")

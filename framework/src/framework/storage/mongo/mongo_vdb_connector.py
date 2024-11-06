@@ -72,8 +72,8 @@ class MongoVDBConnector(VDBConnector):
     def supported_vector_indexing(self) -> Sequence[SearchAlgorithm]:
         return [SearchAlgorithm.FLAT]
 
-    @override
     @property
+    @override
     def _default_search_limit(self) -> int:
         return self.__vdb_settings.default_query_limit
 

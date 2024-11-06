@@ -29,7 +29,6 @@ logger = structlog.getLogger()
 
 
 class QueryParamValueSetter:
-
     @classmethod
     def set_values(
         cls, query_descriptor: QueryDescriptor, params: dict[str, Any]

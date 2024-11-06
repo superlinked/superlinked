@@ -16,11 +16,6 @@ Classes
     * abc.ABC
     * typing.Generic
 
-    ### Static methods
-
-    `combine_values(values: Sequence[BlobInformation]) ‑> superlinked.framework.common.schema.blob_information.BlobInformation`
-    :
-
 `DescribedBlob(blob: Blob, description: String)`
 :   DescribedBlob(blob: 'Blob', description: 'String')
 
@@ -43,11 +38,6 @@ Classes
     * abc.ABC
     * typing.Generic
 
-    ### Static methods
-
-    `combine_values(values: Sequence[float]) ‑> float`
-    :
-
 `FloatList(name: str, schema_obj: SchemaObjectT)`
 :   Field of a schema that represents a vector.
 
@@ -57,11 +47,6 @@ Classes
     * superlinked.framework.common.interface.comparison_operand.ComparisonOperand
     * abc.ABC
     * typing.Generic
-
-    ### Static methods
-
-    `combine_values(values: Sequence[list[float]]) ‑> list[float]`
-    :
 
     ### Methods
 
@@ -78,11 +63,6 @@ Classes
     * superlinked.framework.common.interface.comparison_operand.ComparisonOperand
     * abc.ABC
     * typing.Generic
-
-    ### Static methods
-
-    `combine_values(values: Sequence[int]) ‑> int`
-    :
 
 `Number(name: str, schema_obj: SchemaObjectT, type_: type[SFT])`
 :   Field of a schema that represents a union of Float and Integer.
@@ -126,11 +106,6 @@ Classes
     * superlinked.framework.common.schema.schema_object.StringList
     * superlinked.framework.common.schema.schema_object.Timestamp
 
-    ### Static methods
-
-    `combine_values(values: Sequence[SFT]) ‑> ~SFT`
-    :
-
     ### Methods
 
     `parse(self, value: SFT) ‑> ~SFT`
@@ -157,11 +132,6 @@ Classes
     * abc.ABC
     * typing.Generic
 
-    ### Static methods
-
-    `combine_values(values: Sequence[str]) ‑> str`
-    :
-
 `StringList(name: str, schema_obj: SchemaObjectT)`
 :   Field of a schema that represents a list of strings.
 
@@ -171,11 +141,6 @@ Classes
     * superlinked.framework.common.interface.comparison_operand.ComparisonOperand
     * abc.ABC
     * typing.Generic
-
-    ### Static methods
-
-    `combine_values(values: Sequence[list[str]]) ‑> list[str]`
-    :
 
     ### Methods
 
@@ -193,8 +158,3 @@ Classes
     * superlinked.framework.common.interface.comparison_operand.ComparisonOperand
     * abc.ABC
     * typing.Generic
-
-    ### Static methods
-
-    `combine_values(values: Sequence[int]) ‑> int`
-    :

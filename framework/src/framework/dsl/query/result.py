@@ -65,6 +65,10 @@ class Result:
         return self.query_descriptor.schema
 
     @property
+    def entities(self) -> list[SearchResultItem]:
+        return [entry.entity for entry in self.entries]
+
+    @property
     def knn_params(self) -> dict[str, Any]:
         return self.query_descriptor.calculate_value_by_param_name()
 

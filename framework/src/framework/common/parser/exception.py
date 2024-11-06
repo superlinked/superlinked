@@ -23,6 +23,10 @@ class DuplicateIdException(ParseException):
     pass
 
 
+class MissingFieldException(ParseException):
+    pass
+
+
 class MissingIdException(ParseException):
     pass
 

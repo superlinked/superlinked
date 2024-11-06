@@ -76,11 +76,7 @@ class DefaultOnlineNode(OnlineNode[NT, NodeDataT], ABC, Generic[NT, NodeDataT]):
         parent_results: list[dict[OnlineNode, EvaluationResult]],
     ) -> list[list[NodeDataT]]:
         batch_size = len(parsed_schemas)
-        if context.is_query_context:
-            return [[]] * batch_size
-        chunked_parent_results = self.__filter_chunked_parent_results(
-            context, parent_results
-        )
+        chunked_parent_results = self.__filter_chunked_parent_results(parent_results)
         chunk_inputs_per_parsed_schema: list[list[ParentResults]] = [
             [
                 self.__get_chunk_input(
@@ -150,11 +146,8 @@ class DefaultOnlineNode(OnlineNode[NT, NodeDataT], ABC, Generic[NT, NodeDataT]):
 
     def __filter_chunked_parent_results(
         self,
-        context: ExecutionContext,
         parent_results: list[dict[OnlineNode, EvaluationResult]],
     ) -> list[dict[OnlineNode, EvaluationResult]]:
-        if context.is_query_context:
-            return [] * len(parent_results)
         return [
             {
                 parent: result

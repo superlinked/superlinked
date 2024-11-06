@@ -20,20 +20,25 @@ from beartype.typing import Generic, Mapping, Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.dag.node import NT, NodeDataT
-from superlinked.framework.common.data_types import PythonTypes
+from superlinked.framework.common.dag.node import NT
 from superlinked.framework.query.dag.exception import QueryEvaluationException
+from superlinked.framework.query.dag.query_evaluation_data_types import (
+    QueryEvaluationResult,
+    QueryEvaluationResultT,
+)
 from superlinked.framework.query.dag.query_node import QueryNode
 from superlinked.framework.query.query_node_input import QueryNodeInput
 
 
-class QueryNodeWithParent(QueryNode[NT, NodeDataT], Generic[NT, NodeDataT]):
+class QueryNodeWithParent(
+    QueryNode[NT, QueryEvaluationResultT], Generic[NT, QueryEvaluationResultT]
+):
     @override
     def evaluate(
         self,
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,
-    ) -> NodeDataT:
+    ) -> QueryEvaluationResult[QueryEvaluationResultT]:
         propagated_inputs = self._propagate_inputs_to_invert(inputs, context)
         parent_results = self._evaluate_parents(propagated_inputs, context)
         self._validate_parent_results(parent_results)
@@ -54,19 +59,21 @@ class QueryNodeWithParent(QueryNode[NT, NodeDataT], Generic[NT, NodeDataT]):
                     + f"be inverted {inputs_to_invert} is prohibited."
                 )
             if len(self.parents) == 1:
-                return QueryNodeWithParent._merge_inputs(
+                return self._merge_inputs(
                     [inputs, {self.parents[0].node_id: inputs_to_invert}]
                 )
         return dict(inputs)
 
     def _evaluate_parents(
         self, inputs: Mapping[str, Sequence[QueryNodeInput]], context: ExecutionContext
-    ) -> list[PythonTypes]:
+    ) -> list[QueryEvaluationResult]:
         return [
             parent.evaluate_with_validation(inputs, context) for parent in self.parents
         ]
 
-    def _validate_parent_results(self, parent_results: list[PythonTypes]) -> None:
+    def _validate_parent_results(
+        self, parent_results: Sequence[QueryEvaluationResult]
+    ) -> None:
         if len(parent_results) != len(self.parents):
             raise QueryEvaluationException(
                 f"Mismatching number of parents {len(self.parents)} "
@@ -75,19 +82,6 @@ class QueryNodeWithParent(QueryNode[NT, NodeDataT], Generic[NT, NodeDataT]):
 
     @abstractmethod
     def _evaluate_parent_results(
-        self, parent_results: list[PythonTypes], context: ExecutionContext
-    ) -> NodeDataT:
+        self, parent_results: Sequence[QueryEvaluationResult], context: ExecutionContext
+    ) -> QueryEvaluationResult[QueryEvaluationResultT]:
         pass
-
-    @staticmethod
-    def _merge_inputs(
-        inputs: Sequence[Mapping[str, Sequence[QueryNodeInput]]],
-    ) -> dict[str, Sequence[QueryNodeInput]]:
-        if not inputs:
-            return {}
-        merged_inputs_dict = dict(inputs[0])
-        for inputs_item in inputs[1:]:
-            for node_id, input_ in inputs_item.items():
-                node_inputs = list(merged_inputs_dict.get(node_id, [])) + list(input_)
-                merged_inputs_dict.update({node_id: node_inputs})
-        return merged_inputs_dict

@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from types import UnionType
 
-from beartype.typing import Generic, Sequence, TypeVar, cast
+from beartype.typing import Generic, TypeVar, cast
 from typing_extensions import override
 
 from superlinked.framework.common.exception import InitializationException
@@ -62,12 +62,6 @@ class SchemaReference(SchemaField[str], HasMultiplier, Generic[RST]):
             f"referenced_schema={self._referenced_schema})"
         )
 
-    @staticmethod
-    def combine_values(values: Sequence[str]) -> str:
-        raise NotImplementedError(
-            f"{SchemaReference.__name__}'s values cannot be combined."
-        )
-
     @property
     def _referenced_schema(self) -> type[IdSchemaObject]:
         return self.__referenced_schema
@@ -108,10 +102,6 @@ class CreatedAtField(SchemaField[int]):
 
     def __init__(self, schema_obj: SchemaObjectT, created_at_field_name: str) -> None:
         super().__init__(created_at_field_name, schema_obj, int)
-
-    @staticmethod
-    def combine_values(values: Sequence[int]) -> int:
-        return int(sum(values) / len(values))
 
 
 class EventSchemaObject(IdSchemaObject):

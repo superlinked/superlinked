@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+from beartype.typing import cast
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
@@ -21,6 +22,9 @@ from superlinked.framework.common.dag.number_embedding_node import NumberEmbeddi
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
+from superlinked.framework.common.space.config.embedding.number_embedding_config import (
+    NumberEmbeddingConfig,
+)
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.transform.transform import Step
 from superlinked.framework.common.transform.transformation_factory import (
@@ -52,6 +56,9 @@ class OnlineNumberEmbeddingNode(
                 self.node.transformation_config
             )
         )
+        self.embedding_config = cast(
+            NumberEmbeddingConfig, self.node.transformation_config.embedding_config
+        )
 
     @property
     @override
@@ -75,9 +82,7 @@ class OnlineNumberEmbeddingNode(
         parsed_schema: ParsedSchema,
         context: ExecutionContext,
     ) -> EvaluationResult[Vector]:
-        if self.node.transformation_config.embedding_config.should_return_default(
-            context
-        ):
+        if self.embedding_config.should_return_default(context):
             result = self.node.transformation_config.embedding_config.default_vector
         elif len(self.parents) == 0:
             result = self.load_stored_result_or_raise_exception(parsed_schema)

@@ -71,7 +71,7 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
         context: ExecutionContext,
     ) -> list[EvaluationResult[NodeDataT]]:
         results = self.evaluate_self(parsed_schemas, context)
-        if self.node.persist_evaluation_result and not context.is_query_context:
+        if self.node.persist_evaluation_result:
             for i, result in enumerate(results):
                 self.persist(result, parsed_schemas[i])
         return results

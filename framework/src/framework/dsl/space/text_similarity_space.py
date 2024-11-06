@@ -82,7 +82,7 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
             for unchecked_text in (text if isinstance(text, list) else [text])
         }
         super().__init__(list(text_text_node_map.keys()), String)
-        self.text = SpaceFieldSet(self, set(text_text_node_map.keys()))
+        self.text = SpaceFieldSet[str](self, set(text_text_node_map.keys()))
         self._schema_node_map: dict[SchemaObject, EmbeddingNode[Vector, str]] = {
             schema_field.schema_obj: node
             for schema_field, node in text_text_node_map.items()

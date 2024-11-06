@@ -280,7 +280,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
             schema=schema,
         )
         if not filtered_effects:
-            return space._get_node(schema)
+            return space._get_embedding_node(schema)
         aggregation_effect_group = AggregationEffectGroup.from_filtered_effects(
             filtered_effects
         )

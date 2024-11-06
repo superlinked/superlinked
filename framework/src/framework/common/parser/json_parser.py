@@ -148,8 +148,7 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, dict[str,
             return cast(SFT, str(parsed_value))
 
         if isinstance(field, Blob):
-            blob_input = cast(str, parsed_value)
-            return cast(SFT, self.blob_loader.load(blob_input))
+            return cast(SFT, self.blob_loader.load(parsed_value))
 
         return parsed_value
 

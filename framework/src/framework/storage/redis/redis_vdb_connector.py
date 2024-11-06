@@ -59,13 +59,13 @@ class RedisVDBConnector(VDBConnector):
     def close_connection(self) -> None:
         self._client.close()
 
-    @override
     @property
+    @override
     def supported_vector_indexing(self) -> Sequence[SearchAlgorithm]:
         return [SearchAlgorithm.FLAT, SearchAlgorithm.HNSW]
 
-    @override
     @property
+    @override
     def _default_search_limit(self) -> int:
         return self.__vdb_settings.default_query_limit
 
@@ -83,7 +83,7 @@ class RedisVDBConnector(VDBConnector):
             index_config.vector_field_descriptor, index_config.field_descriptors
         )
         self._client.ft(index_config.index_name).create_index(
-            fields, definition=index_def
+            list(fields), definition=index_def
         )
 
     @override
@@ -107,9 +107,12 @@ class RedisVDBConnector(VDBConnector):
             _pipeline.execute()
 
     def _read_entity(self, entity: Entity) -> EntityData:
-        encoded_field_values = self._client.hmget(
-            RedisVDBConnector._get_redis_id(entity.id_),
-            [field.name for field in entity.fields.values()],
+        encoded_field_values = cast(
+            list,
+            self._client.hmget(
+                RedisVDBConnector._get_redis_id(entity.id_),
+                [field.name for field in entity.fields.values()],
+            ),
         )
         return EntityData(
             entity.id_,

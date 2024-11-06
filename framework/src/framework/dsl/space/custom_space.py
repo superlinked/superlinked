@@ -68,7 +68,9 @@ class CustomSpace(Space[Vector, Vector], HasSpaceFieldSet):
               consistency in vector operations.
         """
         super().__init__(vector, FloatList)
-        self.vector = SpaceFieldSet(self, self._field_set)
+        self.vector = SpaceFieldSet[list[float]](
+            self, set(vector if isinstance(vector, list) else [vector])
+        )
         self._transformation_config = self._init_transformation_config(length)
         self._schema_node_map = self._calculate_schema_node_map(
             self._transformation_config
@@ -133,7 +135,7 @@ class CustomSpace(Space[Vector, Vector], HasSpaceFieldSet):
                 parent=SchemaFieldNode(vector_schema_field),
                 transformation_config=transformation_config,
             )
-            for vector_schema_field in self._field_set
+            for vector_schema_field in self.vector.fields
         }
         schema_node_map: dict[SchemaObject, EmbeddingNode[Vector, Vector]] = {
             schema_field.schema_obj: node

@@ -70,7 +70,7 @@ class OnlineApp(App[OnlineSourceT], Generic[OnlineSourceT], QueryMixin):
         super().__init__(sources, indices, vector_database, context)
         self._data_processors: list[OnlineDataProcessor] = []
 
-        self.setup_query_execution(self._indices, self.storage_manager)
+        self.setup_query_execution(self._indices)
         self._init_search_indices()
         self.__setup_sources()
         if queue is not None:

@@ -111,7 +111,9 @@ class RecencySpace(
         self._aggregation_config_type_by_mode = (
             self.__init_aggregation_config_type_by_mode()
         )
-        self.timestamp = SpaceFieldSet(self, self._field_set)
+        self.timestamp = SpaceFieldSet[int](
+            self, set(timestamp if isinstance(timestamp, list) else [timestamp])
+        )
         recency_periods: list[PeriodTime] = (
             period_time_list
             if isinstance(period_time_list, list)

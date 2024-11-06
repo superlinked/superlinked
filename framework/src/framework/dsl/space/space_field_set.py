@@ -14,9 +14,10 @@
 
 from dataclasses import dataclass
 
-from beartype.typing import Any, Generic
+from beartype.typing import Any, Generic, cast
 
-from superlinked.framework.common.schema.id_schema_object import SchemaField
+from superlinked.framework.common.data_types import PythonTypes
+from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.dsl.space.space import SIT, Space
 
 
@@ -30,10 +31,13 @@ class SpaceFieldSet(Generic[SIT]):
     """
 
     space: Space
-    fields: set[SIT]
+    fields: set[SchemaField]
 
     def __post_init__(self) -> None:
         self.__schema_field_map = {field.schema_obj: field for field in self.fields}
+
+    def _generate_space_input(self, value: PythonTypes) -> SIT:
+        return cast(SIT, value)
 
     def get_field_for_schema(self, schema_: Any) -> SchemaField | None:
         return self.__schema_field_map.get(schema_)

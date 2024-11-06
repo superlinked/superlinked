@@ -14,7 +14,7 @@
 
 from types import UnionType
 
-from beartype.typing import Sequence, TypeVar, cast
+from beartype.typing import TypeVar, cast
 
 from superlinked.framework.common.schema.schema_object import (
     ConcreteSchemaField,
@@ -33,10 +33,6 @@ class IdField(SchemaField[str]):
 
     def __init__(self, schema_obj: SchemaObjectT, id_field_name: str) -> None:
         super().__init__(id_field_name, schema_obj, str)
-
-    @staticmethod
-    def combine_values(values: Sequence[str]) -> str:
-        return ", ".join(values)
 
 
 class IdSchemaObject(SchemaObject):

@@ -14,13 +14,39 @@
 
 from __future__ import annotations
 
-from beartype.typing import Sequence
+from beartype.typing import Mapping, Sequence
+from typing_extensions import override
 
+from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.recency_node import RecencyNode
-from superlinked.framework.query.dag.query_embedding_node import QueryEmbeddingNode
+from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.interface.weighted import Weighted
+from superlinked.framework.query.dag.query_embedding_orphan_node import (
+    QueryEmbeddingOrphanNode,
+)
+from superlinked.framework.query.dag.query_evaluation_data_types import (
+    QueryEvaluationResult,
+)
 from superlinked.framework.query.dag.query_node import QueryNode
+from superlinked.framework.query.query_node_input import QueryNodeInput
 
 
-class QueryRecencyNode(QueryEmbeddingNode[int, int]):
+class QueryRecencyNode(QueryEmbeddingOrphanNode[int, RecencyNode, int]):
     def __init__(self, node: RecencyNode, parents: Sequence[QueryNode]) -> None:
         super().__init__(node, parents, int)
+
+    @override
+    def evaluate(
+        self,
+        inputs: Mapping[str, Sequence[QueryNodeInput]],
+        context: ExecutionContext,
+    ) -> QueryEvaluationResult[Vector]:
+        return super().evaluate(
+            self._merge_inputs(
+                [
+                    inputs,
+                    {self.node_id: [QueryNodeInput(Weighted(context.now()), False)]},
+                ]
+            ),
+            context,
+        )

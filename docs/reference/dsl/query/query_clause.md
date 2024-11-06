@@ -173,8 +173,8 @@ Classes
     `get_value(self) ‑> float | None`
     :
 
-`SimilarFilterClause(value_param: Param | Evaluated[Param], weight_param: Param | Evaluated[Param], space: Space, schema_field: SchemaField)`
-:   SimilarFilterClause(value_param: 'Param | Evaluated[Param]', weight_param: 'Param | Evaluated[Param]', space: 'Space', schema_field: 'SchemaField')
+`SimilarFilterClause(value_param: Param | Evaluated[Param], weight_param: Param | Evaluated[Param], field_set: SpaceFieldSet, schema_field: SchemaField)`
+:   SimilarFilterClause(value_param: 'Param | Evaluated[Param]', weight_param: 'Param | Evaluated[Param]', field_set: 'SpaceFieldSet', schema_field: 'SchemaField')
 
     ### Ancestors (in MRO)
 
@@ -184,10 +184,15 @@ Classes
 
     ### Class variables
 
+    `field_set: superlinked.framework.dsl.space.space_field_set.SpaceFieldSet`
+    :
+
     `schema_field: superlinked.framework.common.schema.schema_object.SchemaField`
     :
 
-    `space: superlinked.framework.dsl.space.space.Space`
+    ### Instance variables
+
+    `space: Space`
     :
 
     ### Methods

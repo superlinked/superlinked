@@ -14,6 +14,7 @@
 
 import mimetypes
 from abc import abstractmethod
+from urllib.parse import unquote, urlparse
 
 from superlinked.framework.blob.blob_metadata import BlobMetadata
 from superlinked.framework.common.schema.blob_information import BlobInformation
@@ -22,19 +23,37 @@ from superlinked.framework.common.schema.blob_information import BlobInformation
 class BlobHandler:
     @abstractmethod
     def upload(
-        self, name: str, data: bytes, metadata: BlobMetadata | None = None
+        self, object_key: str, data: bytes, metadata: BlobMetadata | None = None
     ) -> None:
         pass
 
-    def calculate_metadata(self, blob_info: BlobInformation) -> BlobMetadata:
-        file_name = blob_info.path.split("/")[-1] if blob_info.path else None
-        content_type = self._determine_content_type(file_name)
-        return BlobMetadata(content_type=content_type, original_file_name=file_name)
+    @abstractmethod
+    def download(self, object_key: str) -> bytes:
+        pass
 
-    def _determine_content_type(self, file_name: str | None) -> str:
+    @abstractmethod
+    def get_supported_cloud_storage_scheme(self) -> str:
+        pass
+
+    def calculate_metadata(self, blob_info: BlobInformation) -> BlobMetadata:
+        last_url_segment = self._get_last_url_segment(blob_info.path)
+        content_type = self._determine_content_type(last_url_segment)
+        return BlobMetadata(
+            content_type=content_type, original_file_name=last_url_segment
+        )
+
+    def _get_last_url_segment(self, url: str | None) -> str | None:
+        path = urlparse(url).path
+
+        if isinstance(path, bytes):
+            path = path.decode("utf-8")
+
+        return unquote(path).rsplit("/", 1)[-1] if path else None
+
+    def _determine_content_type(self, last_url_segment: str | None) -> str:
         content_type = "application/octet-stream"
-        if file_name is not None:
-            guessed_content_type, _ = mimetypes.guess_type(file_name)
+        if last_url_segment:
+            guessed_content_type, _ = mimetypes.guess_type(last_url_segment)
             if guessed_content_type is not None:
                 content_type = guessed_content_type
         return content_type

@@ -20,10 +20,13 @@ from typing_extensions import override
 from superlinked.framework.common.dag.aggregation_node import AggregationNode
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import Node
-from superlinked.framework.common.data_types import PythonTypes, Vector
+from superlinked.framework.common.data_types import Vector
 from superlinked.framework.query.dag.exception import (
     QueryDagInitializationException,
     QueryEvaluationException,
+)
+from superlinked.framework.query.dag.query_evaluation_data_types import (
+    QueryEvaluationResult,
 )
 from superlinked.framework.query.dag.query_node import QueryNode
 from superlinked.framework.query.dag.query_node_with_parent import QueryNodeWithParent
@@ -41,13 +44,15 @@ class QueryAggregationNode(QueryNodeWithParent[AggregationNode, Vector]):
 
     @override
     def _evaluate_parent_results(
-        self, parent_results: list[PythonTypes], context: ExecutionContext
-    ) -> Vector:
+        self,
+        parent_results: Sequence[QueryEvaluationResult],
+        context: ExecutionContext,
+    ) -> QueryEvaluationResult[Vector]:
         if len(parent_results) != 1:
             raise QueryEvaluationException(
                 f"{type(self).__name__} can only evaluate exactly 1 parent result."
             )
-        if not isinstance(parent_results[0], Vector):
+        if not isinstance(parent_results[0].value, Vector):
             raise QueryEvaluationException(
                 f"{type(self).__name__} can only evaluate vector type parent result."
             )

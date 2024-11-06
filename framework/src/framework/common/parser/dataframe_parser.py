@@ -71,10 +71,8 @@ class DataFrameParser(
         if blob_cols := [
             key for key, value in schema_cols.items() if isinstance(value, Blob)
         ]:
-            data_copy[blob_cols] = data_copy[
-                blob_cols
-            ].applymap(  # type:ignore[operator]
-                self.blob_loader.load
+            data_copy[blob_cols] = data_copy[blob_cols].apply(
+                lambda col: col.map(self.blob_loader.load)
             )
 
         if self._is_event_data_parser:

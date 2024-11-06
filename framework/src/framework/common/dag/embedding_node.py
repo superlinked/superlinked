@@ -15,7 +15,7 @@
 
 from dataclasses import asdict
 
-from beartype.typing import Any, Generic
+from beartype.typing import Any, Generic, TypeVar
 from typing_extensions import override
 
 from superlinked.framework.common.dag.node import Node, NodeDataT
@@ -38,10 +38,10 @@ class EmbeddingNode(
 ):
     def __init__(
         self,
-        parent: Node[NodeDataT],
+        parents: list[Node],
         transformation_config: TransformationConfig[AggregationInputT, NodeDataT],
     ) -> None:
-        super().__init__(Vector, [parent])
+        super().__init__(Vector, parents)
         self._transformation_config = transformation_config
 
     @property
@@ -61,3 +61,6 @@ class EmbeddingNode(
         return {
             "transformation_config": asdict(self.transformation_config),
         }
+
+
+EmbeddingNodeT = TypeVar("EmbeddingNodeT", bound=EmbeddingNode)

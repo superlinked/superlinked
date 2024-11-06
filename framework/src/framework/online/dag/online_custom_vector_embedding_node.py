@@ -70,15 +70,6 @@ class OnlineCustomVectorEmbeddingNode(
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
     ) -> list[EvaluationResult[Vector]]:
-        if self.node.transformation_config.embedding_config.should_return_default(
-            context
-        ):
-            result = EvaluationResult(
-                self._get_single_evaluation_result(
-                    self.node.transformation_config.embedding_config.default_vector
-                )
-            )
-            return [result] * len(parsed_schemas)
         return [self.evaluate_self_single(schema, context) for schema in parsed_schemas]
 
     def evaluate_self_single(
@@ -94,14 +85,17 @@ class OnlineCustomVectorEmbeddingNode(
             OnlineNode[Node[Vector], list[float]], self.parents[0]
         ).evaluate_next_single(parsed_schema, context)
         input_value = input_.main.value
+        self._validate_input_value(input_value)
+        transformed_input_value = self.embedding_transformation.transform(
+            Vector(input_value), context
+        )
+        main = self._get_single_evaluation_result(transformed_input_value)
+        return EvaluationResult(main)
+
+    def _validate_input_value(self, input_value: list[float]) -> None:
         if len(input_value) != self.length:
             raise ValidationException(
                 f"{self.class_name} can only process `Vector` inputs"
                 + f" of size {self.length}"
                 + f", got {len(input_value)}"
             )
-        transformed_input_value = self.embedding_transformation.transform(
-            Vector(input_value), context
-        )
-        main = self._get_single_evaluation_result(transformed_input_value)
-        return EvaluationResult(main)

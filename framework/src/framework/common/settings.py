@@ -28,9 +28,12 @@ logger = structlog.getLogger()
 @singleton
 class Settings(BaseSettings):
     ONLINE_PUT_CHUNK_SIZE: int = 10000
+    SENTENCE_TRANSFORMERS_MODEL_DIR: str | None = None
+    SENTENCE_TRANSFORMERS_MODEL_LOCK_MAX_RETRIES: int = 10
+    SENTENCE_TRANSFORMERS_MODEL_LOCK_RETRY_DELAY: int = 1
     GPU_EMBEDDING_THRESHOLD: int = 0
     DISABLE_RICH_TRACEBACK: bool = False
-    SUPERLINKED_LOG_LEVEL: int | None = None
+    SUPERLINKED_LOG_LEVEL: int | str | None = None
     SUPERLINKED_LOG_AS_JSON: bool = False
     SUPERLINKED_LOG_FILE_PATH: str | None = None
     SUPERLINKED_EXPOSE_PII: bool = False

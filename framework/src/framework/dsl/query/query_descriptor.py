@@ -153,7 +153,6 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
             if isinstance(space_field_set, HasSpaceFieldSet)
             else space_field_set
         )
-        space = field_set.space
         schema_field = field_set.get_field_for_schema(self.schema)
         if not schema_field:
             raise InvalidSchemaException(
@@ -161,7 +160,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
             )
         value_param = self.__to_param(param)
         weight_param = self.__to_param(weight)
-        clause = SimilarFilterClause(value_param, weight_param, space, schema_field)
+        clause = SimilarFilterClause(value_param, weight_param, field_set, schema_field)
         altered_query_descriptor = self.__append_clause(clause)
         return altered_query_descriptor
 
@@ -360,18 +359,31 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
             clauses.append(LimitClause(Param.init_evaluated(constants.DEFAULT_LIMIT)))
         if self.get_clause_by_type(RadiusClause) is None:
             clauses.append(RadiusClause(Param.init_evaluated(None)))
+        weight_to_set_by_space = self._calculate_weight_by_missing_space()
+        clauses.extend(
+            SpaceWeightClause(Param.init_evaluated(weight), space)
+            for space, weight in weight_to_set_by_space.items()
+        )
+        return self.__append_clauses(clauses)
+
+    def _calculate_weight_by_missing_space(self) -> dict[Space, float]:
         spaces_with_weights = {
             clause.space for clause in self.get_clauses_by_type(SpaceWeightClause)
         }
         missing_spaces = {
             space for space in self.index._spaces if space not in spaces_with_weights
         }
-        clauses.extend(
-            SpaceWeightClause(Param.init_evaluated(constants.DEFAULT_WEIGHT), space)
+        if self.get_looks_like_filter() is not None:
+            return {space: constants.DEFAULT_WEIGHT for space in missing_spaces}
+        similar_filter_spaces = self.get_similar_filters().keys()
+        return {
+            space: (
+                constants.DEFAULT_WEIGHT
+                if space in similar_filter_spaces
+                else constants.DEFAULT_NOT_AFFECTING_WEIGHT
+            )
             for space in missing_spaces
-        )
-
-        return self.__append_clauses(clauses)
+        }
 
     def get_clause_by_type(
         self, clause_type: Type[QueryClauseT]
@@ -468,7 +480,6 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
 
 
 class QueryDescriptorValidator:
-
     @staticmethod
     def validate(query_descriptor: QueryDescriptor) -> None:
         QueryDescriptorValidator.__validate_schema(query_descriptor)
@@ -507,15 +518,7 @@ class QueryDescriptorValidator:
     @staticmethod
     def __validate_similar_clauses(query_descriptor: QueryDescriptor) -> None:
         clauses = query_descriptor.get_clauses_by_type(SimilarFilterClause)
-        space_schema_pairs = set()
-        for clause in clauses:
-            space_schema_pair = (clause.space, type(clause.schema_field))
-            if space_schema_pair in space_schema_pairs:
-                raise QueryException(
-                    f"Attempted to bound similar clause for {type(clause.space).__name__} in Query multiple times."
-                )
-            space_schema_pairs.add(space_schema_pair)
-        for space, _ in space_schema_pairs:
+        for space in [clause.field_set.space for clause in clauses]:
             if not query_descriptor.index.has_space(space):
                 raise QueryException(
                     f"Space isn't present in the index: {type(space).__name__}."

@@ -10,6 +10,7 @@ Sub-modules
 * superlinked.framework.dsl.space.exception
 * superlinked.framework.dsl.space.has_space_field_set
 * superlinked.framework.dsl.space.image_space
+* superlinked.framework.dsl.space.image_space_field_set
 * superlinked.framework.dsl.space.input_aggregation_mode
 * superlinked.framework.dsl.space.number_space
 * superlinked.framework.dsl.space.recency_space

@@ -73,6 +73,7 @@
     * [Categorical Similarity Space](reference/dsl/space/categorical_similarity_space.md)
     * [Space](reference/dsl/space/space.md)
     * [Space Field Set](reference/dsl/space/space_field_set.md)
+    * [Image Space Field Set](reference/dsl/space/image_space_field_set.md)
     * [Image Space](reference/dsl/space/image_space.md)
     * [Has Space Field Set](reference/dsl/space/has_space_field_set.md)
     * [Recency Space](reference/dsl/space/recency_space.md)

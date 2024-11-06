@@ -19,11 +19,15 @@ from abc import ABC, abstractmethod
 from beartype.typing import Generic, Mapping, Sequence
 
 from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.dag.node import NT, NodeDataT
+from superlinked.framework.common.dag.node import NT
+from superlinked.framework.query.dag.query_evaluation_data_types import (
+    QueryEvaluationResult,
+    QueryEvaluationResultT,
+)
 from superlinked.framework.query.query_node_input import QueryNodeInput
 
 
-class QueryNode(ABC, Generic[NT, NodeDataT]):
+class QueryNode(ABC, Generic[NT, QueryEvaluationResultT]):
     def __init__(self, node: NT, parents: Sequence[QueryNode]) -> None:
         super().__init__()
         self._node = node
@@ -41,7 +45,7 @@ class QueryNode(ABC, Generic[NT, NodeDataT]):
         self,
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,
-    ) -> NodeDataT:
+    ) -> QueryEvaluationResult[QueryEvaluationResultT]:
         self._validate_evaluation_inputs(inputs)
         return self.evaluate(inputs, context)
 
@@ -50,10 +54,23 @@ class QueryNode(ABC, Generic[NT, NodeDataT]):
         self,
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,
-    ) -> NodeDataT:
+    ) -> QueryEvaluationResult[QueryEvaluationResultT]:
         pass
 
     def _validate_evaluation_inputs(
         self, inputs: Mapping[str, Sequence[QueryNodeInput]]
     ) -> None:
         pass
+
+    def _merge_inputs(
+        self,
+        inputs: Sequence[Mapping[str, Sequence[QueryNodeInput]]],
+    ) -> dict[str, Sequence[QueryNodeInput]]:
+        if not inputs:
+            return {}
+        merged_inputs_dict = dict(inputs[0])
+        for inputs_item in inputs[1:]:
+            for node_id, input_ in inputs_item.items():
+                node_inputs = list(merged_inputs_dict.get(node_id, [])) + list(input_)
+                merged_inputs_dict.update({node_id: node_inputs})
+        return merged_inputs_dict

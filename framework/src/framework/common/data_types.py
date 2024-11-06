@@ -14,10 +14,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-
 import numpy as np
-from beartype.typing import Any, Sequence
+from beartype.typing import Any, Mapping, Sequence
 
 from superlinked.framework.common.exception import (
     MismatchingDimensionException,
