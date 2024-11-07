@@ -51,6 +51,7 @@ SUPPORTED_FILTER_DICT = {
     ComparisonOperationType.NOT_IN: "$nin",
     ComparisonOperationType.CONTAINS: "$in",
     ComparisonOperationType.NOT_CONTAINS: "$nin",
+    # ComparisonOperationType.CONTAINS_ALL is not supported, splitting it into multiple CONTAINS
 }
 
 
@@ -136,7 +137,25 @@ class MongoQuery:
     def _compile_filters(
         self, filters: Sequence[ComparisonOperation[Field]]
     ) -> Sequence[VDBFilter]:
-        return [self._compile_filter(filter_) for filter_ in filters]
+        contains_all_filters = []
+        other_filters = []
+
+        for filter_ in filters:
+            if filter_._op == ComparisonOperationType.CONTAINS_ALL:
+                contains_all_filters.append(filter_)
+            else:
+                other_filters.append(filter_)
+
+        split_contains_filters = [
+            contains_filter._operand.contains([value])
+            for contains_filter in contains_all_filters
+            for value in cast(Iterable, contains_filter._other)
+        ]
+
+        return [
+            self._compile_filter(filter_)
+            for filter_ in other_filters + split_contains_filters
+        ]
 
     def _compile_filter(self, filter_: ComparisonOperation[Field]) -> VDBFilter:
         field_value = (

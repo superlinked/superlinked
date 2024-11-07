@@ -42,6 +42,7 @@ class ComparisonOperand(ABC, Generic[COT]):
             ComparisonOperationType.NOT_IN: self._built_in_not_in,
             ComparisonOperationType.CONTAINS: self._built_in_contains,
             ComparisonOperationType.NOT_CONTAINS: self._built_in_not_contains,
+            ComparisonOperationType.CONTAINS_ALL: self._built_in_contains_all,
         }
 
     def in_(self, __value: object) -> ComparisonOperation[COT]:
@@ -55,6 +56,9 @@ class ComparisonOperand(ABC, Generic[COT]):
 
     def not_contains(self, __value: object) -> ComparisonOperation[COT]:
         return ComparisonOperation(ComparisonOperationType.NOT_CONTAINS, self, __value)
+
+    def contains_all(self, __value: object) -> ComparisonOperation[COT]:
+        return ComparisonOperation(ComparisonOperationType.CONTAINS_ALL, self, __value)
 
     @property
     def _built_in_operation_mapping(
@@ -145,6 +149,12 @@ class ComparisonOperand(ABC, Generic[COT]):
 
     @staticmethod
     def _built_in_not_contains(
+        left_operand: ComparisonOperand[COT], right_operand: object
+    ) -> bool:
+        raise NotImplementedError()
+
+    @staticmethod
+    def _built_in_contains_all(
         left_operand: ComparisonOperand[COT], right_operand: object
     ) -> bool:
         raise NotImplementedError()
@@ -249,6 +259,8 @@ class ComparisonOperation(Generic[COT]):
                 result = self.__evaluate_contains(value)
             case ComparisonOperationType.NOT_CONTAINS:
                 result = self.__evaluate_not_contains(value)
+            case ComparisonOperationType.CONTAINS_ALL:
+                result = self.__evaluate_contains_all(value)
             case _:
                 raise ValueError(f"Unsupported operation type: {self._op}")
         return result
@@ -282,14 +294,17 @@ class ComparisonOperation(Generic[COT]):
         return value not in self._other
 
     def __evaluate_contains(self, value: Any) -> bool:
-        """Checks if Iterable self contains any of the values in `value`"""
         if not isinstance(self._other, Iterable):
             raise ValueError("Operand must be iterable.")
         return value is not None and any(other in value for other in self._other)
 
     def __evaluate_not_contains(self, value: Any) -> bool:
-        """Checks if Iterable self contains none of the values in `value`"""
         return value is not None and not self.__evaluate_contains(value)
+
+    def __evaluate_contains_all(self, value: Any) -> bool:
+        if not isinstance(self._other, Iterable):
+            raise ValueError("Operand must be iterable.")
+        return value is None or all(other in value for other in self._other)
 
     @staticmethod
     def _group_filters_by_group_key(

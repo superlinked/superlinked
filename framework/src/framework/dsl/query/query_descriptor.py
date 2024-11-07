@@ -279,6 +279,8 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
             - returns both bright and matte colors
         filter(color_schema.categories.not_contains(["bright", "matte"]))
             - returns colors that are non-bright and non-matte
+        filter(color_schema.categories.contains_all(["bright", "blue"]))
+            - returns colors that are bright and blue at the same time
         Args:
             comparison_operation ComparisonOperation[SchemaField]: The comparison operation.
 

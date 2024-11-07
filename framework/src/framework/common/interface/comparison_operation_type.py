@@ -26,6 +26,7 @@ class ComparisonOperationType(Enum):
     NOT_IN = "not_be_in"
     CONTAINS = "contain"
     NOT_CONTAINS = "not_contain"
+    CONTAINS_ALL = "contain_all_of"
 
 
 ITERABLE_COMPARISON_OPERATION_TYPES = [
@@ -36,4 +37,5 @@ ITERABLE_COMPARISON_OPERATION_TYPES = [
 LIST_TYPE_COMPATIBLE_TYPES = ITERABLE_COMPARISON_OPERATION_TYPES + [
     ComparisonOperationType.CONTAINS,
     ComparisonOperationType.NOT_CONTAINS,
+    ComparisonOperationType.CONTAINS_ALL,
 ]

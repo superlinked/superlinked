@@ -42,6 +42,7 @@ TEXT_OPERATOR_MAP: dict[ComparisonOperationType, str] = {
 STRING_LIST_OPERATOR_MAP: dict[ComparisonOperationType, str] = {
     ComparisonOperationType.CONTAINS: "@%s:{%s}",
     ComparisonOperationType.NOT_CONTAINS: "-@%s:{%s}",
+    ComparisonOperationType.CONTAINS_ALL: "@%s:{%s}",  # splitting it into multiple CONTAINS
 }
 
 
@@ -63,6 +64,13 @@ class RedisFilter(VDBFilter):
         ]:
             value = " | ".join(self.field_value.decode("utf-8").split(", "))
             return self._fill_template(operator_map, self.op, value)
+        if self.op == ComparisonOperationType.CONTAINS_ALL:
+            values = [
+                self._fill_template(operator_map, self.op, value)
+                for value in self.field_value.decode("utf-8").split(", ")
+            ]
+            value_text = " ".join(values)
+            return f"({value_text})"
         if self.op in operator_map:
             return self._fill_template(operator_map, self.op, self.field_value)
         raise NotImplementedError(f"Unsupported comparison operation: {self.op}")
