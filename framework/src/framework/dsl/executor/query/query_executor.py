@@ -108,6 +108,7 @@ class QueryExecutor:
         return Result(
             self._map_entities_to_result_entries(query_descriptor.schema, entities),
             query_descriptor,
+            knn_search_params.vector,
         )
 
     def _produce_knn_search_params(

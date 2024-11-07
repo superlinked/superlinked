@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from beartype.typing import Any, Sequence
 from pandas import DataFrame
 
+from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.storage_manager.search_result_item import (
     SearchResultItem,
@@ -49,16 +50,16 @@ class ResultEntry:
 @dataclass(frozen=True)
 class Result:
     """
-    A class representing the result of a query.
-
+    Represents the outcome of a query operation.
     Attributes:
-        schema (IdSchemaObject): The schema of the result.
-        entries (Sequence[ResultEntry]): A list of result entries.
-        query_descriptor (QueryDescriptor): The final form of QueryDescriptor used in the query.
+        entries (Sequence[ResultEntry]): A sequence of result entries, each encapsulating an entity and its data.
+        query_descriptor (QueryDescriptor): The descriptor detailing the query's parameters and structure.
+        search_vector (Vector): The vector used in the search operation.
     """
 
     entries: Sequence[ResultEntry]
     query_descriptor: QueryDescriptor
+    search_vector: Vector
 
     @property
     def schema(self) -> IdSchemaObject:
