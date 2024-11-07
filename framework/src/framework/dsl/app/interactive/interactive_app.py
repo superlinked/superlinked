@@ -52,3 +52,10 @@ class InteractiveApp(OnlineApp[InteractiveSource]):
             context,
             NoOpQueue(),
         )
+        self._allow_data_ingestion_for_sources(sources)
+
+    def _allow_data_ingestion_for_sources(
+        self, sources: Sequence[InteractiveSource]
+    ) -> None:
+        for source in sources:
+            source.allow_data_ingestion()

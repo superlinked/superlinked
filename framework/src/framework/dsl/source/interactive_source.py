@@ -59,10 +59,14 @@ class InteractiveSource(
                 DataParser[IdSchemaObjectT, SourceTypeT], parser or JsonParser(schema)
             ),
         )
+        self.__can_accept_data = False
         if not isinstance(schema, IdSchemaObject):
             raise InitializationException(
                 f"Parameter `schema` is of invalid type: {schema.__class__.__name__}"
             )
+
+    def allow_data_ingestion(self) -> None:
+        self.__can_accept_data = True
 
     @override
     def put(self, data: Sequence[SourceTypeT]) -> None:
@@ -74,4 +78,9 @@ class InteractiveSource(
             data (list[SourceTypeT]): The data to put.
         """
         # Calls the parent, override is only necessary for adding the docstring.
+        if not self.__can_accept_data:
+            raise InitializationException(
+                "Data ingestion is not allowed until executor.run() has been executed. "
+                "Please ensure the executor is running before attempting to ingest data."
+            )
         super().put(data)
