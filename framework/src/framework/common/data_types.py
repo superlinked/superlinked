@@ -33,8 +33,6 @@ NP_PRINT_PRECISION = 6
 
 
 class Vector:
-    EMPTY_VECTOR: Vector | None = None
-
     def __init__(
         self,
         value: Sequence[float] | Sequence[np.float64] | NPArray,
@@ -65,9 +63,7 @@ class Vector:
 
     @staticmethod
     def empty_vector() -> Vector:
-        if Vector.EMPTY_VECTOR is None:
-            Vector.EMPTY_VECTOR = Vector([])
-        return Vector.EMPTY_VECTOR
+        return Vector([])
 
     @property
     def negative_filter_indices(self) -> frozenset[int]:
@@ -75,7 +71,7 @@ class Vector:
 
     @property
     def is_empty(self) -> bool:
-        return self == Vector.EMPTY_VECTOR
+        return self.dimension == 0
 
     @property
     def without_negative_filter(self) -> Vector:
