@@ -4,13 +4,12 @@ Module superlinked.framework.dsl.query.result
 Classes
 -------
 
-`Result(entries: collections.abc.Sequence[superlinked.framework.dsl.query.result.ResultEntry], query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor)`
-:   A class representing the result of a query.
-    
+`Result(entries: collections.abc.Sequence[superlinked.framework.dsl.query.result.ResultEntry], query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor, search_vector: superlinked.framework.common.data_types.Vector)`
+:   Represents the outcome of a query operation.
     Attributes:
-        schema (IdSchemaObject): The schema of the result.
-        entries (Sequence[ResultEntry]): A list of result entries.
-        query_descriptor (QueryDescriptor): The final form of QueryDescriptor used in the query.
+        entries (Sequence[ResultEntry]): A sequence of result entries, each encapsulating an entity and its data.
+        query_descriptor (QueryDescriptor): The descriptor detailing the query's parameters and structure.
+        search_vector (Vector): The vector used in the search operation.
 
     ### Class variables
 
@@ -18,6 +17,9 @@ Classes
     :
 
     `query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    :
+
+    `search_vector: superlinked.framework.common.data_types.Vector`
     :
 
     ### Instance variables
