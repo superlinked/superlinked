@@ -128,6 +128,7 @@
 * [Overview](use-cases/overview.md)
 * [Semantic Search - News](use-cases/semantic-search-news.md)
 * [Semantic Search - Movies](use-cases/semantic-search-movies.md)
+* [Semantic Search - Product Images & Descriptions](use-cases/semantic-search-product-images-descriptions.md)
 * [RecSys - Ecommerce](use-cases/recsys-ecomm.md)
 * [RAG - HR](use-cases/rag-hr.md)
 * [Analytics - User Acquisition](use-cases/analytics-user-acquisition.md)
