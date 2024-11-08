@@ -22,7 +22,10 @@ from PIL.Image import Image
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.settings import Settings
 
-DEFAULT_MODEL_CACHE_DIR = (Path.home() / ".cache" / "models").absolute().as_posix()
+SENTENCE_TRANSFORMERS_ORG_NAME = "sentence-transformers"
+DEFAULT_MODEL_CACHE_DIR = (
+    (Path.home() / ".cache" / SENTENCE_TRANSFORMERS_ORG_NAME).absolute().as_posix()
+)
 
 
 class ModelManager(ABC):

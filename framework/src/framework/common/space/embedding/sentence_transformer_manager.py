@@ -30,7 +30,10 @@ from typing_extensions import override
 
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.settings import Settings
-from superlinked.framework.common.space.embedding.model_manager import ModelManager
+from superlinked.framework.common.space.embedding.model_manager import (
+    SENTENCE_TRANSFORMERS_ORG_NAME,
+    ModelManager,
+)
 from superlinked.framework.common.util.gpu_embedding_util import GpuEmbeddingUtil
 
 logger = structlog.getLogger()
@@ -38,7 +41,6 @@ logger = structlog.getLogger()
 MODEL_DIMENSION = "hidden_size"
 MAIN_REF_FILE_PATH = "{model_folder}/refs/main"
 CONFIG_FILE_PATH = "{model_folder}/snapshots/{snapshot}/config.json"
-SENTENCE_TRANSFORMERS_ORG_NAME = "sentence-transformers"
 
 
 class SentenceTransformerManager(ModelManager):
