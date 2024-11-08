@@ -55,13 +55,21 @@ from superlinked.framework.dsl.executor.in_memory.in_memory_executor import (
 from superlinked.framework.dsl.executor.interactive.interactive_executor import (
     InteractiveExecutor,
 )
+from superlinked.framework.dsl.executor.rest.rest_executor import RestExecutor
 from superlinked.framework.dsl.index.effect import Effect
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.query.param import Param
 from superlinked.framework.dsl.query.query import Query
 from superlinked.framework.dsl.query.result import Result
+from superlinked.framework.dsl.registry.superlinked_registry import SuperlinkedRegistry
+from superlinked.framework.dsl.source.data_loader_source import (
+    DataFormat,
+    DataLoaderConfig,
+    DataLoaderSource,
+)
 from superlinked.framework.dsl.source.in_memory_source import InMemorySource
 from superlinked.framework.dsl.source.interactive_source import InteractiveSource
+from superlinked.framework.dsl.source.rest_source import RestSource
 from superlinked.framework.dsl.space.categorical_similarity_space import (
     CategoricalSimilaritySpace,
 )
@@ -77,6 +85,13 @@ from superlinked.framework.dsl.space.text_similarity_space import (
     TextSimilaritySpace,
     chunk,
 )
+from superlinked.framework.dsl.storage.in_memory_vector_database import (
+    InMemoryVectorDatabase,
+)
+from superlinked.framework.dsl.storage.mongo_db_vector_database import (
+    MongoDBVectorDatabase,
+)
+from superlinked.framework.dsl.storage.redis_vector_database import RedisVectorDatabase
 
 __all__ = [
     # Evaluation
@@ -112,15 +127,25 @@ __all__ = [
     "Timestamp",
     # Number Space Config
     "Mode",
+    # DB
+    "RedisVectorDatabase",
+    "MongoDBVectorDatabase",
+    "InMemoryVectorDatabase",
+    # Data loader
+    "DataFormat",
+    "DataLoaderConfig",
+    "DataLoaderSource",
     # DSL App
     "InteractiveApp",
     "InMemoryApp",
     # DSL Executor
     "InMemoryExecutor",
     "InteractiveExecutor",
+    "RestExecutor",
     # DSL Source
     "InteractiveSource",
     "InMemorySource",
+    "RestSource",
     # DSL Index
     "Effect",
     "Index",
@@ -142,6 +167,8 @@ __all__ = [
     # DSL NumberSpace util
     "LinearScale",
     "LogarithmicScale",
+    # misc
+    "SuperlinkedRegistry",
 ]
 
 
