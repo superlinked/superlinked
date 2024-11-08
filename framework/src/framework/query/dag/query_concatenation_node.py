@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+import math
 from functools import reduce
 
 from beartype.typing import Sequence, cast
@@ -25,6 +26,9 @@ from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import NodeDataTypes, Vector
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.interface.weighted import Weighted
+from superlinked.framework.common.space.config.normalization.normalization_config import (
+    ConstantNormConfig,
+)
 from superlinked.framework.common.space.normalization.normalization import (
     ConstantNorm,
     L2Norm,
@@ -48,6 +52,7 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
     ) -> None:
         super().__init__(node, parents)
         self._denormalizer = self._create_denormalizer()
+        self._l2_norm = L2Norm()
 
     def _create_denormalizer(self) -> ConstantNorm:
         return ConstantNorm(
@@ -144,14 +149,34 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
             for i, result in enumerate(parent_results)
         ]
         weighted_vectors = [vector * weight for vector, weight in vectors_with_weights]
+        concatenated_vector = reduce(lambda a, b: a.concatenate(b), weighted_vectors)
+        normalized_vector = self._normalize_vector(
+            concatenated_vector, vectors_with_weights
+        )
+        return QueryEvaluationResult(
+            self._compansate_vector(normalized_vector, weighted_vectors)
+        )
+
+    def _normalize_vector(
+        self, vector: Vector, vectors_with_weights: Sequence[tuple[Vector, float]]
+    ) -> Vector:
         norm = ConstantNorm(
             self.node.create_normalization_config(
-                [weight for _, weight in vectors_with_weights]
+                [
+                    weight
+                    for vector, weight in vectors_with_weights
+                    if self._l2_norm.norm(vector.value) != 0
+                ]
             )
         )
-        vector = norm.normalize(reduce(lambda a, b: a.concatenate(b), weighted_vectors))
+        return norm.normalize(vector)
+
+    def _compansate_vector(
+        self, vector: Vector, weighted_vectors: list[Vector]
+    ) -> Vector:
         compensation_factor = self._calculate_compensation_factor(weighted_vectors)
-        return QueryEvaluationResult(vector * compensation_factor)
+        compensation_factor_norm = ConstantNorm(ConstantNormConfig(compensation_factor))
+        return compensation_factor_norm.denormalize(vector)
 
     def _calculate_compensation_factor(
         self, weighted_vectors: Sequence[Vector]
@@ -160,9 +185,9 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
             [
                 weighted_vector
                 for weighted_vector in weighted_vectors
-                if L2Norm().norm(weighted_vector.value) != 0
+                if self._l2_norm.norm(weighted_vector.value) != 0
             ]
         )
         if num_non_0_spaces == 0:
             return 1.0
-        return len(self.parents) / num_non_0_spaces
+        return math.sqrt(len(self.parents) / num_non_0_spaces)
