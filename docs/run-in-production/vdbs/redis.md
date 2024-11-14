@@ -14,14 +14,14 @@ To integrate Redis, you need to add the `RedisVectorDatabase` class and include 
 
 To configure your Redis, the following code will help you:
 ```python
-from superlinked.framework.dsl.storage.redis_vector_database import RedisVectorDatabase
+from superlinked.framework import RedisVectorDatabase
 
 vector_database = RedisVectorDatabase(
-    "<your_redis_host>", # (Mandatory) This is your redis URL without any port or extra fields
-    12315, # (Mandatory) This is the port and it should be an integer
+    "<your_redis_host>", # (Mandatory) This is your Redis' URL without any port or extra fields.
+    12315, # (Mandatory) This is the port and it must be an integer.
+    default_query_limit=10, # This optional parameter specifies the maximum number of query results returned. If not set, it defaults to 10.
     # These params must be in a form of kwarg params. Here you can specify anything that the official python client 
     # enables. The params can be found here: https://redis.readthedocs.io/en/stable/connections.html. Below you can see a very basic user-pass authentication as an example.
-    default_query_limit=10, # This optional parameter specifies the maximum number of query results returned. If not set, it defaults to 10.
     username="test",
     password="password"
 )
@@ -41,8 +41,8 @@ executor = RestExecutor(
 
 ## Start a Managed Redis Instance
 
-To initiate a managed Redis instance, navigate to [Redis Labs](https://app.redislabs.com/), sign in, and click the "New Database" button. On the ensuing page, locate the `Type` selector, which offers two options: `Redis Stack` and `Memcached`. By default, `Redis Stack` is pre-selected, which is the correct choice. If it is not selected, ensure to choose `Redis Stack`. For basic usage, no further configuration is necessary. Redis already generated a user which called `default` and a password that you can see below it. However, if you intend to use the instance for persistent data storage beyond sandbox purposes, consider configuring High Availability (HA), data persistence, and other relevant settings.
+To initiate a managed Redis instance, navigate to [Redis Labs](https://app.redislabs.com/), sign in, and click the "New Database" button. On the ensuing page, locate the `Type` selector, which offers two options: `Redis Stack` and `Memcached`. By default, `Redis Stack` is pre-selected, which is the correct choice. If it is not selected, ensure to choose `Redis Stack`. For basic usage, no further configuration is necessary. Redis already generated a user which is called `default` and a password that you can see below it. However, if you intend to use the instance for persistent data storage beyond sandbox purposes, consider configuring High Availability (HA), data persistence, and other relevant settings.
 
 ## Example app with Redis
 
-You can find an example that utilizes Redis [here](https://github.com/superlinked/superlinked/blob/main/docs/run-in-production/vdbs/redis/app_with_redis.py)
+You can find an example that utilizes Redis [here](https://github.com/superlinked/superlinked/blob/main/docs/run-in-production/vdbs/redis/app_with_redis.py).
