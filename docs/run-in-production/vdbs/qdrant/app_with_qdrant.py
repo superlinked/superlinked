@@ -12,7 +12,7 @@ from superlinked.framework.dsl.query.query import Query
 from superlinked.framework.dsl.registry.superlinked_registry import SuperlinkedRegistry
 from superlinked.framework.dsl.source.rest_source import RestSource
 from superlinked.framework.dsl.space.text_similarity_space import TextSimilaritySpace
-from superlinked.framework.dsl.storage.qdrant_db_vector_database import QdrantVectorDatabase
+from superlinked.framework.dsl.storage.qdrant_vector_database import QdrantVectorDatabase
 
 @schema
 class CarSchema:
@@ -38,7 +38,7 @@ query = (
 
 car_source: RestSource = RestSource(car_schema)
 
-qdrant_vector_database = QdrantVectorDatabase("<HOST_URL>", 12345, username="default", password="<password>")
+qdrant_vector_database = QdrantVectorDatabase("<HOST_URL>", "API_KEY")
 
 executor = RestExecutor(
     sources=[car_source],
