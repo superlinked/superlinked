@@ -1,19 +1,18 @@
 from superlinked.framework import (
     IdField,
-    schema,
-    String,
-    RestQuery,
-    RestDescriptor,
-    RestExecutor,
     Index,
     Param,
-    Query,
-    SuperlinkedRegistry,
-    RestSource,
-    TextSimilaritySpace,
     RedisVectorDatabase,
+    Query,
+    RestDescriptor,
+    RestExecutor,
+    RestQuery,
+    RestSource,
+    String,
+    SuperlinkedRegistry,
+    TextSimilaritySpace,
+    schema,
 )
-
 
 @schema
 class CarSchema:

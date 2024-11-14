@@ -1,19 +1,18 @@
 from superlinked.framework import (
     IdField,
-    schema,
-    String,
-    RestQuery,
-    RestDescriptor,
-    RestExecutor,
     Index,
+    MongoDBVectorDatabase,
     Param,
     Query,
-    SuperlinkedRegistry,
+    RestDescriptor,
+    RestExecutor,
+    RestQuery,
     RestSource,
+    String,
+    SuperlinkedRegistry,
     TextSimilaritySpace,
-    MongoDBVectorDatabase,
+    schema,
 )
-
 @schema
 class CarSchema:
     id: IdField
