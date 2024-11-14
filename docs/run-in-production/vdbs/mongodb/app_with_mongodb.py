@@ -1,18 +1,19 @@
-from superlinked.framework import (
-    IdField,
-    Index,
-    MongoDBVectorDatabase,
-    Param,
-    Query,
-    RestDescriptor,
-    RestExecutor,
+from superlinked.framework.common.schema.id_schema_object import IdField
+from superlinked.framework.common.schema.schema import schema
+from superlinked.framework.common.schema.schema_object import String
+from superlinked.framework.dsl.executor.rest.rest_configuration import (
     RestQuery,
-    RestSource,
-    String,
-    SuperlinkedRegistry,
-    TextSimilaritySpace,
-    schema,
 )
+from superlinked.framework.dsl.executor.rest.rest_descriptor import RestDescriptor
+from superlinked.framework.dsl.executor.rest.rest_executor import RestExecutor
+from superlinked.framework.dsl.index.index import Index
+from superlinked.framework.dsl.query.param import Param
+from superlinked.framework.dsl.query.query import Query
+from superlinked.framework.dsl.registry.superlinked_registry import SuperlinkedRegistry
+from superlinked.framework.dsl.source.rest_source import RestSource
+from superlinked.framework.dsl.space.text_similarity_space import TextSimilaritySpace
+from superlinked.framework.dsl.storage.mongo_db_vector_database import MongoDBVectorDatabase
+
 @schema
 class CarSchema:
     id: IdField
