@@ -1,0 +1,32 @@
+name: Notify on README Change
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'README.md'
+
+jobs:
+  notify-webhook:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Get commit URL
+        id: commit
+        run: |
+          echo "url=https://github.com/${{ github.repository }}/commit/${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Send webhook
+        run: |
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d '{
+              "event_type": "readme_modified",
+              "commit_url": "${{ steps.commit.outputs.url }}"
+            }' \
+            ${{ secrets.ZAPIER_HOOK }}

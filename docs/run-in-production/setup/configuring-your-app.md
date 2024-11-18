@@ -28,25 +28,19 @@ A functional application is structured around three core components:
 ### index.py
 ```python
 # linked-file:example/dummy/index.py
-from superlinked.framework.common.schema.id_schema_object import IdField
-from superlinked.framework.common.schema.schema import schema
-from superlinked.framework.common.schema.schema_object import String
-from superlinked.framework.dsl.index.index import Index
-from superlinked.framework.dsl.space.text_similarity_space import TextSimilaritySpace
+from superlinked import framework as sl
 
-
-@schema
-class YourSchema:
-    id: IdField
-    attribute: String
+class YourSchema(sl.Schema):
+    id: sl.IdField
+    attribute: sl.String
 
 
 your_schema = YourSchema()
 
 model_name = "<your model name goes here>"  # Ensure that you replace this with a valid model name!
-text_space = TextSimilaritySpace(text=your_schema.attribute, model=model_name)
+text_space = sl.TextSimilaritySpace(text=your_schema.attribute, model=model_name)
 
-index = Index(text_space)
+index = sl.Index(text_space)
 ```
 
 In this file, a schema is defined to structure your input data. Additionally, a space is specified, which must include at least one attribute from your schema, and an index is created to aggregate and integrate these spaces.
@@ -57,17 +51,15 @@ In this file, a schema is defined to structure your input data. Additionally, a 
 
 ```python
 # linked-file:example/dummy/query.py
-from superlinked.framework.dsl.query.param import Param
-from superlinked.framework.dsl.query.query import Query
-
+from superlinked import framework as sl
 from .index import index, text_space, your_schema
 
 query = (
-    Query(index)
+    sl.Query(index)
     .find(your_schema)
     .similar(
         text_space.text,
-        Param("query_text"),
+        sl.Param("query_text"),
     )
 )
 ```
@@ -78,27 +70,22 @@ In the `query.py` file, you should define your queries. These queries are design
 
 ```python
 # linked-file:example/dummy/api.py
-from superlinked.framework.dsl.executor.rest.rest_configuration import RestQuery
-from superlinked.framework.dsl.executor.rest.rest_descriptor import RestDescriptor
-from superlinked.framework.dsl.executor.rest.rest_executor import RestExecutor
-from superlinked.framework.dsl.registry.superlinked_registry import SuperlinkedRegistry
-from superlinked.framework.dsl.source.rest_source import RestSource
-from superlinked.framework.dsl.storage.in_memory_vector_database import InMemoryVectorDatabase
+from superlinked import framework as sl
 
 from .index import index, your_schema
 from .query import query
 
-your_source: RestSource = RestSource(your_schema)
-your_query = RestQuery(RestDescriptor("query"), query)
+your_source: RestSource = al.RestSource(your_schema)
+your_query = sl.RestQuery(sl.RestDescriptor("query"), query)
 
-executor = RestExecutor(
+executor = sl.RestExecutor(
     sources=[your_source],
     indices=[index],
     queries=[your_query],
-    vector_database=InMemoryVectorDatabase(),
+    vector_database=sl.InMemoryVectorDatabase(),
 )
 
-SuperlinkedRegistry.register(executor)
+sl.SuperlinkedRegistry.register(executor)
 ```
 
 In this document, you set up your source, which acts as the entry point for your schema into the application. The `RestSource` can use a `RestDescriptor` to specify the path for adding data to your system. The `RestQuery` function wraps your query in a `RestDescriptor`, giving your query a name that makes it callable through the REST API. In the example shown, the path is set to `/api/v1/search/query`. Here, you assign a name to the last part of the path, assuming you stick with the default settings. [More detailed API info](#customize-your-api)
@@ -130,14 +117,15 @@ Create a specific source that can point to a local or a remote file. This file c
 # The `name_of_your_loader` is an optional parameter, which is the identifier of your loader. Read more about it below the code block.
 # The last argument is a pass through argument that pandas should be able to use so use the format that is compatible with pandas.
 # Note: the pandas_read_kwargs is an optional parameter, if you don't need any customization, it will use the defaults.
-config = DataLoaderConfig("https://path-to-your-file.csv", DataFormat.CSV, "name_of_your_loader", pandas_read_kwargs={"sep": ";"})
-data_loader_source = DataLoaderSource(your_schema, config) # Add your config to the source. This is mandatory.
 
-executor = RestExecutor(
+config = sl.DataLoaderConfig("https://path-to-your-file.csv", DataFormat.CSV, "name_of_your_loader", pandas_read_kwargs={"sep": ";"})
+data_loader_source = sl.DataLoaderSource(your_schema, config) # Add your config to the source. This is mandatory.
+
+executor = sl.RestExecutor(
     sources=[your_source, data_loader_source], # Incorporate the data_loader_source into the sources here.
     indices=[index],
-    queries=[RestQuery(RestDescriptor("query"), query)],
-    vector_database=InMemoryVectorDatabase(),
+    queries=[sl.RestQuery(sl.RestDescriptor("query"), query)],
+    vector_database=sl.InMemoryVectorDatabase(),
 )
 ```
 
@@ -154,8 +142,9 @@ By default, the system will attempt to parse your file, hence the column names s
 ```python
 # Instantiate a DataFrameParser object, composed of the schema you wish to map and the actual mapping. The format for mapping is: `<schema.field>: <column_name>`
 # Note: If the column names are exactly the same (case sensitive) as your schema, you don't need to provide a parser for the source at all.
-data_frame_parser = DataFrameParser(your_schema, mapping={your_schema.id: "id_field_name", your_schema.attribute: "custom_field_name"})
-data_loader_source = DataLoaderSource(your_schema, config, data_frame_parser) # Incorporate the parser into your source
+
+data_frame_parser = sl.DataFrameParser(your_schema, mapping={your_schema.id: "id_field_name", your_schema.attribute: "custom_field_name"})
+data_loader_source = sl.DataLoaderSource(your_schema, config, data_frame_parser) # Incorporate the parser into your source
 ```
 
 ### Data Chunking
@@ -168,9 +157,9 @@ To implement chunking, you'll need to use either CSV or JSON formats (specifical
 Here's an example of what a chunking configuration might look like:
 ```python
 # For CSV
-config = DataLoaderConfig("https://path-to-your-file.csv", DataFormat.CSV, pandas_read_kwargs={"chunksize": 10000})
+config = sl.DataLoaderConfig("https://path-to-your-file.csv", DataFormat.CSV, pandas_read_kwargs={"chunksize": 10000})
 # For JSON
-config = DataLoaderConfig("https://path-to-your-file.jsonl", DataFormat.JSON, pandas_read_kwargs={"lines": True, "chunksize": 10000})
+config = sl.DataLoaderConfig("https://path-to-your-file.jsonl", DataFormat.JSON, pandas_read_kwargs={"lines": True, "chunksize": 10000})
 ```
 
 The Superlinked library performs internal batching for embeddings, with a default batch size of 10000. If you are utilizing a chunk size different from 10000, it is advisable to adjust this batch size to match your chunk size.
@@ -185,17 +174,17 @@ If you want to configure your API path, you can do that with the `RestEndpointCo
 
 To change the API's default path, see the following code, that let's you customize it:
 ```python
-rest_endpoint_config = RestEndpointConfiguration(
+rest_endpoint_config = sl.RestEndpointConfiguration(
     query_path_prefix="retrieve",
     ingest_path_prefix="insert",
     api_root_path="/superlinked/v3",
 ) # This will change the root path for both ingest and query endpoints
 
-executor = RestExecutor(
+executor = sl.RestExecutor(
     sources=[your_source],
     indices=[index],
-    queries=[RestQuery(RestDescriptor("query"), query)],
-    vector_database=InMemoryVectorDatabase(),
+    queries=[sl.RestQuery(sl.RestDescriptor("query"), query)],
+    vector_database=sl.InMemoryVectorDatabase(),
     rest_endpoint_config=rest_endpoint_config # Incorporate your config here
 )
 ```
@@ -215,10 +204,10 @@ EXECUTOR_DATA = {CONTEXT_COMMON: {CONTEXT_COMMON_NOW: NOW}} # Then use the follo
 Then add the `EXECUTOR_DATA` to your executor, like:
 
 ```python
-executor = RestExecutor(
+executor = sl.RestExecutor(
     sources=[source], indices=[index],
-    queries=[RestQuery(RestDescriptor("query"), query)],
-    vector_database=InMemoryVectorDatabase(),
+    queries=[sl.RestQuery(sl.RestDescriptor("query"), query)],
+    vector_database=sl.InMemoryVectorDatabase(),
     context_data=EXECUTOR_DATA, # Add your executor data here
 )
 ```
