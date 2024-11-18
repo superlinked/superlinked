@@ -17,7 +17,7 @@ from beartype.typing import Any, Sequence
 from redis import Redis
 from typing_extensions import override
 
-from superlinked.framework.common.storage.field import Field
+from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.index_config import IndexConfig
 from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,

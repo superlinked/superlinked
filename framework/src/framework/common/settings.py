@@ -51,7 +51,7 @@ class Settings(BaseSettings):
     BLOB_HANDLER_CLASS_ARGS_STR: str | None = None
     BLOB_HANDLER_CLASS_ARGS: dict[str, Any] | None = None
 
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     @override
     def model_post_init(self, __context: Any) -> None:

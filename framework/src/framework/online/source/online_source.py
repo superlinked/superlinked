@@ -49,5 +49,5 @@ class OnlineSource(
     def transform(self, message: SourceTypeT) -> list[ParsedSchema]:
         return self.parser.unmarshal(message)
 
-    def put(self, data: Sequence[SourceTypeT]) -> None:
+    def put(self, data: SourceTypeT | Sequence[SourceTypeT]) -> None:
         self._dispatch(data)

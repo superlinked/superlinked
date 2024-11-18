@@ -185,7 +185,7 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
             "" if self._embedding_config.uncategorized_as_category else " not"
         )
         return f"""The space creates a one-hot encoding where its value can be one or more
-        of {str(self._embedding_config.categories)}.
+        of {self._embedding_config.categories}.
         Other values do{not_text_for_uncategorized} have a separate other category,
         so these are{not_text_for_uncategorized} similar to each other.
         Not matching categories are creating {self._embedding_config.negative_filter}

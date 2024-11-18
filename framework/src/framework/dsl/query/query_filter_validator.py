@@ -49,16 +49,16 @@ class QueryFilterValidator:
     def _validate_list_type(
         comparison_operation: ComparisonOperation, expected_type: Any, allow_param: bool
     ) -> None:
-        if allow_param and isinstance(comparison_operation._other, Param):
+        other = comparison_operation._other
+        if allow_param and isinstance(other, Param):
             return
 
         # Map to base type for list-type fields - list[str] -> str
-        if isinstance(expected_type(), list):
+        if isinstance(expected_type(), list) and TypeValidator.is_sequence_safe(other):
             expected_type = expected_type.__args__[0]
-
-        TypeValidator.validate_list_item_type(
-            comparison_operation._other, expected_type, "filter operand"
-        )
+            TypeValidator.validate_list_item_type(
+                other, expected_type, "filter operand"
+            )
 
     @staticmethod
     def _validate_single_type(

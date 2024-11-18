@@ -15,7 +15,7 @@
 from types import UnionType
 
 from beartype import BeartypeConf, beartype
-from beartype.typing import Any, Callable, TypeAlias, TypeVar, cast
+from beartype.typing import Any, Callable, Sequence, TypeAlias, TypeVar, cast
 from beartype.vale import Is
 from beartype.vale._core._valecore import BeartypeValidator
 
@@ -134,3 +134,10 @@ class TypeValidator:
             )
 
         return Is[validator]
+
+    @staticmethod
+    def is_sequence_safe(item: Any) -> bool:
+        """
+        Checks if an item is a sequence (like a list or tuple) but not a string.
+        """
+        return isinstance(item, Sequence) and not isinstance(item, str)

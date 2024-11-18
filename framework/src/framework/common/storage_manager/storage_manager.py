@@ -33,10 +33,10 @@ from superlinked.framework.common.schema.schema_object import (
     SchemaField,
     SchemaObject,
 )
-from superlinked.framework.common.storage.entity_data import EntityData
-from superlinked.framework.common.storage.field import Field
-from superlinked.framework.common.storage.field_data import VectorFieldData
-from superlinked.framework.common.storage.field_data_type import FieldDataType
+from superlinked.framework.common.storage.entity.entity_data import EntityData
+from superlinked.framework.common.storage.field.field import Field
+from superlinked.framework.common.storage.field.field_data import VectorFieldData
+from superlinked.framework.common.storage.field.field_data_type import FieldDataType
 from superlinked.framework.common.storage.field_type_converter import (
     FIELD_DATA_TYPE_BY_SCHEMA_FIELD_TYPE,
 )
@@ -45,7 +45,7 @@ from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
 from superlinked.framework.common.storage.result_entity_data import ResultEntityData
-from superlinked.framework.common.storage.search_index_creation.index_field_descriptor import (
+from superlinked.framework.common.storage.search_index.index_field_descriptor import (
     IndexFieldDescriptor,
     VectorIndexFieldDescriptor,
 )
@@ -107,12 +107,6 @@ class StorageManager:
             vector_index_field_descriptor,
             index_field_descriptors,
         )
-
-    def drop_search_index(self, index_node: IndexNode) -> None:
-        index_name = self._storage_naming.get_index_name_from_node_id(
-            index_node.node_id
-        )
-        self._vdb_connector.drop_search_index(index_name)
 
     def knn_search(
         self,

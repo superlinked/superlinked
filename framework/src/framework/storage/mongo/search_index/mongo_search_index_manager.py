@@ -15,12 +15,20 @@
 import requests  # type: ignore
 from beartype.typing import Sequence
 from requests.auth import HTTPDigestAuth
+from typing_extensions import override
 
 from superlinked.framework.common.calculation.distance_metric import DistanceMetric
 from superlinked.framework.common.exception import UnexpectedResponseException
-from superlinked.framework.common.storage.search_index_creation.index_field_descriptor import (
+from superlinked.framework.common.storage.index_config import IndexConfig
+from superlinked.framework.common.storage.search_index.index_field_descriptor import (
     IndexFieldDescriptor,
     VectorIndexFieldDescriptor,
+)
+from superlinked.framework.common.storage.search_index.manager.dynamic_search_index_manager import (
+    DynamicSearchIndexManager,
+)
+from superlinked.framework.common.storage.search_index.search_algorithm import (
+    SearchAlgorithm,
 )
 from superlinked.framework.storage.mongo.search_index.dto import (
     CreateSearchIndexRequest,
@@ -41,11 +49,19 @@ SimilarityByDistanceMetric: dict[DistanceMetric, str] = {
 TIMEOUT_S = 10
 
 
-class MongoSearchIndexManager:
+class MongoSearchIndexManager(DynamicSearchIndexManager):
 
     def __init__(
-        self, admin_params: MongoAdminParams, timeout_s: int | None = TIMEOUT_S
+        self,
+        database_name: str,
+        collection_name: str,
+        admin_params: MongoAdminParams,
+        timeout_s: int | None = TIMEOUT_S,
+        index_configs: Sequence[IndexConfig] | None = None,
     ) -> None:
+        super().__init__(index_configs)
+        self.__database_name = database_name
+        self.__collection_name = collection_name
         self.__cluster_name = admin_params.cluster_name
         self.__project_id = admin_params.project_id
         self.__auth = HTTPDigestAuth(
@@ -57,7 +73,36 @@ class MongoSearchIndexManager:
         )
         self.__timeout_s = timeout_s
 
-    def create_search_index(
+    @property
+    def supported_vector_indexing(self) -> Sequence[SearchAlgorithm]:
+        return [SearchAlgorithm.FLAT]
+
+    @override
+    def _list_search_index_names_from_vdb(self) -> Sequence[str]:
+        return list(
+            self.get_search_index_ids_by_name(
+                self.__database_name, self.__collection_name
+            ).keys()
+        )
+
+    @override
+    def _create_search_index(self, index_config: IndexConfig) -> None:
+        self.__create_search_index(
+            self.__database_name,
+            self.__collection_name,
+            index_config.index_name,
+            index_config.vector_field_descriptor,
+            index_config.field_descriptors,
+        )
+
+    @override
+    def drop_search_index(self, index_name: str) -> None:
+        self.__drop_search_index(
+            self.__database_name, self.__collection_name, index_name
+        )
+        self._index_configs.pop(index_name, None)
+
+    def __create_search_index(
         self,
         database_name: str,
         collection_name: str,
@@ -92,7 +137,7 @@ class MongoSearchIndexManager:
                 }
             )
 
-    def drop_search_index(
+    def __drop_search_index(
         self, database_name: str, collection_name: str, index_name: str
     ) -> None:
         index_id_by_name = self.get_search_index_ids_by_name(

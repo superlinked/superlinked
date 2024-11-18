@@ -18,19 +18,21 @@ from beartype.typing import Any, Sequence
 
 from superlinked.framework.common.calculation.distance_metric import DistanceMetric
 from superlinked.framework.common.const import constants
-from superlinked.framework.common.exception import ValidationException
-from superlinked.framework.common.storage.entity import Entity
-from superlinked.framework.common.storage.entity_data import EntityData
-from superlinked.framework.common.storage.field import Field
+from superlinked.framework.common.storage.entity.entity import Entity
+from superlinked.framework.common.storage.entity.entity_data import EntityData
+from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.index_config import IndexConfig
 from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
 from superlinked.framework.common.storage.result_entity_data import ResultEntityData
-from superlinked.framework.common.storage.search_index_creation.search_algorithm import (
+from superlinked.framework.common.storage.search_index.manager.search_index_manager import (
+    SearchIndexManager,
+)
+from superlinked.framework.common.storage.search_index.search_algorithm import (
     SearchAlgorithm,
 )
-from superlinked.framework.common.storage.search_index_creation.vector_component_precision import (
+from superlinked.framework.common.storage.search_index.vector_component_precision import (
     VectorComponentPrecision,
 )
 from superlinked.framework.storage.in_memory.object_serializer import ObjectSerializer
@@ -70,16 +72,12 @@ class VDBConnector(ABC):
 
     @property
     @abstractmethod
-    def supported_vector_indexing(self) -> Sequence[SearchAlgorithm]:
+    def search_index_manager(self) -> SearchIndexManager:
         pass
 
     @property
     @abstractmethod
     def _default_search_limit(self) -> int:
-        pass
-
-    @abstractmethod
-    def _list_search_index_names_from_vdb(self) -> Sequence[str]:
         pass
 
     def persist(self, _: ObjectSerializer) -> None:
@@ -97,33 +95,7 @@ class VDBConnector(ABC):
         index_configs: Sequence[IndexConfig],
         override_existing: bool = False,
     ) -> None:
-        existing_index_names = self._list_search_index_names_from_vdb()
-        for index_config in index_configs:
-            if index_config.index_name not in existing_index_names or override_existing:
-                self.create_search_index_with_check(index_config)
-            else:
-                self._index_configs[index_config.index_name] = index_config
-
-    def create_search_index_with_check(self, index_config: IndexConfig) -> None:
-        if index_config.index_name not in self._index_configs.keys():
-            if (
-                index_config.vector_field_descriptor.search_algorithm
-                not in self.supported_vector_indexing
-            ):
-                raise NotImplementedError(
-                    f"The specified vector search algorithm {index_config.vector_field_descriptor.search_algorithm}"
-                    + f" is not yet supported. Currently supported algorithms: {self.supported_vector_indexing}"
-                )
-            self.create_search_index(index_config)
-            self._index_configs[index_config.index_name] = index_config
-
-    @abstractmethod
-    def create_search_index(self, index_config: IndexConfig) -> None:
-        pass
-
-    @abstractmethod
-    def drop_search_index(self, index_name: str) -> None:
-        pass
+        self.search_index_manager.init_search_indices(index_configs, override_existing)
 
     @abstractmethod
     def write_entities(self, entity_data: Sequence[EntityData]) -> None:
@@ -169,9 +141,4 @@ class VDBConnector(ABC):
         pass
 
     def _get_index_config(self, index_name: str) -> IndexConfig:
-        index_config = self._index_configs.get(index_name)
-        if not index_config:
-            raise ValidationException(
-                f"Index with the given name {index_name} doesn't exist!"
-            )
-        return index_config
+        return self.search_index_manager.get_index_config(index_name)

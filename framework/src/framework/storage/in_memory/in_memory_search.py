@@ -24,8 +24,8 @@ from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
 )
-from superlinked.framework.common.storage.field import Field
-from superlinked.framework.common.storage.field_data import VectorFieldData
+from superlinked.framework.common.storage.field.field import Field
+from superlinked.framework.common.storage.field.field_data import VectorFieldData
 from superlinked.framework.common.storage.index_config import IndexConfig
 from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,

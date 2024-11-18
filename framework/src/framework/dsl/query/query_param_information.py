@@ -23,6 +23,9 @@ from superlinked.framework.common.interface.comparison_operation_type import (
 from superlinked.framework.common.interface.evaluated import Evaluated
 from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.dsl.query.param import Param, ParamInputType
+from superlinked.framework.dsl.space.categorical_similarity_space import (
+    CategoricalSimilaritySpace,
+)
 from superlinked.framework.dsl.space.space import Space
 
 # Exclude from documentation.
@@ -66,12 +69,13 @@ class WeightedParamInfo:
 class ParamInfo:  # pylint: disable=too-many-instance-attributes
     name: str
     description: str | None
-    value: ParamInputType
+    value: ParamInputType | None
     is_weight: bool
     schema_field: SchemaField | None = None
     space: Space | None = None
     op: ComparisonOperationType | None = None
     is_default: bool = False
+    options: set[ParamInputType] | None = None
 
     def copy_with_new_value(self, value: ParamInputType, is_default: bool) -> ParamInfo:
         return ParamInfo(
@@ -83,6 +87,7 @@ class ParamInfo:  # pylint: disable=too-many-instance-attributes
             self.space,
             self.op,
             is_default,
+            self.options,
         )
 
     @classmethod
@@ -102,6 +107,7 @@ class ParamInfo:  # pylint: disable=too-many-instance-attributes
         if isinstance(param, Param):
             name, description, value = (param.name, param.description, param.default)
             is_default = value is not None
+            options = param.options
         else:
             name, description, value = (
                 param.item.name,
@@ -109,6 +115,29 @@ class ParamInfo:  # pylint: disable=too-many-instance-attributes
                 param.value,
             )
             is_default = False
+            options = None
         return cls(
-            name, description, value, is_weight, schema_field, space, op, is_default
+            name,
+            description,
+            value,
+            is_weight,
+            schema_field,
+            space,
+            op,
+            is_default,
+            options,
         )
+
+    @property
+    def allowed_values(self) -> set[ParamInputType]:
+        categories: set[ParamInputType] = (
+            set(self.space._embedding_config.categories)
+            if isinstance(self.space, CategoricalSimilaritySpace)
+            else set()
+        )
+        options = self.options or set()
+        if categories and not options:
+            return categories
+        if options and not categories:
+            return options
+        return options.intersection(categories)

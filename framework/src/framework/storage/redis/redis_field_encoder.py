@@ -21,9 +21,9 @@ from beartype.typing import Any, Callable, cast
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.storage.exception import EncoderException
-from superlinked.framework.common.storage.field import Field
-from superlinked.framework.common.storage.field_data import FieldData
-from superlinked.framework.common.storage.field_data_type import FieldDataType
+from superlinked.framework.common.storage.field.field import Field
+from superlinked.framework.common.storage.field.field_data import FieldData
+from superlinked.framework.common.storage.field.field_data_type import FieldDataType
 
 RedisEncodedTypes = str | float | int | list[float] | bytes
 

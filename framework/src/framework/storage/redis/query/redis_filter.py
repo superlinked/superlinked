@@ -19,7 +19,7 @@ from beartype.typing import Any
 from superlinked.framework.common.interface.comparison_operation_type import (
     ComparisonOperationType,
 )
-from superlinked.framework.common.storage.field_data_type import FieldDataType
+from superlinked.framework.common.storage.field.field_data_type import FieldDataType
 from superlinked.framework.common.storage.query.vdb_filter import VDBFilter
 
 OR_OPERATOR = "|"

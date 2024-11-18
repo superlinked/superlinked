@@ -45,8 +45,8 @@ class InteractiveExecutor(Executor[InteractiveSourceT], Generic[InteractiveSourc
 
     def __init__(
         self,
-        sources: Sequence[InteractiveSourceT],
-        indices: Sequence[Index],
+        sources: InteractiveSourceT | Sequence[InteractiveSourceT],
+        indices: Index | Sequence[Index],
         vector_database: VectorDatabase | None = None,
         context_data: Mapping[str, Mapping[str, ContextValue]] | None = None,
     ) -> None:
@@ -68,8 +68,8 @@ class InteractiveExecutor(Executor[InteractiveSourceT], Generic[InteractiveSourc
             ),
         )
         self._logger = logger.bind(
-            source_schemas=[source._schema._schema_name for source in sources],
-            index_node_ids=[index._node.node_id for index in indices],
+            source_schemas=[source._schema._schema_name for source in self._sources],
+            index_node_ids=[index._node.node_id for index in self._indices],
         )
 
     def run(self) -> InteractiveApp:

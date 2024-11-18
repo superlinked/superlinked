@@ -17,6 +17,7 @@ from __future__ import annotations
 import structlog
 from beartype.typing import Any
 
+from superlinked.framework.common.interface.evaluated import Evaluated
 from superlinked.framework.dsl.query.nlq_param_evaluator import NLQParamEvaluator
 from superlinked.framework.dsl.query.query_clause import (
     NLQClause,
@@ -34,6 +35,7 @@ class QueryParamValueSetter:
     def set_values(
         cls, query_descriptor: QueryDescriptor, params: dict[str, Any]
     ) -> QueryDescriptor:
+        cls.validate_params(query_descriptor, params)
         altered_query_descriptor = cls.__alter_query_descriptor(
             query_descriptor, params, True
         )
@@ -42,6 +44,24 @@ class QueryParamValueSetter:
             altered_query_descriptor, nlq_params, False
         )
         return nlq_altered_query_descriptor.append_missing_mandatory_clauses()
+
+    @classmethod
+    def validate_params(
+        cls, query_descriptor: QueryDescriptor, params_to_set: dict[str, Any]
+    ) -> None:
+        weight_params = [
+            clause.weight_param for clause in query_descriptor.get_weighted_clauses()
+        ]
+        value_params = [clause.value_param for clause in query_descriptor.clauses]
+        all_params = weight_params + value_params
+        param_names = [
+            param.item.name if isinstance(param, Evaluated) else param.name
+            for param in all_params
+        ]
+        unknown_params = set(params_to_set.keys()) - set(param_names)
+        if unknown_params:
+            unknown_params_text = ", ".join(unknown_params)
+            raise ValueError(f"Unknown query parameters: {unknown_params_text}.")
 
     @classmethod
     def __alter_query_descriptor(

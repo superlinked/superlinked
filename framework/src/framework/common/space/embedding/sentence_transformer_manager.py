@@ -50,18 +50,10 @@ class SentenceTransformerManager(ModelManager):
         self._embedding_model = self._initialize_model(model_name, "cpu")
         self._bulk_embedding_model = None
         if self._gpu_embedding_util.is_gpu_embedding_enabled:
-            try:
-                self._bulk_embedding_model = self._initialize_model(
-                    model_name,
-                    self._gpu_embedding_util.gpu_device_type,
-                )
-            except FileNotFoundError:
-                logger.exception("Cached model not found, downloading model.")
-                self._bulk_embedding_model = self._initialize_model(
-                    model_name,
-                    self._gpu_embedding_util.gpu_device_type,
-                    False,
-                )
+            self._bulk_embedding_model = self._initialize_model(
+                model_name,
+                self._gpu_embedding_util.gpu_device_type,
+            )
 
     def _get_embedding_model(self, number_of_inputs: int) -> SentenceTransformer:
         return (
@@ -152,17 +144,19 @@ class SentenceTransformerManager(ModelManager):
         )
 
     @classmethod
-    def _initialize_model(
-        cls, model_name: str, device: str, local_files_only: bool = True
-    ) -> SentenceTransformer:
+    def _initialize_model(cls, model_name: str, device: str) -> SentenceTransformer:
         cls._ensure_model_downloaded(model_name)
-        return SentenceTransformer(
-            model_name,
-            trust_remote_code=True,
-            local_files_only=local_files_only,
-            device=device,
-            cache_folder=str(cls._get_cache_folder()),
-        )
+        common_params: dict[str, Any] = {
+            "model_name_or_path": model_name,
+            "trust_remote_code": True,
+            "device": device,
+            "cache_folder": str(cls._get_cache_folder()),
+        }
+        try:
+            return SentenceTransformer(**common_params, local_files_only=True)
+        except OSError:
+            logger.exception("Failed to use downloaded model, re-downloading.")
+            return SentenceTransformer(**common_params, local_files_only=False)
 
     @classmethod
     def _is_model_downloaded(cls, model_name: str) -> bool:

@@ -21,22 +21,24 @@ from typing_extensions import override
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
 )
-from superlinked.framework.common.storage.entity import Entity
-from superlinked.framework.common.storage.entity_data import EntityData
-from superlinked.framework.common.storage.entity_id import EntityId
-from superlinked.framework.common.storage.field import Field
-from superlinked.framework.common.storage.field_data import FieldData
-from superlinked.framework.common.storage.index_config import IndexConfig
+from superlinked.framework.common.storage.entity.entity import Entity
+from superlinked.framework.common.storage.entity.entity_data import EntityData
+from superlinked.framework.common.storage.entity.entity_id import EntityId
+from superlinked.framework.common.storage.field.field import Field
+from superlinked.framework.common.storage.field.field_data import FieldData
 from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
 from superlinked.framework.common.storage.result_entity_data import ResultEntityData
-from superlinked.framework.common.storage.search_index_creation.search_algorithm import (
-    SearchAlgorithm,
+from superlinked.framework.common.storage.search_index.manager.search_index_manager import (
+    SearchIndexManager,
 )
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
 from superlinked.framework.storage.common.vdb_settings import VDBSettings
 from superlinked.framework.storage.in_memory.in_memory_search import InMemorySearch
+from superlinked.framework.storage.in_memory.in_memory_search_index_manager import (
+    InMemorySearchIndexManager,
+)
 from superlinked.framework.storage.in_memory.json_codec import JsonDecoder, JsonEncoder
 from superlinked.framework.storage.in_memory.object_serializer import ObjectSerializer
 
@@ -47,32 +49,22 @@ class InMemoryVDB(VDBConnector):
         self._vdb = defaultdict[str, dict[str, Any]](dict)
         self._search = InMemorySearch()
         self.__vdb_settings = vdb_settings
+        self.__search_index_manager = InMemorySearchIndexManager()
 
     @override
     def close_connection(self) -> None:
         self._vdb = defaultdict[str, dict[str, Any]](dict)
-        self._index_configs = dict[str, IndexConfig]()
+        self.search_index_manager.clear_configs()
 
     @override
     @property
-    def supported_vector_indexing(self) -> Sequence[SearchAlgorithm]:
-        return [SearchAlgorithm.FLAT]
+    def search_index_manager(self) -> SearchIndexManager:
+        return self.__search_index_manager
 
     @override
     @property
     def _default_search_limit(self) -> int:
         return self.__vdb_settings.default_query_limit
-
-    def _list_search_index_names_from_vdb(self) -> Sequence[str]:
-        return list(self._index_configs.keys())
-
-    @override
-    def create_search_index(self, index_config: IndexConfig) -> None:
-        pass
-
-    @override
-    def drop_search_index(self, index_name: str) -> None:
-        self._index_configs.pop(index_name, None)
 
     @override
     def write_entities(self, entity_data: Sequence[EntityData]) -> None:
@@ -140,7 +132,7 @@ class InMemoryVDB(VDBConnector):
 
     @override
     def persist(self, serializer: ObjectSerializer) -> None:
-        app_identifier = "_".join(self._index_configs.keys())
+        app_identifier = "_".join(self.search_index_manager._index_configs.keys())
         serializer.write(
             json.dumps(self._vdb, cls=JsonEncoder),
             app_identifier,
@@ -148,7 +140,7 @@ class InMemoryVDB(VDBConnector):
 
     @override
     def restore(self, serializer: ObjectSerializer) -> None:
-        app_identifier = "_".join(self._index_configs.keys())
+        app_identifier = "_".join(self.search_index_manager._index_configs.keys())
         self._vdb.update(
             json.loads(
                 serializer.read(app_identifier),

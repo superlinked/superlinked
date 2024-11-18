@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 
 from beartype.typing import Any, Sequence
 
-from superlinked.framework.common.storage.search_index_creation.index_field_descriptor import (
+from superlinked.framework.common.storage.search_index.index_field_descriptor import (
     IndexFieldDescriptor,
     VectorIndexFieldDescriptor,
 )

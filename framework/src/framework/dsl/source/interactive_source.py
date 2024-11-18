@@ -69,13 +69,13 @@ class InteractiveSource(
         self.__can_accept_data = True
 
     @override
-    def put(self, data: Sequence[SourceTypeT]) -> None:
+    def put(self, data: SourceTypeT | Sequence[SourceTypeT]) -> None:
         """
         Put data into the InteractiveSource. This operation can take time as the vectorization
         of your data happens here.
 
         Args:
-            data (list[SourceTypeT]): The data to put.
+            data (SourceTypeT | list[SourceTypeT]): The data to put.
         """
         # Calls the parent, override is only necessary for adding the docstring.
         if not self.__can_accept_data:

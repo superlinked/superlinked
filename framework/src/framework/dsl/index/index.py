@@ -72,7 +72,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
         self,
         spaces: Space | ValidatedSpaceList,
         fields: SchemaField | ValidatedSchemaFieldList | None = None,
-        effects: ValidatedEffectList | None = None,
+        effects: Effect | ValidatedEffectList | None = None,
         max_age: datetime.timedelta | None = None,
         max_count: int | None = None,
         temperature: int | float = 0.5,
@@ -83,7 +83,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
         Args:
             spaces (Space | list[Space]): The space or list of spaces.
             fields (SchemaField | list[SchemaField]): The field or list of fields to be indexed.
-            effects (list[Effect]): A list of conditional interactions within a `Space`.
+            effects (Effect | list[Effect]): A list of conditional interactions within a `Space`.
             Defaults to None.
             max_age (datetime.timedelta | None): Maximum age of events to be considered. Older events
             will be filtered out, if specified. Defaults to None meaning no restriction.
@@ -207,10 +207,12 @@ class Index:  # pylint: disable=too-many-instance-attributes
         return fields
 
     def __init_effects_with_schema(
-        self, effects: list[Effect] | None, spaces: list[Space]
+        self, effects: Effect | list[Effect] | None, spaces: list[Space]
     ) -> list[EffectWithReferencedSchemaObject]:
         if effects is None:
             effects = []
+        if not isinstance(effects, Sequence):
+            effects = [effects]
         self.__validate_effects(effects, spaces)
         return [
             EffectWithReferencedSchemaObject.from_base_effect(

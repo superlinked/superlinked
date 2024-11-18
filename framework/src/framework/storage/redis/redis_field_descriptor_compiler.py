@@ -18,8 +18,8 @@ from redis.commands.search.field import NumericField, TagField, TextField
 from redis.commands.search.field import VectorField as RedisVectorField
 
 from superlinked.framework.common.calculation.distance_metric import DistanceMetric
-from superlinked.framework.common.storage.field_data_type import FieldDataType
-from superlinked.framework.common.storage.search_index_creation.index_field_descriptor import (
+from superlinked.framework.common.storage.field.field_data_type import FieldDataType
+from superlinked.framework.common.storage.search_index.index_field_descriptor import (
     IndexFieldDescriptor,
     VectorIndexFieldDescriptor,
 )

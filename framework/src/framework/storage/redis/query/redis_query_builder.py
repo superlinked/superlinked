@@ -14,7 +14,7 @@
 
 from dataclasses import dataclass
 
-from beartype.typing import Any, Iterable, Sequence, cast
+from beartype.typing import Any, Sequence, cast
 from redis.commands.search.query import Query
 
 from superlinked.framework.common.interface.comparison_operand import (
@@ -24,11 +24,15 @@ from superlinked.framework.common.interface.comparison_operand import (
 from superlinked.framework.common.interface.comparison_operation_type import (
     ITERABLE_COMPARISON_OPERATION_TYPES,
 )
-from superlinked.framework.common.storage.field import Field
-from superlinked.framework.common.storage.field_data import FieldData, VectorFieldData
+from superlinked.framework.common.storage.field.field import Field
+from superlinked.framework.common.storage.field.field_data import (
+    FieldData,
+    VectorFieldData,
+)
 from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
+from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.storage.redis.query.redis_filter import RedisFilter
 from superlinked.framework.storage.redis.redis_field_encoder import (
     RedisEncodedTypes,
@@ -75,9 +79,13 @@ class RedisQueryBuilder:
     def _encode_iterable_field(
         self, operand: ComparisonOperand, other: Any
     ) -> list[RedisEncodedTypes]:
-        if not isinstance(other, Iterable):
-            raise ValueError("Operand must be iterable.")
+        other = self._get_other_as_sequence(other)
         return [self._encode_field(operand, item) for item in other]
+
+    def _get_other_as_sequence(self, other: Any) -> Sequence[Any]:
+        if TypeValidator.is_sequence_safe(other):
+            return cast(Sequence, other)
+        return [other]
 
     def _encode_field(
         self, operand: ComparisonOperand, other: object

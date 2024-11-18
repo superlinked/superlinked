@@ -35,8 +35,10 @@ class Executor(ABC, Generic[SourceT]):
     @TypeValidator.wrap
     def __init__(
         self,
-        sources: Sequence[SourceT],
-        indices: Annotated[Sequence[Index], TypeValidator.list_validator(Index)],
+        sources: SourceT | Sequence[SourceT],
+        indices: (
+            Index | Annotated[Sequence[Index], TypeValidator.list_validator(Index)]
+        ),
         vector_database: VectorDatabase,
         context: ExecutionContext,
     ) -> None:
@@ -48,6 +50,10 @@ class Executor(ABC, Generic[SourceT]):
             vector_database (VectorDatabase): The vector database which the executor will use.
             context (Mapping[str, Mapping[str, Any]]): The context mapping.
         """
+        if not isinstance(sources, Sequence):
+            sources = [sources]
+        if not isinstance(indices, Sequence):
+            indices = [indices]
         TypeValidator.validate_list_item_type(
             sources, GenericClassUtil.get_single_generic_type(self), "sources"
         )

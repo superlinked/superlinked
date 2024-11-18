@@ -16,6 +16,16 @@
 try:
     # altair dependency is optional
     from superlinked.evaluation.charts.recency_plotter import RecencyPlotter
+
+    # pymongo dependency is optional
+    from superlinked.framework.dsl.storage.mongo_db_vector_database import (
+        MongoDBVectorDatabase,
+    )
+
+    # redis dependency is optional
+    from superlinked.framework.dsl.storage.redis_vector_database import (
+        RedisVectorDatabase,
+    )
 except ImportError:
     pass
 from superlinked.evaluation.vector_sampler import VectorSampler
@@ -88,10 +98,6 @@ from superlinked.framework.dsl.space.text_similarity_space import (
 from superlinked.framework.dsl.storage.in_memory_vector_database import (
     InMemoryVectorDatabase,
 )
-from superlinked.framework.dsl.storage.mongo_db_vector_database import (
-    MongoDBVectorDatabase,
-)
-from superlinked.framework.dsl.storage.redis_vector_database import RedisVectorDatabase
 
 __all__ = [
     # Evaluation

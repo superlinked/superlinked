@@ -16,18 +16,17 @@ from beartype.typing import Any, Sequence
 from pymongo import MongoClient, UpdateOne
 from typing_extensions import override
 
-from superlinked.framework.common.storage.entity import Entity
-from superlinked.framework.common.storage.entity_data import EntityData
-from superlinked.framework.common.storage.entity_id import EntityId
-from superlinked.framework.common.storage.field import Field
-from superlinked.framework.common.storage.field_data import FieldData
-from superlinked.framework.common.storage.index_config import IndexConfig
+from superlinked.framework.common.storage.entity.entity import Entity
+from superlinked.framework.common.storage.entity.entity_data import EntityData
+from superlinked.framework.common.storage.entity.entity_id import EntityId
+from superlinked.framework.common.storage.field.field import Field
+from superlinked.framework.common.storage.field.field_data import FieldData
 from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
 from superlinked.framework.common.storage.result_entity_data import ResultEntityData
-from superlinked.framework.common.storage.search_index_creation.search_algorithm import (
-    SearchAlgorithm,
+from superlinked.framework.common.storage.search_index.manager.search_index_manager import (
+    SearchIndexManager,
 )
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
 from superlinked.framework.storage.common.vdb_settings import VDBSettings
@@ -57,7 +56,7 @@ class MongoVDBConnector(VDBConnector):
         self._collection_name = GENERAL_COLLECTION_NAME
         self._encoder = MongoFieldEncoder()
         self._search_index_manager = MongoSearchIndexManager(
-            connection_params.admin_params
+            self._db.name, self._collection_name, connection_params.admin_params
         )
         self._search = MongoSearch(self._db[self._collection_name], self._encoder)
         self.__vdb_settings = vdb_settings
@@ -68,39 +67,15 @@ class MongoVDBConnector(VDBConnector):
         # type-checkers mistake 'close' for a database.
         self._client.close()  # type: ignore
 
+    @override
     @property
-    def supported_vector_indexing(self) -> Sequence[SearchAlgorithm]:
-        return [SearchAlgorithm.FLAT]
+    def search_index_manager(self) -> SearchIndexManager:
+        return self._search_index_manager
 
     @property
     @override
     def _default_search_limit(self) -> int:
         return self.__vdb_settings.default_query_limit
-
-    @override
-    def _list_search_index_names_from_vdb(self) -> Sequence[str]:
-        return list(
-            self._search_index_manager.get_search_index_ids_by_name(
-                self._db.name, self._collection_name
-            ).keys()
-        )
-
-    @override
-    def create_search_index(self, index_config: IndexConfig) -> None:
-        self._search_index_manager.create_search_index(
-            self._db.name,
-            self._collection_name,
-            index_config.index_name,
-            index_config.vector_field_descriptor,
-            index_config.field_descriptors,
-        )
-
-    @override
-    def drop_search_index(self, index_name: str) -> None:
-        self._search_index_manager.drop_search_index(
-            self._db.name, self._collection_name, index_name
-        )
-        self._index_configs.pop(index_name, None)
 
     @override
     def write_entities(self, entity_data: Sequence[EntityData]) -> None:

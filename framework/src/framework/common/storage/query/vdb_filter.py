@@ -19,7 +19,7 @@ from beartype.typing import Any
 from superlinked.framework.common.interface.comparison_operation_type import (
     ComparisonOperationType,
 )
-from superlinked.framework.common.storage.field import Field
+from superlinked.framework.common.storage.field.field import Field
 
 
 @dataclass(frozen=True)

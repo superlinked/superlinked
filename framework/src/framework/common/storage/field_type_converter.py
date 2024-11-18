@@ -28,7 +28,7 @@ from superlinked.framework.common.schema.schema_object import (
     StringList,
     Timestamp,
 )
-from superlinked.framework.common.storage.field_data_type import FieldDataType
+from superlinked.framework.common.storage.field.field_data_type import FieldDataType
 from superlinked.framework.common.util.generic_class_util import GenericClassUtil
 
 FIELD_DATA_TYPE_BY_SCHEMA_FIELD_TYPE: dict[type[ConcreteSchemaField], FieldDataType] = {

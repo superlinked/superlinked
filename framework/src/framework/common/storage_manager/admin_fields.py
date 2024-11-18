@@ -20,10 +20,10 @@ from dataclasses import dataclass
 from beartype.typing import Any, Sequence, cast
 
 from superlinked.framework.common.data_types import PythonTypes
-from superlinked.framework.common.storage.entity_id import EntityId
-from superlinked.framework.common.storage.field import Field
-from superlinked.framework.common.storage.field_data import FT, FieldData
-from superlinked.framework.common.storage.field_data_type import FieldDataType
+from superlinked.framework.common.storage.entity.entity_id import EntityId
+from superlinked.framework.common.storage.field.field import Field
+from superlinked.framework.common.storage.field.field_data import FT, FieldData
+from superlinked.framework.common.storage.field.field_data_type import FieldDataType
 from superlinked.framework.common.storage_manager.header import Header
 from superlinked.framework.common.storage_manager.storage_naming import StorageNaming
 

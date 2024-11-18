@@ -14,21 +14,19 @@
 
 import redis
 from beartype.typing import Any, Sequence, cast
-from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from typing_extensions import override
 
-from superlinked.framework.common.storage.entity import Entity
-from superlinked.framework.common.storage.entity_data import EntityData
-from superlinked.framework.common.storage.entity_id import EntityId
-from superlinked.framework.common.storage.field import Field
-from superlinked.framework.common.storage.field_data import FieldData
-from superlinked.framework.common.storage.index_config import IndexConfig
+from superlinked.framework.common.storage.entity.entity import Entity
+from superlinked.framework.common.storage.entity.entity_data import EntityData
+from superlinked.framework.common.storage.entity.entity_id import EntityId
+from superlinked.framework.common.storage.field.field import Field
+from superlinked.framework.common.storage.field.field_data import FieldData
 from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
 from superlinked.framework.common.storage.result_entity_data import ResultEntityData
-from superlinked.framework.common.storage.search_index_creation.search_algorithm import (
-    SearchAlgorithm,
+from superlinked.framework.common.storage.search_index.manager.search_index_manager import (
+    SearchIndexManager,
 )
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
 from superlinked.framework.storage.common.vdb_settings import VDBSettings
@@ -38,11 +36,11 @@ from superlinked.framework.storage.redis.query.redis_query_builder import (
 from superlinked.framework.storage.redis.redis_connection_params import (
     RedisConnectionParams,
 )
-from superlinked.framework.storage.redis.redis_field_descriptor_compiler import (
-    RedisFieldDescriptorCompiler,
-)
 from superlinked.framework.storage.redis.redis_field_encoder import RedisFieldEncoder
 from superlinked.framework.storage.redis.redis_search import RedisSearch
+from superlinked.framework.storage.redis.redis_search_index_manager import (
+    RedisSearchIndexManager,
+)
 
 
 class RedisVDBConnector(VDBConnector):
@@ -50,8 +48,13 @@ class RedisVDBConnector(VDBConnector):
         self, connection_params: RedisConnectionParams, vdb_settings: VDBSettings
     ) -> None:
         super().__init__()
-        self._client = redis.from_url(connection_params.connection_string, protocol=3)
+        self._client: redis.Redis = redis.from_url(
+            connection_params.connection_string, protocol=3
+        )
         self._encoder = RedisFieldEncoder()
+        self.__search_index_manager = RedisSearchIndexManager(
+            self._client, self._encoder
+        )
         self._search = RedisSearch(self._client, self._encoder)
         self.__vdb_settings = vdb_settings
 
@@ -59,37 +62,15 @@ class RedisVDBConnector(VDBConnector):
     def close_connection(self) -> None:
         self._client.close()
 
-    @property
     @override
-    def supported_vector_indexing(self) -> Sequence[SearchAlgorithm]:
-        return [SearchAlgorithm.FLAT, SearchAlgorithm.HNSW]
+    @property
+    def search_index_manager(self) -> SearchIndexManager:
+        return self.__search_index_manager
 
     @property
     @override
     def _default_search_limit(self) -> int:
         return self.__vdb_settings.default_query_limit
-
-    @override
-    def _list_search_index_names_from_vdb(self) -> Sequence[str]:
-        return list(
-            self._encoder._decode_string(cast(bytes, index_name))
-            for index_name in self._client.execute_command("FT._LIST")
-        )
-
-    @override
-    def create_search_index(self, index_config: IndexConfig) -> None:
-        index_def = IndexDefinition(index_type=IndexType.HASH)
-        fields = RedisFieldDescriptorCompiler.compile_descriptors(
-            index_config.vector_field_descriptor, index_config.field_descriptors
-        )
-        self._client.ft(index_config.index_name).create_index(
-            list(fields), definition=index_def
-        )
-
-    @override
-    def drop_search_index(self, index_name: str) -> None:
-        self._client.ft(index_name).dropindex()
-        self._index_configs.pop(index_name, None)
 
     @override
     def write_entities(self, entity_data: Sequence[EntityData]) -> None:

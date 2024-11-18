@@ -60,7 +60,7 @@ class QueryClause(Generic[EvaluatedQueryT]):
         if is_override_set or not isinstance(self.value_param, Evaluated):
             param_to_alter = self.get_param(self.value_param)
             if (value := params.get(param_to_alter.name)) is not None:
-                return replace(self, value_param=Evaluated(param_to_alter, value))
+                return replace(self, value_param=param_to_alter.to_evaluated(value))
         return self
 
     @abstractmethod
@@ -70,9 +70,10 @@ class QueryClause(Generic[EvaluatedQueryT]):
     def get_default_value_param_name(self) -> str: ...
 
     def get_value(self) -> PythonTypes | None:
-        return self.get_param_value(self.value_param)
+        value = self.get_param_value(self.value_param)
+        return cast(PythonTypes | None, value)
 
-    def get_param_value(self, param: Param | Evaluated[Param]) -> PythonTypes | None:
+    def get_param_value(self, param: Param | Evaluated[Param]) -> ParamInputType | None:
         if isinstance(param, Evaluated):
             if param.value is None:
                 return param.item.default
@@ -98,7 +99,7 @@ class WeightedQueryClause(QueryClause[EvaluatedQueryT]):
         if is_override_set or not isinstance(self.weight_param, Evaluated):
             param_to_alter = self.get_param(self.weight_param)
             if (weight := params.get(param_to_alter.name)) is not None:
-                return replace(self, weight_param=Evaluated(param_to_alter, weight))
+                return replace(self, weight_param=param_to_alter.to_evaluated(weight))
         return self
 
     def get_weight(self) -> float:
@@ -141,7 +142,7 @@ class SpaceWeightClause(QueryClause[tuple[Space, float]]):
 
     @override
     def get_default_value_param_name(self) -> str:
-        return f"space_weight_{type(self.space).__name__}_{str(hash(self.space))}_param"
+        return f"space_weight_{type(self.space).__name__}_{hash(self.space)}_param"
 
 
 @dataclass(frozen=True)
@@ -199,11 +200,11 @@ class SimilarFilterClause(
 
     @override
     def get_default_value_param_name(self) -> str:
-        return f"similar_filter_{str(self.space)}_{self.schema_field.name}_value_param"
+        return f"similar_filter_{self.space}_{self.schema_field.name}_value_param"
 
     @override
     def get_default_weight_param_name(self) -> str:
-        return f"similar_filter_{str(self.space)}_{self.schema_field.name}_weight_param"
+        return f"similar_filter_{self.space}_{self.schema_field.name}_weight_param"
 
 
 @dataclass(frozen=True)

@@ -19,8 +19,8 @@ from beartype.typing import Sequence
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
 )
-from superlinked.framework.common.storage.field import Field
-from superlinked.framework.common.storage.field_data import VectorFieldData
+from superlinked.framework.common.storage.field.field import Field
+from superlinked.framework.common.storage.field.field_data import VectorFieldData
 
 
 @dataclass(frozen=True)

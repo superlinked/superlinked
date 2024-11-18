@@ -15,7 +15,7 @@
 
 from dataclasses import dataclass
 
-from superlinked.framework.common.storage.entity_data import EntityData
+from superlinked.framework.common.storage.entity.entity_data import EntityData
 
 
 @dataclass(frozen=True)

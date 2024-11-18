@@ -17,7 +17,7 @@ from pymongo.collection import Collection
 from pymongo.command_cursor import CommandCursor
 from typing_extensions import override
 
-from superlinked.framework.common.storage.field import Field
+from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.index_config import IndexConfig
 from superlinked.framework.common.storage.search import Search
 from superlinked.framework.storage.mongo.mongo_field_encoder import MongoFieldEncoder

@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 from beartype.typing import Any, Sequence, get_origin
 from pydantic import BaseModel, Field, create_model, model_validator
+from typing_extensions import TypeVar
 
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.exception import QueryException
@@ -23,10 +25,9 @@ from superlinked.framework.common.interface.comparison_operation_type import (
 )
 from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.util.generic_class_util import GenericClassUtil
+from superlinked.framework.common.util.type_validator import TypeValidator
+from superlinked.framework.dsl.query.param import ParamInputType
 from superlinked.framework.dsl.query.query_param_information import ParamInfo
-from superlinked.framework.dsl.space.categorical_similarity_space import (
-    CategoricalSimilaritySpace,
-)
 from superlinked.framework.dsl.space.space import Space
 
 # Exclude from documentation.
@@ -35,6 +36,8 @@ __pdoc__["NLQPydanticModelBuilder"] = False
 
 QUERY_MODEL_NAME = "QueryModel"
 UNAFFECTING_VALUES = [constants.DEFAULT_NOT_AFFECTING_WEIGHT, None]
+
+PydanticDataT = TypeVar("PydanticDataT", BaseModel, Any)
 
 
 class NLQPydanticModelBuilder:
@@ -59,11 +62,10 @@ class NLQPydanticModelBuilder:
         similar_and_space_weight_param_names = (
             self._calculate_similar_and_space_weight_param_names(space_weight_by_space)
         )
-        categories_by_category_param: dict[str, Sequence[str]] = {
-            param_info.name: param_info.space._embedding_config.categories
+        allowed_values_by_param: dict[str, set[ParamInputType]] = {
+            param_info.name: allowed_values
             for param_info in self.param_infos
-            if isinstance(param_info.space, CategoricalSimilaritySpace)
-            and not param_info.is_weight
+            if (allowed_values := param_info.allowed_values)
         }
         with_vector_weight_param = next(
             (
@@ -78,8 +80,8 @@ class NLQPydanticModelBuilder:
 
         @model_validator(mode="after")
         def check_space_weights_filled_when_similar_weight_filled(
-            model: Any,
-        ) -> Any:
+            model: PydanticDataT,
+        ) -> PydanticDataT:
             if not isinstance(model, BaseModel):
                 return model
 
@@ -102,8 +104,8 @@ class NLQPydanticModelBuilder:
 
         @model_validator(mode="after")
         def check_space_weights_filled_when_with_vector_filled(
-            model: Any,
-        ) -> Any:
+            model: PydanticDataT,
+        ) -> PydanticDataT:
             if not isinstance(model, BaseModel) or not with_vector_weight_param:
                 return model
             with_vector_weight = getattr(
@@ -126,31 +128,31 @@ class NLQPydanticModelBuilder:
             if none_space_weight_params:
                 raise ValueError(
                     f"If {with_vector_weight_param} is not {constants.DEFAULT_NOT_AFFECTING_WEIGHT}/None,"
-                    f" then set the value 1 for the following fields: {str(none_space_weight_params)}."
+                    f" then set the value 1 for the following fields: {none_space_weight_params}."
                 )
             return model
 
         @model_validator(mode="after")
-        def check_category_is_defined(model: Any) -> Any:
+        def check_value_is_allowed(model: PydanticDataT) -> PydanticDataT:
             if not isinstance(model, BaseModel):
                 return model
 
-            for param_name, categories in categories_by_category_param.items():
+            for param_name, allowed_values in allowed_values_by_param.items():
                 returned_value = getattr(model, param_name)
                 if returned_value is None:
                     continue
 
-                if isinstance(returned_value, str):
-                    if returned_value not in categories:
+                if TypeValidator.is_sequence_safe(returned_value):
+                    if not all(
+                        value in allowed_values or value is None
+                        for value in returned_value
+                    ):
                         raise ValueError(
-                            f"The field {param_name} must be None or one of the following items: {str(categories)}."
+                            f"The field {param_name} can only contain None or a subset of: {allowed_values}."
                         )
-                elif isinstance(returned_value, list) and not all(
-                    category in categories or category is None
-                    for category in returned_value
-                ):
+                elif returned_value not in allowed_values:
                     raise ValueError(
-                        f"The field {param_name} can only contain None or a subset of: {str(categories)}."
+                        f"The field {param_name} must be None or one of the following items: {allowed_values}."
                     )
             return model
 
@@ -158,7 +160,7 @@ class NLQPydanticModelBuilder:
             "__validators__": {
                 "check_similar_weights": check_space_weights_filled_when_similar_weight_filled,
                 "check_with_vector_weights": check_space_weights_filled_when_with_vector_filled,
-                "check_category_is_defined": check_category_is_defined,
+                "check_value_is_allowed": check_value_is_allowed,
             }
         }
 

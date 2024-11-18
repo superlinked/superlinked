@@ -17,11 +17,12 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 
-from beartype.typing import Any, Callable, Generic, Iterable, Sequence, TypeVar
+from beartype.typing import Any, Callable, Generic, Sequence, TypeVar, cast
 
 from superlinked.framework.common.interface.comparison_operation_type import (
     ComparisonOperationType,
 )
+from superlinked.framework.common.util.type_validator import TypeValidator
 
 COT = TypeVar("COT", bound="ComparisonOperand")
 
@@ -284,27 +285,26 @@ class ComparisonOperation(Generic[COT]):
         return value is not None and value <= self._other
 
     def __evaluate_in(self, value: Any) -> bool:
-        if not isinstance(self._other, Iterable):
-            raise ValueError("Operand must be iterable.")
-        return value in self._other
+        return value in self._get_other_as_sequence()
 
     def __evaluate_not_in(self, value: Any) -> bool:
-        if not isinstance(self._other, Iterable):
-            raise ValueError("Operand must be iterable.")
-        return value not in self._other
+        return value not in self._get_other_as_sequence()
 
     def __evaluate_contains(self, value: Any) -> bool:
-        if not isinstance(self._other, Iterable):
-            raise ValueError("Operand must be iterable.")
-        return value is not None and any(other in value for other in self._other)
+        other = self._get_other_as_sequence()
+        return value is not None and any(other in value for other in other)
 
     def __evaluate_not_contains(self, value: Any) -> bool:
         return value is not None and not self.__evaluate_contains(value)
 
     def __evaluate_contains_all(self, value: Any) -> bool:
-        if not isinstance(self._other, Iterable):
-            raise ValueError("Operand must be iterable.")
-        return value is None or all(other in value for other in self._other)
+        other = self._get_other_as_sequence()
+        return value is None or all(other in value for other in other)
+
+    def _get_other_as_sequence(self) -> Sequence[Any]:
+        if TypeValidator.is_sequence_safe(self._other):
+            return cast(Sequence, self._other)
+        return [self._other]
 
     @staticmethod
     def _group_filters_by_group_key(
