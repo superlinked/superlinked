@@ -165,7 +165,7 @@ Classes
     `get_param(self, param: Param | Evaluated[Param]) ‑> superlinked.framework.dsl.query.param.Param`
     :
 
-    `get_param_value(self, param: Param | Evaluated[Param]) ‑> float | int | str | superlinked.framework.common.data_types.Vector | list[float] | list[str] | superlinked.framework.common.schema.blob_information.BlobInformation | None`
+    `get_param_value(self, param: Param | Evaluated[Param]) ‑> collections.abc.Sequence[str] | collections.abc.Sequence[float] | PIL.Image.Image | str | int | float | bool | None | tuple[str | None, str | None]`
     :
 
     `get_value(self) ‑> float | int | str | superlinked.framework.common.data_types.Vector | list[float] | list[str] | superlinked.framework.common.schema.blob_information.BlobInformation | None`

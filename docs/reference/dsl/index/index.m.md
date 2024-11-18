@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.index.index
 Classes
 -------
 
-`Index(spaces: Union[superlinked.framework.dsl.space.space.Space, Annotated[list[superlinked.framework.dsl.space.space.Space], beartype.vale.Is[TypeValidator.list_validator.validator]]], fields: Union[superlinked.framework.common.schema.schema_object.SchemaField, Annotated[list[superlinked.framework.common.schema.schema_object.SchemaField], beartype.vale.Is[TypeValidator.list_validator.validator]], ForwardRef(None)] = None, effects: Optional[typing.Annotated[list[superlinked.framework.dsl.index.effect.Effect], beartype.vale.Is[TypeValidator.list_validator.validator]]] = None, max_age: datetime.timedelta | None = None, max_count: int | None = None, temperature: int | float = 0.5)`
+`Index(spaces: Union[superlinked.framework.dsl.space.space.Space, Annotated[list[superlinked.framework.dsl.space.space.Space], beartype.vale.Is[TypeValidator.list_validator.validator]]], fields: Union[superlinked.framework.common.schema.schema_object.SchemaField, Annotated[list[superlinked.framework.common.schema.schema_object.SchemaField], beartype.vale.Is[TypeValidator.list_validator.validator]], ForwardRef(None)] = None, effects: Union[superlinked.framework.dsl.index.effect.Effect, Annotated[list[superlinked.framework.dsl.index.effect.Effect], beartype.vale.Is[TypeValidator.list_validator.validator]], ForwardRef(None)] = None, max_age: datetime.timedelta | None = None, max_count: int | None = None, temperature: int | float = 0.5)`
 :   An index is an abstraction which represents a collection of spaces that will enable us to query our data.
     
     Initialize the Index.
@@ -12,7 +12,7 @@ Classes
     Args:
         spaces (Space | list[Space]): The space or list of spaces.
         fields (SchemaField | list[SchemaField]): The field or list of fields to be indexed.
-        effects (list[Effect]): A list of conditional interactions within a `Space`.
+        effects (Effect | list[Effect]): A list of conditional interactions within a `Space`.
         Defaults to None.
         max_age (datetime.timedelta | None): Maximum age of events to be considered. Older events
         will be filtered out, if specified. Defaults to None meaning no restriction.

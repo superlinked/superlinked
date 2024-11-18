@@ -33,9 +33,9 @@ Classes
     `allow_data_ingestion(self) ‑> None`
     :
 
-    `put(self, data: Sequence[SourceTypeT]) ‑> None`
+    `put(self, data: SourceTypeT | Sequence[SourceTypeT]) ‑> None`
     :   Put data into the InteractiveSource. This operation can take time as the vectorization
         of your data happens here.
         
         Args:
-            data (list[SourceTypeT]): The data to put.
+            data (SourceTypeT | list[SourceTypeT]): The data to put.

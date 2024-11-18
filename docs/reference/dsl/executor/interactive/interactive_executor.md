@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.executor.interactive.interactive_executor
 Classes
 -------
 
-`InteractiveExecutor(sources: Sequence[InteractiveSourceT], indices: Sequence[Index], vector_database: VectorDatabase | None = None, context_data: Mapping[str, Mapping[str, ContextValue]] | None = None)`
+`InteractiveExecutor(sources: InteractiveSourceT | Sequence[InteractiveSourceT], indices: Index | Sequence[Index], vector_database: VectorDatabase | None = None, context_data: Mapping[str, Mapping[str, ContextValue]] | None = None)`
 :   Interactive implementation of the Executor class. Supply it with the sources through which
     your data is received, the indices indicating the desired vector spaces, and optionally a vector database.
     The executor will create the spaces optimized for search.

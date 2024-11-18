@@ -4,20 +4,36 @@ Module superlinked.framework.dsl.executor.in_memory.in_memory_executor
 Classes
 -------
 
-`InMemoryExecutor(sources: Sequence[InMemorySource], indices: Sequence[Index], context_data: Mapping[str, Mapping[str, ContextValue]] | None = None)`
-:   In-memory implementation of the Executor class. Supply it with the sources through which
-    your data is received, and the indices indicating the desired vector spaces, and the executor will
-    create the spaces optimized for search.
-    Attributes:
-        sources (list[InMemorySource]): List of in-memory sources.
-        indices (list[Index]): List of indices.
+`InMemoryExecutor(sources: InMemorySource | Sequence[InMemorySource], indices: Index | Sequence[Index], context_data: Mapping[str, Mapping[str, ContextValue]] | None = None)`
+:   Initialize the InMemoryExecutor.
+    
+    The InMemoryExecutor provides an in-memory implementation for executing queries against indexed data.
+    It creates optimized vector spaces based on the provided indices
+    and allows querying data from in-memory sources.
+    
+    Args:
+        sources (InMemorySource | Sequence[InMemorySource]): One or more in-memory data sources to query against.
+            Can be a single source or sequence of sources.
+        indices (Index | Sequence[Index]): One or more indices that define the vector spaces.
+            Can be a single index or sequence of indices.
+        context_data (Mapping[str, Mapping[str, ContextValue]] | None, optional): Additional context data
+            for execution. The outer mapping key represents the context name, inner mapping contains
+            key-value pairs for that context. Defaults to None.
     
     Initialize the InMemoryExecutor.
+    
+    The InMemoryExecutor provides an in-memory implementation for executing queries against indexed data.
+    It creates optimized vector spaces based on the provided indices
+    and allows querying data from in-memory sources.
+    
     Args:
-        sources (list[InMemorySource]): List of in-memory sources.
-        indices (list[Index]): List of indices.
-        context_data (Mapping[str, Mapping[str, ContextValue]] | None):
-            Context data for execution. Defaults to None.
+        sources (InMemorySource | Sequence[InMemorySource]): One or more in-memory data sources to query against.
+            Can be a single source or sequence of sources.
+        indices (Index | Sequence[Index]): One or more indices that define the vector spaces.
+            Can be a single index or sequence of indices.
+        context_data (Mapping[str, Mapping[str, ContextValue]] | None, optional): Additional context data
+            for execution. The outer mapping key represents the context name, inner mapping contains
+            key-value pairs for that context. Defaults to None.
 
     ### Ancestors (in MRO)
 
