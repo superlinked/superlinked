@@ -5,6 +5,48 @@ icon: clock-rotate-left
 
 # Changelog
 
+## 2024-11-06
+
+- #### Framework: v12.2.0 - v12.23.0
+- #### Server: v12.2.0 - v12.23.0
+- #### Batch: v1.13.1 - v1.15.2
+
+
+### Added
+- **Simplified Superlinked Imports**: Users can now import Superlinked using a single import statement `import superlinked as sl`, eliminating the need to remember the import path of each object.
+- **Support for OpenCLIP Models**: Added support for OpenCLIP models in image embeddings, extending the supported models to include OpenCLIP and sentence-transformers supported vision encoders.
+
+### Fixed
+- **File Discovery Issues**: Resolved file discovery issues experienced by Yassine.
+- **Dynamic Cache Directory for Sentence-Transformers**: Made the sentence-transformers cache directory dynamic to ensure compatibility with batch operations.
+- **Zero Division in Events**: Fixed an issue where events with virtually no age resulted in a division by zero error.
+- **Storing Unreferenced Fields**: Corrected the storage of fields that were not referenced in the index.
+- **Default Similarity Weights**: Adjusted similarity weights to default to one when a parameter is not provided.
+- **StringLists Support in NLQ**: Added support for StringLists to be filled by NLQ.
+- **Categorical Similarity Node Bug**: Fixed a bug affecting events in the categorical similarity node.
+- **Error on Unknown ID**: Now throws an error if an unknown ID is used, instead of returning similarities for the given scenario.
+
+### Misc
+- **NLQ Feature Improvements**: Made further improvements to the NLQ feature.
+- **New NLQ Examples**: Added new NLQ examples showcasing product search instead of product reviews.
+- **Enhanced Logging**: Added further logging for the external message bus.
+- **Test Performance Improvement**: Improved test performance, reducing execution time from 4.6 seconds to 0.6 seconds.
+
+
+## 2024-10-23
+
+- #### Framework: v10.1.0 - v12.2.0
+- #### Server: v10.1.0 - v12.2.0
+- #### Batch: v1.11.1 - v1.13.1
+
+### Added
+- **Stack Trace in JSON Logging**: Enhanced JSON logging by adding stack traces to facilitate debugging.
+
+### Fixed
+- **Support SchemaA and SchemaB both affecting SchemaC**: Added support for scenarios where both SchemaA and SchemaB can affect SchemaC, such as users being influenced by paragraphs they read and comments they like.
+- **Registry Bug**: Resolved an internal registry bug.
+
+
 ## 2024-10-9
 
 - #### Framework: v9.43.0 - v10.1.0
