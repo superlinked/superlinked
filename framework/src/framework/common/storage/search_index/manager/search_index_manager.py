@@ -37,7 +37,10 @@ class SearchIndexManager(ABC):
 
     @abstractmethod
     def init_search_indices(
-        self, index_configs: Sequence[IndexConfig], override_existing: bool = False
+        self,
+        index_configs: Sequence[IndexConfig],
+        collection_name: str,
+        override_existing: bool = False,
     ) -> None:
         pass
 

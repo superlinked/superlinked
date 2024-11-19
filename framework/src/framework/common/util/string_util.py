@@ -13,7 +13,9 @@
 # limitations under the License.
 
 
-from beartype.typing import Any
+import uuid
+
+from beartype.typing import Any, Sequence
 
 
 class StringUtil:
@@ -41,3 +43,10 @@ class StringUtil:
             return str(input_data)
 
         return get_string_recursively(dict_to_serialize, outermost=True)
+
+    @staticmethod
+    def deterministic_hash_of_strings(strings: Sequence[str]) -> str:
+        if not strings:
+            return ""
+        strings = sorted(strings)
+        return str(uuid.uuid5(uuid.NAMESPACE_URL, ":".join(strings)))

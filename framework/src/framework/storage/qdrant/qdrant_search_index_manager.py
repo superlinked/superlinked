@@ -39,12 +39,10 @@ class QdrantSearchIndexManager(SearchIndexManager):
     def __init__(
         self,
         client: QdrantClient,
-        collection_name: str,
         index_configs: Sequence[IndexConfig] | None = None,
     ) -> None:
         super().__init__(index_configs)
         self._client = client
-        self._collection_name = collection_name
 
     @override
     @property
@@ -55,22 +53,25 @@ class QdrantSearchIndexManager(SearchIndexManager):
 
     @override
     def init_search_indices(
-        self, index_configs: Sequence[IndexConfig], override_existing: bool = False
+        self,
+        index_configs: Sequence[IndexConfig],
+        collection_name: str,
+        override_existing: bool = False,
     ) -> None:
         self._validate_index_configs(index_configs)
         if override_existing:
-            self._client.delete_collection(self._collection_name)
+            self._client.delete_collection(collection_name)
 
         vector_config = QdrantFieldDescriptorCompiler.create_vector_config(
             index_configs
         )
-        if self._client.collection_exists(self._collection_name):
-            self._check_mismatching_config(vector_config)
+        if self._client.collection_exists(collection_name):
+            self._check_mismatching_config(vector_config, collection_name)
         else:
             self._client.create_collection(
-                collection_name=self._collection_name, vectors_config=vector_config
+                collection_name=collection_name, vectors_config=vector_config
             )
-        self._create_payload_indices(index_configs)
+        self._create_payload_indices(index_configs, collection_name)
         self._index_configs.update(
             {index_config.index_name: index_config for index_config in index_configs}
         )
@@ -94,10 +95,10 @@ class QdrantSearchIndexManager(SearchIndexManager):
     def _check_mismatching_config(
         self,
         vector_config: dict[str, VectorParams],
+        collection_name: str,
     ) -> None:
         existing_vector_config = (
-            self._client.get_collection(self._collection_name).config.params.vectors
-            or {}
+            self._client.get_collection(collection_name).config.params.vectors or {}
         )
         if not isinstance(existing_vector_config, dict):
             raise InvalidIndexConfigException(
@@ -115,13 +116,13 @@ class QdrantSearchIndexManager(SearchIndexManager):
                 f"Collision found between existing and configured indices: {invalid_params}"
             )
 
-    def _create_payload_indices(self, index_configs: Sequence[IndexConfig]) -> None:
+    def _create_payload_indices(
+        self, index_configs: Sequence[IndexConfig], collection_name: str
+    ) -> None:
         field_schema_by_field_name = (
             QdrantFieldDescriptorCompiler.compile_payload_field_descriptors(
                 index_configs
             )
         )
         for field_name, field_schema in field_schema_by_field_name.items():
-            self._client.create_payload_index(
-                self._collection_name, field_name, field_schema
-            )
+            self._client.create_payload_index(collection_name, field_name, field_schema)

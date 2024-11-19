@@ -31,13 +31,15 @@ class InMemorySearchIndexManager(DynamicSearchIndexManager):
     def supported_vector_indexing(self) -> Sequence[SearchAlgorithm]:
         return [SearchAlgorithm.FLAT]
 
-    def _list_search_index_names_from_vdb(self) -> Sequence[str]:
+    def _list_search_index_names_from_vdb(self, collection_name: str) -> Sequence[str]:
         return list(self._index_configs.keys())
 
     @override
-    def _create_search_index(self, index_config: IndexConfig) -> None:
+    def _create_search_index(
+        self, index_config: IndexConfig, collection_name: str
+    ) -> None:
         pass
 
     @override
-    def drop_search_index(self, index_name: str) -> None:
+    def drop_search_index(self, index_name: str, collection_name: str) -> None:
         self._index_configs.pop(index_name, None)

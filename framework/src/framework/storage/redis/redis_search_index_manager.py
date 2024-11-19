@@ -49,14 +49,16 @@ class RedisSearchIndexManager(DynamicSearchIndexManager):
         return [SearchAlgorithm.FLAT, SearchAlgorithm.HNSW]
 
     @override
-    def _list_search_index_names_from_vdb(self) -> Sequence[str]:
+    def _list_search_index_names_from_vdb(self, collection_name: str) -> Sequence[str]:
         return list(
             self._encoder._decode_string(cast(bytes, index_name))
             for index_name in self._client.execute_command("FT._LIST")
         )
 
     @override
-    def _create_search_index(self, index_config: IndexConfig) -> None:
+    def _create_search_index(
+        self, index_config: IndexConfig, collection_name: str
+    ) -> None:
         index_def = IndexDefinition(index_type=IndexType.HASH)
         fields = RedisFieldDescriptorCompiler.compile_descriptors(
             index_config.vector_field_descriptor, index_config.field_descriptors
@@ -66,6 +68,6 @@ class RedisSearchIndexManager(DynamicSearchIndexManager):
         )
 
     @override
-    def drop_search_index(self, index_name: str) -> None:
+    def drop_search_index(self, index_name: str, collection_name: str) -> None:
         self._client.ft(index_name).dropindex()
         self._index_configs.pop(index_name, None)

@@ -26,9 +26,6 @@ from superlinked.framework.common.interface.comparison_operation_type import (
     ComparisonOperationType,
 )
 from superlinked.framework.common.storage.field.field import Field
-from superlinked.framework.common.storage.query.vdb_knn_search_params import (
-    VDBKNNSearchParams,
-)
 from superlinked.framework.storage.qdrant.qdrant_field_encoder import QdrantFieldEncoder
 from superlinked.framework.storage.qdrant.query.qdrant_filter import (
     ClauseType,
@@ -38,10 +35,14 @@ from superlinked.framework.storage.qdrant.query.qdrant_filter import (
     MatchValueFilter,
     QdrantFilter,
 )
+from superlinked.framework.storage.qdrant.query.qdrant_vdb_knn_search_params import (
+    QdrantVDBKNNSearchParams,
+)
 
 
 @dataclass(frozen=True)
 class QdrantQuery:
+    collection_name: str
     vector: Vector
     filter_: Filter | None
     limit: int
@@ -70,7 +71,9 @@ class QdrantQueryBuilder:
         self._encoder = encoder
 
     def build(
-        self, search_params: VDBKNNSearchParams, returned_fields: Sequence[Field]
+        self,
+        search_params: QdrantVDBKNNSearchParams,
+        returned_fields: Sequence[Field],
     ) -> QdrantQuery:
         filter_ = self._compile_filters(search_params.filters)
         vector_field_name = search_params.vector_field.name
@@ -82,6 +85,7 @@ class QdrantQueryBuilder:
             field for field in returned_field_names if field != vector_field_name
         ]
         return QdrantQuery(
+            search_params.collection_name,
             search_params.vector_field.value,
             filter_,
             search_params.limit,

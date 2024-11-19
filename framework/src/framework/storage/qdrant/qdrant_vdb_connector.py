@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import uuid
-
 from beartype.typing import Any, Sequence, cast
 from qdrant_client import QdrantClient
 from qdrant_client.conversions.common_types import Payload, Record
@@ -24,6 +22,7 @@ from qdrant_client.models import (
     PointVectors,
     SetPayload,
     SetPayloadOperation,
+    UpdateOperation,
     UpdateVectors,
     UpdateVectorsOperation,
     UpsertOperation,
@@ -46,6 +45,7 @@ from superlinked.framework.common.storage.search_index.manager.search_index_mana
     SearchIndexManager,
 )
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
+from superlinked.framework.common.util.string_util import StringUtil
 from superlinked.framework.storage.common.vdb_settings import VDBSettings
 from superlinked.framework.storage.qdrant.qdrant_connection_params import (
     QdrantConnectionParams,
@@ -58,8 +58,9 @@ from superlinked.framework.storage.qdrant.qdrant_search_index_manager import (
     QdrantSearchIndexManager,
 )
 from superlinked.framework.storage.qdrant.query.qdrant_search import QdrantSearch
-
-GENERAL_COLLECTION_NAME = "general_collection"
+from superlinked.framework.storage.qdrant.query.qdrant_vdb_knn_search_params import (
+    QdrantVDBKNNSearchParams,
+)
 
 ID_PAYLOAD_FIELD_NAME = "__original_entity_id__"
 ID_PAYLOAD_FIELD = Field(FieldDataType.STRING, ID_PAYLOAD_FIELD_NAME)
@@ -74,12 +75,9 @@ class QdrantVDBConnector(VDBConnector):
             url=connection_params.connection_string,
             api_key=connection_params._api_key,
         )
-        self._collection_name = GENERAL_COLLECTION_NAME
         self._encoder = QdrantFieldEncoder()
-        self.__search_index_manager = QdrantSearchIndexManager(
-            self._client, self._collection_name
-        )
-        self._search = QdrantSearch(self._client, self._collection_name, self._encoder)
+        self.__search_index_manager = QdrantSearchIndexManager(self._client)
+        self._search = QdrantSearch(self._client, self._encoder)
         self._vector_field_names = list[str]()
         self.__vdb_settings = vdb_settings
 
@@ -127,27 +125,33 @@ class QdrantVDBConnector(VDBConnector):
             for ed in entity_data
         ]
         non_existing_points, existing_points = self._split_points_by_existing(points)
-        self._client.batch_update_points(
-            self._collection_name,
-            update_operations=[
-                UpsertOperation(upsert=PointsList(points=non_existing_points)),
+        update_operations = list[UpdateOperation]()
+        if non_existing_points:
+            update_operations.append(
+                UpsertOperation(upsert=PointsList(points=non_existing_points))
+            )
+        update_vectors_points = [
+            PointVectors(id=point.id, vector=point.vector)
+            for point in existing_points
+            if point.vector
+        ]
+        if update_vectors_points:
+            update_operations.append(
                 UpdateVectorsOperation(
-                    update_vectors=UpdateVectors(
-                        points=[
-                            PointVectors(id=point.id, vector=point.vector)
-                            for point in existing_points
-                            if point.vector
-                        ]
-                    )
-                ),
-                *[
-                    SetPayloadOperation(
-                        set_payload=SetPayload(payload=point.payload, points=[point.id])
-                    )
-                    for point in existing_points
-                    if point.payload
-                ],
-            ],
+                    update_vectors=UpdateVectors(points=update_vectors_points)
+                )
+            )
+        set_payload_operations = [
+            SetPayloadOperation(
+                set_payload=SetPayload(payload=point.payload, points=[point.id])
+            )
+            for point in existing_points
+            if point.payload
+        ]
+        if set_payload_operations:
+            update_operations.extend(set_payload_operations)
+        self._client.batch_update_points(
+            self.collection_name, update_operations=update_operations
         )
 
     def _get_point_vector_dict(
@@ -178,7 +182,7 @@ class QdrantVDBConnector(VDBConnector):
         self, points: Sequence[PointStruct]
     ) -> tuple[Sequence[PointStruct], Sequence[PointStruct]]:
         existing_point_records = self._client.retrieve(
-            self._collection_name, [point.id for point in points], with_payload=False
+            self.collection_name, [point.id for point in points], with_payload=False
         )
         existing_point_ids = [point.id for point in existing_point_records]
         non_existing_points = [
@@ -207,7 +211,7 @@ class QdrantVDBConnector(VDBConnector):
             }
         )
         points = self._client.retrieve(
-            self._collection_name,
+            self.collection_name,
             ids=[QdrantVDBConnector._get_qdrant_id(entity.id_) for entity in entities],
             with_vectors=vector_fields or False,
             with_payload=payload_fields or False,
@@ -245,11 +249,13 @@ class QdrantVDBConnector(VDBConnector):
         **params: Any,
     ) -> Sequence[ResultEntityData]:
         index_config = self._get_index_config(index_name)
-        returned_fields = list(returned_fields) + [ID_PAYLOAD_FIELD]
+        extended_returned_fields = list(returned_fields) + [ID_PAYLOAD_FIELD]
         result: QueryResponse = self._search.knn_search_with_checks(
             index_config,
-            returned_fields,
-            vdb_knn_search_params,
+            extended_returned_fields,
+            QdrantVDBKNNSearchParams.from_base(
+                vdb_knn_search_params, self.collection_name
+            ),
         )
         return [
             self._get_result_entity_data_from_point(point, returned_fields)
@@ -278,10 +284,10 @@ class QdrantVDBConnector(VDBConnector):
     def _check_and_get_vectors(
         self, point: Record | ScoredPoint
     ) -> dict[str, list[float]]:
-        if (
-            point.vector is None
-            or not isinstance(point.vector, dict)
-            or any(v for v in point.vector.values() if not isinstance(v, list))
+        if point.vector is None:
+            return {}
+        if not isinstance(point.vector, dict) or any(
+            v for v in point.vector.values() if not isinstance(v, list)
         ):
             raise ValueError(f"Retrieved point's payload is invalid: {[point.payload]}")
         return cast(dict[str, list[float]], point.payload)
@@ -293,10 +299,8 @@ class QdrantVDBConnector(VDBConnector):
 
     @staticmethod
     def _get_qdrant_id(entity_id: EntityId) -> str:
-        return str(
-            uuid.uuid5(
-                uuid.NAMESPACE_URL, f"{entity_id.schema_id}:{entity_id.object_id}"
-            )
+        return StringUtil.deterministic_hash_of_strings(
+            [entity_id.schema_id, entity_id.object_id]
         )
 
     @staticmethod

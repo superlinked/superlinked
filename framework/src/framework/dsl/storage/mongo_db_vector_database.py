@@ -16,16 +16,18 @@ from beartype.typing import Any
 
 from superlinked.framework.dsl.storage.vector_database import VectorDatabase
 from superlinked.framework.storage.common.vdb_settings import VDBSettings
-from superlinked.framework.storage.mongo.mongo_connection_params import (
-    MongoConnectionParams,
+from superlinked.framework.storage.mongo_db.mongo_db_connection_params import (
+    MongoDBConnectionParams,
 )
-from superlinked.framework.storage.mongo.mongo_vdb_connector import MongoVDBConnector
-from superlinked.framework.storage.mongo.search_index.mongo_admin_params import (
-    MongoAdminParams,
+from superlinked.framework.storage.mongo_db.mongo_db_vdb_connector import (
+    MongoDBVDBConnector,
+)
+from superlinked.framework.storage.mongo_db.search_index.mongo_db_admin_params import (
+    MongoDBAdminParams,
 )
 
 
-class MongoDBVectorDatabase(VectorDatabase[MongoVDBConnector]):
+class MongoDBVectorDatabase(VectorDatabase[MongoDBVDBConnector]):
     """
     MongoDB implementation of the VectorDatabase.
 
@@ -58,10 +60,10 @@ class MongoDBVectorDatabase(VectorDatabase[MongoVDBConnector]):
             **extra_params (Any): Additional parameters for the MongoDB connection.
         """
         super().__init__()
-        self._connection_params = MongoConnectionParams(
+        self._connection_params = MongoDBConnectionParams(
             host,
             db_name,
-            MongoAdminParams(
+            MongoDBAdminParams(
                 cluster_name, project_id, admin_api_user, admin_api_password
             ),
             **extra_params
@@ -69,11 +71,11 @@ class MongoDBVectorDatabase(VectorDatabase[MongoVDBConnector]):
         self._settings = VDBSettings(default_query_limit)
 
     @property
-    def _vdb_connector(self) -> MongoVDBConnector:
+    def _vdb_connector(self) -> MongoDBVDBConnector:
         """
         Get the MongoDB vector database connector.
 
         Returns:
             MongoVDBConnector: The MongoDB vector database connector instance.
         """
-        return MongoVDBConnector(self._connection_params, self._settings)
+        return MongoDBVDBConnector(self._connection_params, self._settings)

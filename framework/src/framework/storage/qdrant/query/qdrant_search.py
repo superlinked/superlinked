@@ -21,9 +21,6 @@ from typing_extensions import override
 
 from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.index_config import IndexConfig
-from superlinked.framework.common.storage.query.vdb_knn_search_params import (
-    VDBKNNSearchParams,
-)
 from superlinked.framework.common.storage.search import Search
 from superlinked.framework.common.storage.search_index.search_algorithm import (
     SearchAlgorithm,
@@ -33,20 +30,20 @@ from superlinked.framework.storage.qdrant.query.qdrant_query import (
     QdrantQuery,
     QdrantQueryBuilder,
 )
+from superlinked.framework.storage.qdrant.query.qdrant_vdb_knn_search_params import (
+    QdrantVDBKNNSearchParams,
+)
 
 
-class QdrantSearch(Search[VDBKNNSearchParams, QdrantQuery, QueryResponse]):
-    def __init__(
-        self, client: QdrantClient, collection_name: str, encoder: QdrantFieldEncoder
-    ) -> None:
+class QdrantSearch(Search[QdrantVDBKNNSearchParams, QdrantQuery, QueryResponse]):
+    def __init__(self, client: QdrantClient, encoder: QdrantFieldEncoder) -> None:
         super().__init__()
         self._client = client
-        self._collection_name = collection_name
         self._query_builder = QdrantQueryBuilder(encoder)
 
     @override
     def build_query(
-        self, search_params: VDBKNNSearchParams, returned_fields: Sequence[Field]
+        self, search_params: QdrantVDBKNNSearchParams, returned_fields: Sequence[Field]
     ) -> QdrantQuery:
         return self._query_builder.build(search_params, returned_fields)
 
@@ -61,7 +58,7 @@ class QdrantSearch(Search[VDBKNNSearchParams, QdrantQuery, QueryResponse]):
             == SearchAlgorithm.FLAT
         )
         return self._client.query_points(
-            collection_name=self._collection_name,
+            collection_name=query.collection_name,
             query=query.vector.value,
             using=index_config.vector_field_descriptor.field_name,
             query_filter=query.filter_,
