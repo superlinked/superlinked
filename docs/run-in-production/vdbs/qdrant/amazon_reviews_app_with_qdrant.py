@@ -16,7 +16,7 @@ from superlinked.framework.dsl.source.data_loader_source import DataFormat, Data
 from superlinked.framework.dsl.source.rest_source import RestSource
 from superlinked.framework.dsl.space.number_space import NumberSpace
 from superlinked.framework.dsl.space.text_similarity_space import TextSimilaritySpace
-from superlinked.framework.dsl.storage.redis_db_vector_database import RedisVectorDatabase
+from superlinked.framework.dsl.storage.qdrant_db_vector_database import QdrantVectorDatabase
 
 openai_config = OpenAIClientConfig(api_key="YOUR_OPENAI_API_KEY", model="gpt-4o")
 
@@ -70,7 +70,7 @@ review_data_loader = DataLoaderConfig(
     pandas_read_kwargs={"lines": True, "chunksize": 100},
 )
 review_loader_source: DataLoaderSource = DataLoaderSource(review, review_data_loader)
-redis_vector_database = RedisVectorDatabase("<HOST_URL>", 12345, username="default", password="<password>")
+qdrant_vector_database = QdrantVectorDatabase("<URL>", "<API_KEY>")
 executor = RestExecutor(
     sources=[review_source, review_loader_source],
     indices=[naive_index, advanced_index],
@@ -78,7 +78,7 @@ executor = RestExecutor(
         RestQuery(RestDescriptor("naive_query"), naive_query),
         RestQuery(RestDescriptor("superlinked_query"), superlinked_query),
     ],
-    vector_database=redis_vector_database,
+    vector_database=qdrant_vector_database,
 )
 
 SuperlinkedRegistry.register(executor)

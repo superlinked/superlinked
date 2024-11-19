@@ -14,7 +14,6 @@ from superlinked.framework.dsl.source.rest_source import RestSource
 from superlinked.framework.dsl.space.text_similarity_space import TextSimilaritySpace
 from superlinked.framework.dsl.storage.mongo_db_vector_database import MongoDBVectorDatabase
 
-
 @schema
 class CarSchema:
     id: IdField

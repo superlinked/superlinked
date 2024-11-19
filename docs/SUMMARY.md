@@ -14,6 +14,7 @@
 * [Supported Vector Databases](run-in-production/vdbs/index.md)
   * [Redis](run-in-production/vdbs/redis.md)
   * [Mongo DB](run-in-production/vdbs/mongodb.md)
+  * [Qdrant](run-in-production/vdbs/qdrant.md)
 
 
 ## Concepts
