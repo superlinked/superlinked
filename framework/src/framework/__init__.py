@@ -16,12 +16,26 @@
 try:
     # altair dependency is optional
     from superlinked.evaluation.charts.recency_plotter import RecencyPlotter
+except ImportError:
+    pass
 
+try:
     # pymongo dependency is optional
     from superlinked.framework.dsl.storage.mongo_db_vector_database import (
         MongoDBVectorDatabase,
     )
+except ImportError:
+    pass
 
+try:
+    # qdrant dependency is optional
+    from superlinked.framework.dsl.storage.qdrant_vector_database import (
+        QdrantVectorDatabase,
+    )
+except ImportError:
+    pass
+
+try:
     # redis dependency is optional
     from superlinked.framework.dsl.storage.redis_vector_database import (
         RedisVectorDatabase,
@@ -65,6 +79,8 @@ from superlinked.framework.dsl.executor.in_memory.in_memory_executor import (
 from superlinked.framework.dsl.executor.interactive.interactive_executor import (
     InteractiveExecutor,
 )
+from superlinked.framework.dsl.executor.rest.rest_configuration import RestQuery
+from superlinked.framework.dsl.executor.rest.rest_descriptor import RestDescriptor
 from superlinked.framework.dsl.executor.rest.rest_executor import RestExecutor
 from superlinked.framework.dsl.index.effect import Effect
 from superlinked.framework.dsl.index.index import Index
@@ -134,9 +150,10 @@ __all__ = [
     # Number Space Config
     "Mode",
     # DB
-    "RedisVectorDatabase",
-    "MongoDBVectorDatabase",
     "InMemoryVectorDatabase",
+    "MongoDBVectorDatabase",
+    "QdrantVectorDatabase",
+    "RedisVectorDatabase",
     # Data loader
     "DataFormat",
     "DataLoaderConfig",
@@ -158,6 +175,7 @@ __all__ = [
     # DSL Query
     "Param",
     "Query",
+    "RestQuery",
     "Result",
     # DSL Space
     "CategoricalSimilaritySpace",
@@ -166,6 +184,8 @@ __all__ = [
     "NumberSpace",
     "RecencySpace",
     "TextSimilaritySpace",
+    # DSL Executor util
+    "RestDescriptor",
     # DSL ImageSpace util
     "ModelHandler",
     # DSL TextSimilaritySpace util

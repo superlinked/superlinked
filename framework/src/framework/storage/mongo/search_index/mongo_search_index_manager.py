@@ -50,7 +50,6 @@ TIMEOUT_S = 10
 
 
 class MongoSearchIndexManager(DynamicSearchIndexManager):
-
     def __init__(
         self,
         database_name: str,

@@ -118,7 +118,7 @@ class RedisVDBConnector(VDBConnector):
         **params: Any,
     ) -> Sequence[ResultEntityData]:
         index_config = self._get_index_config(index_name)
-        result = self._encoder.convert_bytes_keys(
+        result = self._encoder.convert_bytes_keys_dict(
             self._search.knn_search_with_checks(
                 index_config, returned_fields, vdb_knn_search_params
             )

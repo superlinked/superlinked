@@ -18,10 +18,10 @@ from enum import Enum
 class FieldDataType(Enum):
     BLOB = "BLOB"
     DOUBLE = "DOUBLE"
+    FLOAT_LIST = "FLOAT_LIST"
+    IMAGE_DATA = "IMAGE_DATA"
     INT = "INT"
     JSON = "JSON"
-    FLOAT_LIST = "FLOAT_LIST"
-    STRING_LIST = "STRING_LIST"
     STRING = "STRING"
+    STRING_LIST = "STRING_LIST"
     VECTOR = "VECTOR"
-    IMAGE_DATA = "IMAGE_DATA"

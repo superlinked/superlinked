@@ -12,18 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from beartype.typing import Any
 
-class EncoderException(Exception):
-    pass
-
-
-class InvalidIndexConfigException(Exception):
-    pass
+from superlinked.framework.storage.common.connection_params import ConnectionParams
 
 
-class IndexConfigNotFoundException(Exception):
-    pass
+class QdrantConnectionParams(ConnectionParams):
+    def __init__(self, url: str, api_key: str, **extra_params: Any) -> None:
+        super().__init__()
+        extra_params_str = self.get_uri_params_string(**extra_params)
+        self._connection_string = f"{url}{extra_params_str}"
+        self._api_key = api_key
 
-
-class MismatchingConfigException(Exception):
-    pass
+    @property
+    def connection_string(self) -> str:
+        return self._connection_string

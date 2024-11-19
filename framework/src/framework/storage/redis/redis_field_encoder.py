@@ -123,12 +123,15 @@ class RedisFieldEncoder:
             f"Unknown field type: {field.data_type}, cannot decode field."
         )
 
-    def convert_bytes_keys(self, data: dict[bytes, Any]) -> dict[str, Any]:
+    def convert_bytes_keys_dict(self, data: dict[bytes, Any]) -> dict[str, Any]:
+        return {
+            self._decode_string(cast(bytes, key)): self.convert_bytes_keys(value)
+            for key, value in data.items()
+        }
+
+    def convert_bytes_keys(self, data: Any) -> Any:
         if isinstance(data, dict):
-            return {
-                self._decode_string(cast(bytes, key)): self.convert_bytes_keys(value)
-                for key, value in data.items()
-            }
+            return self.convert_bytes_keys_dict(data)
         if isinstance(data, list):
             return [self.convert_bytes_keys(item) for item in data]
         if isinstance(data, tuple):
