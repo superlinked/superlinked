@@ -89,6 +89,7 @@
     * [Mongo Db Vector Database](reference/dsl/storage/mongo_db_vector_database.md)
     * [Redis Vector Database](reference/dsl/storage/redis_vector_database.md)
     * [In Memory Vector Database](reference/dsl/storage/in_memory_vector_database.md)
+    * [Qdrant Vector Database](reference/dsl/storage/qdrant_vector_database.md)
     * [Vector Database](reference/dsl/storage/vector_database.md)
   * [Index](reference/dsl/index/index.md)
     * [Effect](reference/dsl/index/effect.md)
