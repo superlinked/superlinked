@@ -77,7 +77,16 @@ class Param:
         return set(options)
 
     def _validate_value_allowed(self, value: Any) -> None:
-        if self.options and value not in self.options:
+        if not self.options:
+            return
+        if TypeValidator.is_sequence_safe(value):
+            if not set(value).issubset(self.options):
+                invalid_values = [v for v in value if v not in self.options]
+                raise ValueError(
+                    f"Values {invalid_values} are not allowed for parameter {self.name}. "
+                    f"Allowed values are: {self.options}"
+                )
+        elif value not in self.options:
             raise ValueError(
                 f"Value {value} is not allowed for parameter {self.name}. "
                 f"Allowed values are: {self.options}"
