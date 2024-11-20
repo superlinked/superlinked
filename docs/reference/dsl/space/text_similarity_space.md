@@ -27,7 +27,7 @@ Functions
 Classes
 -------
 
-`TextSimilaritySpace(text: superlinked.framework.common.schema.schema_object.String | superlinked.framework.common.dag.chunking_node.ChunkingNode | list[superlinked.framework.common.schema.schema_object.String | superlinked.framework.common.dag.chunking_node.ChunkingNode], model: str, cache_size: int = 10000)`
+`TextSimilaritySpace(text: superlinked.framework.common.schema.schema_object.String | superlinked.framework.common.dag.chunking_node.ChunkingNode | list[superlinked.framework.common.schema.schema_object.String | superlinked.framework.common.dag.chunking_node.ChunkingNode], model: str, cache_size: int = 10000, model_cache_dir: pathlib.Path | None = None)`
 :   A text similarity space is used to create vectors from documents in order to search in them
     later on. We only support (SentenceTransformers)[https://www.sbert.net/] models as they have
     finetuned pooling to encode longer text sequences most efficiently.
@@ -37,9 +37,11 @@ Classes
     Args:
         text (TextInput | list[TextInput]): The Text input or a list of Text inputs.
         It is a SchemaFieldObject (String), not a regular python string.
-        model (str): The model used for text similarity.
+            model (str): The model used for text similarity.
         cache_size (int): The number of embeddings to be stored in an inmemory LRU cache.
-        Set it to 0, to disable caching. Defaults to 10000.
+            Set it to 0, to disable caching. Defaults to 10000.
+        model_cache_dir (Path | None, optional): Directory to cache downloaded models.
+            If None, uses the default cache directory. Defaults to None.
 
     ### Ancestors (in MRO)
 

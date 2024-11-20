@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.space.image_space
 Classes
 -------
 
-`ImageSpace(image: superlinked.framework.common.schema.schema_object.Blob | superlinked.framework.common.schema.schema_object.DescribedBlob | collections.abc.Sequence[superlinked.framework.common.schema.schema_object.Blob | superlinked.framework.common.schema.schema_object.DescribedBlob], model: str = 'clip-ViT-B-32', model_handler: superlinked.framework.common.space.config.embedding.image_embedding_config.ModelHandler = ModelHandler.SENTENCE_TRANSFORMERS)`
+`ImageSpace(image: superlinked.framework.common.schema.schema_object.Blob | superlinked.framework.common.schema.schema_object.DescribedBlob | collections.abc.Sequence[superlinked.framework.common.schema.schema_object.Blob | superlinked.framework.common.schema.schema_object.DescribedBlob], model: str = 'clip-ViT-B-32', model_handler: superlinked.framework.common.space.config.embedding.image_embedding_config.ModelHandler = ModelHandler.SENTENCE_TRANSFORMERS, model_cache_dir: pathlib.Path | None = None)`
 :   Initialize the ImageSpace instance for generating vector representations
     from images, supporting models from the OpenCLIP project.
     
@@ -30,6 +30,8 @@ Classes
             Defaults to "clip-ViT-B-32".
         model_handler (ModelHandler, optional): The handler for the model,
             defaults to ModelHandler.SENTENCE_TRANSFORMERS.
+        model_cache_dir (Path | None, optional): Directory to cache downloaded models.
+            If None, uses the default cache directory. Defaults to None.
     
     Raises:
         InvalidSpaceParamException: If the image and description fields are not
