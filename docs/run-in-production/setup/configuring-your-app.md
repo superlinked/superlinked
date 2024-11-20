@@ -7,7 +7,7 @@ icon: square-sliders
 
 The application's main logic resides in the Superlinked configuration files. These are where you define your application's structure and behavior using the Superlinked library.
 
-By default, all examples within this documentation utilize an in-memory database with a single worker. This configuration is optimal for testing and initial experimentation with the Superlinked framework. For detailed instructions on configuring and employing alternative vector databases, please refer to the [vector databases documentation.](../vdbs/vector_databases.md). For information on how to scale the server, read the [Scaling the Server with Concurrent Workers](#scaling-the-server-with-concurrent-workers) section.
+By default, all examples within this documentation utilize an in-memory database with a single worker. This configuration is optimal for testing and initial experimentation with the Superlinked framework. For detailed instructions on configuring and employing alternative vector databases, please refer to the [vector databases documentation.](../vdbs/index.md). For information on how to scale the server, read the [Scaling the Server with Concurrent Workers](#scaling-the-server-with-concurrent-workers) section.
 
 To begin interacting with the system, you may start with the basic example application found [here](../example/simple/api.py).
 For a more complex yet approachable example, refer to the Amazon case study [here](../example/amazon/api.py).
