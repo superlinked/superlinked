@@ -132,7 +132,7 @@ executor = sl.RestExecutor(
 > Name of your data loader: The `name` parameter in `DataLoaderConfig` is optional. By default, it adopts the snake_case version of your schema's name used in `DataLoaderSource`. If you have multiple data loaders for the same schema or prefer a different name, simply set the `name` parameter accordingly.
 > Note that the name will always be converted to snake_case. To see the configured data loaders in your system, refer to the [API documentation](interacting-with-app-via-api.md#see-available-data-loaders).
 
-The data loader is now configured but **it only runs if you send a request to the data loader endpoint!** To see how to trigger it, check the API documentation [here](api.md#trigger-the-data-load)
+The data loader is now configured but **it only runs if you send a request to the data loader endpoint!** To see how to trigger it, check the API documentation [here](interacting-with-app-via-api.md#trigger-the-data-load)
 
 ## Optional steps
 
@@ -150,7 +150,7 @@ data_loader_source = sl.DataLoaderSource(your_schema, config, data_frame_parser)
 ### Data Chunking
 
 Data chunking allows you to load more data than your memory could typically handle at once. This is particularly beneficial when dealing with data sets that span multiple gigabytes.
-> If you're uncertain whether your data will fit into your memory, it's strongly advised to employ chunking to prevent unexpected problems. By setting the [log level to debug in the executor](../runner/executor/.env), you can view pandas memory information regardless of whether you're chunking the data. This assists in estimating memory usage.
+> If you're uncertain whether your data will fit into your memory, it's strongly advised to employ chunking to prevent unexpected problems. By setting the [log level to debug in the executor](../../../server/runner/executor/.env), you can view pandas memory information regardless of whether you're chunking the data. This assists in estimating memory usage.
 
 To implement chunking, you'll need to use either CSV or JSON formats (specifically JSONL, which includes JSON objects on each line).
 
@@ -163,7 +163,7 @@ config = sl.DataLoaderConfig("https://path-to-your-file.jsonl", DataFormat.JSON,
 ```
 
 The Superlinked library performs internal batching for embeddings, with a default batch size of 10000. If you are utilizing a chunk size different from 10000, it is advisable to adjust this batch size to match your chunk size.
-To modify this, alter the `ONLINE_PUT_CHUNK_SIZE` value [in this file](../runner/executor/.env)
+To modify this, alter the `ONLINE_PUT_CHUNK_SIZE` value [in this file](../../../server/runner/executor/.env)
 
 ### Customize your API
 
@@ -212,7 +212,7 @@ executor = sl.RestExecutor(
 )
 ```
 
-Finally, you need to set a flag to prevent exceptions when utilizing Recency Space. Set the `DISABLE_RECENCY_SPACE` flag to `false` in the [.env config file](../runner/executor/.env)
+Finally, you need to set a flag to prevent exceptions when utilizing Recency Space. Set the `DISABLE_RECENCY_SPACE` flag to `false` in the [.env config file](../../../server/runner/executor/.env)
 
 ### GPU acceleration
 
@@ -242,10 +242,10 @@ services:
     ...
 ```
 
-To activate GPU support in Superlinked, configure the `GPU_EMBEDDING_THRESHOLD` environment variable within the [.env](../runner/executor/.env) file for the executor service. Ensure that this value does not exceed the `ONLINE_PUT_CHUNK_SIZE` specified in the same configuration file. The appropriate threshold value is contingent upon the computational capabilities of the server's GPU and CPU; however, it is recommended to set a minimum threshold of 10000. This parameter determines the minimum size of data batches for which GPU acceleration is employed, thereby enhancing the performance of bulk embedding operations. A value of 0 indicates that GPU acceleration is disabled during the embedding process.
+To activate GPU support in Superlinked, configure the `GPU_EMBEDDING_THRESHOLD` environment variable within the [.env](../../../server/runner/executor/.env) file for the executor service. Ensure that this value does not exceed the `ONLINE_PUT_CHUNK_SIZE` specified in the same configuration file. The appropriate threshold value is contingent upon the computational capabilities of the server's GPU and CPU; however, it is recommended to set a minimum threshold of 10000. This parameter determines the minimum size of data batches for which GPU acceleration is employed, thereby enhancing the performance of bulk embedding operations. A value of 0 indicates that GPU acceleration is disabled during the embedding process.
 
 ### Scaling the Server with Concurrent Workers
 
-To enhance the server's throughput, it is feasible to deploy multiple worker processes. This can be configured by modifying the `WORKER_COUNT` parameter in the [compose.yaml](../compose.yaml) file, initially set to `WORKER_COUNT=1`. For optimal configuration, empirical benchmarking is recommended, though a heuristic approach suggests allocating one worker per virtual CPU.
+To enhance the server's throughput, it is feasible to deploy multiple worker processes. This can be configured by modifying the `WORKER_COUNT` parameter in the [compose.yaml](../../../server/compose.yaml) file, initially set to `WORKER_COUNT=1`. For optimal configuration, empirical benchmarking is recommended, though a heuristic approach suggests allocating one worker per virtual CPU.
 
 > Important to note: When scaling to multiple workers, the utilization of an in-memory database becomes inaccessible. It is crucial to transition to a persistent vector database, as provided by the connectors available within the Superlinked ecosystem.
