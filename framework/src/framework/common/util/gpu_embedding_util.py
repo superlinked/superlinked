@@ -12,27 +12,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import lru_cache
+
 import torch
 
-from superlinked.framework.common.util.lazy_property import lazy_property
+from superlinked.framework.common.settings import Settings
+
+CPU_DEVICE_TYPE = "cpu"
+CUDA_DEVICE_TYPE = "cuda"
+MPS_DEVICE_TYPE = "mps"
 
 
 class GpuEmbeddingUtil:
-    def __init__(self, gpu_embedding_threshold: int) -> None:
-        self._gpu_embedding_threshold = gpu_embedding_threshold
+    @classmethod
+    def get_device_type(cls, number_of_embeddings: int) -> str:
+        if cls._should_use_gpu(number_of_embeddings):
+            return cls._get_available_gpu_device()
+        return CPU_DEVICE_TYPE
 
-    def is_above_gpu_embedding_threshold(self, number_of_embeddings: int) -> bool:
-        return number_of_embeddings >= self._gpu_embedding_threshold
+    @classmethod
+    def _should_use_gpu(cls, number_of_embeddings: int) -> bool:
+        return 0 < Settings().GPU_EMBEDDING_THRESHOLD <= number_of_embeddings
 
-    @lazy_property
-    def gpu_device_type(self) -> str | None:
-        device_type = None
+    @classmethod
+    @lru_cache(3)
+    def _get_available_gpu_device(cls) -> str:
         if torch.cuda.is_available():
-            device_type = "cuda"
-        elif torch.backends.mps.is_available():
-            device_type = "mps"
-        return device_type
-
-    @lazy_property
-    def is_gpu_embedding_enabled(self) -> bool:
-        return self.gpu_device_type is not None and self._gpu_embedding_threshold > 0
+            return CUDA_DEVICE_TYPE
+        if torch.backends.mps.is_available():
+            return MPS_DEVICE_TYPE
+        return CPU_DEVICE_TYPE

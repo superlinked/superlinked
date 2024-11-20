@@ -13,45 +13,27 @@
 # limitations under the License.
 
 from functools import lru_cache
+from pathlib import Path
 
 import numpy as np
 import torch
 from beartype.typing import Any, cast
 from open_clip.factory import create_model_and_transforms, get_tokenizer
 from open_clip.model import CLIP
+from open_clip.tokenizer import HFTokenizer, SimpleTokenizer
 from PIL.Image import Image
 from torchvision.transforms.transforms import Compose  # type:ignore[import-untyped]
 from typing_extensions import override
 
-from superlinked.framework.common.settings import Settings
 from superlinked.framework.common.space.embedding.model_manager import ModelManager
 from superlinked.framework.common.util.gpu_embedding_util import GpuEmbeddingUtil
 
 
 class OpenClipManager(ModelManager):
-    def __init__(self, model_name: str) -> None:
-        super().__init__(model_name)
-        self._tokenizer = get_tokenizer(model_name)
-        self._gpu_embedding_util = GpuEmbeddingUtil(Settings().GPU_EMBEDDING_THRESHOLD)
-        self._model = self._initialize_model(model_name, "cpu")
-        self._bulk_model = (
-            self._initialize_model(
-                model_name,
-                self._gpu_embedding_util.gpu_device_type,
-            )
-            if self._gpu_embedding_util.is_gpu_embedding_enabled
-            else ()
-        )
-
-    def _get_embedding_model(self, number_of_inputs: int) -> tuple[CLIP, Compose]:
-        return (
-            self._bulk_model
-            if self._bulk_model
-            and self._gpu_embedding_util.is_above_gpu_embedding_threshold(
-                number_of_inputs
-            )
-            else self._model
-        )
+    @override
+    def calculate_length(self) -> int:
+        embedding_model, _ = self._get_embedding_model(0)
+        return embedding_model.token_embedding.embedding_dim
 
     @override
     def _embed(self, inputs: list[str | Image]) -> list[list[float]] | list[np.ndarray]:
@@ -65,6 +47,12 @@ class OpenClipManager(ModelManager):
             )
         encodings = self._combine_encodings(inputs, text_encodings, image_encodings)
         return [self._normalize_encoding(encoding).tolist() for encoding in encodings]
+
+    def _get_embedding_model(self, number_of_inputs: int) -> tuple[CLIP, Compose]:
+        device_type = GpuEmbeddingUtil.get_device_type(number_of_inputs)
+        return OpenClipModelCache.initialize_model(
+            self._model_name, device_type, self._model_cache_dir
+        )
 
     def _categorize_inputs(
         self, inputs: list[str | Image]
@@ -101,7 +89,8 @@ class OpenClipManager(ModelManager):
     def encode_texts(self, texts: list[str], embedding_model: CLIP) -> torch.Tensor:
         if not texts:
             return torch.Tensor()
-        texts_tokenized = self._tokenizer(texts)
+        tokenizer = OpenClipModelCache.initialize_tokenizer(self._model_name)
+        texts_tokenized = tokenizer(texts)
         return embedding_model.encode_text(texts_tokenized)
 
     def encode_images(
@@ -114,21 +103,22 @@ class OpenClipManager(ModelManager):
         )
         return embedding_model.encode_image(images_to_process)
 
-    @classmethod
-    @lru_cache(maxsize=128)
-    @override
-    def calculate_length(cls, model_name: str) -> int:
-        embedding_model, _ = cls._initialize_model(model_name, "cpu")
-        length = embedding_model.token_embedding.embedding_dim
-        return length
 
-    @classmethod
-    @lru_cache(maxsize=20)
-    def _initialize_model(cls, model_name: str, device: str) -> tuple[CLIP, Compose]:
+class OpenClipModelCache:
+    @staticmethod
+    @lru_cache(maxsize=10)
+    def initialize_model(
+        model_name: str, device: str, cache_dir: Path
+    ) -> tuple[CLIP, Compose]:
         model, _, preprocess_val = cast(
             tuple[CLIP, Any, Compose],
             create_model_and_transforms(
-                model_name, device=device, cache_dir=str(cls._get_cache_folder())
+                model_name, device=device, cache_dir=str(cache_dir)
             ),
         )
         return model, preprocess_val
+
+    @staticmethod
+    @lru_cache(maxsize=10)
+    def initialize_tokenizer(model_name: str) -> HFTokenizer | SimpleTokenizer:
+        return get_tokenizer(model_name)

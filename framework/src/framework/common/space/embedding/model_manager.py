@@ -29,8 +29,9 @@ DEFAULT_MODEL_CACHE_DIR = (
 
 
 class ModelManager(ABC):
-    def __init__(self, model_name: str) -> None:
+    def __init__(self, model_name: str, model_cache_dir: Path | None = None) -> None:
         self._model_name = model_name
+        self._model_cache_dir = self.__get_cache_folder(model_cache_dir)
 
     def embed(self, inputs: Sequence[str | Image | None]) -> list[Vector | None]:
         inputs_without_nones = [input_ for input_ in inputs if input_ is not None]
@@ -48,10 +49,10 @@ class ModelManager(ABC):
         self, inputs: list[str | Image]
     ) -> list[list[float]] | list[np.ndarray]: ...
 
-    @classmethod
     @abstractmethod
-    def calculate_length(cls, model_name: str) -> int: ...
+    def calculate_length(self) -> int: ...
 
-    @classmethod
-    def _get_cache_folder(cls) -> Path:
-        return Path(Settings().MODEL_CACHE_DIR or DEFAULT_MODEL_CACHE_DIR)
+    def __get_cache_folder(self, model_cache_dir: Path | None) -> Path:
+        return model_cache_dir or Path(
+            Settings().MODEL_CACHE_DIR or DEFAULT_MODEL_CACHE_DIR
+        )

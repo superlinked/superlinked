@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pathlib import Path
+
 from beartype.typing import cast
 from typing_extensions import override
 
@@ -59,6 +61,7 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
         text: TextInput | list[TextInput],
         model: str,
         cache_size: int = DEFAULT_CACHE_SIZE,
+        model_cache_dir: Path | None = None,
     ) -> None:
         """
         Initialize the TextSimilaritySpace.
@@ -66,11 +69,13 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
         Args:
             text (TextInput | list[TextInput]): The Text input or a list of Text inputs.
             It is a SchemaFieldObject (String), not a regular python string.
-            model (str): The model used for text similarity.
+                model (str): The model used for text similarity.
             cache_size (int): The number of embeddings to be stored in an inmemory LRU cache.
-            Set it to 0, to disable caching. Defaults to 10000.
+                Set it to 0, to disable caching. Defaults to 10000.
+            model_cache_dir (Path | None, optional): Directory to cache downloaded models.
+                If None, uses the default cache directory. Defaults to None.
         """
-        length = SentenceTransformerManager.calculate_length(model)
+        length = SentenceTransformerManager(model, model_cache_dir).calculate_length()
         self._transformation_config = self._init_transformation_config(
             model, cache_size, length
         )

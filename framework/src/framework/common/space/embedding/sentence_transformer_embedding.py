@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+from pathlib import Path
+
 import structlog
 from beartype.typing import Sequence
 from typing_extensions import override
@@ -32,9 +34,15 @@ logger = structlog.getLogger()
 
 
 class SentenceTransformerEmbedding(Embedding[str, TextSimilarityEmbeddingConfig]):
-    def __init__(self, embedding_config: TextSimilarityEmbeddingConfig) -> None:
+    def __init__(
+        self,
+        embedding_config: TextSimilarityEmbeddingConfig,
+        model_cache_dir: Path | None = None,
+    ) -> None:
         super().__init__(embedding_config)
-        self.manager = SentenceTransformerManager(self._config.model_name)
+        self.manager = SentenceTransformerManager(
+            self._config.model_name, model_cache_dir
+        )
         self._cache = EmbeddingCache(self._config.cache_size)
 
     @override

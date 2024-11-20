@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pathlib import Path
+
 import structlog
 from beartype.typing import Sequence
 from typing_extensions import override
@@ -41,10 +43,14 @@ logger = structlog.getLogger()
 
 
 class ImageEmbedding(Embedding[ImageData, ImageEmbeddingConfig]):
-    def __init__(self, embedding_config: ImageEmbeddingConfig) -> None:
+    def __init__(
+        self,
+        embedding_config: ImageEmbeddingConfig,
+        model_cache_dir: Path | None = None,
+    ) -> None:
         super().__init__(embedding_config)
-        self.manager = self.get_manager_type(self._config.model_handler)(
-            self._config.model_name
+        self.manager = ImageEmbedding.init_manager(
+            self._config.model_handler, self._config.model_name, model_cache_dir
         )
 
     @override
@@ -83,12 +89,15 @@ class ImageEmbedding(Embedding[ImageData, ImageEmbeddingConfig]):
         return self._config.length
 
     @classmethod
-    def get_manager_type(cls, model_handler: ModelHandler) -> type[ModelManager]:
+    def init_manager(
+        cls, model_handler: ModelHandler, model_name: str, model_cache_dir: Path | None
+    ) -> ModelManager:
         manager_by_handler = {
             ModelHandler.SENTENCE_TRANSFORMERS: SentenceTransformerManager,
             ModelHandler.OPEN_CLIP: OpenClipManager,
         }
         try:
-            return manager_by_handler[model_handler]
+            manager_type = manager_by_handler[model_handler]
         except KeyError as e:
             raise ValueError(f"Unsupported model handler: {model_handler}") from e
+        return manager_type(model_name, model_cache_dir)

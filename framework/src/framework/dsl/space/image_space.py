@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pathlib import Path
+
 import structlog
 from beartype.typing import Sequence
 from typing_extensions import override
@@ -77,6 +79,7 @@ class ImageSpace(Space[Vector, ImageData]):
         image: Blob | DescribedBlob | Sequence[Blob | DescribedBlob],
         model: str = "clip-ViT-B-32",
         model_handler: ModelHandler = ModelHandler.SENTENCE_TRANSFORMERS,
+        model_cache_dir: Path | None = None,
     ) -> None:
         """
         Initialize the ImageSpace instance for generating vector representations
@@ -89,12 +92,16 @@ class ImageSpace(Space[Vector, ImageData]):
                 Defaults to "clip-ViT-B-32".
             model_handler (ModelHandler, optional): The handler for the model,
                 defaults to ModelHandler.SENTENCE_TRANSFORMERS.
+            model_cache_dir (Path | None, optional): Directory to cache downloaded models.
+                If None, uses the default cache directory. Defaults to None.
 
         Raises:
             InvalidSpaceParamException: If the image and description fields are not
                 from the same schema.
         """
-        length = ImageEmbedding.get_manager_type(model_handler).calculate_length(model)
+        length = ImageEmbedding.init_manager(
+            model_handler, model, model_cache_dir
+        ).calculate_length()
         self._transformation_config = self._init_transformation_config(
             model, length, model_handler
         )
