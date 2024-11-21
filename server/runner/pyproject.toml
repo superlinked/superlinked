@@ -21,16 +21,16 @@ requests = "^2.27.1"
 cerberus = "^1.3.5"
 pyyaml = "^6.0.1"
 chardet = "^5.2.0"
-boto3-stubs = {version = "^1.35.20", extras = ["s3"]}
+boto3-stubs = {version = "^1.35.66", extras = ["s3"]}
 structlog = "^24.4.0"
 
 [tool.poetry.group.executor]
 optional = true
 
 [tool.poetry.group.executor.dependencies]
-fastapi = "^0.115.0"
-uvicorn = "^0.31.0"
-deltalake = "^0.20.2"
+fastapi = "^0.115.5"
+uvicorn = "^0.32.1"
+deltalake = "^0.21.0"
 fsspec = "^2023.12.2"
 gcsfs = "^2023.12.2.post1"
 s3fs = "^2023.12.2"
@@ -38,11 +38,11 @@ adlfs = "^2024.7.0"
 httpx = "^0.27.2"
 inject = "^5.2.0"
 fastapi-restful = "^0.6.0"
-pydantic = "^2.6.3"
+pydantic = "^2.10.0"
 pydantic-settings = "^2.5.2"
 typing-inspect = "^0.9.0"
 tqdm = "^4.66.3" # Dependency of superlinked. Here because of security vulnerability [FAI-1841]
-superlinked = {extras = ["mongo", "pub-sub", "redis", "storage"], version = "^12.28.1"}
+superlinked = {extras = ["mongo", "pub-sub", "redis", "storage"], version = "^15.2.0"}
 gunicorn = "^23.0.0"
 python-json-logger = "^2.0.7"
 asgi-correlation-id = "^4.3.3"
@@ -54,17 +54,17 @@ pytest-mock = "^3.12.0"
 pytest-emoji = "^0.2.0"
 pytest-md = "^0.2.0"
 pytest-asyncio = "^0.24.0"
-moto = {version = "^5.0.6", extras = ["all"]}
+moto = {version = "^5.0.21", extras = ["all"]}
 jinja2 = "^3.1.4" # Dependency of moto. Here because of security vulnerability [FAI-1841]
-werkzeug = "^3.0.3" # Dependency of moto. Here because of security vulnerability [FAI-1841]
+werkzeug = "^3.1.3" # Dependency of moto. Here because of security vulnerability [FAI-1841]
 types-google-cloud-ndb = "^2.2.0.20240205"
 types-jmespath = "^1.0.2.20240106"
 types-requests = "^2.27.1"
 types-pyyaml = "^6.0.12.12"
-mypy-boto3 = "^1.35.29"
-mypy = "<1.12"
-typing-protocol-intersection = "^0.4.0"
-ruff = "^0.6.7"
+mypy-boto3 = "^1.35.66"
+mypy = "<1.14"
+typing-protocol-intersection = "^0.5.1"
+ruff = "^0.7.4"
 pylint = "^3.1.0"
 vermin = "^1.6.0"
 

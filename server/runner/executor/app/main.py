@@ -38,6 +38,7 @@ ServerLoggerConfigurator.setup_logger(app_config, logs_to_suppress)
 
 app = FastAPI(lifespan=lifespan)
 
+app.add_exception_handler(ValueError, handle_bad_request)
 app.add_exception_handler(ValueNotProvidedException, handle_bad_request)
 app.add_exception_handler(MissingIdException, handle_bad_request)
 app.add_exception_handler(JSONDecodeError, handle_bad_request)
