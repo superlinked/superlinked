@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
+import numpy as np
 from beartype.typing import Any, Generic, Sequence, TypeVar
 from scipy import linalg
 from typing_extensions import override
@@ -23,6 +24,7 @@ from typing_extensions import override
 from superlinked.framework.common.data_types import NPArray, Vector
 from superlinked.framework.common.space.config.normalization.normalization_config import (
     ConstantNormConfig,
+    L1NormConfig,
     L2NormConfig,
     NoNormConfig,
     NormalizationConfig,
@@ -62,6 +64,16 @@ class Normalization(Generic[NormalizationConfigT], ABC):
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}({self.__dict__ if self.__dict__ else ''})"
+
+
+class L1Norm(Normalization[L1NormConfig]):
+    def __init__(self, config: L1NormConfig | None = None) -> None:
+        super().__init__(config or L1NormConfig())
+
+    @override
+    def norm(self, value: NPArray) -> float:
+        """Returns the L1 norm (sum of absolute values) of the input array"""
+        return np.sum(np.abs(value))
 
 
 class L2Norm(Normalization[L2NormConfig]):

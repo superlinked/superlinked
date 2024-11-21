@@ -58,7 +58,7 @@ class AggregationNodeUtil:
             for eg in event_aggregation_effect_groups
         ]
         weighted_eans: list[Weighted[Node[Vector]]] = [
-            Weighted(parent, effect_modifier.temperature) for parent in eans
+            Weighted(parent, effect_modifier.event_influence) for parent in eans
         ]
         affected_node = aggregation_effect_group.space._get_embedding_node(
             aggregation_effect_group.affected_schema
@@ -68,7 +68,7 @@ class AggregationNodeUtil:
                 f"AggregationNode affected node of type {type(affected_node).__name__} does not have aggregation set."
             )
         weighted_affected_node: Weighted[Node[Vector]] = Weighted(
-            affected_node, 1 - effect_modifier.temperature
+            affected_node, 1 - effect_modifier.event_influence
         )
 
         aggregation_node = AggregationNode(

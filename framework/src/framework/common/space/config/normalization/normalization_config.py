@@ -21,6 +21,10 @@ class NormalizationConfig(ABC):
     pass
 
 
+class L1NormConfig(NormalizationConfig):
+    pass
+
+
 @dataclass(frozen=True)
 class L2NormConfig(NormalizationConfig):
     pass
