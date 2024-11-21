@@ -279,7 +279,9 @@ class NLQParamEvaluator:
     def _calculate_field_details_text(
         self, model_class: type[BaseModel], param_info: ParamInfo
     ) -> str:
-        model_field_info = model_class.model_fields[param_info.name]
+        # mypy doesn’t recognize this as a property
+        model_fields: dict[str, FieldInfo] = model_class.model_fields  # type: ignore [assignment]
+        model_field_info = model_fields[param_info.name]
         is_weight_text = "weight" if param_info.is_weight else "value"
         allowed_values = sorted(param_info.allowed_values)  # type: ignore[type-var]
         field_detail_parts = [

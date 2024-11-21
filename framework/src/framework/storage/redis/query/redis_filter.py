@@ -62,11 +62,13 @@ class RedisFilter(VDBFilter):
             ComparisonOperationType.CONTAINS,
             ComparisonOperationType.NOT_CONTAINS,
         ]:
-            value = " | ".join(self.field_value.decode("utf-8").split(", "))
-            return self._fill_template(operator_map, self.op, value)
+            value_text = f" {OR_OPERATOR} ".join(
+                f'"{value}"' for value in self.field_value.decode("utf-8").split(", ")
+            )
+            return self._fill_template(operator_map, self.op, value_text)
         if self.op == ComparisonOperationType.CONTAINS_ALL:
             values = [
-                self._fill_template(operator_map, self.op, value)
+                self._fill_template(operator_map, self.op, f'"{value}"')
                 for value in self.field_value.decode("utf-8").split(", ")
             ]
             value_text = " ".join(values)

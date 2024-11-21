@@ -23,6 +23,7 @@ from superlinked.framework.common.interface.comparison_operand import (
 )
 from superlinked.framework.common.interface.comparison_operation_type import (
     ITERABLE_COMPARISON_OPERATION_TYPES,
+    LIST_TYPE_COMPATIBLE_TYPES,
 )
 from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.field.field_data import (
@@ -69,17 +70,21 @@ class RedisQueryBuilder:
         return [self._compile_filter(filter_) for filter_ in filters]
 
     def _compile_filter(self, filter_: ComparisonOperation[Field]) -> RedisFilter:
+        other = (
+            self._get_other_as_sequence(filter_._other)
+            if filter_._op in LIST_TYPE_COMPATIBLE_TYPES
+            else filter_._other
+        )
         field_value = (
-            self._encode_iterable_field(filter_._operand, filter_._other)
+            self._encode_iterable_field(filter_._operand, other)
             if filter_._op in ITERABLE_COMPARISON_OPERATION_TYPES
-            else self._encode_field(filter_._operand, filter_._other)
+            else self._encode_field(filter_._operand, other)
         )
         return RedisFilter(cast(Field, filter_._operand), field_value, filter_._op)
 
     def _encode_iterable_field(
         self, operand: ComparisonOperand, other: Any
     ) -> list[RedisEncodedTypes]:
-        other = self._get_other_as_sequence(other)
         return [self._encode_field(operand, item) for item in other]
 
     def _get_other_as_sequence(self, other: Any) -> Sequence[Any]:
