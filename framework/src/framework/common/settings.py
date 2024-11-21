@@ -50,6 +50,7 @@ class Settings(BaseSettings):
     BLOB_HANDLER_CLASS_NAME: str | None = None
     BLOB_HANDLER_CLASS_ARGS_STR: str | None = None
     BLOB_HANDLER_CLASS_ARGS: dict[str, Any] | None = None
+    INIT_SEARCH_INDICES: bool = True
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

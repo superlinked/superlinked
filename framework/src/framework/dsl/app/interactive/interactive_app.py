@@ -36,6 +36,7 @@ class InteractiveApp(OnlineApp[InteractiveSource]):
         indices: Sequence[Index],
         vector_database: VectorDatabase,
         context: ExecutionContext,
+        init_search_indices: bool = True,
     ) -> None:
         """
         Initialize the InteractiveApp from an InteractiveExecutor.
@@ -44,13 +45,10 @@ class InteractiveApp(OnlineApp[InteractiveSource]):
             indices (list[Index]): List of indices.
             vector_database (VectorDatabase | None): Vector database instance. Defaults to InMemory.
             context (Mapping[str, Mapping[str, Any]]): Context mapping.
+            init_search_indices (bool): Decides if the search indices need to be created. Defaults to True.
         """
         super().__init__(
-            sources,
-            indices,
-            vector_database,
-            context,
-            NoOpQueue(),
+            sources, indices, vector_database, context, init_search_indices, NoOpQueue()
         )
         self._allow_data_ingestion_for_sources(sources)
 

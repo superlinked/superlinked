@@ -38,6 +38,7 @@ class App(ABC, Generic[SourceT]):
         indices: Sequence[Index],
         vector_database: VectorDatabase,
         context: ExecutionContext,
+        init_search_indices: bool,
     ) -> None:
         """
         Initialize the App.
@@ -53,6 +54,8 @@ class App(ABC, Generic[SourceT]):
         self._context = context
         self._storage_manager = self._init_storage_manager()
         self.now = context.now()
+        if init_search_indices:
+            self._init_search_indices()
 
     @property
     def storage_manager(self) -> StorageManager:

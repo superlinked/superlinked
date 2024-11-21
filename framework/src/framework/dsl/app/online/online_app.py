@@ -53,6 +53,7 @@ class OnlineApp(App[OnlineSourceT], Generic[OnlineSourceT], QueryMixin):
         indices: Sequence[Index],
         vector_database: VectorDatabase,
         context: ExecutionContext,
+        init_search_indices: bool,
         queue: Queue | None = None,
         blob_handler: BlobHandler | None = None,
     ) -> None:
@@ -67,11 +68,12 @@ class OnlineApp(App[OnlineSourceT], Generic[OnlineSourceT], QueryMixin):
             source_to_queue_map (dict[OnlineSourceT, Queue] | None): a mapping from sources
                 to messaging queues persisting the ingested data on the given source; defaults to None.
         """
-        super().__init__(sources, indices, vector_database, context)
+        super().__init__(
+            sources, indices, vector_database, context, init_search_indices
+        )
         self._data_processors: list[OnlineDataProcessor] = []
 
         self.setup_query_execution(self._indices)
-        self._init_search_indices()
         self.__setup_sources()
         if queue is not None:
             self.__register_queue_to_sources(queue)
