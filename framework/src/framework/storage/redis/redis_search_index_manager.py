@@ -64,7 +64,9 @@ class RedisSearchIndexManager(DynamicSearchIndexManager):
             index_config.vector_field_descriptor, index_config.field_descriptors
         )
         self._client.ft(index_config.index_name).create_index(
-            list(fields), definition=index_def
+            list(fields),
+            definition=index_def,
+            stopwords=[],  # otherwise queries will not work with words like "no" or "a"
         )
 
     @override
