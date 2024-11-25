@@ -137,6 +137,7 @@ class RecencySpace(
             field.schema_obj: RecencyNode(
                 parent=SchemaFieldNode(field),
                 transformation_config=self._transformation_config,
+                fields_for_identification=self.timestamp.fields,
             )
             for field in self.timestamp.fields
         }
@@ -218,5 +219,6 @@ class RecencySpace(
         default_node = RecencyNode(
             parent=named_function_node,
             transformation_config=self._transformation_config,
+            fields_for_identification=self.timestamp.fields,
         )
         return default_node

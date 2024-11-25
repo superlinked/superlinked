@@ -119,7 +119,9 @@ class CustomSpace(Space[Vector, Vector], HasSpaceFieldSet):
     def _create_default_node(
         self, schema: SchemaObject
     ) -> EmbeddingNode[Vector, Vector]:
-        return CustomVectorEmbeddingNode(None, self.transformation_config)
+        return CustomVectorEmbeddingNode(
+            None, self.transformation_config, self.vector.fields
+        )
 
     def _calculate_schema_node_map(
         self, transformation_config: TransformationConfig
@@ -128,6 +130,7 @@ class CustomSpace(Space[Vector, Vector], HasSpaceFieldSet):
             vector_schema_field: CustomVectorEmbeddingNode(
                 parent=SchemaFieldNode(vector_schema_field),
                 transformation_config=transformation_config,
+                fields_for_identification=self.vector.fields,
             )
             for vector_schema_field in self.vector.fields
         }

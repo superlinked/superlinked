@@ -99,23 +99,23 @@ class ImageSpace(Space[Vector, ImageData]):
             InvalidSpaceParamException: If the image and description fields are not
                 from the same schema.
         """
-        length = ImageEmbedding.init_manager(
-            model_handler, model, model_cache_dir
-        ).calculate_length()
-        self._transformation_config = self._init_transformation_config(
-            model, length, model_handler
-        )
         described_blobs = [
             self._get_described_blob(img)
             for img in (image if isinstance(image, Sequence) else [image])
         ]
         image_fields = [described.blob for described in described_blobs]
         super().__init__(image_fields, Blob)
+        length = ImageEmbedding.init_manager(
+            model_handler, model, model_cache_dir
+        ).calculate_length()
         self.image = ImageSpaceFieldSet(self, set(image_fields))
         self.description = ImageDescriptionSpaceFieldSet(
             self, set(described.description for described in described_blobs)
         )
-
+        self._all_fields = self.image.fields | self.description.fields
+        self._transformation_config = self._init_transformation_config(
+            model, length, model_handler
+        )
         self._schema_field_nodes_by_schema: dict[
             SchemaObject, tuple[SchemaFieldNode[BlobInformation], SchemaFieldNode[str]]
         ] = {
@@ -130,6 +130,7 @@ class ImageSpace(Space[Vector, ImageData]):
                 image_blob_node=image_blob_node,
                 description_node=description_node,
                 transformation_config=self.transformation_config,
+                fields_for_identification=self._all_fields,
             )
             for schema, (
                 image_blob_node,
@@ -164,7 +165,9 @@ class ImageSpace(Space[Vector, ImageData]):
     def _create_default_node(
         self, schema: SchemaObject
     ) -> EmbeddingNode[Vector, ImageData]:
-        default_node = ImageEmbeddingNode(None, None, self._transformation_config)
+        default_node = ImageEmbeddingNode(
+            None, None, self._transformation_config, self._all_fields
+        )
         return default_node
 
     @property
@@ -186,7 +189,12 @@ class ImageSpace(Space[Vector, ImageData]):
     def _init_transformation_config(
         self, model: str, length: int, model_handler: ModelHandler
     ) -> TransformationConfig[Vector, ImageData]:
-        embedding_config = ImageEmbeddingConfig(ImageData, model, model_handler, length)
+        embedding_config = ImageEmbeddingConfig(
+            ImageData,
+            model,
+            model_handler,
+            length,
+        )
         aggregation_config = VectorAggregationConfig(Vector)
         normalization_config = L2NormConfig()
         return TransformationConfig(

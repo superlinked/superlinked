@@ -110,6 +110,8 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
         """
         self._aggregation_mode = aggregation_mode  # this must be set before super init for _handle_node_not_present
         super().__init__(number, Number)
+        number_fields = number if isinstance(number, list) else [number]
+        self.number = SpaceFieldSet[float](self, set(number_fields))
         self._aggregation_config_type_by_mode = (
             self.__init_aggregation_config_type_by_mode()
         )
@@ -124,17 +126,13 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
         self._transformation_config = self._init_transformation_config(
             self._embedding_config, self._aggregation_mode
         )
-        number_node_map = {
-            num: NumberEmbeddingNode(
-                parent=SchemaFieldNode(num),
-                transformation_config=self._transformation_config,
-            )
-            for num in (number if isinstance(number, list) else [number])
-        }
-        self.number = SpaceFieldSet[float](self, set(number_node_map.keys()))
         self.__schema_node_map: dict[SchemaObject, EmbeddingNode[float, float]] = {
-            schema_field.schema_obj: node
-            for schema_field, node in number_node_map.items()
+            number_field.schema_obj: NumberEmbeddingNode(
+                parent=SchemaFieldNode(number_field),
+                transformation_config=self._transformation_config,
+                fields_for_identification=self.number.fields,
+            )
+            for number_field in number_fields
         }
 
     @property
@@ -245,6 +243,7 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
         default_node = NumberEmbeddingNode(
             parent=constant_node,
             transformation_config=self._transformation_config,
+            fields_for_identification=self.number.fields,
         )
         return default_node
 

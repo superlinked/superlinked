@@ -32,3 +32,14 @@ class CategoricalSimilarityEmbeddingConfig(EmbeddingConfig[list[str]]):
     @override
     def length(self) -> int:
         return len(self.categories) + 1
+
+    @override
+    def __hash__(self) -> int:
+        return hash(
+            (
+                super().__hash__(),
+                tuple(self.categories),
+                self.uncategorized_as_category,
+                self.negative_filter,
+            )
+        )

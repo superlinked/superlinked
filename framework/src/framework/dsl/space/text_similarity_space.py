@@ -75,21 +75,21 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
             model_cache_dir (Path | None, optional): Directory to cache downloaded models.
                 If None, uses the default cache directory. Defaults to None.
         """
+        unchecked_texts = text if isinstance(text, list) else [text]
+        text_fields = [
+            self._get_root(unchecked_text) for unchecked_text in unchecked_texts
+        ]
+        super().__init__(text_fields, String)
+        self.text = SpaceFieldSet[str](self, set(text_fields))
         length = SentenceTransformerManager(model, model_cache_dir).calculate_length()
         self._transformation_config = self._init_transformation_config(
             model, cache_size, length
         )
-        text_text_node_map = {
-            self._get_root(unchecked_text): self._generate_embedding_node(
+        self._schema_node_map: dict[SchemaObject, EmbeddingNode[Vector, str]] = {
+            self._get_root(unchecked_text).schema_obj: self._generate_embedding_node(
                 unchecked_text, self._transformation_config
             )
-            for unchecked_text in (text if isinstance(text, list) else [text])
-        }
-        super().__init__(list(text_text_node_map.keys()), String)
-        self.text = SpaceFieldSet[str](self, set(text_text_node_map.keys()))
-        self._schema_node_map: dict[SchemaObject, EmbeddingNode[Vector, str]] = {
-            schema_field.schema_obj: node
-            for schema_field, node in text_text_node_map.items()
+            for unchecked_text in unchecked_texts
         }
         self._model = model
 
@@ -107,6 +107,7 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
         return TextEmbeddingNode(
             parent=parent,
             transformation_config=transformation_config,
+            fields_for_identification=self.text.fields,
         )
 
     @property
@@ -126,7 +127,9 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
 
     @override
     def _create_default_node(self, schema: SchemaObject) -> EmbeddingNode[Vector, str]:
-        default_node = TextEmbeddingNode(None, self._transformation_config)
+        default_node = TextEmbeddingNode(
+            None, self._transformation_config, self.text.fields
+        )
         return default_node
 
     @property

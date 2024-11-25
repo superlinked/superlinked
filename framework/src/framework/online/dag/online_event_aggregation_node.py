@@ -132,9 +132,10 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         weights = self._calculate_affecting_weights(
             parsed_schema.event_parsed_schema, context
         )
-        avg_affecting_weight = (
-            (sum(weights) / len(weights)) if not affecting_vector.is_empty else 0
-        )
+        if self._should_return_stored_result(affecting_vector, weights):
+            return EvaluationResult(self._get_single_evaluation_result(stored_result))
+
+        avg_affecting_weight = sum(weights) / len(weights)
         event_metadata: EventMetadata = self._calculate_and_store_metadata(
             parsed_schema, len(weights)
         )
@@ -148,6 +149,18 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         )
         event_vector = EventAggregator(event_aggregator_params).calculate_event_vector()
         return EvaluationResult(self._get_single_evaluation_result(event_vector))
+
+    def _should_return_stored_result(
+        self, affecting_vector: Vector, weights: Sequence[float]
+    ) -> bool:
+        """
+        For 2 event effects, 2 OnlineEventAggregationNode (OEAN) will be created.
+        When receiving an event, both OEANs will be evaluated. The `weights`
+        variable will be empty for one of them since the event only affects one space.
+        In this case, we should return the stored result since the weight would be 0.
+        Also when affecting_vector.is_empty, then it will not have an affect.
+        """
+        return affecting_vector.is_empty or not weights
 
     def _calculate_affecting_vector(
         self,

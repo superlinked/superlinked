@@ -15,6 +15,7 @@
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.space.config.transformation_config import (
     TransformationConfig,
 )
@@ -25,6 +26,7 @@ class TextEmbeddingNode(EmbeddingNode[Vector, str]):
         self,
         parent: Node[str] | None,
         transformation_config: TransformationConfig[Vector, str],
+        fields_for_identification: set[SchemaField],
     ) -> None:
         parents = [parent] if parent is not None else []
-        super().__init__(parents, transformation_config)
+        super().__init__(parents, transformation_config, fields_for_identification)

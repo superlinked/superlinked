@@ -121,5 +121,18 @@ class Space(
     ) -> set[EmbeddingNode[AggregationInputT, EmbeddingInputT]]:
         return set(self._node_by_schema.values())
 
+    @override
+    def __eq__(self, other: object) -> bool:
+        return (
+            isinstance(other, Space)
+            and self.transformation_config == other.transformation_config
+            and self._field_set == other._field_set
+        )
+
+    @override
+    def __hash__(self) -> int:
+        return hash((self.transformation_config, frozenset(self._field_set)))
+
+    @override
     def __str__(self) -> str:
         return f"{type(self).__name__}_{hash(self)}"

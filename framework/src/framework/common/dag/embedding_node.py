@@ -20,6 +20,7 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.node import Node, NodeDataT
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationInputT,
 )
@@ -40,8 +41,10 @@ class EmbeddingNode(
         self,
         parents: list[Node],
         transformation_config: TransformationConfig[AggregationInputT, NodeDataT],
+        fields_for_identification: set[SchemaField],
     ) -> None:
         super().__init__(Vector, parents)
+        self._identifier = self._calculate_node_id_identifier(fields_for_identification)
         self._transformation_config = transformation_config
 
     @property
@@ -56,10 +59,21 @@ class EmbeddingNode(
     ) -> TransformationConfig[AggregationInputT, NodeDataT]:
         return self._transformation_config
 
+    def _calculate_node_id_identifier(self, fields: set[SchemaField]) -> str:
+        """
+        This method ensures unique node ID generation by creating a hash of concatenated field names
+        when multiple fields exist. This prevents ID collisions between different spaces that may
+        share some of the same fields and have the same configuration.
+        """
+        if len(fields) <= 1:
+            return ""
+        return str(hash("_".join(sorted([field.name for field in fields]))))
+
     @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
         return {
             "transformation_config": asdict(self.transformation_config),
+            "identifier": self._identifier,
         }
 
 

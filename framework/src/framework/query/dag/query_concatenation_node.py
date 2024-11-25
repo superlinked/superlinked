@@ -64,7 +64,7 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
         self, node_inputs: Sequence[Weighted[NodeDataTypes]]
     ) -> dict[str, list[QueryNodeInput]]:
         # All of the inputs are vectors having the same dimension as the CN.
-        self._validate_iputs_to_be_inverted(node_inputs)
+        self._validate_inputs_to_be_inverted(node_inputs)
         # Each vector (outer list item) has the same number of
         # parts (inner list items) as the number of parents.
         split_weighted_vectors: list[list[Weighted[Vector]]] = [
@@ -73,7 +73,7 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
         ]
         return self._address_split_weighted_vectors(split_weighted_vectors)
 
-    def _validate_iputs_to_be_inverted(
+    def _validate_inputs_to_be_inverted(
         self, node_inputs: Sequence[Weighted[NodeDataTypes]]
     ) -> None:
         if any(

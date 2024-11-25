@@ -14,6 +14,7 @@
 
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.node import Node
+from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.space.config.transformation_config import (
     TransformationConfig,
 )
@@ -21,6 +22,9 @@ from superlinked.framework.common.space.config.transformation_config import (
 
 class RecencyNode(EmbeddingNode[int, int]):
     def __init__(
-        self, parent: Node[int], transformation_config: TransformationConfig[int, int]
+        self,
+        parent: Node[int],
+        transformation_config: TransformationConfig[int, int],
+        fields_for_identification: set[SchemaField],
     ) -> None:
-        super().__init__([parent], transformation_config)
+        super().__init__([parent], transformation_config, fields_for_identification)

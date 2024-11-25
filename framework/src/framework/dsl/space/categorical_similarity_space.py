@@ -117,6 +117,12 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
             category_input,
             String | StringList,  # type: ignore[misc] # interface supports only one type
         )
+        self.__category = SpaceFieldSet[list[str]](
+            self,
+            set(
+                category_input if isinstance(category_input, list) else [category_input]
+            ),
+        )
         self._embedding_config = CategoricalSimilarityEmbeddingConfig(
             list[str],
             categories=categories,
@@ -126,16 +132,12 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
         self._transformation_config = self._init_transformation_config(
             self._embedding_config
         )
-        self.__category = SpaceFieldSet[list[str]](
-            self,
-            set(
-                category_input if isinstance(category_input, list) else [category_input]
-            ),
-        )
+
         unchecked_category_node_map = {
             single_category: CategoricalSimilarityNode(
                 parent=SchemaFieldNode(cast(SchemaField, single_category)),
                 transformation_config=self.transformation_config,
+                fields_for_identification=self.__category.fields,
             )
             for single_category in (
                 category_input if isinstance(category_input, list) else [category_input]
@@ -166,7 +168,9 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
     def _create_default_node(
         self, schema: SchemaObject
     ) -> EmbeddingNode[Vector, list[str]]:
-        return CategoricalSimilarityNode(None, self.transformation_config)
+        return CategoricalSimilarityNode(
+            None, self.transformation_config, self.__category.fields
+        )
 
     @property
     @override

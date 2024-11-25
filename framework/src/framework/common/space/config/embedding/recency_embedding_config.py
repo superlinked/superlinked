@@ -78,3 +78,14 @@ class RecencyEmbeddingConfig(EmbeddingConfig[int]):
     def length(self) -> int:
         # a sin-cos pair for every period_time plus a dimension for negative filter or 0
         return len(self.period_time_list) * 2 + 1
+
+    @override
+    def __hash__(self) -> int:
+        return hash(
+            (
+                super().__hash__(),
+                tuple(self.period_time_list),
+                self.time_period_hour_offset,
+                self.negative_filter,
+            )
+        )

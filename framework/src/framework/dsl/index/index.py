@@ -196,6 +196,8 @@ class Index:  # pylint: disable=too-many-instance-attributes
             spaces = [spaces]
         if len(spaces) == 0:
             raise InitializationException("Index must be built on at least 1 space.")
+        if len(set(spaces)) != len(spaces):
+            raise InitializationException("Index cannot contain duplicate spaces.")
         return spaces
 
     def __init_node_schemas(self, validated_spaces: list[Space]) -> list[SchemaObject]:
