@@ -3203,13 +3203,13 @@ training = ["fsspec", "pandas", "timm (>=1.0.10)", "torch (>=2.0)", "transformer
 
 [[package]]
 name = "openai"
-version = "1.55.0"
+version = "1.55.1"
 description = "The official Python library for the openai API"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "openai-1.55.0-py3-none-any.whl", hash = "sha256:446e08918f8dd70d8723274be860404c8c7cc46b91b93bbc0ef051f57eb503c1"},
-    {file = "openai-1.55.0.tar.gz", hash = "sha256:6c0975ac8540fe639d12b4ff5a8e0bf1424c844c4a4251148f59f06c4b2bd5db"},
+    {file = "openai-1.55.1-py3-none-any.whl", hash = "sha256:d10d96a4f9dc5f05d38dea389119ec8dcd24bc9698293c8357253c601b4a77a5"},
+    {file = "openai-1.55.1.tar.gz", hash = "sha256:471324321e7739214f16a544e801947a046d3c5d516fae8719a317234e4968d3"},
 ]
 
 [package.dependencies]
@@ -5143,13 +5143,13 @@ typing = ["mypy (>=1.4)", "rich", "twisted"]
 
 [[package]]
 name = "superlinked"
-version = "16.1.0"
+version = "16.1.1"
 description = "The Superlinked vector computing library"
 optional = false
 python-versions = "<=3.12.3,>=3.10"
 files = [
-    {file = "superlinked-16.1.0-py3-none-any.whl", hash = "sha256:bfc32772b7112bc64a13a23b1b584d2749b20e6aa4b1a67de11f916556409db8"},
-    {file = "superlinked-16.1.0.tar.gz", hash = "sha256:56d47dd4e29d2b8c1b735b831bca7c022491401545a23508d394698bb5ab2c4f"},
+    {file = "superlinked-16.1.1-py3-none-any.whl", hash = "sha256:27c354199328c7185b118eec0bce5db4d5533a419ff069c71a2ca0a8aaa51866"},
+    {file = "superlinked-16.1.1.tar.gz", hash = "sha256:dbe80902f337afe5b78be1de245ee6300c989a76fc0d4d8e0bcabc6ef2292aec"},
 ]
 
 [package.dependencies]
@@ -6020,4 +6020,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10.3,<=3.12.3"
-content-hash = "fba35ca00ed45d86e64889cc2d593c788e224b96adc5872fbccccb44c481328e"
+content-hash = "64de81bc707a1cee570cdd82021000fa29ebcfb123966665f418ff8f73f11ea6"
