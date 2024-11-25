@@ -99,7 +99,8 @@ class QueryParamValueSetter:
                 if nlq_system_prompt_clause is not None
                 else None
             )
-            return NLQParamEvaluator(query_descriptor).evaluate_param_infos(
+            param_infos = query_descriptor.calculate_param_infos()
+            return NLQParamEvaluator(param_infos).evaluate_param_infos(
                 natural_query, nlq_clause.client_config, system_prompt
             )
         return {}

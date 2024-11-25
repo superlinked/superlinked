@@ -12,30 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import textwrap
 from collections import defaultdict
 
-from beartype.typing import Any, cast
-from pydantic import BaseModel
+from beartype.typing import Any, Sequence
+from pydantic import BaseModel, Field
 from pydantic.fields import FieldInfo
 
 from superlinked.framework.common.exception import QueryException
 from superlinked.framework.common.nlq.open_ai import OpenAIClient, OpenAIClientConfig
-from superlinked.framework.common.schema.schema_object import Blob, SchemaField
 from superlinked.framework.dsl.query.nlq_pydantic_model_builder import (
     NLQPydanticModelBuilder,
 )
-from superlinked.framework.dsl.query.query_clause import (
-    HardFilterClause,
-    LooksLikeFilterClause,
-    SimilarFilterClause,
-    SpaceWeightClause,
-)
-from superlinked.framework.dsl.query.query_descriptor import QueryDescriptor
-from superlinked.framework.dsl.query.query_param_information import (
-    ParamGroup,
-    ParamInfo,
-    WeightedParamInfo,
-)
+from superlinked.framework.dsl.query.query_param_information import ParamInfo
 from superlinked.framework.dsl.space.space import Space
 
 # Exclude from documentation.
@@ -45,68 +34,65 @@ __pdoc__["NLQParamEvaluator"] = False
 QUERY_MODEL_NAME = "QueryModel"
 
 
+class QuerySuggestionsModel(BaseModel):
+    parameter_name_suggestions: list[str] = Field(
+        [],
+        description=(
+            "Specific suggestions for renaming parameters to be more intuitive and self-documenting. "
+            "Each suggestion should include both the proposed new name and a brief explanation of why "
+            "it better describes the parameter's purpose. For example: 'Rename query_text to search_term "
+            "to better reflect that it contains the main search terms from user input'."
+        ),
+    )
+    parameter_description_suggestions: list[str] = Field(
+        [],
+        description=(
+            "Suggestions for improving parameter descriptions to be more clear and helpful. Each suggestion "
+            "should specify the parameter name, its purpose, data type, expected value ranges, and concrete "
+            "usage examples. For example: 'Update description_weight description to clarify that it accepts "
+            "float values between 0 and 2, where 1 is neutral importance'."
+        ),
+    )
+    clarifying_questions: list[str] = Field(
+        [],
+        description=(
+            "Questions that the query creator should answer to provide better context for the LLM "
+            "to understand their intent and generate more accurate query parameters. Focus on ambiguous "
+            "aspects and request specific examples where helpful."
+        ),
+    )
+
+    def print(self) -> None:
+        """Prints formatted suggestions and clarifying questions."""
+        self._print_section(
+            "Parameter Name Suggestions", self.parameter_name_suggestions
+        )
+        self._print_section(
+            "Parameter Description Suggestions", self.parameter_description_suggestions
+        )
+        self._print_section("Clarifying Questions", self.clarifying_questions)
+
+    def _print_section(self, title: str, items: Sequence[str]) -> None:
+        """Prints a section of items with a title if items exist.
+
+        Args:
+            title: The section title to display
+            items: List of items to print under the title
+        """
+        if not items:
+            return
+        print(f"\n{title}:")
+        for item in items:
+            wrapped_lines = textwrap.fill(
+                item, width=100, initial_indent="• ", subsequent_indent="  "
+            )
+            print(wrapped_lines)
+
+
 class NLQParamEvaluator:
-    def __init__(self, query_descriptor: QueryDescriptor) -> None:
-        self.param_infos = self.calculate_param_infos(query_descriptor)
-        self.model_builder = NLQPydanticModelBuilder(self.param_infos)
-
-    def calculate_param_infos(
-        self, query_descriptor: QueryDescriptor
-    ) -> list[ParamInfo]:
-        space_weight_params = [
-            ParamInfo.init_with(
-                ParamGroup.SPACE_WEIGHT,
-                clause.value_param,
-                None,
-                clause.space,
-            )
-            for clause in query_descriptor.get_clauses_by_type(SpaceWeightClause)
-        ]
-        hard_filter_params = [
-            ParamInfo.init_with(
-                ParamGroup.HARD_FILTER,
-                clause.value_param,
-                cast(SchemaField, clause.operand),
-                None,
-                clause.op,
-            )
-            for clause in query_descriptor.get_clauses_by_type(HardFilterClause)
-        ]
-        similar_filter_params = [
-            WeightedParamInfo.init_with(
-                ParamGroup.SIMILAR_FILTER_VALUE,
-                ParamGroup.SIMILAR_FILTER_WEIGHT,
-                clause.value_param,
-                clause.weight_param,
-                clause.schema_field,
-                clause.space,
-            )
-            for clause in query_descriptor.get_clauses_by_type(SimilarFilterClause)
-            if not isinstance(clause.schema_field, Blob)
-        ]
-        if (
-            looks_like_clause := query_descriptor.get_clause_by_type(
-                LooksLikeFilterClause
-            )
-        ) is not None:
-            looks_like = WeightedParamInfo.init_with(
-                ParamGroup.LOOKS_LIKE_FILTER_VALUE,
-                ParamGroup.LOOKS_LIKE_FILTER_WEIGHT,
-                looks_like_clause.value_param,
-                looks_like_clause.weight_param,
-                looks_like_clause.schema_field,
-            )
-        else:
-            looks_like = None
-
-        nested_params = [
-            space_weight_params,
-            hard_filter_params,
-            [weighted.value_param for weighted in similar_filter_params],
-            [weighted.weight_param for weighted in similar_filter_params],
-            ([looks_like.value_param, looks_like.weight_param] if looks_like else []),
-        ]
-        return [param for param_list in nested_params for param in param_list]
+    def __init__(self, param_infos: Sequence[ParamInfo]) -> None:
+        self._param_infos = param_infos
+        self.model_builder = NLQPydanticModelBuilder(self._param_infos)
 
     def evaluate_param_infos(
         self,
@@ -116,21 +102,110 @@ class NLQParamEvaluator:
     ) -> dict[str, Any]:
         if self._all_params_have_value_set():
             return {}
+
         model_class = self.model_builder.build()
         instructor_prompt = self._calculate_instructor_prompt(
             model_class, system_prompt
         )
+        return self._execute_query(
+            natural_query, instructor_prompt, model_class, client_config
+        )
+
+    def suggest_improvements(
+        self,
+        natural_query: str | None,
+        feedback: str | None,
+        client_config: OpenAIClientConfig,
+        system_prompt: str | None = None,
+    ) -> QuerySuggestionsModel:
+        if self._all_params_have_value_set():
+            return QuerySuggestionsModel(
+                parameter_name_suggestions=[],
+                parameter_description_suggestions=[],
+                clarifying_questions=[],
+            )
+
+        instructor_prompt = self._build_suggestion_prompt(
+            natural_query, feedback, system_prompt
+        )
+        result = self._execute_query(
+            "Analyze the parameter definitions and provide specific improvements.",
+            instructor_prompt,
+            QuerySuggestionsModel,
+            client_config,
+        )
+        return QuerySuggestionsModel(**result)
+
+    def _build_suggestion_prompt(
+        self, natural_query: str | None, feedback: str | None, system_prompt: str | None
+    ) -> str:
+        suggestion_prompt = self._get_suggestion_base_prompt()
+        original_prompt = self._calculate_instructor_prompt(
+            self.model_builder.build(), system_prompt
+        )
+        context_parts = [suggestion_prompt]
+        if feedback:
+            context_parts.append(
+                f"\nMake suggestions based on the following: {feedback}\n"
+            )
+        if natural_query:
+            context_parts.append(f"\nThe prompt used: {natural_query}\n")
+        context_parts.extend(["\n\n######\n", original_prompt])
+
+        return "".join(context_parts)
+
+    def _execute_query(
+        self,
+        query: str,
+        instructor_prompt: str,
+        model_class: type[BaseModel],
+        client_config: OpenAIClientConfig,
+    ) -> dict[str, Any]:
         try:
             client = OpenAIClient(client_config)
-            filled_values = client.query(natural_query, instructor_prompt, model_class)
-            return filled_values
+            return client.query(query, instructor_prompt, model_class)
         except Exception as e:
-            raise QueryException(f"Error executing natural query: {e}") from e
+            error_context = (
+                "executing natural query"
+                if model_class != QuerySuggestionsModel
+                else "generating parameter improvement suggestions"
+            )
+            raise QueryException(f"Error {error_context}: {e}") from e
+
+    @staticmethod
+    @staticmethod
+    def _get_suggestion_base_prompt() -> str:
+        return """
+        You are an AI assistant dedicated to enhancing the documentation and structure of QueryObj parameters for developers.
+        Your responses should focus on improving the framework's QueryObj parameter definitions,
+        ensuring clarity and consistency for developers who build and maintain the QueryObj structures.
+        Populate the following three fields:
+
+        1. **parameter_name_suggestions** - Provide specific recommendations for renaming parameters:
+           - Suggest clear and descriptive names that accurately reflect the parameter's purpose.
+           - Explain why each proposed name is an improvement.
+           - Ensure consistency with existing parameter naming conventions within the framework.
+
+        2. **parameter_description_suggestions** - Offer detailed suggestions for refining parameter descriptions:
+           - Clearly define each parameter's purpose and functionality.
+           - Specify the expected data types and any relevant constraints.
+           - Provide concise usage examples to illustrate proper implementation.
+
+        3. **clarifying_questions** - List 2-3 targeted questions aimed at better understanding the requirements for parameter definitions:
+           - Aid in clarifying the intent behind each QueryObj parameter.
+           - Address any ambiguous aspects of the current parameter structures.
+           - Inquire about preferences or priorities that may affect parameter design.
+           - Request examples or scenarios that could inform more effective parameter configurations.
+
+        Ensure that all suggestions are specific, actionable, and tailored
+        to assist developers in creating a robust and intuitive QueryObj parameter framework.
+        Each recommendation should facilitate the development process and enhance the overall quality of the QueryObj documentation.
+        """
 
     def _all_params_have_value_set(self) -> bool:
         return all(
             param_info.value is not None and not param_info.is_default
-            for param_info in self.param_infos
+            for param_info in self._param_infos
         )
 
     def _calculate_instructor_prompt(
@@ -185,7 +260,7 @@ class NLQParamEvaluator:
         param_infos_by_space_by_annotation: defaultdict[
             str, defaultdict[Space, list[ParamInfo]]
         ] = defaultdict(lambda: defaultdict(list))
-        for param_info in self.param_infos:
+        for param_info in self._param_infos:
             if param_info.space is not None:
                 annotation = self._without_line_breaks(param_info.space.annotation)
                 param_infos_by_space_by_annotation[annotation][param_info.space].append(
@@ -198,7 +273,7 @@ class NLQParamEvaluator:
             self._group_param_infos_by_space_and_annotation()
         )
         param_infos_without_space = [
-            param_info for param_info in self.param_infos if param_info.space is None
+            param_info for param_info in self._param_infos if param_info.space is None
         ]
         space_related_text = (
             self._calculate_space_related_text(

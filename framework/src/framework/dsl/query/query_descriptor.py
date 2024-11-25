@@ -33,6 +33,7 @@ from superlinked.framework.common.interface.evaluated import Evaluated
 from superlinked.framework.common.nlq.open_ai import OpenAIClientConfig
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import (
+    Blob,
     SchemaField,
     String,
     StringList,
@@ -40,6 +41,10 @@ from superlinked.framework.common.schema.schema_object import (
 from superlinked.framework.common.util.generic_class_util import GenericClassUtil
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.index.index import Index
+from superlinked.framework.dsl.query.nlq_param_evaluator import (
+    NLQParamEvaluator,
+    QuerySuggestionsModel,
+)
 from superlinked.framework.dsl.query.param import (
     IntParamType,
     NumericParamType,
@@ -68,6 +73,11 @@ from superlinked.framework.dsl.query.query_clause import (
     WeightedQueryClause,
 )
 from superlinked.framework.dsl.query.query_filter_validator import QueryFilterValidator
+from superlinked.framework.dsl.query.query_param_information import (
+    ParamGroup,
+    ParamInfo,
+    WeightedParamInfo,
+)
 from superlinked.framework.dsl.space.categorical_similarity_space import (
     CategoricalSimilaritySpace,
 )
@@ -310,6 +320,106 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
             altered_query_descriptor
         )
         return altered_query_descriptor
+
+    def nlq_suggestions(self, feedback: str | None = None) -> QuerySuggestionsModel:
+        """
+        Get suggestions for improving the natural language query parameters.
+
+        This method analyzes the current query parameters and provides suggestions for improvement,
+        including parameter naming, clarity, and overall query structure improvements.
+        It requires that a natural language query has been set using with_natural_query().
+
+        Args:
+            feedback (str | None, optional): Additional feedback from the query creator to help
+                generate more targeted suggestions. For example, you might provide context about
+                specific requirements or constraints. Defaults to None.
+
+        Returns:
+            QuerySuggestionsModel: A model containing improvement suggestions and clarifying questions.
+                You can access the suggestions directly via the model's attributes or call
+                .print() for a formatted display of the suggestions.
+
+                Example usage:
+                ```python
+                suggestions = query.nlq_suggestions()
+                suggestions.print()  # Prints formatted suggestions
+                # Or access directly:
+                print(suggestions.improvement_suggestions)
+                print(suggestions.clarifying_questions)
+                ```
+
+        Raises:
+            QueryException: If with_natural_query() has not been called before this method.
+        """
+        nlq_clause = self.get_clause_by_type(NLQClause)
+        if nlq_clause is None:
+            raise QueryException(
+                "with_natural_query clause must be provided before calling nlq_suggestions"
+            )
+        nlq_system_prompt_clause = self.get_clause_by_type(NLQSystemPromptClause)
+        system_prompt = (
+            nlq_system_prompt_clause.evaluate()
+            if nlq_system_prompt_clause is not None
+            else None
+        )
+        natural_query = nlq_clause.evaluate()
+        return NLQParamEvaluator(self.calculate_param_infos()).suggest_improvements(
+            natural_query, feedback, nlq_clause.client_config, system_prompt
+        )
+
+    def calculate_param_infos(self) -> list[ParamInfo]:
+        space_weight_params = [
+            ParamInfo.init_with(
+                ParamGroup.SPACE_WEIGHT,
+                clause.value_param,
+                None,
+                clause.space,
+            )
+            for clause in self.get_clauses_by_type(SpaceWeightClause)
+        ]
+        hard_filter_params = [
+            ParamInfo.init_with(
+                ParamGroup.HARD_FILTER,
+                clause.value_param,
+                cast(SchemaField, clause.operand),
+                None,
+                clause.op,
+            )
+            for clause in self.get_clauses_by_type(HardFilterClause)
+        ]
+        similar_filter_params = [
+            WeightedParamInfo.init_with(
+                ParamGroup.SIMILAR_FILTER_VALUE,
+                ParamGroup.SIMILAR_FILTER_WEIGHT,
+                clause.value_param,
+                clause.weight_param,
+                clause.schema_field,
+                clause.space,
+            )
+            for clause in self.get_clauses_by_type(SimilarFilterClause)
+            if not isinstance(clause.schema_field, Blob)
+        ]
+        if (
+            looks_like_clause := self.get_clause_by_type(LooksLikeFilterClause)
+        ) is not None:
+            looks_like = WeightedParamInfo.init_with(
+                ParamGroup.LOOKS_LIKE_FILTER_VALUE,
+                ParamGroup.LOOKS_LIKE_FILTER_WEIGHT,
+                looks_like_clause.value_param,
+                looks_like_clause.weight_param,
+                looks_like_clause.schema_field,
+            )
+        else:
+            looks_like = None
+
+        nested_params = [
+            space_weight_params,
+            hard_filter_params,
+            [weighted.value_param for weighted in similar_filter_params],
+            [weighted.weight_param for weighted in similar_filter_params],
+            ([looks_like.value_param, looks_like.weight_param] if looks_like else []),
+        ]
+        return [param for param_list in nested_params for param in param_list]
 
     def get_limit(self) -> int:
         return self.get_mandatory_clause_by_type(LimitClause).evaluate()
