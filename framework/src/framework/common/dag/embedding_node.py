@@ -13,6 +13,7 @@
 # limitations under the License.
 
 
+import hashlib
 from dataclasses import asdict
 
 from beartype.typing import Any, Generic, TypeVar
@@ -67,7 +68,8 @@ class EmbeddingNode(
         """
         if len(fields) <= 1:
             return ""
-        return str(hash("_".join(sorted([field.name for field in fields]))))
+        to_hash = str(sorted([field.name for field in fields]))
+        return hashlib.sha3_256(to_hash.encode()).hexdigest()[:16]
 
     @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
