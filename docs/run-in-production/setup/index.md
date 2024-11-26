@@ -24,7 +24,7 @@ To start the application follow the steps below:
 
 2. **Start the Superlinked server**: To start the server run the `python -m superlinked.server` command.
 
-By default, this will start the server on port 8080 (configurable via the `SERVER_PORT` environment variables) and expose the API endpoints for use. You can verify the server is running by visiting http://localhost:8080/docs in your browser.
+By default, this will start the server on port 8080 (configurable via the `SERVER_PORT` environment variable) and expose the API endpoints for use. You can verify the server is running by visiting http://localhost:8080/docs in your browser.
 
 ## Configuring and Customizing Your Application
 
