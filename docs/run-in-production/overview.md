@@ -17,6 +17,6 @@ We have started partnering with vector database providers to allow you to use Su
 
 - [Redis](vdbs/redis.md)
 - [MongoDB](vdbs/mongodb.md)
-- [Qdrant](vdbs/qdrant)
+- [Qdrant](vdbs/qdrant.md)
 
 Missing your favorite VDB? [Tell us which vector database we should support next!](https://github.com/superlinked/superlinked/discussions/41)
