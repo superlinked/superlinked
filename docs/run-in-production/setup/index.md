@@ -14,7 +14,7 @@ Before you can use this environment, you need to have:
 1. Python 3.11 or higher installed with pip and venv modules. You can download Python from [here](https://www.python.org/downloads/).
 2. A Python virtual environment created and activated in a dedicated project folder of your choice.
 
-*Note: The following documentation assumes a Unix-based terminal environment. Steps may differ for Windows and other operating systems.*
+*Note: The following documentation uses Unix-based terminal commands. Compatibility with other operating systems has not been verified.*
 
 ## How to start the application
 
