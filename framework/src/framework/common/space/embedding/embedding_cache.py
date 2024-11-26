@@ -27,6 +27,9 @@ class CacheInformation:
     existing_vectors: Sequence[Vector]
 
     def combine_vectors(self, uncached_vectors: list[Vector]) -> list[Vector]:
+        if 0 == len(uncached_vectors):
+            return self.existing_vectors
+
         vectors: list[Vector] = []
         existing_index = 0
         new_index = 0

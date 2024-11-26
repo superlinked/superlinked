@@ -68,8 +68,8 @@ class EmbeddingNode(
         """
         if len(fields) <= 1:
             return ""
-        to_hash = str(sorted([field.name for field in fields]))
-        return hashlib.sha3_256(to_hash.encode()).hexdigest()[:16]
+        field_names_text = str(sorted([field.name for field in fields]))
+        return hashlib.md5(field_names_text.encode()).hexdigest()[:8]
 
     @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
