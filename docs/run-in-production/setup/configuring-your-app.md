@@ -7,7 +7,7 @@ icon: square-sliders
 
 The application's main logic resides in the Superlinked configuration files. These are where you define your application's structure and behavior using the Superlinked library.
 
-By default, all examples within this documentation utilize an in-memory database with a single worker. This configuration is optimal for testing and initial experimentation with the Superlinked framework. For detailed instructions on configuring and employing alternative vector databases, please refer to the [vector databases documentation.](../vdbs/index.md). For information on how to scale the server, read the [Scaling the Server with Concurrent Workers](#scaling-the-server-with-concurrent-workers) section.
+By default, all examples within this documentation utilize an in-memory database. This configuration is optimal for testing and initial experimentation with the Superlinked framework. For detailed instructions on configuring and employing alternative vector databases, please refer to the [vector databases documentation.](../vdbs/index.md).
 
 To begin interacting with the system, you may start with the basic example application found [here](../example/simple/api.py).
 For a more complex yet approachable example, refer to the Amazon case study [here](../example/amazon/api.py).
@@ -27,7 +27,6 @@ A functional application is structured around three core components:
 
 ### index.py
 ```python
-# linked-file:example/dummy/index.py
 from superlinked import framework as sl
 
 class YourSchema(sl.Schema):
@@ -50,7 +49,6 @@ In this file, a schema is defined to structure your input data. Additionally, a 
 ### query.py
 
 ```python
-# linked-file:example/dummy/query.py
 from superlinked import framework as sl
 from .index import index, text_space, your_schema
 
@@ -69,7 +67,6 @@ In the `query.py` file, you should define your queries. These queries are design
 ### api.py
 
 ```python
-# linked-file:example/dummy/api.py
 from superlinked import framework as sl
 
 from .index import index, your_schema
@@ -150,7 +147,7 @@ data_loader_source = sl.DataLoaderSource(your_schema, config, data_frame_parser)
 ### Data Chunking
 
 Data chunking allows you to load more data than your memory could typically handle at once. This is particularly beneficial when dealing with data sets that span multiple gigabytes.
-> If you're uncertain whether your data will fit into your memory, it's strongly advised to employ chunking to prevent unexpected problems. By setting the [log level to debug in the executor](../../../server/runner/executor/.env), you can view pandas memory information regardless of whether you're chunking the data. This assists in estimating memory usage.
+> To prevent out-of-memory issues, it's recommended to use chunking when dealing with large datasets. Set the `LOG_LEVEL` environment variable to `DEBUG` to monitor pandas memory usage metrics, which can help you determine optimal chunk sizes and estimate total memory requirements. These metrics are available regardless of whether chunking is enabled.
 
 To implement chunking, you'll need to use either CSV or JSON formats (specifically JSONL, which includes JSON objects on each line).
 
@@ -163,7 +160,7 @@ config = sl.DataLoaderConfig("https://path-to-your-file.jsonl", DataFormat.JSON,
 ```
 
 The Superlinked library performs internal batching for embeddings, with a default batch size of 10000. If you are utilizing a chunk size different from 10000, it is advisable to adjust this batch size to match your chunk size.
-To modify this, alter the `ONLINE_PUT_CHUNK_SIZE` value [in this file](../../../server/runner/executor/.env)
+To modify this, set the `ONLINE_PUT_CHUNK_SIZE` environment variable to the desired number.
 
 ### Customize your API
 
@@ -212,40 +209,18 @@ executor = sl.RestExecutor(
 )
 ```
 
-Finally, you need to set a flag to prevent exceptions when utilizing Recency Space. Set the `DISABLE_RECENCY_SPACE` flag to `false` in the [.env config file](../../../server/runner/executor/.env)
+Finally, you need to set a flag to prevent exceptions when utilizing Recency Space. Set the `DISABLE_RECENCY_SPACE` environment variable to `false`
 
 ### GPU acceleration
 
 If your system's host machine is equipped with a GPU, this documentation provides guidance on leveraging it for computational tasks. GPU acceleration is available exclusively for text embedding processes and depends on explicit activation. It is most effective when processing large batches of data, specifically within the context of the data loading feature.
 
-> Ensure that your system has a GPU compatible with PyTorch and that the GPU drivers are up to date. This documentation is specifically tailored for configurations running within Docker, not natively, due to Docker's limitation of only supporting NVidia GPUs as of now.
+> Ensure that your system has a GPU compatible with PyTorch and that the GPU drivers are up to date. For optimal performance, we recommend using NVIDIA GPUs as they provide the best support for deep learning frameworks like PyTorch.
 
-The following change will be needed in the `compose.yaml` file:
-```dockerfile
-version: "3"
-services:
-  poller:
-    ...
-  executor:
-    depends_on:
-      - poller
-    build:
-      context: runner
-      dockerfile: executor/Dockerfile
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
-    ...
-```
+To enable GPU acceleration in Superlinked, configure the `GPU_EMBEDDING_THRESHOLD` environment variable. This variable determines when GPU embedding is activated based on batch size:
 
-To activate GPU support in Superlinked, configure the `GPU_EMBEDDING_THRESHOLD` environment variable within the [.env](../../../server/runner/executor/.env) file for the executor service. Ensure that this value does not exceed the `ONLINE_PUT_CHUNK_SIZE` specified in the same configuration file. The appropriate threshold value is contingent upon the computational capabilities of the server's GPU and CPU; however, it is recommended to set a minimum threshold of 10000. This parameter determines the minimum size of data batches for which GPU acceleration is employed, thereby enhancing the performance of bulk embedding operations. A value of 0 indicates that GPU acceleration is disabled during the embedding process.
+- Default value: 0 (GPU embedding disabled)
+- Valid range: 1-9999
+- Behavior: When ingesting data via data load, if the number of elements exceeds the threshold, GPU will be used instead of CPU
 
-### Scaling the Server with Concurrent Workers
-
-To enhance the server's throughput, it is feasible to deploy multiple worker processes. This can be configured by modifying the `WORKER_COUNT` parameter in the [compose.yaml](../../../server/compose.yaml) file, initially set to `WORKER_COUNT=1`. For optimal configuration, empirical benchmarking is recommended, though a heuristic approach suggests allocating one worker per virtual CPU.
-
-> Important to note: When scaling to multiple workers, the utilization of an in-memory database becomes inaccessible. It is crucial to transition to a persistent vector database, as provided by the connectors available within the Superlinked ecosystem.
+Note: GPU acceleration is most effective for large batches of text or image embeddings. For other data types or smaller batches, CPU processing may be more efficient. Consider your specific use case and data characteristics when configuring this threshold.
