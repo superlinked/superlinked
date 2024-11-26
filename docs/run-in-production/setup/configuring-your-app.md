@@ -7,7 +7,7 @@ icon: square-sliders
 
 The application's main logic resides in the Superlinked configuration files. These are where you define your application's structure and behavior using the Superlinked library.
 
-By default, all examples within this documentation utilize an in-memory database with a single worker. This configuration is optimal for testing and initial experimentation with the Superlinked framework. For detailed instructions on configuring and employing alternative vector databases, please refer to the [vector databases documentation.](../vdbs/index.md). For information on how to scale the server, read the [Scaling the Server with Concurrent Workers](#scaling-the-server-with-concurrent-workers) section.
+By default, all examples within this documentation utilize an in-memory database. This configuration is optimal for testing and initial experimentation with the Superlinked framework. For detailed instructions on configuring and employing alternative vector databases, please refer to the [vector databases documentation.](../vdbs/index.md).
 
 To begin interacting with the system, you may start with the basic example application found [here](../example/simple/api.py).
 For a more complex yet approachable example, refer to the Amazon case study [here](../example/amazon/api.py).
@@ -147,7 +147,7 @@ data_loader_source = sl.DataLoaderSource(your_schema, config, data_frame_parser)
 ### Data Chunking
 
 Data chunking allows you to load more data than your memory could typically handle at once. This is particularly beneficial when dealing with data sets that span multiple gigabytes.
-> If you're uncertain whether your data will fit into your memory, it's strongly advised to employ chunking to prevent unexpected problems. By setting the [log level to debug in the executor](../../../server/runner/executor/.env), you can view pandas memory information regardless of whether you're chunking the data. This assists in estimating memory usage.
+> To prevent out-of-memory issues, it's recommended to use chunking when dealing with large datasets. Set the `LOG_LEVEL` environment variable to `DEBUG` to monitor pandas memory usage metrics, which can help you determine optimal chunk sizes and estimate total memory requirements. These metrics are available regardless of whether chunking is enabled.
 
 To implement chunking, you'll need to use either CSV or JSON formats (specifically JSONL, which includes JSON objects on each line).
 
@@ -160,7 +160,7 @@ config = sl.DataLoaderConfig("https://path-to-your-file.jsonl", DataFormat.JSON,
 ```
 
 The Superlinked library performs internal batching for embeddings, with a default batch size of 10000. If you are utilizing a chunk size different from 10000, it is advisable to adjust this batch size to match your chunk size.
-To modify this, alter the `ONLINE_PUT_CHUNK_SIZE` value [in this file](../../../server/runner/executor/.env)
+To modify this, set the `ONLINE_PUT_CHUNK_SIZE` environment variable to the desired number.
 
 ### Customize your API
 
@@ -209,7 +209,7 @@ executor = sl.RestExecutor(
 )
 ```
 
-Finally, you need to set a flag to prevent exceptions when utilizing Recency Space. Set the `DISABLE_RECENCY_SPACE` flag to `false` in the [.env config file](../../../server/runner/executor/.env)
+Finally, you need to set a flag to prevent exceptions when utilizing Recency Space. Set the `DISABLE_RECENCY_SPACE` environment variable to `false`
 
 ### GPU acceleration
 

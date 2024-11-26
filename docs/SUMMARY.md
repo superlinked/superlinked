@@ -7,6 +7,8 @@
 ## Run in Production
 * [Overview](run-in-production/overview.md)
 * [Setup Superlinked Server](run-in-production/setup/index.md)
+  * [Creating a VM](run-in-production/setup/creating-a-vm.md)
+  * [Creating a Storage Bucket](run-in-production/setup/creating-a-storage-bucket.md)
   * [Configuring your app](run-in-production/setup/configuring-your-app.md)
   * [Interacting with app via API](run-in-production/setup/interacting-with-app-via-api.md)
 * [Supported Vector Databases](run-in-production/vdbs/index.md)
