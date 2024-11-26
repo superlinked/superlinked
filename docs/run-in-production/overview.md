@@ -5,7 +5,7 @@ icon: bullseye-arrow
 
 # Overview
 
-[Superlinked Server](https://github.com/superlinked/superlinked/tree/main/server) allows you to leverage the power of Superlinked in deployable projects. With a single script, you can deploy a Superlinked-powered app instance that creates REST endpoints and connects to external Vector Databases. This makes it an ideal solution for those seeking an easy-to-deploy environment for their Superlinked projects.
+The [Superlinked Server](https://pypi.org/project/superlinked-server/) allows you to leverage the power of Superlinked in deployable projects. With a single command, you can run a Superlinked-powered app instance that creates REST endpoints and connects to external Vector Databases. This makes it an ideal solution for those seeking an easy-to-deploy environment for their Superlinked projects.
 
 To get started, check out the [Superlinked Server Setup](setup/index.md).
 
@@ -17,5 +17,6 @@ We have started partnering with vector database providers to allow you to use Su
 
 - [Redis](vdbs/redis.md)
 - [MongoDB](vdbs/mongodb.md)
+- [Qdrant](vdbs/qdrant)
 
 Missing your favorite VDB? [Tell us which vector database we should support next!](https://github.com/superlinked/superlinked/discussions/41)

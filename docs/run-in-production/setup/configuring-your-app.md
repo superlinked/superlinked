@@ -27,7 +27,6 @@ A functional application is structured around three core components:
 
 ### index.py
 ```python
-# linked-file:example/dummy/index.py
 from superlinked import framework as sl
 
 class YourSchema(sl.Schema):
@@ -50,7 +49,6 @@ In this file, a schema is defined to structure your input data. Additionally, a 
 ### query.py
 
 ```python
-# linked-file:example/dummy/query.py
 from superlinked import framework as sl
 from .index import index, text_space, your_schema
 
@@ -69,7 +67,6 @@ In the `query.py` file, you should define your queries. These queries are design
 ### api.py
 
 ```python
-# linked-file:example/dummy/api.py
 from superlinked import framework as sl
 
 from .index import index, your_schema
@@ -218,34 +215,12 @@ Finally, you need to set a flag to prevent exceptions when utilizing Recency Spa
 
 If your system's host machine is equipped with a GPU, this documentation provides guidance on leveraging it for computational tasks. GPU acceleration is available exclusively for text embedding processes and depends on explicit activation. It is most effective when processing large batches of data, specifically within the context of the data loading feature.
 
-> Ensure that your system has a GPU compatible with PyTorch and that the GPU drivers are up to date. This documentation is specifically tailored for configurations running within Docker, not natively, due to Docker's limitation of only supporting NVidia GPUs as of now.
+> Ensure that your system has a GPU compatible with PyTorch and that the GPU drivers are up to date. For optimal performance, we recommend using NVIDIA GPUs as they provide the best support for deep learning frameworks like PyTorch.
 
-The following change will be needed in the `compose.yaml` file:
-```dockerfile
-version: "3"
-services:
-  poller:
-    ...
-  executor:
-    depends_on:
-      - poller
-    build:
-      context: runner
-      dockerfile: executor/Dockerfile
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
-    ...
-```
+To enable GPU acceleration in Superlinked, configure the `GPU_EMBEDDING_THRESHOLD` environment variable. This variable determines when GPU embedding is activated based on batch size:
 
-To activate GPU support in Superlinked, configure the `GPU_EMBEDDING_THRESHOLD` environment variable within the [.env](../../../server/runner/executor/.env) file for the executor service. Ensure that this value does not exceed the `ONLINE_PUT_CHUNK_SIZE` specified in the same configuration file. The appropriate threshold value is contingent upon the computational capabilities of the server's GPU and CPU; however, it is recommended to set a minimum threshold of 10000. This parameter determines the minimum size of data batches for which GPU acceleration is employed, thereby enhancing the performance of bulk embedding operations. A value of 0 indicates that GPU acceleration is disabled during the embedding process.
+- Default value: 0 (GPU embedding disabled)
+- Valid range: 1-9999
+- Behavior: When ingesting data via data load, if the number of elements exceeds the threshold, GPU will be used instead of CPU
 
-### Scaling the Server with Concurrent Workers
-
-To enhance the server's throughput, it is feasible to deploy multiple worker processes. This can be configured by modifying the `WORKER_COUNT` parameter in the [compose.yaml](../../../server/compose.yaml) file, initially set to `WORKER_COUNT=1`. For optimal configuration, empirical benchmarking is recommended, though a heuristic approach suggests allocating one worker per virtual CPU.
-
-> Important to note: When scaling to multiple workers, the utilization of an in-memory database becomes inaccessible. It is crucial to transition to a persistent vector database, as provided by the connectors available within the Superlinked ecosystem.
+Note: GPU acceleration is most effective for large batches of text or image embeddings. For other data types or smaller batches, CPU processing may be more efficient. Consider your specific use case and data characteristics when configuring this threshold.
