@@ -62,7 +62,7 @@ class ImageEmbedding(Embedding[ImageData, ImageEmbeddingConfig]):
         )
         embeddings = self.manager.embed(images + descriptions)
         if all(embedding is None for embedding in embeddings):
-            return [Vector([0] * self._config.length)] * len(inputs)
+            return [Vector.init_zero_vector(self._config.length)] * len(inputs)
         aggregation = VectorAggregation(VectorAggregationConfig(Vector))
         combined_embeddings = [
             aggregation.aggregate_weighted(

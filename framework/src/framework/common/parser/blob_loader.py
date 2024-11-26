@@ -40,10 +40,13 @@ class BlobLoader:
                 handler.get_supported_cloud_storage_scheme()
             ] = handler.download
 
-    def load(self, blob_like_input: str | Image | Any) -> BlobInformation:
-        if not isinstance(blob_like_input, str | Image):
+    def load(self, blob_like_input: str | Image | None | Any) -> BlobInformation:
+        if not isinstance(blob_like_input, str | Image) or not blob_like_input:
+            type_text = type(blob_like_input).__name__
+            if type_text == "str":
+                type_text = f"empty {type_text}"
             raise ValueError(
-                f"Blob field must contain str or PIL.Image.Image input, got: {type(blob_like_input).__name__}."
+                f"Blob field must contain a non-empty str or PIL.Image.Image input, got: {type_text}."
             )
         if isinstance(blob_like_input, Image):
             with io.BytesIO() as buffer:
