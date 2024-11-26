@@ -33,7 +33,7 @@ class OpenClipManager(ModelManager):
     @override
     def calculate_length(self) -> int:
         embedding_model, _ = self._get_embedding_model(0)
-        return embedding_model.token_embedding.embedding_dim
+        return len(self.encode_texts([""], embedding_model)[0])
 
     @override
     def _embed(self, inputs: list[str | Image]) -> list[list[float]] | list[np.ndarray]:
