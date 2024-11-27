@@ -105,12 +105,12 @@ rating_maximizer_space = sl.NumberSpace(
 )
 index = sl.Index([description_space, rating_maximizer_space], fields=[product.rating])
 
-# Fill this with your API key - we use it to extract parameters from your natural language query
+# fill this with your API key - this will drive param extraction
 openai_config = sl.OpenAIClientConfig(
     api_key=os.environ["OPEN_AI_API_KEY"], model="gpt-4o"
 )
 
-# You can add descriptions to a `Param` to aid the parsing of information from natural language queries.
+# it is possible now to add descriptions to a `Param` to aid the parsing of information from natural language queries.
 text_similar_param = sl.Param(
     "query_text",
     description="The text in the user's query that refers to product descriptions.",
@@ -130,7 +130,7 @@ query = (
     .similar(
         description_space,
         text_similar_param,
-        sl.Param("description_similar_clause_weight")
+        sl.Param("description_similar_clause_weight"),
     )
     .limit(sl.Param("limit"))
     .with_natural_query(sl.Param("natural_query"), openai_config)
@@ -143,9 +143,21 @@ app = executor.run()
 
 # Download dataset.
 data = [
-    {"id": 1, "description": "Budget toothbrush in black color.", "rating": 1},
-    {"id": 2, "description": "High-end toothbrush created with no compromises.", "rating": 5},
-    {"id": 3, "description": "A toothbrush created for the smart 21st century man.", "rating": 3},
+    {
+        "id": 1,
+        "description": "Budget toothbrush in black color. Just what you need.",
+        "rating": 1,
+    },
+    {
+        "id": 2,
+        "description": "High-end toothbrush created with no compromises.",
+        "rating": 5,
+    },
+    {
+        "id": 3,
+        "description": "A toothbrush created for the smart 21st century man.",
+        "rating": 3,
+    },
 ]
 
 # Ingest data to the framework.
@@ -153,10 +165,9 @@ source.put(data)
 
 result = app.query(query, natural_query="best toothbrushes", limit=1)
 
-# Examine the extracted parameters from your query
+# examine the extracted parameters from your query
 print(json.dumps(result.knn_params, indent=2))
-
-# The result is the 5 star rated product
+# the result is the 5 star rated product
 result.to_pandas()
 ```
 
