@@ -13,6 +13,7 @@
 
 </div>  &nbsp;
 
+
 <div align="center">
 
 [![Documentation](https://img.shields.io/badge/Documentation-orange?logo=data:image/svg%2bxml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDdWMjEiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik0zIDE4QzIuNzM0NzggMTggMi40ODA0MyAxNy44OTQ2IDIuMjkyODkgMTcuNzA3MUMyLjEwNTM2IDE3LjUxOTYgMiAxNy4yNjUyIDIgMTdWNEMyIDMuNzM0NzggMi4xMDUzNiAzLjQ4MDQzIDIuMjkyODkgMy4yOTI4OUMyLjQ4MDQzIDMuMTA1MzYgMi43MzQ3OCAzIDMgM0g4QzkuMDYwODcgMyAxMC4wNzgzIDMuNDIxNDMgMTAuODI4NCA0LjE3MTU3QzExLjU3ODYgNC45MjE3MiAxMiA1LjkzOTEzIDEyIDdDMTIgNS45MzkxMyAxMi40MjE0IDQuOTIxNzIgMTMuMTcxNiA0LjE3MTU3QzEzLjkyMTcgMy40MjE0MyAxNC45MzkxIDMgMTYgM0gyMUMyMS4yNjUyIDMgMjEuNTE5NiAzLjEwNTM2IDIxLjcwNzEgMy4yOTI4OUMyMS44OTQ2IDMuNDgwNDMgMjIgMy43MzQ3OCAyMiA0VjE3QzIyIDE3LjI2NTIgMjEuODk0NiAxNy41MTk2IDIxLjcwNzEgMTcuNzA3MUMyMS41MTk2IDE3Ljg5NDYgMjEuMjY1MiAxOCAyMSAxOEgxNUMxNC4yMDQ0IDE4IDEzLjQ0MTMgMTguMzE2MSAxMi44Nzg3IDE4Ljg3ODdDMTIuMzE2MSAxOS40NDEzIDEyIDIwLjIwNDQgMTIgMjFDMTIgMjAuMjA0NCAxMS42ODM5IDE5LjQ0MTMgMTEuMTIxMyAxOC44Nzg3QzEwLjU1ODcgMTguMzE2MSA5Ljc5NTY1IDE4IDkgMThIM1oiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=)](https://docs.superlinked.com/)
@@ -23,26 +24,33 @@
 
 </div>
 
-<div align="center">
+<p align="center">
+  <em>Superlinked is a development framework that helps AI Engineers build <b>high-performing GenAI-powered applications</b> by combining <b>structured</b> and <b>unstructured</b> data. Read <a href="https://docs.superlinked.com">documentation</a> to get started.</em>
+</p>
 
-[Docs](https://docs.superlinked.com) | [Experiment in a notebook](#experiment-in-a-notebook)  | [Run in production](#run-in-production) | [Use-cases](#use-cases) | [Supported VDBs](#supported-vdbs) | [Other Resources](#resources)
+## Table of Contents
 
-</div>
+- [Overview](#overview)
+- [Features](#features)
+- [Use-cases](#use-cases)
+- [Experiment in a notebook](#experiment-in-a-notebook)
+- [Run in production](#run-in-production)
+  - [Supported VDBs](#supported-vdbs)
+- [Logging](#logging)
+- [Resources](#resources)
+- [Support](#support)
 
-#### Why use Superlinked
-Improve your vector search relevance by encoding your metadata together with your data into your vector embeddings.
+## Overview
 
-#### What is Superlinked
-Superlinked is a framework AND a self-hostable REST API server that helps you make better vectors, that sits between your data, vector database and backend services.
-
-#### How does it work
-Superlinked makes it easy to construct custom data & query embedding models from pre-trained encoders and supports frameworks like `sentence-transformers`. See the <b>feature</b> and <b>use-case</b> notebooks below for examples.
+- **Why**: Improve your vector search relevance by encoding your metadata together with your data into your vector embeddings.
+- **What**: It is a framework AND a self-hostable REST API server that helps you make better vectors, that sits between your data, vector database and backend services.
+- **How**: It simplifies construction of custom data & query embedding models from pre-trained encoders and supports popular frameworks like `sentence-transformers`. See the [feature](#features) and [use-case](#use-cases) notebooks below for examples.
 
 If you like what we do, give us a star! ⭐
 
 ![](https://cdn.prod.website-files.com/65dce6831bf9f730421e2915/6747222292b95d051720c82e_system-diagram.png)
 
-See [docs.superlinked.com](https://docs.superlinked.com) to learn more and [superlinked.com](https://superlinked.com/) for information about the company.
+---
 
 ## Features
 
