@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.query.result
 Classes
 -------
 
-`Result(entries: collections.abc.Sequence[superlinked.framework.dsl.query.result.ResultEntry], query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor, search_vector: superlinked.framework.common.data_types.Vector)`
+`Result(entries: Sequence[superlinked.framework.dsl.query.result.ResultEntry], query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor, search_vector: superlinked.framework.common.data_types.Vector)`
 :   Represents the outcome of a query operation.
     Attributes:
         entries (Sequence[ResultEntry]): A sequence of result entries, each encapsulating an entity and its data.
@@ -13,7 +13,7 @@ Classes
 
     ### Class variables
 
-    `entries: collections.abc.Sequence[superlinked.framework.dsl.query.result.ResultEntry]`
+    `entries: Sequence[superlinked.framework.dsl.query.result.ResultEntry]`
     :
 
     `query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`

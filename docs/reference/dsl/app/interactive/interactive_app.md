@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.app.interactive.interactive_app
 Classes
 -------
 
-`InteractiveApp(sources: collections.abc.Sequence[superlinked.framework.dsl.source.interactive_source.InteractiveSource], indices: collections.abc.Sequence[superlinked.framework.dsl.index.index.Index], vector_database: superlinked.framework.dsl.storage.vector_database.VectorDatabase, context: superlinked.framework.common.dag.context.ExecutionContext, init_search_indices: bool = True)`
+`InteractiveApp(sources: Sequence[superlinked.framework.dsl.source.interactive_source.InteractiveSource], indices: Sequence[superlinked.framework.dsl.index.index.Index], vector_database: superlinked.framework.dsl.storage.vector_database.VectorDatabase, context: superlinked.framework.common.dag.context.ExecutionContext, init_search_indices: bool = True)`
 :   Interactive implementation of the App class.
     
     Initialize the InteractiveApp from an InteractiveExecutor.

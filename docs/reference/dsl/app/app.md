@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.app.app
 Classes
 -------
 
-`App(sources: collections.abc.Sequence[~SourceT], indices: collections.abc.Sequence[superlinked.framework.dsl.index.index.Index], vector_database: superlinked.framework.dsl.storage.vector_database.VectorDatabase, context: superlinked.framework.common.dag.context.ExecutionContext, init_search_indices: bool)`
+`App(sources: Sequence[~SourceT], indices: Sequence[superlinked.framework.dsl.index.index.Index], vector_database: superlinked.framework.dsl.storage.vector_database.VectorDatabase, context: superlinked.framework.common.dag.context.ExecutionContext, init_search_indices: bool)`
 :   Abstract base class for an App, a running executor that can, for example, do queries or ingest data.
     
     Initialize the App.

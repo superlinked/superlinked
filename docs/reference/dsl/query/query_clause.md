@@ -25,7 +25,7 @@ Classes
 
     ### Methods
 
-    `evaluate(self) ‑> Optional[superlinked.framework.common.interface.comparison_operand.ComparisonOperation[superlinked.framework.common.schema.schema_object.SchemaField]]`
+    `evaluate(self) ‑> superlinked.framework.common.interface.comparison_operand.ComparisonOperation[superlinked.framework.common.schema.schema_object.SchemaField] | None`
     :
 
     `get_default_value_param_name(self) ‑> str`
@@ -66,7 +66,7 @@ Classes
 
     ### Methods
 
-    `evaluate(self) ‑> Optional[superlinked.framework.dsl.query.predicate.binary_predicate.EvaluatedBinaryPredicate[superlinked.framework.dsl.query.predicate.binary_predicate.LooksLikePredicate]]`
+    `evaluate(self) ‑> superlinked.framework.dsl.query.predicate.binary_predicate.EvaluatedBinaryPredicate[superlinked.framework.dsl.query.predicate.binary_predicate.LooksLikePredicate] | None`
     :
 
     `get_default_value_param_name(self) ‑> str`
@@ -148,7 +148,7 @@ Classes
 
     ### Class variables
 
-    `value_param: Union[superlinked.framework.dsl.query.param.Param, superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.param.Param]]`
+    `value_param: superlinked.framework.dsl.query.param.Param | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.param.Param]`
     :
 
     ### Methods
@@ -262,7 +262,7 @@ Classes
 
     ### Class variables
 
-    `weight_param: Union[superlinked.framework.dsl.query.param.Param, superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.param.Param]]`
+    `weight_param: superlinked.framework.dsl.query.param.Param | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.param.Param]`
     :
 
     ### Methods

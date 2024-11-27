@@ -12,7 +12,7 @@ Classes
 
     ### Instance variables
 
-    `clauses: collections.abc.Sequence[superlinked.framework.dsl.query.query_clause.QueryClause]`
+    `clauses: Sequence[superlinked.framework.dsl.query.query_clause.QueryClause]`
     :
 
     `index: superlinked.framework.dsl.index.index.Index`
@@ -32,7 +32,7 @@ Classes
     `calculate_value_by_param_name(self) ‑> dict[str, typing.Any]`
     :
 
-    `filter(self, comparison_operation: Union[superlinked.framework.common.interface.comparison_operand.ComparisonOperation[superlinked.framework.common.schema.schema_object.SchemaField], superlinked.framework.common.interface.comparison_operand._Or]) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    `filter(self, comparison_operation: superlinked.framework.common.interface.comparison_operand.ComparisonOperation[superlinked.framework.common.schema.schema_object.SchemaField] | superlinked.framework.common.interface.comparison_operand._Or) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :   Add a 'filter' clause to the query. This filters the results from the db
         to only contain items based on the filtering input.
         E.g:
@@ -56,7 +56,7 @@ Classes
         Returns:
             Self: The query object itself.
 
-    `get_clause_by_type(self, clause_type: type[~QueryClauseT]) ‑> Optional[~QueryClauseT]`
+    `get_clause_by_type(self, clause_type: type[~QueryClauseT]) ‑> ~QueryClauseT | None`
     :
 
     `get_clauses_by_type(self, clause_type: type[~QueryClauseT]) ‑> list[~QueryClauseT]`
@@ -71,7 +71,7 @@ Classes
     `get_limit(self) ‑> int`
     :
 
-    `get_looks_like_filter(self) ‑> Optional[superlinked.framework.dsl.query.predicate.binary_predicate.EvaluatedBinaryPredicate[superlinked.framework.dsl.query.predicate.binary_predicate.LooksLikePredicate]]`
+    `get_looks_like_filter(self) ‑> superlinked.framework.dsl.query.predicate.binary_predicate.EvaluatedBinaryPredicate[superlinked.framework.dsl.query.predicate.binary_predicate.LooksLikePredicate] | None`
     :
 
     `get_mandatory_clause_by_type(self, clause_type: type[~QueryClauseT]) ‑> ~QueryClauseT`
@@ -148,7 +148,7 @@ Classes
         Raises:
             ValueError: If the radius is not between 0 and 1.
 
-    `replace_clauses(self, clauses: collections.abc.Sequence[superlinked.framework.dsl.query.query_clause.QueryClause]) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    `replace_clauses(self, clauses: Sequence[superlinked.framework.dsl.query.query_clause.QueryClause]) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :
 
     `similar(self, space_field_set: superlinked.framework.dsl.space.has_space_field_set.HasSpaceFieldSet | superlinked.framework.dsl.space.space_field_set.SpaceFieldSet, param: collections.abc.Sequence[str] | collections.abc.Sequence[float] | PIL.Image.Image | str | int | float | bool | None | tuple[str | None, str | None] | superlinked.framework.dsl.query.param.Param, weight: float | int | superlinked.framework.dsl.query.param.Param = 1.0) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
@@ -169,7 +169,7 @@ Classes
             QueryException: If the space is already bound in the query.
             InvalidSchemaException: If the schema is not in the similarity field's schema types.
 
-    `space_weights(self, weight_by_space: collections.abc.Mapping[superlinked.framework.dsl.space.space.Space, float | int | superlinked.framework.dsl.query.param.Param]) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    `space_weights(self, weight_by_space: Mapping[superlinked.framework.dsl.space.space.Space, float | int | superlinked.framework.dsl.query.param.Param]) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :
 
     `with_natural_query(self, natural_query: str | superlinked.framework.dsl.query.param.Param, client_config: superlinked.framework.common.nlq.open_ai.OpenAIClientConfig, system_prompt: str | superlinked.framework.dsl.query.param.Param | None = None) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`

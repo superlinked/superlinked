@@ -83,7 +83,7 @@ Classes
     `path: str`
     :
 
-`DataLoaderSource(schema: ~IdSchemaObjectT, data_loader_config: superlinked.framework.dsl.source.data_loader_source.DataLoaderConfig, parser: Optional[superlinked.framework.common.parser.data_parser.DataParser[~IdSchemaObjectT, ~SourceTypeT]] = None)`
+`DataLoaderSource(schema: ~IdSchemaObjectT, data_loader_config: superlinked.framework.dsl.source.data_loader_source.DataLoaderConfig, parser: superlinked.framework.common.parser.data_parser.DataParser[~IdSchemaObjectT, ~SourceTypeT] | None = None)`
 :   Abstract base class for generic types.
     
     A generic type is typically declared by inheriting from

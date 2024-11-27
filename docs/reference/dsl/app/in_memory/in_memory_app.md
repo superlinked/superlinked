@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.app.in_memory.in_memory_app
 Classes
 -------
 
-`InMemoryApp(sources: collections.abc.Sequence[superlinked.framework.dsl.source.in_memory_source.InMemorySource], indices: collections.abc.Sequence[superlinked.framework.dsl.index.index.Index], vector_database: superlinked.framework.dsl.storage.vector_database.VectorDatabase | None, context: superlinked.framework.common.dag.context.ExecutionContext)`
+`InMemoryApp(sources: Sequence[superlinked.framework.dsl.source.in_memory_source.InMemorySource], indices: Sequence[superlinked.framework.dsl.index.index.Index], vector_database: superlinked.framework.dsl.storage.vector_database.VectorDatabase | None, context: superlinked.framework.common.dag.context.ExecutionContext)`
 :   In-memory implementation of the App class.
     
     Initialize the InMemoryApp from an InMemoryExecutor.

@@ -5,7 +5,7 @@ Classes
 -------
 
 `RestEndpointConfiguration(**data: Any)`
-:   Usage docs: https://docs.pydantic.dev/2.9/concepts/models/
+:   Usage docs: https://docs.pydantic.dev/2.10/concepts/models/
     
     A base class for creating Pydantic models.
     
@@ -26,6 +26,9 @@ Classes
         __pydantic_root_model__: Whether the model is a [`RootModel`][pydantic.root_model.RootModel].
         __pydantic_serializer__: The `pydantic-core` `SchemaSerializer` used to dump instances of the model.
         __pydantic_validator__: The `pydantic-core` `SchemaValidator` used to validate instances of the model.
+    
+        __pydantic_fields__: A dictionary of field names and their corresponding [`FieldInfo`][pydantic.fields.FieldInfo] objects.
+        __pydantic_computed_fields__: A dictionary of computed field names and their corresponding [`ComputedFieldInfo`][pydantic.fields.ComputedFieldInfo] objects.
     
         __pydantic_extra__: A dictionary containing extra values, if [`extra`][pydantic.config.ConfigDict.extra]
             is set to `'allow'`.
@@ -52,13 +55,7 @@ Classes
     `ingest_path_prefix: str`
     :
 
-    `model_computed_fields`
-    :
-
     `model_config`
-    :
-
-    `model_fields`
     :
 
     `query_path_prefix: str`

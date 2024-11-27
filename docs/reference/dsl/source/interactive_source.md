@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.source.interactive_source
 Classes
 -------
 
-`InteractiveSource(schema: ~IdSchemaObjectT, parser: Optional[superlinked.framework.common.parser.data_parser.DataParser[~IdSchemaObjectT, ~SourceTypeT]] = None)`
+`InteractiveSource(schema: ~IdSchemaObjectT, parser: superlinked.framework.common.parser.data_parser.DataParser[~IdSchemaObjectT, ~SourceTypeT] | None = None)`
 :   InteractiveSource represents a source of data, where you can put your data. This will supply
     the index with the data it needs to index and search in.
     

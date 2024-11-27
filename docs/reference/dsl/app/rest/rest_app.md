@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.app.rest.rest_app
 Classes
 -------
 
-`RestApp(sources: collections.abc.Sequence[superlinked.framework.dsl.source.rest_source.RestSource | superlinked.framework.dsl.source.data_loader_source.DataLoaderSource], indices: collections.abc.Sequence[superlinked.framework.dsl.index.index.Index], queries: collections.abc.Sequence[superlinked.framework.dsl.executor.rest.rest_configuration.RestQuery], vector_database: superlinked.framework.dsl.storage.vector_database.VectorDatabase, context: superlinked.framework.common.dag.context.ExecutionContext, endpoint_configuration: superlinked.framework.dsl.executor.rest.rest_configuration.RestEndpointConfiguration, queue: Optional[superlinked.framework.queue.interface.queue.Queue[superlinked.framework.queue.interface.queue_message.MessageBody[dict]]] = None, blob_handler: superlinked.framework.blob.blob_handler.BlobHandler | None = None)`
+`RestApp(sources: Sequence[superlinked.framework.dsl.source.rest_source.RestSource | superlinked.framework.dsl.source.data_loader_source.DataLoaderSource], indices: Sequence[superlinked.framework.dsl.index.index.Index], queries: Sequence[superlinked.framework.dsl.executor.rest.rest_configuration.RestQuery], vector_database: superlinked.framework.dsl.storage.vector_database.VectorDatabase, context: superlinked.framework.common.dag.context.ExecutionContext, endpoint_configuration: superlinked.framework.dsl.executor.rest.rest_configuration.RestEndpointConfiguration, queue: superlinked.framework.queue.interface.queue.Queue[superlinked.framework.queue.interface.queue_message.MessageBody[dict]] | None = None, blob_handler: superlinked.framework.blob.blob_handler.BlobHandler | None = None)`
 :   Rest implementation of the App class.
     
     Initialize the RestApp from a RestExecutor.
@@ -29,7 +29,7 @@ Classes
 
     ### Instance variables
 
-    `data_loader_sources: collections.abc.Sequence[superlinked.framework.dsl.source.data_loader_source.DataLoaderSource]`
+    `data_loader_sources: Sequence[superlinked.framework.dsl.source.data_loader_source.DataLoaderSource]`
     :   Property that returns the list of DataLoaderSource instances associated with the RestApp.
         
         Returns:
