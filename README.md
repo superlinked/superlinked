@@ -105,14 +105,14 @@ rating_maximizer_space = sl.NumberSpace(
 )
 index = sl.Index([description_space, rating_maximizer_space], fields=[product.rating])
 
-# fill this with your API key - this will drive param extraction
+# Fill this with your API key - we use it to extract parameters from your natural language query
 openai_config = sl.OpenAIClientConfig(
     api_key=os.environ["OPEN_AI_API_KEY"], model="gpt-4o"
 )
 
 
 # Define your query using dynamic parameters for query text and weights.
-# we will have our LLM fill them based on our natural language query
+# We will have our LLM fill them based on our natural language query
 query = (
     sl.Query(
         index,
@@ -124,7 +124,7 @@ query = (
     .find(product)
     .similar(
         description_space,
-        # it is possible now to add descriptions to a `Param` to aid the parsing of information from natural language queries.
+        # You can add descriptions to a `Param` to aid the parsing of information from natural language queries.
         sl.Param(
             "query_text",
             description="The text in the user's query that refers to product descriptions.",
@@ -164,9 +164,10 @@ source.put(data)
 
 result = app.query(query, natural_query="best toothbrushes", limit=1)
 
-# examine the extracted parameters from your query
+# Examine the extracted parameters from your query
 print(json.dumps(result.knn_params, indent=2))
-# the result is the 5 star rated product
+
+# The result is the 5 star rated product
 result.to_pandas()
 ```
 
