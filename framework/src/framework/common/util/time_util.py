@@ -22,3 +22,7 @@ def now() -> int:
 
 def convert_datetime_to_utc_timestamp(datetime_object: datetime.datetime) -> int:
     return int(datetime_object.replace(tzinfo=datetime.timezone.utc).timestamp())
+
+
+def convert_utc_timestamp_to_datetime(utc_timestamp: int) -> datetime.datetime:
+    return datetime.datetime.fromtimestamp(utc_timestamp, tz=datetime.timezone.utc)

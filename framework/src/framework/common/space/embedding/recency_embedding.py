@@ -31,6 +31,7 @@ from superlinked.framework.common.util import time_util
 
 MAX_PERIOD_TIME_X_COORDINATE: int = -3
 MAX_PERIOD_TIME_Y_COORDINATE: int = -2
+EXPIRY_TIMEDELTA = timedelta(days=1)
 
 
 class RecencyEmbedding(InvertibleEmbedding[int, RecencyEmbeddingConfig]):
@@ -40,10 +41,7 @@ class RecencyEmbedding(InvertibleEmbedding[int, RecencyEmbeddingConfig]):
         self._period_time_list: Sequence[PeriodTime] = sorted(
             self._config.period_time_list, key=lambda x: x.period_time.total_seconds()
         )
-        self._max_period_time: PeriodTime = max(
-            self._period_time_list, key=lambda p: p.period_time
-        )
-        self._epoch = self._get_epoch()
+        self._max_period_time = self._period_time_list[-1]
 
     @property
     @override
@@ -74,26 +72,23 @@ class RecencyEmbedding(InvertibleEmbedding[int, RecencyEmbeddingConfig]):
         This function might seem complex,
         but it essentially performs the inverse operation of the embed function.
         """
-        time_period_start = self._calculate_time_period_start(context)
-        period_time_in_secs: float = self._max_period_time.period_time.total_seconds()
-        full_circle_period_time: float = period_time_in_secs * 4
-
         x_value, y_value = (
             vector.value[MAX_PERIOD_TIME_X_COORDINATE],
             vector.value[MAX_PERIOD_TIME_Y_COORDINATE],
         )
-
+        time_period_start = self._calculate_time_period_start(
+            self.max_period_time, context.now()
+        )
+        time_period_end: int = self._calculate_time_period_end(context.now())
         if (x_value == 0) and (y_value == 0):
-            created_at = time_period_start - period_time_in_secs - 1
-            return int(created_at)
+            created_at = time_period_start - 1
+            return created_at
 
-        time_modulo = math.atan2(
-            y_value / self._max_period_time.weight,
-            x_value / self._max_period_time.weight,
-        ) / (2 * math.pi)
-        time_elapsed = abs(time_modulo) * full_circle_period_time
-        created_at = time_period_start + period_time_in_secs - time_elapsed
-        return int(created_at)
+        normalized_time_elapsed = math.atan2(y_value, x_value) * 2 / math.pi
+        time_elapsed = round(
+            normalized_time_elapsed * (time_period_end - time_period_start)
+        )
+        return time_elapsed + time_period_start
 
     @property
     @override
@@ -106,29 +101,27 @@ class RecencyEmbedding(InvertibleEmbedding[int, RecencyEmbeddingConfig]):
         period_time: PeriodTime,
         context: ExecutionContext,
     ) -> Vector:
-        time_period_start: int = self._calculate_time_period_start(context)
-        created_at_constrained: int = min(created_at, time_period_start)
-        period_time_in_secs: float = period_time.period_time.total_seconds()
-        full_circle_period_time: float = period_time_in_secs * 4
-
-        time_elapsed: int = abs(created_at_constrained - self._epoch)
-        time_modulo: float = (
-            time_elapsed % full_circle_period_time
-        ) / full_circle_period_time
-
-        out_of_time_scope = (
-            created_at_constrained < time_period_start - period_time_in_secs
+        time_period_start: int = self._calculate_time_period_start(
+            period_time, context.now()
         )
-
+        time_period_end: int = self._calculate_time_period_end(context.now())
+        out_of_time_scope = not time_period_start <= created_at <= time_period_end
         z_value = self.calculate_z_value(period_time, context, out_of_time_scope)
         if out_of_time_scope:
             x_value = y_value = 0.0
         else:
-            x_value = math.cos(time_modulo * math.pi * 2) * period_time.weight
-            y_value = math.sin(time_modulo * math.pi * 2) * period_time.weight
+            time_elapsed: int = created_at - time_period_start
+            normalized_time_elapsed = time_elapsed / (
+                time_period_end - time_period_start
+            )
+            x_value = (
+                math.cos(normalized_time_elapsed * math.pi / 2) * period_time.weight
+            )
+            y_value = (
+                math.sin(normalized_time_elapsed * math.pi / 2) * period_time.weight
+            )
 
-        recency_vector = self._build_vector(x_value, y_value, z_value)
-        return recency_vector
+        return self._build_vector(x_value, y_value, z_value)
 
     def calculate_z_value(
         self,
@@ -136,11 +129,11 @@ class RecencyEmbedding(InvertibleEmbedding[int, RecencyEmbeddingConfig]):
         context: ExecutionContext,
         out_of_time_scope: bool,
     ) -> float | None:
-        if period_time.period_time == self._max_period_time.period_time:
+        if period_time.period_time == self.max_period_time.period_time:
             if context.is_query_context:
                 z_value = 1.0
             elif out_of_time_scope:
-                z_value = float(self._config.negative_filter)
+                z_value = self._config.negative_filter
             else:
                 z_value = 0.0
         else:
@@ -157,27 +150,28 @@ class RecencyEmbedding(InvertibleEmbedding[int, RecencyEmbeddingConfig]):
             negative_filter_indices.add(2)
         return Vector(vector_input, negative_filter_indices)
 
-    def _calculate_time_period_start(
-        self,
-        context: ExecutionContext,
-    ) -> int:
-        now = datetime.fromtimestamp(context.now())
-        now_only_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        next_day = now_only_day + timedelta(days=1)
-        time_period_start = next_day + self._config.time_period_hour_offset
+    def _calculate_time_period_start(self, period_time: PeriodTime, now_ts: int) -> int:
+        expiry_date = self.__get_expiry_date(now_ts)
+        time_period_start = (
+            expiry_date - period_time.period_time + self._config.time_period_hour_offset
+        )
         utc_time_period_start = time_util.convert_datetime_to_utc_timestamp(
             time_period_start
         )
         return utc_time_period_start
 
-    @staticmethod
-    def _get_epoch() -> int:
+    def _calculate_time_period_end(self, now_ts: int) -> int:
         """
-        Earliest possible python datetime. Cannot make this work for earlier dates than epoch.
-        This is needed to provide a base for recency calculations.
-        All timestamps are evaluated based on distance (phase actually) to this timestamp with respect to period times.
+        `EXPIRY_TIMEDELTA` later, dawn at `self._config.time_period_hour_offset` hour o'clock.
         """
-        epoch: int = time_util.convert_datetime_to_utc_timestamp(
-            datetime(year=1753, month=1, day=1, hour=0, minute=0, second=0)
+        expiry_date = self.__get_expiry_date(now_ts)
+        time_period_end = expiry_date + self._config.time_period_hour_offset
+        utc_time_period_end = time_util.convert_datetime_to_utc_timestamp(
+            time_period_end
         )
-        return epoch
+        return utc_time_period_end
+
+    def __get_expiry_date(self, now_ts: int) -> datetime:
+        now = time_util.convert_utc_timestamp_to_datetime(now_ts)
+        now_only_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        return now_only_day + EXPIRY_TIMEDELTA
