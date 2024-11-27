@@ -15,7 +15,8 @@
 
 <div align="center">
 
-![PyPI](https://img.shields.io/pypi/v/superlinked)
+[![Documentation](https://img.shields.io/badge/Documentation-orange?logo=data:image/svg%2bxml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDdWMjEiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik0zIDE4QzIuNzM0NzggMTggMi40ODA0MyAxNy44OTQ2IDIuMjkyODkgMTcuNzA3MUMyLjEwNTM2IDE3LjUxOTYgMiAxNy4yNjUyIDIgMTdWNEMyIDMuNzM0NzggMi4xMDUzNiAzLjQ4MDQzIDIuMjkyODkgMy4yOTI4OUMyLjQ4MDQzIDMuMTA1MzYgMi43MzQ3OCAzIDMgM0g4QzkuMDYwODcgMyAxMC4wNzgzIDMuNDIxNDMgMTAuODI4NCA0LjE3MTU3QzExLjU3ODYgNC45MjE3MiAxMiA1LjkzOTEzIDEyIDdDMTIgNS45MzkxMyAxMi40MjE0IDQuOTIxNzIgMTMuMTcxNiA0LjE3MTU3QzEzLjkyMTcgMy40MjE0MyAxNC45MzkxIDMgMTYgM0gyMUMyMS4yNjUyIDMgMjEuNTE5NiAzLjEwNTM2IDIxLjcwNzEgMy4yOTI4OUMyMS44OTQ2IDMuNDgwNDMgMjIgMy43MzQ3OCAyMiA0VjE3QzIyIDE3LjI2NTIgMjEuODk0NiAxNy41MTk2IDIxLjcwNzEgMTcuNzA3MUMyMS41MTk2IDE3Ljg5NDYgMjEuMjY1MiAxOCAyMSAxOEgxNUMxNC4yMDQ0IDE4IDEzLjQ0MTMgMTguMzE2MSAxMi44Nzg3IDE4Ljg3ODdDMTIuMzE2MSAxOS40NDEzIDEyIDIwLjIwNDQgMTIgMjFDMTIgMjAuMjA0NCAxMS42ODM5IDE5LjQ0MTMgMTEuMTIxMyAxOC44Nzg3QzEwLjU1ODcgMTguMzE2MSA5Ljc5NTY1IDE4IDkgMThIM1oiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=)](https://docs.superlinked.com/)
+[![PyPI](https://img.shields.io/pypi/v/superlinked)](https://pypi.org/project/superlinked/)
 ![Last commit](https://img.shields.io/github/last-commit/superlinked/superlinked)
 ![License](https://img.shields.io/github/license/superlinked/superlinked) 
 ![](https://img.shields.io/github/stars/superlinked/superlinked)
@@ -39,7 +40,7 @@ Superlinked makes it easy to construct custom data & query embedding models from
 
 If you like what we do, give us a star! ⭐
 
-![](https://cdn.prod.website-files.com/65dce6831bf9f730421e2915/66f05365ad05806eb16c9cb8_superlinked_system_diagram3.png)
+![](https://cdn.prod.website-files.com/65dce6831bf9f730421e2915/6747222292b95d051720c82e_system-diagram.png)
 
 See [docs.superlinked.com](https://docs.superlinked.com) to learn more and [superlinked.com](https://superlinked.com/) for information about the company.
 
@@ -53,8 +54,9 @@ See [docs.superlinked.com](https://docs.superlinked.com) to learn more and [supe
 - Query with natural language ([notebook](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/natural_language_querying.ipynb))
 - Filter your results ([notebook](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/hard_filtering.ipynb))
 - Export vectors for analysis ([notebook](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/vector_sampler.ipynb))
+- Embed text or images into a multi-modal vector space ([notebook](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/image_embedding.ipynb))
 
-You can check a full list of our [features](https://github.com/superlinked/superlinked/tree/main/notebook/feature) or head to our [reference](#reference) section for more information.
+You can check a full list of our [features and concepts](https://docs.superlinked.com/concepts/overview).
 
 ## Use-cases
 
@@ -69,7 +71,7 @@ You can check a full list of examples [here](https://github.com/superlinked/supe
 
 ## Experiment in a notebook
 
-Example on combining Text with Numerical encoders to get correct results with LLMs.
+Here's a quick example showing how to combine Text and Numerical encoders to achieve accurate results with LLMs:
 
 #### Install the superlinked library
 ```
@@ -103,12 +105,12 @@ rating_maximizer_space = sl.NumberSpace(
 )
 index = sl.Index([description_space, rating_maximizer_space], fields=[product.rating])
 
-# fill this with your API key - this will drive param extraction
+# Fill this with your API key - we use it to extract parameters from your natural language query
 openai_config = sl.OpenAIClientConfig(
     api_key=os.environ["OPEN_AI_API_KEY"], model="gpt-4o"
 )
 
-# it is possible now to add descriptions to a `Param` to aid the parsing of information from natural language queries.
+# You can add descriptions to a `Param` to aid the parsing of information from natural language queries.
 text_similar_param = sl.Param(
     "query_text",
     description="The text in the user's query that refers to product descriptions.",
@@ -151,9 +153,10 @@ source.put(data)
 
 result = app.query(query, natural_query="best toothbrushes", limit=1)
 
-# examine the extracted parameters from your query
+# Examine the extracted parameters from your query
 print(json.dumps(result.knn_params, indent=2))
-# the result is the 5 star rated product
+
+# The result is the 5 star rated product
 result.to_pandas()
 ```
 
@@ -167,22 +170,12 @@ If your are interested in learning more about running at scale, [Book a demo](ht
 
 We have started partnering with vector database providers to allow you to use Superlinked with your VDB of choice. If you are unsure, which VDB to chose, check-out our [Vector DB Comparison](https://superlinked.com/vector-db-comparison/).
 
-- [Redis](https://github.com/superlinked/superlinked/tree/main/server/docs/redis/redis.md)
-- [MongoDB](https://github.com/superlinked/superlinked/tree/main/server/docs/mongodb/mongodb.md)
+- [Redis](https://docs.superlinked.com/run-in-production/index-1/redis)
+- [MongoDB](https://docs.superlinked.com/run-in-production/index-1/mongodb)
+- [Qdrant](https://docs.superlinked.com/run-in-production/index-1/qdrant)
 
 Missing your favorite VDB? [Tell us which vector database we should support next!](https://github.com/superlinked/superlinked/discussions/41)
 
-## Reference
-
-1. Describe your data using Python classes with the [@schema](https://github.com/superlinked/superlinked/blob/main/docs/reference/common/schema/schema.md) decorator.
-2. Describe your vector embeddings from building blocks with [Spaces](https://github.com/superlinked/superlinked/blob/main/docs/reference/dsl/space/index.md).
-3. Combine your embeddings into a queryable [Index](https://github.com/superlinked/superlinked/blob/main/docs/reference/dsl/index/index.m.md).
-4. Define your search with dynamic parameters and weights as a [Query](https://github.com/superlinked/superlinked/blob/main/docs/reference/dsl/query/query.md).
-5. Load your data using a [Source](https://github.com/superlinked/superlinked/blob/main/docs/reference/dsl/source/index.md).
-6.  Define your transformations with a [Parser](https://github.com/superlinked/superlinked/blob/main/docs/reference/common/parser) (e.g.: from [`pd.DataFrame`](https://github.com/superlinked/superlinked/blob/main/docs/reference/common/parser/dataframe_parser.md)). 
-7. Run your configuration with an [Executor](https://github.com/superlinked/superlinked/blob/main/docs/reference/dsl/executor/in_memory/in_memory_executor.md).
-
-You can check all references [here](https://github.com/superlinked/superlinked/tree/main/docs/reference).
 
 ## Logging
 
@@ -191,9 +184,13 @@ Contextual information is automatically included in log messages, such as the pr
 ## Resources
 
 - [Vector DB Comparison](https://superlinked.com/vector-db-comparison/): Open-source collaborative comparison of vector databases by Superlinked.
-- [Vector Hub](https://superlinked.com/vectorhub/): VectorHub is a free and open-sourced learning hub for people interested in adding vector retrieval to their ML stack
+- [VectorHub](https://superlinked.com/vectorhub/): VectorHub is a free and open-sourced learning hub for people interested in adding vector retrieval to their ML stack
 
 ## Support
 
-If you encounter any challenges during your experiments, feel free to create an [issue](https://github.com/superlinked/superlinked/issues/new?assignees=kembala&labels=bug&projects=&template=bug_report.md&title=), request a [feature](https://github.com/superlinked/superlinked/issues/new?assignees=kembala&labels=enhancement&projects=&template=feature_request.md&title=) or to [start a discussion](https://github.com/superlinked/superlinked/discussions/new/choose).
-Make sure to group your feedback in separate issues and discussions by topic. Thank you for your feedback!
+Need help? We're here to support you:
+- Report a bug by creating an [issue](https://github.com/superlinked/superlinked/issues/new?assignees=kembala&labels=bug&projects=&template=bug_report.md&title=)
+- Request a new feature [here](https://github.com/superlinked/superlinked/issues/new?assignees=kembala&labels=enhancement&projects=&template=feature_request.md&title=)
+- Start a [discussion](https://github.com/superlinked/superlinked/discussions/new/choose) about your ideas or questions
+
+Please create separate issues/discussions for each topic to help us better address your feedback. Thank you for contributing!
