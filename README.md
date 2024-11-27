@@ -110,11 +110,6 @@ openai_config = sl.OpenAIClientConfig(
     api_key=os.environ["OPEN_AI_API_KEY"], model="gpt-4o"
 )
 
-# it is possible now to add descriptions to a `Param` to aid the parsing of information from natural language queries.
-text_similar_param = sl.Param(
-    "query_text",
-    description="The text in the user's query that refers to product descriptions.",
-)
 
 # Define your query using dynamic parameters for query text and weights.
 # we will have our LLM fill them based on our natural language query
@@ -129,7 +124,11 @@ query = (
     .find(product)
     .similar(
         description_space,
-        text_similar_param,
+        # it is possible now to add descriptions to a `Param` to aid the parsing of information from natural language queries.
+        sl.Param(
+            "query_text",
+            description="The text in the user's query that refers to product descriptions.",
+        ),
         sl.Param("description_similar_clause_weight"),
     )
     .limit(sl.Param("limit"))
