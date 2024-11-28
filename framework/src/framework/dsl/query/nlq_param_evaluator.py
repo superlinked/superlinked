@@ -359,11 +359,13 @@ class NLQParamEvaluator:
         model_field_info = model_fields[param_info.name]
         is_weight_text = "weight" if param_info.is_weight else "value"
         allowed_values = sorted(param_info.allowed_values)  # type: ignore[type-var]
+
+        fill_text = "not 0" if param_info.is_weight else "filled"
         field_detail_parts = [
             f" - {param_info.name} is a {is_weight_text}",
             (
                 (
-                    " that should only be filled if the user wants to explicitly filter to"
+                    f" that should only be {fill_text} if the user wants to explicitly filter to"
                     f" {param_info.op.value.replace('_', ' ')}"
                 )
                 if param_info.op
