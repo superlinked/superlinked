@@ -35,8 +35,6 @@
 - [Use-cases](#use-cases)
 - [Experiment in a notebook](#experiment-in-a-notebook)
 - [Run in production](#run-in-production) / [Supported Vector Databases](#supported-vector-databases)
-- [Logging](#logging)
-- [Resources](#resources)
 - [Support](#support)
 
 ## Overview
