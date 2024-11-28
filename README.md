@@ -25,7 +25,7 @@
 </div>
 
 <p align="center">
-  <em>Superlinked is a development framework that helps AI Engineers build <b>high-performing GenAI-powered applications</b> by combining <b>structured</b> and <b>unstructured</b> data. Read <a href="https://docs.superlinked.com">documentation</a> to get started.</em>
+  <em>Superlinked is a Python framework for AI Engineers building <b>high-performance search & recommendation applications</b> </br> that combine <b>structured</b> and <b>unstructured</b> data. <a href="https://docs.superlinked.com">Check documentation</a> to get started.</em>
 </p>
 
 ## Table of Contents
@@ -34,17 +34,16 @@
 - [Features](#features)
 - [Use-cases](#use-cases)
 - [Experiment in a notebook](#experiment-in-a-notebook)
-- [Run in production](#run-in-production)
-  - [Supported VDBs](#supported-vdbs)
+- [Run in production](#run-in-production) / [Supported Vector Databases](#supported-vector-databases)
 - [Logging](#logging)
 - [Resources](#resources)
 - [Support](#support)
 
 ## Overview
 
-- **Why**: Improve your vector search relevance by encoding your metadata together with your data into your vector embeddings.
-- **What**: It is a framework AND a self-hostable REST API server that helps you make better vectors, that sits between your data, vector database and backend services.
-- **How**: It simplifies construction of custom data & query embedding models from pre-trained encoders and supports popular frameworks like `sentence-transformers`. See the [feature](#features) and [use-case](#use-cases) notebooks below for examples.
+- **WHY**: Improve your vector search relevance by encoding metadata togehter with your unstructured data into vectors.
+- **WHAT**: A framework and a self-hostable REST API server that connects your data, vector database and backend services.
+- **HOW**: Construct custom data & query embedding models from pre-trained encoders from `sentence-transformers`, `open-clip` and custom encoders for numbers, timestamps and categorical data. See the [feature](#features) and [use-case](#use-cases) notebooks below for examples.
 
 If you like what we do, give us a star! ⭐
 
@@ -54,7 +53,7 @@ If you like what we do, give us a star! ⭐
 
 ## Features
 
-- Embed structured and unstructured data ([Text](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/text_embedding.ipynb) | [Number](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/number_embedding_minmax.ipynb) | [Category](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/categorical_embedding.ipynb) | [Time](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/recency_embedding.ipynb) | [Event](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/event_effects.ipynb))
+- Embed structured and unstructured data ([Text](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/text_embedding.ipynb) | [Image](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/image_embedding.ipynb) | [Number](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/number_embedding_minmax.ipynb) | [Category](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/categorical_embedding.ipynb) | [Time](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/recency_embedding.ipynb) | [Event](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/event_effects.ipynb))
 - Combine encoders to build a custom model ([notebook](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/combine_multiple_embeddings.ipynb))
 - Add a custom encoder ([notebook](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/custom_space.ipynb))
 - Update your vectors with behavioral events & relationships ([notebook](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/event_effects.ipynb))
@@ -79,7 +78,7 @@ You can check a full list of examples [here](https://github.com/superlinked/supe
 
 ## Experiment in a notebook
 
-Here's a quick example showing how to combine Text and Numerical encoders to achieve accurate results with LLMs:
+Let's build an e-commerce product search that understands product descriptions and ratings:
 
 #### Install the superlinked library
 ```
@@ -88,7 +87,7 @@ Here's a quick example showing how to combine Text and Numerical encoders to ach
 
 #### Run the example:
 
->First run will take slightly longer as it has to download the embedding model.  
+>First run will take a minute to download the embedding model.  
 
 ```python
 import json
@@ -108,48 +107,47 @@ product = Product()
 description_space = sl.TextSimilaritySpace(
     text=product.description, model="Alibaba-NLP/gte-large-en-v1.5"
 )
-rating_maximizer_space = sl.NumberSpace(
+rating_space = sl.NumberSpace(
     number=product.rating, min_value=1, max_value=5, mode=sl.Mode.MAXIMUM
 )
-index = sl.Index([description_space, rating_maximizer_space], fields=[product.rating])
-
-# Fill this with your API key - we use it to extract parameters from your natural language query
-openai_config = sl.OpenAIClientConfig(
-    api_key=os.environ["OPEN_AI_API_KEY"], model="gpt-4o"
-)
+index = sl.Index([description_space, rating_space], fields=[product.rating])
 
 
-# Define your query using dynamic parameters for query text and weights.
-# We will have our LLM fill them based on our natural language query
+# Define your query and parameters to set them directly at query-time
+# or let an LLM fill them in for you using the `natural_language_query` param.
+# Don't forget to set your OpenAI API key to unlock this feature.
 query = (
     sl.Query(
         index,
         weights={
             description_space: sl.Param("description_weight"),
-            rating_maximizer_space: sl.Param("rating_maximizer_weight"),
+            rating_space: sl.Param("rating_weight"),
         },
     )
     .find(product)
     .similar(
         description_space,
-        # You can add descriptions to a `Param` to aid the parsing of information from natural language queries.
         sl.Param(
-            "query_text",
+            "description_query",
             description="The text in the user's query that refers to product descriptions.",
         ),
-        sl.Param("description_similar_clause_weight"),
+        sl.Param("description_query_weight"),
     )
     .limit(sl.Param("limit"))
-    .with_natural_query(sl.Param("natural_query"), openai_config)
+    .with_natural_query(
+        sl.Param("natural_language_query"),
+        sl.OpenAIClientConfig(api_key=os.environ["OPEN_AI_API_KEY"], model="gpt-4o")
+    )
 )
 
-# Run the app.
+# Run the app in-memory (multi-worker server & Apache Spark executors available too!).
 source = sl.InMemorySource(product)
 executor = sl.InMemoryExecutor(sources=[source], indices=[index])
 app = executor.run()
 
-# Download dataset.
-data = [
+
+# Ingest data into the system - index updates and other processing happens automatically.
+source.put([
     {
         "id": 1,
         "description": "Budget toothbrush in black color. Just what you need.",
@@ -165,40 +163,39 @@ data = [
         "description": "A toothbrush created for the smart 21st century man.",
         "rating": 3,
     },
-]
-
-# Ingest data to the framework.
-source.put(data)
+])
 
 result = app.query(query, natural_query="best toothbrushes", limit=1)
 
 # Examine the extracted parameters from your query
 print(json.dumps(result.knn_params, indent=2))
 
-# The result is the 5 star rated product
+# The result is the 5-star rated product.
 result.to_pandas()
 ```
 
 ## Run in production
 
-[Superlinked Server](https://github.com/superlinked/superlinked/tree/main/server) allows you to leverage the power of Superlinked in deployable projects. With a single script, you can deploy a Superlinked-powered app instance that creates REST endpoints and connects to external Vector Databases. This makes it an ideal solution for those seeking an easy-to-deploy environment for their Superlinked projects.
+Run a single command to deploy your Superlinked project as a REST API Server locally or in your cloud with [Superlinked Server](https://github.com/superlinked/superlinked/tree/main/server). Get data ingestion and query APIs, embedding model inference and deep vector database integrations for free!
+
+Unify your evaluation, ingestion and serving stacks with a single declarative python codebase. Superlinked enables this by letting you define your data schema, vector indexes and the compute DAG that links them all at once and then chose the right executor for the task - in-memory, multi-worker server or batch.
 
 If your are interested in learning more about running at scale, [Book a demo](https://links.superlinked.com/sl-repo-readme-form) for an early access to our managed cloud.
 
-### Supported VDBs
+### Supported Vector Databases
 
-We have started partnering with vector database providers to allow you to use Superlinked with your VDB of choice. If you are unsure, which VDB to chose, check-out our [Vector DB Comparison](https://superlinked.com/vector-db-comparison/).
+Superlinked stores *your vectors* in *your vector database*, with deep integrations for:
 
 - [Redis](https://docs.superlinked.com/run-in-production/index-1/redis)
 - [MongoDB](https://docs.superlinked.com/run-in-production/index-1/mongodb)
 - [Qdrant](https://docs.superlinked.com/run-in-production/index-1/qdrant)
+- [Which one should we support next?](https://github.com/superlinked/superlinked/discussions/41)
 
-Missing your favorite VDB? [Tell us which vector database we should support next!](https://github.com/superlinked/superlinked/discussions/41)
-
+Curious about vector database pros & cons in general? Our community [compared 44 Vector Databases on 30+ features](https://superlinked.com/vector-db-comparison/).
 
 ## Logging
 
-Contextual information is automatically included in log messages, such as the process ID and package scope. Personally Identifiable Information (PII) is filtered out by default but can be exposed with the `SUPERLINKED_EXPOSE_PII` environment variable to `true`.
+The Superlinked framework logs include contextual information, such as the process ID and package scope. Personally Identifiable Information (PII) is filtered out by default but can be exposed with the `SUPERLINKED_EXPOSE_PII` environment variable to `true`.
 
 ## Resources
 
