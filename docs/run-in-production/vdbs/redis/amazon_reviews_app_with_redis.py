@@ -16,7 +16,7 @@ from superlinked.framework.dsl.source.data_loader_source import DataFormat, Data
 from superlinked.framework.dsl.source.rest_source import RestSource
 from superlinked.framework.dsl.space.number_space import NumberSpace
 from superlinked.framework.dsl.space.text_similarity_space import TextSimilaritySpace
-from superlinked.framework.dsl.storage.redis_db_vector_database import RedisVectorDatabase
+from superlinked.framework.dsl.storage.redis_vector_database import RedisVectorDatabase
 
 openai_config = OpenAIClientConfig(api_key="YOUR_OPENAI_API_KEY", model="gpt-4o")
 
