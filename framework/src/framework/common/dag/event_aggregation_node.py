@@ -111,6 +111,7 @@ class EventAggregationNode(
             "affected_schema": self.affected_schema,
             "affecting_schema": self.affecting_schema,
             "filters": filters,
+            "effect_modifier": self.effect_modifier,
         }
 
     @override
