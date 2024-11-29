@@ -14,16 +14,20 @@
 
 
 import base64
+import binascii
 import io
 from urllib.parse import urlparse
 
 import requests
+import structlog
 from beartype.typing import Any, Callable, cast
 from PIL.Image import Image
 
 from superlinked.framework.blob.blob_handler_factory import BlobHandlerFactory
 from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.settings import Settings
+
+logger = structlog.getLogger()
 
 
 class BlobLoader:
@@ -48,17 +52,22 @@ class BlobLoader:
             raise ValueError(
                 f"Blob field must contain a non-empty str or PIL.Image.Image input, got: {type_text}."
             )
+
         if isinstance(blob_like_input, Image):
             with io.BytesIO() as buffer:
                 blob_like_input.save(buffer, format=blob_like_input.format or "PNG")
                 blob_like_input = base64.b64encode(buffer.getvalue()).decode("utf-8")
-        if self.allow_bytes:
-            try:
+
+        if self._is_base64_encoded(blob_like_input):
+            if self.allow_bytes:
                 decoded_bytes = base64.b64decode(blob_like_input, validate=True)
                 encoded_bytes = base64.b64encode(decoded_bytes)
                 return BlobInformation(encoded_bytes)
-            except Exception:  # pylint: disable=broad-exception-caught
-                pass
+            logger.error("byte input not enabled", allow_bytes=self.allow_bytes)
+            raise ValueError(
+                "Base64 encoded input is not supported in this operation mode."
+            )
+
         blob_path = cast(str, blob_like_input)
         loader = self._get_loader(blob_path)
         loaded_bytes = loader(blob_path)
@@ -73,6 +82,13 @@ class BlobLoader:
                 f"Unsupported scheme in path: {scheme}, possible values: {self._scheme_to_load_function.keys()}"
             )
         return file_loader
+
+    def _is_base64_encoded(self, input_string: str) -> bool:
+        try:
+            base64.b64decode(input_string, validate=True)
+            return True
+        except (binascii.Error, ValueError):
+            return False
 
     @staticmethod
     def load_from_url(url: str) -> bytes:
