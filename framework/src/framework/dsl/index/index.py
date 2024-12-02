@@ -206,7 +206,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
         return [
             schema
             for space in validated_spaces
-            for node in space._get_all_leaf_nodes()
+            for node in space._get_all_embedding_nodes()
             for schema in node.schemas
             if not (schema in seen or seen_add(schema))
         ]

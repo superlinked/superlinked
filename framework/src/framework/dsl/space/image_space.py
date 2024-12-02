@@ -125,7 +125,9 @@ class ImageSpace(Space[Vector, ImageData]):
             )
             for described_blob in described_blobs
         }
-        self._schema_node_map: dict[SchemaObject, EmbeddingNode[Vector, ImageData]] = {
+        self.__embedding_node_by_schema: dict[
+            SchemaObject, EmbeddingNode[Vector, ImageData]
+        ] = {
             schema: ImageEmbeddingNode(
                 image_blob_node=image_blob_node,
                 description_node=description_node,
@@ -158,8 +160,10 @@ class ImageSpace(Space[Vector, ImageData]):
 
     @property
     @override
-    def _node_by_schema(self) -> dict[SchemaObject, EmbeddingNode[Vector, ImageData]]:
-        return self._schema_node_map
+    def _embedding_node_by_schema(
+        self,
+    ) -> dict[SchemaObject, EmbeddingNode[Vector, ImageData]]:
+        return self.__embedding_node_by_schema
 
     @override
     def _create_default_node(

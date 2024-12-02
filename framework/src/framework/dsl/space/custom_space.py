@@ -89,7 +89,9 @@ class CustomSpace(Space[Vector, Vector], HasSpaceFieldSet):
 
     @property
     @override
-    def _node_by_schema(self) -> dict[SchemaObject, EmbeddingNode[Vector, Vector]]:
+    def _embedding_node_by_schema(
+        self,
+    ) -> dict[SchemaObject, EmbeddingNode[Vector, Vector]]:
         return self._schema_node_map
 
     @property

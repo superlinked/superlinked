@@ -150,7 +150,7 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
 
     @property
     @override
-    def _node_by_schema(
+    def _embedding_node_by_schema(
         self,
     ) -> dict[SchemaObject, EmbeddingNode[Vector, list[str]]]:
         return self.__schema_node_map

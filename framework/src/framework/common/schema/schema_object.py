@@ -130,9 +130,9 @@ class String(SchemaField[str]):
     def __init__(self, name: str, schema_obj: SchemaObjectT) -> None:
         super().__init__(name, schema_obj, str)
 
-    def __add__(self, other: Blob) -> DescribedBlob:
-        if not isinstance(other, String):
-            raise TypeError("Operand must be of type Blob")
+    def __add__(self, other: object) -> DescribedBlob:
+        if not isinstance(other, Blob):
+            raise TypeError(f"Operand must be of type {Blob.__name__}")
         return DescribedBlob(blob=other, description=self)
 
 
@@ -157,9 +157,9 @@ class Blob(SchemaField[BlobInformation]):
     def __init__(self, name: str, schema_obj: SchemaObjectT) -> None:
         super().__init__(name, schema_obj, BlobInformation)
 
-    def __add__(self, other: String) -> DescribedBlob:
+    def __add__(self, other: object) -> DescribedBlob:
         if not isinstance(other, String):
-            raise TypeError("Operand must be of type String")
+            raise TypeError(f"Operand must be of type {String.__name__}")
         return DescribedBlob(blob=self, description=other)
 
 

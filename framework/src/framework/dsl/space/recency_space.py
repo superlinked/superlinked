@@ -169,7 +169,7 @@ class RecencySpace(
 
     @property
     @override
-    def _node_by_schema(
+    def _embedding_node_by_schema(
         self,
     ) -> dict[SchemaObject, EmbeddingNode[int, int]]:
         return self._schema_node_map

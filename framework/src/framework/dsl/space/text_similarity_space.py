@@ -122,7 +122,9 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
 
     @property
     @override
-    def _node_by_schema(self) -> dict[SchemaObject, EmbeddingNode[Vector, str]]:
+    def _embedding_node_by_schema(
+        self,
+    ) -> dict[SchemaObject, EmbeddingNode[Vector, str]]:
         return self._schema_node_map
 
     @override

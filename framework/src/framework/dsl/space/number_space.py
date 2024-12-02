@@ -137,7 +137,7 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
 
     @property
     @override
-    def _node_by_schema(
+    def _embedding_node_by_schema(
         self,
     ) -> dict[SchemaObject, EmbeddingNode[float, float]]:
         return self.__schema_node_map

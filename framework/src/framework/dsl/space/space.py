@@ -98,28 +98,28 @@ class Space(
 
     @property
     @abstractmethod
-    def _node_by_schema(
+    def _embedding_node_by_schema(
         self,
     ) -> dict[SchemaObject, EmbeddingNode[AggregationInputT, EmbeddingInputT]]: ...
 
     def _get_embedding_node(
         self, schema: SchemaObject
     ) -> EmbeddingNode[AggregationInputT, EmbeddingInputT]:
-        if node := self._node_by_schema.get(schema):
+        if node := self._embedding_node_by_schema.get(schema):
             return node
-        return self._handle_node_not_present(schema)
+        return self._handle_embedding_node_not_present(schema)
 
-    def _handle_node_not_present(
+    def _handle_embedding_node_not_present(
         self, schema: SchemaObject
     ) -> EmbeddingNode[AggregationInputT, EmbeddingInputT]:
         embedding_node = self._create_default_node(schema)
-        self._node_by_schema[schema] = embedding_node
+        self._embedding_node_by_schema[schema] = embedding_node
         return embedding_node
 
-    def _get_all_leaf_nodes(
+    def _get_all_embedding_nodes(
         self,
     ) -> set[EmbeddingNode[AggregationInputT, EmbeddingInputT]]:
-        return set(self._node_by_schema.values())
+        return set(self._embedding_node_by_schema.values())
 
     @override
     def __eq__(self, other: object) -> bool:
