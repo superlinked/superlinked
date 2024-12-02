@@ -31,13 +31,21 @@ logger = structlog.getLogger()
 
 
 class SentenceTransformerManager(ModelManager):
+
     @override
-    def _embed(self, inputs: list[str | Image]) -> list[list[float]] | list[np.ndarray]:
+    def _embed(
+        self, inputs: Sequence[str | Image]
+    ) -> list[list[float]] | list[np.ndarray]:
         model = self._get_embedding_model(len(inputs))
         embeddings = model.encode(
-            inputs,  # type: ignore[arg-type] # it also accepts Image
+            list(inputs),  # type: ignore[arg-type] # it also accepts Image
         )
         return embeddings.tolist()
+
+    def embed_text(self, inputs: Sequence[str]) -> list[Vector]:
+        if not inputs:
+            return []
+        return [Vector(embedding) for embedding in self._embed(inputs)]
 
     @override
     def calculate_length(self) -> int:
@@ -50,6 +58,3 @@ class SentenceTransformerManager(ModelManager):
         return SentenceTransformerModelCache.initialize_model(
             self._model_name, device_type, self._model_cache_dir
         )
-
-    def embed_without_nones(self, inputs: Sequence[str | Image | None]) -> list[Vector]:
-        return [input_ for input_ in self.embed(inputs) if input_ is not None]

@@ -46,7 +46,7 @@ class ModelManager(ABC):
 
     @abstractmethod
     def _embed(
-        self, inputs: list[str | Image]
+        self, inputs: Sequence[str | Image]
     ) -> list[list[float]] | list[np.ndarray]: ...
 
     @abstractmethod

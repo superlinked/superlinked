@@ -17,7 +17,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from beartype.typing import Any, cast
+from beartype.typing import Any, Sequence, cast
 from open_clip.factory import create_model_and_transforms, get_tokenizer
 from open_clip.model import CLIP
 from open_clip.tokenizer import HFTokenizer, SimpleTokenizer
@@ -36,7 +36,9 @@ class OpenClipManager(ModelManager):
         return len(self.encode_texts([""], embedding_model)[0])
 
     @override
-    def _embed(self, inputs: list[str | Image]) -> list[list[float]] | list[np.ndarray]:
+    def _embed(
+        self, inputs: Sequence[str | Image]
+    ) -> list[list[float]] | list[np.ndarray]:
         embedding_model, preprocess_val = self._get_embedding_model(len(inputs))
         text_inputs, image_inputs = self._categorize_inputs(inputs)
         self._validate_inputs(inputs)
@@ -55,13 +57,13 @@ class OpenClipManager(ModelManager):
         )
 
     def _categorize_inputs(
-        self, inputs: list[str | Image]
+        self, inputs: Sequence[str | Image]
     ) -> tuple[list[str], list[Image]]:
         text_inputs = [inp for inp in inputs if isinstance(inp, str)]
         image_inputs = [inp for inp in inputs if isinstance(inp, Image)]
         return text_inputs, image_inputs
 
-    def _validate_inputs(self, inputs: list[str | Image]) -> None:
+    def _validate_inputs(self, inputs: Sequence[str | Image]) -> None:
         unsupported_item = next(
             (inp for inp in inputs if not isinstance(inp, (str, Image))), None
         )
@@ -72,7 +74,7 @@ class OpenClipManager(ModelManager):
 
     def _combine_encodings(
         self,
-        inputs: list[str | Image],
+        inputs: Sequence[str | Image],
         text_encodings: torch.Tensor,
         image_encodings: torch.Tensor,
     ) -> list[torch.Tensor]:
