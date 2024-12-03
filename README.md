@@ -30,11 +30,17 @@
 
 ## Table of Contents
 
+- [Table of Contents](#table-of-contents)
 - [Overview](#overview)
 - [Features](#features)
 - [Use-cases](#use-cases)
 - [Experiment in a notebook](#experiment-in-a-notebook)
-- [Run in production](#run-in-production) / [Supported Vector Databases](#supported-vector-databases)
+    - [Install the superlinked library](#install-the-superlinked-library)
+    - [Run the example:](#run-the-example)
+- [Run in production](#run-in-production)
+  - [Supported Vector Databases](#supported-vector-databases)
+- [Logging](#logging)
+- [Resources](#resources)
 - [Support](#support)
 
 ## Overview
@@ -138,7 +144,7 @@ query = (
     )
 )
 
-# Run the app in-memory (multi-worker server & Apache Spark executors available too!).
+# Run the app in-memory (server & Apache Spark executors available too!).
 source = sl.InMemorySource(product)
 executor = sl.InMemoryExecutor(sources=[source], indices=[index])
 app = executor.run()
@@ -174,9 +180,9 @@ result.to_pandas()
 
 ## Run in production
 
-Run a single command to deploy your Superlinked project as a REST API Server locally or in your cloud with [Superlinked Server](https://github.com/superlinked/superlinked/tree/main/server). Get data ingestion and query APIs, embedding model inference and deep vector database integrations for free!
+With a single command you can run Superlinked as a REST API Server locally or in your cloud with [Superlinked Server](https://pypi.org/project/superlinked-server). Get data ingestion and query APIs, embedding model inference and deep vector database integrations for free!
 
-Unify your evaluation, ingestion and serving stacks with a single declarative python codebase. Superlinked enables this by letting you define your data schema, vector indexes and the compute DAG that links them all at once and then chose the right executor for the task - in-memory, multi-worker server or batch.
+Unify your evaluation, ingestion and serving stacks with a single declarative python codebase. Superlinked enables this by letting you define your data schema, vector indexes and the compute DAG that links them all at once and then chose the right executor for the task - in-memory, server or batch.
 
 If your are interested in learning more about running at scale, [Book a demo](https://links.superlinked.com/sl-repo-readme-form) for an early access to our managed cloud.
 

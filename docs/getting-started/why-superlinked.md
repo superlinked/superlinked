@@ -124,6 +124,7 @@ OnlineExecutor(
     query=[query],
     # vector_database = MongoDBVectorDatabase(...),
     # vector_database = RedisVectorDatabase(...),
+    # vector_database = QdrantVectorDatabase(...),
 )
 
 # SparkExecutor()   <-- Coming soon in Superlinked Cloud
@@ -237,8 +238,7 @@ Broad queries eg “popular pants” can’t be handled by re-ranking at all, du
 ### Okay, seems like Superlinked proposes a nice approach, but
 
 1. How can I build with it at scale?
-    
-    [Superlinked Server](../run-in-production/overview.md) offers a streamlined deployment solution for Superlinked projects. With a single script, you can create a Superlinked application featuring REST endpoints and Vector Database integration. This enables quick implementation of advanced search capabilities, allowing you to focus on leveraging Superlinked's features rather than managing infrastructure, from prototype to production.
+    The [Superlinked Server](../run-in-production/overview.md) is a deployable component available as a [Python package on PyPI](https://pypi.org/project/superlinked-server/), designed to enhance the operation of Superlinked by providing a RESTful API for management. This package streamlines the integration of Superlinked's sophisticated search functionalities into existing applications by offering REST endpoints and Vector Database connectivity. It enables developers to focus on leveraging Superlinked's capabilities without the burden of infrastructure management, from initial prototype to full-scale production.
 
 <!-- 2. Why should I trust this approach? are scores reliable?
    - how vectors are created
