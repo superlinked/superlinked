@@ -170,7 +170,7 @@ class ImageSpace(Space[Vector, ImageData]):
         self, schema: SchemaObject
     ) -> EmbeddingNode[Vector, ImageData]:
         default_node = ImageEmbeddingNode(
-            None, None, self._transformation_config, self._all_fields
+            None, None, self._transformation_config, self._all_fields, schema
         )
         return default_node
 

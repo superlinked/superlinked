@@ -16,7 +16,7 @@
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.schema.schema_object import SchemaField
+from superlinked.framework.common.schema.schema_object import SchemaField, SchemaObject
 from superlinked.framework.common.space.config.transformation_config import (
     TransformationConfig,
 )
@@ -28,6 +28,11 @@ class CategoricalSimilarityNode(EmbeddingNode[Vector, list[str]]):
         parent: Node[list[str]] | None,
         transformation_config: TransformationConfig[Vector, list[str]],
         fields_for_identification: set[SchemaField],
+        schema: SchemaObject | None = None,
     ) -> None:
-        parents = [parent] if parent is not None else []
-        super().__init__(parents, transformation_config, fields_for_identification)
+        super().__init__(
+            [parent],
+            transformation_config,
+            fields_for_identification,
+            schema,
+        )

@@ -130,7 +130,7 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
     @override
     def _create_default_node(self, schema: SchemaObject) -> EmbeddingNode[Vector, str]:
         default_node = TextEmbeddingNode(
-            None, self._transformation_config, self.text.fields
+            None, self._transformation_config, self.text.fields, schema
         )
         return default_node
 

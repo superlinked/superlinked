@@ -122,7 +122,7 @@ class CustomSpace(Space[Vector, Vector], HasSpaceFieldSet):
         self, schema: SchemaObject
     ) -> EmbeddingNode[Vector, Vector]:
         return CustomVectorEmbeddingNode(
-            None, self.transformation_config, self.vector.fields
+            None, self.transformation_config, self.vector.fields, schema
         )
 
     def _calculate_schema_node_map(

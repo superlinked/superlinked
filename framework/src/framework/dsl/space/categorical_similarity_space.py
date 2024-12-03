@@ -169,7 +169,7 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
         self, schema: SchemaObject
     ) -> EmbeddingNode[Vector, list[str]]:
         return CategoricalSimilarityNode(
-            None, self.transformation_config, self.__category.fields
+            None, self.transformation_config, self.__category.fields, schema
         )
 
     @property

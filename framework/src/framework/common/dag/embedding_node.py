@@ -16,12 +16,12 @@
 import hashlib
 from dataclasses import asdict
 
-from beartype.typing import Any, Generic, TypeVar
+from beartype.typing import Any, Generic, Sequence, TypeVar
 from typing_extensions import override
 
 from superlinked.framework.common.dag.node import Node, NodeDataT
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.schema.schema_object import SchemaField
+from superlinked.framework.common.schema.schema_object import SchemaField, SchemaObject
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationInputT,
 )
@@ -40,11 +40,16 @@ class EmbeddingNode(
 ):
     def __init__(
         self,
-        parents: list[Node],
+        parents: Sequence[Node | None],
         transformation_config: TransformationConfig[AggregationInputT, NodeDataT],
         fields_for_identification: set[SchemaField],
+        schema: SchemaObject | None = None,
     ) -> None:
-        super().__init__(Vector, parents)
+        super().__init__(
+            Vector,
+            [parent for parent in parents if parent is not None],
+            {schema} if schema else None,
+        )
         self._identifier = self._calculate_node_id_identifier(fields_for_identification)
         self._transformation_config = transformation_config
 

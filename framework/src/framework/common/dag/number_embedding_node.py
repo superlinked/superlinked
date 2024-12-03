@@ -15,7 +15,7 @@
 
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.node import Node
-from superlinked.framework.common.schema.schema_object import SchemaField
+from superlinked.framework.common.schema.schema_object import SchemaField, SchemaObject
 from superlinked.framework.common.space.config.transformation_config import (
     TransformationConfig,
 )
@@ -27,5 +27,8 @@ class NumberEmbeddingNode(EmbeddingNode[float, float]):
         parent: Node[float],
         transformation_config: TransformationConfig[float, float],
         fields_for_identification: set[SchemaField],
+        schema: SchemaObject | None = None,
     ) -> None:
-        super().__init__([parent], transformation_config, fields_for_identification)
+        super().__init__(
+            [parent], transformation_config, fields_for_identification, schema
+        )
