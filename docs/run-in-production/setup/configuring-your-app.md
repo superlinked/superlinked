@@ -89,8 +89,6 @@ In this document, you set up your source, which acts as the entry point for your
 
 The executor acts as the heart of your application, needing all the necessary information to function. It requires your sources to bring in data, indices to understand the data structure, queries to help you search effectively, and finally, the vector database where all the data is stored.
 
-This configuration eliminates the need for manual computation setup, enabling you to focus on defining the structure and behavior of your application. The Superlinked library manages the execution of your queries and the retrieval of results when the application is executed. This method also simplifies application updates, as it removes the necessity to SSH into the server for editing files directly.
-
 You can find more detailed information and examples of various features in the [Superlinked feature notebooks](https://github.com/superlinked/superlinked/tree/main/notebook/feature). The [basic_building_blocks.ipynb](https://github.com/superlinked/superlinked/blob/main/notebook/feature/basic_building_blocks.ipynb) notebook provides a comprehensive guide on the basic structure and how to use it, while the other notebooks cover various features of the Superlinked library.
 
 In this deployment setup, you are not required to define any computations as you would in the [basic_building_blocks.ipynb](https://github.com/superlinked/superlinked/blob/main/notebook/feature/basic_building_blocks.ipynb) notebook. Instead, your focus will be on defining the schema, the text similarity space, the index, the query, the REST source, and the executor.
@@ -213,7 +211,7 @@ Finally, you need to set a flag to prevent exceptions when utilizing Recency Spa
 
 ### GPU acceleration
 
-If your system's host machine is equipped with a GPU, this documentation provides guidance on leveraging it for computational tasks. GPU acceleration is available exclusively for text embedding processes and depends on explicit activation. It is most effective when processing large batches of data, specifically within the context of the data loading feature.
+If your system's host machine is equipped with a GPU, this documentation provides guidance on leveraging it for computational tasks. GPU acceleration is currently supported for models that handle text or image embeddings and requires explicit activation. It is particularly effective when processing large batches of data, especially within the context of the data loading feature.
 
 > Ensure that your system has a GPU compatible with PyTorch and that the GPU drivers are up to date. For optimal performance, we recommend using NVIDIA GPUs as they provide the best support for deep learning frameworks like PyTorch.
 
