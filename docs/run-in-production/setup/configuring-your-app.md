@@ -211,7 +211,7 @@ Finally, you need to set a flag to prevent exceptions when utilizing Recency Spa
 
 ### GPU acceleration
 
-If your system's host machine is equipped with a GPU, this documentation provides guidance on leveraging it for computational tasks. GPU acceleration is available exclusively for text embedding processes and depends on explicit activation. It is most effective when processing large batches of data, specifically within the context of the data loading feature.
+If your system's host machine is equipped with a GPU, this documentation provides guidance on leveraging it for computational tasks. GPU acceleration is currently supported for models that handle text or image embeddings and requires explicit activation. It is particularly effective when processing large batches of data, especially within the context of the data loading feature.
 
 > Ensure that your system has a GPU compatible with PyTorch and that the GPU drivers are up to date. For optimal performance, we recommend using NVIDIA GPUs as they provide the best support for deep learning frameworks like PyTorch.
 
