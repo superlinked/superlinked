@@ -84,7 +84,6 @@
     * [Interactive Source](reference/dsl/source/interactive_source.md)
     * [In Memory Source](reference/dsl/source/in_memory_source.md)
   * [Storage](reference/dsl/storage/index.md)
-    * [Mongo Vector Database](reference/dsl/storage/mongo_vector_database.md)
     * [Mongo Db Vector Database](reference/dsl/storage/mongo_db_vector_database.md)
     * [Redis Vector Database](reference/dsl/storage/redis_vector_database.md)
     * [In Memory Vector Database](reference/dsl/storage/in_memory_vector_database.md)
