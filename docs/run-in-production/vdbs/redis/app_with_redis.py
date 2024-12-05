@@ -12,7 +12,7 @@ from superlinked.framework.dsl.query.query import Query
 from superlinked.framework.dsl.registry.superlinked_registry import SuperlinkedRegistry
 from superlinked.framework.dsl.source.rest_source import RestSource
 from superlinked.framework.dsl.space.text_similarity_space import TextSimilaritySpace
-from superlinked.framework.dsl.storage.redis_db_vector_database import RedisVectorDatabase
+from superlinked.framework.dsl.storage.redis_vector_database import RedisVectorDatabase
 
 @schema
 class CarSchema:
