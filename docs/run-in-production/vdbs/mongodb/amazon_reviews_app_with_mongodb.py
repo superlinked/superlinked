@@ -1,8 +1,8 @@
-from superlinked.framework.common.embedding.number_embedding import Mode
 from superlinked.framework.common.nlq.open_ai import OpenAIClientConfig
 from superlinked.framework.common.schema.id_schema_object import IdField
 from superlinked.framework.common.schema.schema import schema
 from superlinked.framework.common.schema.schema_object import Integer, String
+from superlinked.framework.common.space.config.embedding.number_embedding_config import Mode
 from superlinked.framework.dsl.executor.rest.rest_configuration import (
     RestQuery,
 )

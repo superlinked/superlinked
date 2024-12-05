@@ -1,8 +1,8 @@
-from superlinked.framework.common.embedding.number_embedding import Mode
 from superlinked.framework.common.nlq.open_ai import OpenAIClientConfig
 from superlinked.framework.common.schema.id_schema_object import IdField
 from superlinked.framework.common.schema.schema import schema
 from superlinked.framework.common.schema.schema_object import Integer, String
+from superlinked.framework.common.space.config.embedding.number_embedding_config import Mode
 from superlinked.framework.dsl.executor.rest.rest_configuration import (
     RestQuery,
 )
@@ -16,7 +16,7 @@ from superlinked.framework.dsl.source.data_loader_source import DataFormat, Data
 from superlinked.framework.dsl.source.rest_source import RestSource
 from superlinked.framework.dsl.space.number_space import NumberSpace
 from superlinked.framework.dsl.space.text_similarity_space import TextSimilaritySpace
-from superlinked.framework.dsl.storage.qdrant_db_vector_database import QdrantVectorDatabase
+from superlinked.framework.dsl.storage.qdrant_vector_database import QdrantVectorDatabase
 
 openai_config = OpenAIClientConfig(api_key="YOUR_OPENAI_API_KEY", model="gpt-4o")
 
