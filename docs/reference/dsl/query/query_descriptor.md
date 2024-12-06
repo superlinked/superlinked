@@ -77,6 +77,9 @@ Classes
     `get_mandatory_clause_by_type(self, clause_type: type[~QueryClauseT]) ‑> ~QueryClauseT`
     :
 
+    `get_param_value_to_set_for_unset_space_weight_clauses(self) ‑> dict[str, float]`
+    :
+
     `get_radius(self) ‑> float | None`
     :
 
