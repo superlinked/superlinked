@@ -376,6 +376,8 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
                 clause.space,
             )
             for clause in self.get_clauses_by_type(SpaceWeightClause)
+            if isinstance(clause.value_param, Evaluated)
+            or clause.value_param.name != clause.get_default_value_param_name()
         ]
         hard_filter_params = [
             ParamInfo.init_with(
@@ -478,30 +480,39 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
             clauses.append(LimitClause(Param.init_evaluated(constants.DEFAULT_LIMIT)))
         if self.get_clause_by_type(RadiusClause) is None:
             clauses.append(RadiusClause(Param.init_evaluated(None)))
-        weight_to_set_by_space = self._calculate_weight_by_missing_space()
+        missing_spaces = self._calculate_missing_spaces()
         clauses.extend(
-            SpaceWeightClause(Param.init_evaluated(weight), space)
-            for space, weight in weight_to_set_by_space.items()
+            SpaceWeightClause(Param.init_default(), space) for space in missing_spaces
         )
         return self.__append_clauses(clauses)
 
-    def _calculate_weight_by_missing_space(self) -> dict[Space, float]:
+    def _calculate_missing_spaces(self) -> list[Space]:
         spaces_with_weights = {
             clause.space for clause in self.get_clauses_by_type(SpaceWeightClause)
         }
-        missing_spaces = {
+        return [
             space for space in self.index._spaces if space not in spaces_with_weights
+        ]
+
+    def get_param_value_to_set_for_unset_space_weight_clauses(self) -> dict[str, float]:
+        unset_space_by_param_name = {
+            clause.value_param.name: clause.space
+            for clause in self.get_clauses_by_type(SpaceWeightClause)
+            if not isinstance(clause.value_param, Evaluated)
         }
         if self.get_looks_like_filter() is not None:
-            return {space: constants.DEFAULT_WEIGHT for space in missing_spaces}
+            return {
+                param_name: constants.DEFAULT_WEIGHT
+                for param_name in unset_space_by_param_name.keys()
+            }
         similar_filter_spaces = self.get_similar_filters().keys()
         return {
-            space: (
+            param_name: (
                 constants.DEFAULT_WEIGHT
                 if space in similar_filter_spaces
                 else constants.DEFAULT_NOT_AFFECTING_WEIGHT
             )
-            for space in missing_spaces
+            for param_name, space in unset_space_by_param_name.items()
         }
 
     def get_clause_by_type(

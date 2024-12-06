@@ -21,6 +21,7 @@ from sentence_transformers import SentenceTransformer
 from typing_extensions import override
 
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.space.embedding.exception import EmbeddingException
 from superlinked.framework.common.space.embedding.model_manager import ModelManager
 from superlinked.framework.common.space.embedding.sentence_transformer_model_cache import (
     SentenceTransformerModelCache,
@@ -37,9 +38,24 @@ class SentenceTransformerManager(ModelManager):
         self, inputs: Sequence[str | Image]
     ) -> list[list[float]] | list[np.ndarray]:
         model = self._get_embedding_model(len(inputs))
-        embeddings = model.encode(
-            list(inputs),  # type: ignore[arg-type] # it also accepts Image
-        )
+
+        try:
+            embeddings = model.encode(
+                list(inputs),  # type: ignore[arg-type] # it also accepts Image
+            )
+        except RuntimeError as e:
+            if "The size of tensor a" in str(
+                e
+            ) and "must match the size of tensor b" in str(e):
+                longest_input_len = max(
+                    len(str(x)) if isinstance(x, str) else 0 for x in inputs
+                )
+                raise EmbeddingException(
+                    f"Model {self._model_name} failed to encode inputs - input was too long. "
+                    "Try shortening the input text.\n"
+                    f"Longest input length: {longest_input_len} chars"
+                ) from e
+            raise e
         return embeddings.tolist()
 
     def embed_text(self, inputs: Sequence[str]) -> list[Vector]:

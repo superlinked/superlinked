@@ -35,15 +35,23 @@ class QueryParamValueSetter:
     def set_values(
         cls, query_descriptor: QueryDescriptor, params: dict[str, Any]
     ) -> QueryDescriptor:
-        cls.validate_params(query_descriptor, params)
+        query_descriptor_with_all_clauses = (
+            query_descriptor.append_missing_mandatory_clauses()
+        )
+        cls.validate_params(query_descriptor_with_all_clauses, params)
         altered_query_descriptor = cls.__alter_query_descriptor(
-            query_descriptor, params, True
+            query_descriptor_with_all_clauses, params, True
         )
         nlq_params = cls.__calculate_nlq_params(altered_query_descriptor)
         nlq_altered_query_descriptor = cls.__alter_query_descriptor(
             altered_query_descriptor, nlq_params, False
         )
-        return nlq_altered_query_descriptor.append_missing_mandatory_clauses()
+        space_weight_params = (
+            nlq_altered_query_descriptor.get_param_value_to_set_for_unset_space_weight_clauses()
+        )
+        return cls.__alter_query_descriptor(
+            nlq_altered_query_descriptor, space_weight_params, False
+        )
 
     @classmethod
     def validate_params(
