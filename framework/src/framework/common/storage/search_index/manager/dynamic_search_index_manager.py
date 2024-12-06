@@ -25,18 +25,16 @@ from superlinked.framework.common.storage.search_index.manager.search_index_mana
 
 class DynamicSearchIndexManager(SearchIndexManager, ABC):
     @override
-    def init_search_indices(
+    def _create_search_indices(
         self,
         index_configs: Sequence[IndexConfig],
         collection_name: str,
         override_existing: bool = False,
     ) -> None:
-        self._index_configs.clear()
         existing_index_names = self._list_search_index_names_from_vdb(collection_name)
         for index_config in index_configs:
             if index_config.index_name not in existing_index_names or override_existing:
                 self._create_search_index_with_check(index_config, collection_name)
-            self._index_configs[index_config.index_name] = index_config
 
     def _create_search_index_with_check(
         self, index_config: IndexConfig, collection_name: str

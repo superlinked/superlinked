@@ -52,7 +52,7 @@ class QdrantSearchIndexManager(SearchIndexManager):
         return [SearchAlgorithm.HNSW, SearchAlgorithm.FLAT]
 
     @override
-    def init_search_indices(
+    def _create_search_indices(
         self,
         index_configs: Sequence[IndexConfig],
         collection_name: str,
@@ -72,9 +72,6 @@ class QdrantSearchIndexManager(SearchIndexManager):
                 collection_name=collection_name, vectors_config=vector_config
             )
         self._create_payload_indices(index_configs, collection_name)
-        self._index_configs.update(
-            {index_config.index_name: index_config for index_config in index_configs}
-        )
 
     def _validate_index_configs(self, index_configs: Sequence[IndexConfig]) -> None:
         if not index_configs:

@@ -99,9 +99,12 @@ class QdrantVDBConnector(VDBConnector):
     def init_search_index_configs(
         self,
         index_configs: Sequence[IndexConfig],
+        create_search_indices: bool,
         override_existing: bool = False,
     ) -> None:
-        super().init_search_index_configs(index_configs, override_existing)
+        super().init_search_index_configs(
+            index_configs, create_search_indices, override_existing
+        )
         self._vector_field_names.extend(
             [
                 index_config.vector_field_descriptor.field_name

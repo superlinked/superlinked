@@ -35,12 +35,28 @@ class SearchIndexManager(ABC):
     def supported_vector_indexing(self) -> Sequence[SearchAlgorithm]:
         pass
 
-    @abstractmethod
     def init_search_indices(
         self,
         index_configs: Sequence[IndexConfig],
         collection_name: str,
+        create_search_indices: bool,
         override_existing: bool = False,
+    ) -> None:
+        self._index_configs.clear()
+        if create_search_indices:
+            self._create_search_indices(
+                index_configs, collection_name, override_existing
+            )
+        self._index_configs.update(
+            {index_config.index_name: index_config for index_config in index_configs}
+        )
+
+    @abstractmethod
+    def _create_search_indices(
+        self,
+        index_configs: Sequence[IndexConfig],
+        collection_name: str,
+        override_existing: bool,
     ) -> None:
         pass
 

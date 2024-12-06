@@ -54,8 +54,7 @@ class App(ABC, Generic[SourceT]):
         self._context = context
         self._storage_manager = self._init_storage_manager()
         self.now = context.now()
-        if init_search_indices:
-            self._init_search_indices()
+        self._init_search_indices(init_search_indices)
 
     @property
     def storage_manager(self) -> StorageManager:
@@ -70,7 +69,7 @@ class App(ABC, Generic[SourceT]):
     def _init_storage_manager(self) -> StorageManager:
         pass
 
-    def _init_search_indices(self) -> None:
+    def _init_search_indices(self, create_search_indices: bool) -> None:
         search_index_params = [
             SearchIndexParams(
                 index._dag.index_node.node_id,
@@ -79,4 +78,6 @@ class App(ABC, Generic[SourceT]):
             )
             for index in self._indices
         ]
-        self.storage_manager.init_search_indices(search_index_params)
+        self.storage_manager.init_search_indices(
+            search_index_params, create_search_indices
+        )

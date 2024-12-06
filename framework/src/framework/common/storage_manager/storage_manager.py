@@ -86,6 +86,7 @@ class StorageManager:
     def init_search_indices(
         self,
         params_list: Sequence[SearchIndexParams],
+        create_search_indices: bool,
         override_existing: bool = False,
     ) -> None:
         self._vdb_connector.init_search_index_configs(
@@ -93,6 +94,7 @@ class StorageManager:
                 self._compile_create_search_index_params(params)
                 for params in params_list
             ],
+            create_search_indices,
             override_existing,
         )
 

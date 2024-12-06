@@ -112,11 +112,15 @@ class VDBConnector(ABC):
     def init_search_index_configs(
         self,
         index_configs: Sequence[IndexConfig],
+        create_search_indices: bool,
         override_existing: bool = False,
     ) -> None:
         self._app_id = self._generate_app_id(index_configs)
         self.search_index_manager.init_search_indices(
-            index_configs, self.collection_name, override_existing
+            index_configs,
+            self.collection_name,
+            create_search_indices,
+            override_existing,
         )
 
     @abstractmethod
