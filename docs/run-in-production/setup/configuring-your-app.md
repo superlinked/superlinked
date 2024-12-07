@@ -72,7 +72,7 @@ from superlinked import framework as sl
 from .index import index, your_schema
 from .query import query
 
-your_source: RestSource = al.RestSource(your_schema)
+your_source: RestSource = sl.RestSource(your_schema)
 your_query = sl.RestQuery(sl.RestDescriptor("query"), query)
 
 executor = sl.RestExecutor(
