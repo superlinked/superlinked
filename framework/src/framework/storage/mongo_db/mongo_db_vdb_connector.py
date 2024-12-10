@@ -96,26 +96,30 @@ class MongoDBVDBConnector(VDBConnector):
             [UpdateOne({"_id": doc["_id"]}, {"$set": doc}, upsert=True) for doc in docs]
         )
 
-    def _read_field_data(self, entity: Entity) -> dict[str, FieldData]:
-        doc = (
-            self._db[self.collection_name].find_one(
-                {"_id": MongoDBVDBConnector._get_mongo_id(entity.id_)}
-            )
-            or {}
-        )
-        return {
-            field.name: self._encoder.decode_field(field, doc[field.name])
-            for field in entity.fields.values()
-            if doc.get(field.name) is not None
+    def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
+        if not entities:
+            return []
+
+        mongo_ids = [
+            MongoDBVDBConnector._get_mongo_id(entity.id_) for entity in entities
+        ]
+
+        docs = {
+            doc["_id"]: doc
+            for doc in self._db[self.collection_name].find({"_id": {"$in": mongo_ids}})
         }
 
-    def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
         return [
             EntityData(
                 entity.id_,
-                self._read_field_data(entity),
+                {
+                    field.name: self._encoder.decode_field(field, doc.get(field.name))
+                    for field in entity.fields.values()
+                    if doc.get(field.name) is not None
+                },
             )
             for entity in entities
+            for doc in [docs.get(MongoDBVDBConnector._get_mongo_id(entity.id_), {})]
         ]
 
     @override
