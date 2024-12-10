@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import redis
-from beartype.typing import Any, Sequence, cast
+from beartype.typing import Any, Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.storage.entity.entity import Entity
@@ -87,26 +87,33 @@ class RedisVDBConnector(VDBConnector):
                     )
             _pipeline.execute()
 
-    def _read_entity(self, entity: Entity) -> EntityData:
-        encoded_field_values = cast(
-            list,
-            self._client.hmget(
-                RedisVDBConnector._get_redis_id(entity.id_),
-                [field.name for field in entity.fields.values()],
-            ),
-        )
-        return EntityData(
-            entity.id_,
-            {
-                field.name: self._encoder.decode_field(field, encoded_field_values[i])
-                for i, field in enumerate(entity.fields.values())
-                if encoded_field_values[i] is not None
-            },
-        )
-
     @override
     def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
-        return [self._read_entity(entity) for entity in entities if entity.fields]
+        valid_entities = [entity for entity in entities if entity.fields]
+        if not valid_entities:
+            return []
+
+        pipeline = self._client.pipeline(transaction=False)
+
+        for entity in valid_entities:
+            pipeline.hmget(
+                RedisVDBConnector._get_redis_id(entity.id_),
+                [field.name for field in entity.fields.values()],
+            )
+
+        all_encoded_values = pipeline.execute()
+
+        return [
+            EntityData(
+                entity.id_,
+                {
+                    field.name: self._encoder.decode_field(field, encoded_values[i])
+                    for i, field in enumerate(entity.fields.values())
+                    if encoded_values[i] is not None
+                },
+            )
+            for entity, encoded_values in zip(valid_entities, all_encoded_values)
+        ]
 
     @override
     def _knn_search(

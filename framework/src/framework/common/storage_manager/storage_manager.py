@@ -288,19 +288,25 @@ class StorageManager:
             [EntityData(entity_id, {fd.name: fd for fd in field_data})]
         )
 
-    def read_object_json(
-        self, schema: SchemaObject, object_id: str
-    ) -> dict[str, Any] | None:
-        entity = self._entity_builder.compose_entity(
-            self._entity_builder.compose_entity_id(schema._schema_name, object_id),
-            [self._entity_builder._admin_fields.object_json.field],
+    def read_object_jsons(
+        self, schema: SchemaObject, object_ids: Sequence[str]
+    ) -> dict[str, dict[str, Any]]:
+        entities = [
+            self._entity_builder.compose_entity(
+                self._entity_builder.compose_entity_id(schema._schema_name, object_id),
+                [self._entity_builder._admin_fields.object_json.field],
+            )
+            for object_id in object_ids
+        ]
+
+        entities_data: Sequence[EntityData] = self._vdb_connector.read_entities(
+            entities
         )
-        entity_data = self._vdb_connector.read_entities([entity])
-        if not entity_data:
-            return None
-        return self._entity_builder._admin_fields.extract_object_json_field_data(
-            entity_data[0].field_data
-        )
+
+        return {
+            entity.id_.object_id: self._get_object_json_or_raise(entity)
+            for entity in entities_data
+        }
 
     def read_schema_field_values(
         self, object_id: str, schema_fields: Sequence[SchemaField]
@@ -460,3 +466,14 @@ class StorageManager:
             )
             for key, type_ in node_data_descriptor.items()
         }
+
+    def _get_object_json_or_raise(self, entity_data: EntityData) -> dict[str, Any]:
+        object_json = self._entity_builder._admin_fields.extract_object_json_field_data(
+            entity_data.field_data
+        )
+        if not object_json:
+            raise ValueError(
+                f"Object JSON not found for schema_id={entity_data.id_.schema_id}, "
+                f"object_id={entity_data.id_.object_id}"
+            )
+        return object_json

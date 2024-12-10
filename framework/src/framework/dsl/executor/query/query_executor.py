@@ -214,25 +214,36 @@ class QueryExecutor:
     def _map_entities_to_result_entries(
         self, schema: IdSchemaObject, result_items: Sequence[SearchResultItem]
     ) -> Sequence[ResultEntry]:
-        return [
-            ResultEntry(
-                entity,
-                self._get_stored_object_or_raise(
-                    schema, entity.header.origin_id or entity.header.object_id
-                ),
+        object_ids = list(
+            {
+                entity.header.origin_id or entity.header.object_id
+                for entity in result_items
+            }
+        )
+
+        object_jsons = self.app.storage_manager.read_object_jsons(schema, object_ids)
+
+        if missing_ids := [id_ for id_ in object_ids if id_ not in object_jsons]:
+            raise QueryException(
+                f"Unable to find {schema._schema_name} objects in storage with the following IDs: {missing_ids}"
             )
-            for entity in result_items
+
+        return [
+            ResultEntry(item, self.__get_object_json_by_id(object_jsons, item))
+            for item in result_items
         ]
 
-    def _get_stored_object_or_raise(
-        self, schema: IdSchemaObject, object_id: str
-    ) -> dict[str, Any]:
-        stored_object = self.app.storage_manager.read_object_json(schema, object_id)
-        if not stored_object:
-            raise QueryException(
-                f"No stored {schema._schema_name} object found for the given object_id: {object_id}"
-            )
-        return stored_object
+    def __get_object_json_by_id(
+        self, object_jsons: dict, search_result_item: SearchResultItem
+    ) -> dict:
+        object_id = (
+            search_result_item.header.origin_id or search_result_item.header.object_id
+        )
+        if object_json := object_jsons.get(object_id):
+            return object_json
+        raise QueryException(
+            f"No object json found in VDB for item: {search_result_item.header}"
+        )
 
     def __check_executor_has_index(self) -> None:
         if self._query_descriptor.index not in self.app._indices:
