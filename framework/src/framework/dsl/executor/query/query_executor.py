@@ -208,7 +208,10 @@ class QueryExecutor:
         self, knn_search_params: KNNSearchParams, query_descriptor: QueryDescriptor
     ) -> Sequence[SearchResultItem]:
         return self.app.storage_manager.knn_search(
-            query_descriptor.index._node, query_descriptor.schema, [], knn_search_params
+            query_descriptor.index._node,
+            query_descriptor.schema,
+            knn_search_params,
+            schema_fields_to_return=None,
         )
 
     def _map_entities_to_result_entries(

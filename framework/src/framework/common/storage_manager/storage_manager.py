@@ -114,11 +114,13 @@ class StorageManager:
         self,
         index_node: IndexNode,
         schema: IdSchemaObject,
-        returned_schema_fields: Sequence[SchemaField],
         knn_search_params: KNNSearchParams,
+        schema_fields_to_return: Sequence[SchemaField] | None = None,
         **params: Any,
     ) -> Sequence[SearchResultItem]:
-        self._validate_knn_search_input(schema, returned_schema_fields)
+        self._validate_knn_search_input(schema, schema_fields_to_return)
+        if schema_fields_to_return is None:
+            schema_fields_to_return = schema._get_schema_fields()
         index_name = self._storage_naming.get_index_name_from_node_id(
             index_node.node_id
         )
@@ -128,12 +130,7 @@ class StorageManager:
                 index_node.node_id, knn_search_params.vector
             ),
         )
-        returned_fields = {
-            self._entity_builder.convert_schema_field_to_field(
-                returned_schema_field
-            ): returned_schema_field
-            for returned_schema_field in returned_schema_fields
-        }
+        returned_fields = self._map_schema_fields_to_fields(schema_fields_to_return)
         search_result: Sequence[ResultEntityData] = self._vdb_connector.knn_search(
             index_name,
             schema._schema_name,
@@ -170,8 +167,10 @@ class StorageManager:
     def _validate_knn_search_input(
         self,
         schema: SchemaObject,
-        returned_schema_fields: Sequence[SchemaField],
+        returned_schema_fields: Sequence[SchemaField] | None,
     ) -> None:
+        if not returned_schema_fields:
+            return
         if invalid_schema_fields := [
             schema_field
             for schema_field in returned_schema_fields
@@ -181,6 +180,16 @@ class StorageManager:
                 "`knn_search` can only return schema_fields from "
                 + f"the searched schema {schema}, got {invalid_schema_fields}"
             )
+
+    def _map_schema_fields_to_fields(
+        self, returned_schema_fields: Sequence[SchemaField]
+    ) -> dict[Field, SchemaField]:
+        return {
+            self._entity_builder.convert_schema_field_to_field(
+                returned_schema_field
+            ): returned_schema_field
+            for returned_schema_field in returned_schema_fields
+        }
 
     def _compose_filter_field_data(
         self, schema: SchemaObject, filters: Sequence[ComparisonOperation[SchemaField]]
