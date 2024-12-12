@@ -76,10 +76,7 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
             else:
                 regular_msgs.append(message)
         if regular_msgs:
-            for parsed_schema in regular_msgs:
-                self.storage_manager.write_parsed_schema_fields(
-                    parsed_schema.id_, parsed_schema.fields
-                )
+            self.storage_manager.write_parsed_schema_fields(regular_msgs)
             self.evaluator.evaluate(regular_msgs, self.context)
 
         logger.info(

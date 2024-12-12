@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Sequence
+from beartype.typing import Any, Sequence
 
 from superlinked.framework.common.observable import Subscriber
 from superlinked.framework.common.parser.json_parser import JsonParser
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.event_schema_object import EventSchemaObject
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 
 
@@ -27,12 +28,15 @@ class OnlineObjectWriter(Subscriber[ParsedSchema]):
         self.__storage_manager = storage_manager
 
     def update(self, messages: Sequence[ParsedSchema]) -> None:
+        object_jsons_to_persist: list[tuple[IdSchemaObject, str, dict[str, Any]]] = []
         for message in [
             m for m in messages if not isinstance(m.schema, EventSchemaObject)
         ]:
             parser = JsonParser(message.schema)
             data = parser.marshal(message)
-            for data_element in data:
-                self.__storage_manager.write_object_json(
-                    message.schema, message.id_, data_element
-                )
+            object_jsons_to_persist.extend(
+                (message.schema, message.id_, data_element) for data_element in data
+            )
+
+        if object_jsons_to_persist:
+            self.__storage_manager.write_object_jsons(object_jsons_to_persist)

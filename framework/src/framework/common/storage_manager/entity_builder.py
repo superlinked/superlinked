@@ -70,18 +70,15 @@ class EntityBuilder:
             entity_id, {fd.name: fd for fd in (list(field_data) + admin_field_data)}
         )
 
-    def compose_entity_data_from_parsed_schema_fields(
-        self,
-        schema_id: str,
-        object_id: str,
-        parsed_schema_fields: Sequence[ParsedSchemaField],
+    def compose_entity_data_from_parsed_schema(
+        self, parsed_schema: ParsedSchema
     ) -> EntityData:
         return self.compose_entity_data(
-            schema_id,
-            object_id,
+            parsed_schema.schema._base_class_name,
+            parsed_schema.id_,
             [
                 self.convert_parsed_schema_field_to_field_data(parsed_schema_field)
-                for parsed_schema_field in parsed_schema_fields
+                for parsed_schema_field in parsed_schema.fields
             ],
         )
 

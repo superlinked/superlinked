@@ -13,9 +13,8 @@
 # limitations under the License.
 
 from dataclasses import dataclass
-from itertools import groupby
 
-from beartype.typing import Any, Iterator, Sequence, TypeVar, cast
+from beartype.typing import Any, Sequence, TypeVar, cast
 
 from superlinked.framework.common.dag.index_node import IndexNode
 from superlinked.framework.common.data_types import NodeDataTypes, PythonTypes
@@ -23,10 +22,7 @@ from superlinked.framework.common.exception import InvalidSchemaException
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
 )
-from superlinked.framework.common.parser.parsed_schema import (
-    ParsedSchema,
-    ParsedSchemaField,
-)
+from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import (
     ConcreteSchemaField,
@@ -35,7 +31,10 @@ from superlinked.framework.common.schema.schema_object import (
 )
 from superlinked.framework.common.storage.entity.entity_data import EntityData
 from superlinked.framework.common.storage.field.field import Field
-from superlinked.framework.common.storage.field.field_data import VectorFieldData
+from superlinked.framework.common.storage.field.field_data import (
+    FieldData,
+    VectorFieldData,
+)
 from superlinked.framework.common.storage.field.field_data_type import FieldDataType
 from superlinked.framework.common.storage.field_type_converter import (
     FIELD_DATA_TYPE_BY_SCHEMA_FIELD_TYPE,
@@ -206,49 +205,28 @@ class StorageManager:
             for filter_ in filters
         ] + [self._entity_builder._admin_fields.schema_id.field == schema._schema_name]
 
-    def write_object_json(
-        self, schema: SchemaObject, object_id: str, object_json: dict[str, Any]
+    # TODO: FAI-2737 to solve the parameters
+    def write_object_jsons(
+        self, object_jsons: Sequence[tuple[IdSchemaObject, str, dict[str, Any]]]
     ) -> None:
-        if object_json_data_field := (
-            self._entity_builder._admin_fields.create_object_json_field_data(
-                object_json
-            )
-        ):
-            entity_data = self._entity_builder.compose_entity_data(
+        entities = [
+            self._entity_builder.compose_entity_data(
                 schema._schema_name,
-                object_id,
-                [object_json_data_field],
+                id_,
+                [self._create_field_data_or_raise(data)],
             )
-            self._vdb_connector.write_entities([entity_data])
+            for schema, id_, data in object_jsons
+        ]
+        self._vdb_connector.write_entities(entities)
 
     def write_parsed_schema_fields(
-        self, object_id: str, parsed_schema_fields: Sequence[ParsedSchemaField]
+        self, parsed_schemas: Sequence[ParsedSchema]
     ) -> None:
-        def get_schema_name_of_parsed_schema_field(
-            parsed_schema_field: ParsedSchemaField,
-        ) -> str:
-            return parsed_schema_field.schema_field.schema_obj._schema_name
-
-        def group_parsed_schema_fields_by_schema_name(
-            parsed_schema_fields: Sequence[ParsedSchemaField],
-        ) -> Iterator[tuple[str, Iterator[ParsedSchemaField]]]:
-            return groupby(
-                sorted(
-                    parsed_schema_fields,
-                    key=get_schema_name_of_parsed_schema_field,
-                ),
-                get_schema_name_of_parsed_schema_field,
-            )
-
-        entity_data = [
-            self._entity_builder.compose_entity_data_from_parsed_schema_fields(
-                schema_name, object_id, list(parsed_schema_fields_group)
-            )
-            for schema_name, parsed_schema_fields_group in group_parsed_schema_fields_by_schema_name(
-                parsed_schema_fields
-            )
+        entities_to_write = [
+            self._entity_builder.compose_entity_data_from_parsed_schema(parsed_schema)
+            for parsed_schema in parsed_schemas
         ]
-        self._vdb_connector.write_entities(entity_data)
+        self._vdb_connector.write_entities(entities_to_write)
 
     def write_node_result(
         self,
@@ -486,3 +464,13 @@ class StorageManager:
                 f"object_id={entity_data.id_.object_id}"
             )
         return object_json
+
+    def _create_field_data_or_raise(self, object_data: dict[str, Any]) -> FieldData:
+        field_data = self._entity_builder._admin_fields.create_object_json_field_data(
+            object_data
+        )
+        if not field_data:
+            raise ValueError(
+                f"Failed to create object JSON field data from input: {object_data}"
+            )
+        return field_data
