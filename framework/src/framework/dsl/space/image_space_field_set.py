@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
-import io
 from dataclasses import dataclass
 
 import PIL
@@ -23,6 +21,7 @@ from typing_extensions import override
 from superlinked.framework.common.data_types import PythonTypes
 from superlinked.framework.common.parser.blob_loader import BlobLoader
 from superlinked.framework.common.schema.image_data import ImageData
+from superlinked.framework.common.util.image_util import ImageUtil
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
 blob_loader = BlobLoader(allow_bytes=True)
@@ -39,9 +38,7 @@ class ImageSpaceFieldSet(SpaceFieldSet[ImageData]):
         loaded_image = blob_loader.load(value)
         opened_image: PIL.Image.Image | None = None
         if loaded_image.data:
-            opened_image = PIL.Image.open(
-                io.BytesIO(base64.b64decode(loaded_image.data))
-            )
+            opened_image = ImageUtil.open_image(loaded_image.data)
         return ImageData(image=opened_image, description=None)
 
 

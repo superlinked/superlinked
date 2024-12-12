@@ -14,12 +14,8 @@
 
 from __future__ import annotations
 
-import base64
-import io
-
 from beartype.typing import Sequence, cast
-from PIL import Image
-from PIL.ImageFile import ImageFile
+from PIL.Image import Image
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
@@ -36,6 +32,7 @@ from superlinked.framework.common.transform.transform import Step
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
 )
+from superlinked.framework.common.util.image_util import ImageUtil
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
 
@@ -101,9 +98,9 @@ class OnlineImageEmbeddingNode(OnlineNode[ImageEmbeddingNode, Vector], HasLength
 
     def _get_image_data(self, parsed_schema: ParsedSchema) -> ImageData:
         image, description = self.__load_input(parsed_schema)
-        loaded_image: ImageFile | None = None
+        loaded_image: Image | None = None
         if image is not None and image.data is not None:
-            loaded_image = Image.open(io.BytesIO(base64.b64decode(image.data)))
+            loaded_image = ImageUtil.open_image(image.data)
         return ImageData(loaded_image, description)
 
     def __load_input(
