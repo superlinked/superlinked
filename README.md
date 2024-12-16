@@ -135,7 +135,6 @@ query = (
             "description_query",
             description="The text in the user's query that refers to product descriptions.",
         ),
-        sl.Param("description_query_weight"),
     )
     .limit(sl.Param("limit"))
     .with_natural_query(
