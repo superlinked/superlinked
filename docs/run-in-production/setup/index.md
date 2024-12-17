@@ -20,7 +20,7 @@ Before you can use this environment, you need to have:
 
 To start the application follow the steps below:
 
-1. **Create the Superlinked app folder**: Create a directory to store your Superlinked configuration files by running `mkdir superlinked_app`. For a minimal working example, copy the [app.py](https://github.com/superlinked/superlinked/blob/main/docs/run-in-production/example/app.py) into your newly created `superlinked_app` directory. For more advanced use cases, please check the [Server Configuration Guidelines](configuring-your-app.md)
+1. **Create the Superlinked app folder**: Create a directory to store your Superlinked configuration files by running `mkdir superlinked_app`. For a minimal working example, copy the [app.py](https://github.com/superlinked/superlinked/blob/main/docs/run-in-production/example/app.py) into your newly created `superlinked_app` directory. For more advanced use cases, please read the next section below.
 
 2. **Start the Superlinked server**: To start the server run the `python -m superlinked.server` command.
 
