@@ -5,14 +5,11 @@ icon: hand-wave
 
 # Welcome
 
-#### Why use Superlinked
-Improve your vector search relevance by encoding your metadata together with your data into your vector embeddings. Read more at [Why Superlinked](getting-started/why-superlinked.md)
+Superlinked is a Python framework for AI Engineers building <b>high-performance search & recommendation applications</b> that combine <b>structured</b> and <b>unstructured</b> data.
 
-#### What is Superlinked
-Superlinked is a framework AND a self-hostable REST API server that helps you make better vectors, that sits between your data, vector database and backend services.
-
-#### How does it work
-Superlinked makes it easy to construct custom data & query embedding models from pre-trained encoders, see the <b>feature</b> and <b>use-case</b> notebooks below for examples.
+- **WHY**: Improve your vector search relevance by encoding metadata togehter with your unstructured data into vectors. Read more at [Why Superlinked](getting-started/why-superlinked.md)
+- **WHAT**: A framework and a self-hostable REST API server that connects your data, vector database and backend services.
+- **HOW**: Construct custom data & query embedding models from pre-trained encoders from `sentence-transformers`, `open-clip` and custom encoders for numbers, timestamps and categorical data. See <b>[concepts](concepts/overview.md)</b> and <b>[use cases](use-cases/overview.md)</b> for examples.
 
 If you like what we do, give us a [star](https://github.com/superlinked/superlinked)! ⭐
 
@@ -92,13 +89,3 @@ If you like what we do, give us a [star](https://github.com/superlinked/superlin
     
 </tbody>
 </table>
-
-
-### Add this doc to Cursor
-
-![Add Superlinked to Cursor Docs](.gitbook/assets/docs_in_cursor.gif)
-
-<!-- ### GitBook Product Demo
-{% embed url="https://www.youtube.com/playlist?list=PLZAlnWDc6FDsodH14aMS3eNRoTYMbua6U" %}
-Product Demo
-{% endembed %} -->
