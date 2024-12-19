@@ -46,9 +46,7 @@ class OnlineConstantNode(OnlineNode[ConstantNode[NodeDataT], NodeDataT]):
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
     ) -> list[EvaluationResult[NodeDataT]]:
-        result = EvaluationResult(
-            self._get_single_evaluation_result(self._evaluate_single())
-        )
+        result = EvaluationResult(self._get_single_evaluation_result(self._evaluate_single()))
         return [result] * len(parsed_schemas)
 
     def _evaluate_single(

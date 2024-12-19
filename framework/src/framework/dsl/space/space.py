@@ -14,13 +14,14 @@
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 from beartype.typing import Generic, TypeAlias, TypeVar
 from typing_extensions import override
 
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.data_types import NodeDataTypes
+from superlinked.framework.common.interface.has_annotation import HasAnnotation
 from superlinked.framework.common.schema.schema_object import SchemaField, SchemaObject
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationInputT,
@@ -37,12 +38,13 @@ from superlinked.framework.dsl.space.exception import InvalidSpaceParamException
 # SpaceInputType
 SIT = TypeVar("SIT", bound=NodeDataTypes)
 SpaceSchemaFieldT = TypeVar("SpaceSchemaFieldT", bound=SchemaField)
+PYTHON_MULTILINE_STRING_DELIMITER = "\n        "
 
 
 class Space(
     HasTransformationConfig[AggregationInputT, EmbeddingInputT],
     Generic[AggregationInputT, EmbeddingInputT],
-    ABC,
+    HasAnnotation,
 ):
     """
     Abstract base class for a space.
@@ -56,24 +58,16 @@ class Space(
         type_: type | TypeAlias,
     ) -> None:
         super().__init__()
-        field_list: list[SpaceSchemaFieldT] = (
-            fields if isinstance(fields, list) else [fields]
-        )
+        field_list: list[SpaceSchemaFieldT] = fields if isinstance(fields, list) else [fields]
         TypeValidator.validate_list_item_type(field_list, type_, "field_list")
         self.__validate_fields(field_list)
         self._field_set = set(field_list)
 
     def __validate_fields(self, field_list: list[SpaceSchemaFieldT]) -> None:
         if not self._allow_empty_fields and not field_list:
-            raise InvalidSpaceParamException(
-                f"{self.__class__.__name__} field input must not be empty."
-            )
+            raise InvalidSpaceParamException(f"{self.__class__.__name__} field input must not be empty.")
         schema_list = [field.schema_obj for field in field_list]
-        if duplicates := [
-            schema._schema_name
-            for schema in schema_list
-            if schema_list.count(schema) > 1
-        ]:
+        if duplicates := [schema._schema_name for schema in schema_list if schema_list.count(schema) > 1]:
             raise InvalidSpaceParamException(
                 f"Duplicates schemas in the same space are not allowed. Duplicates: {duplicates}"
             )
@@ -84,17 +78,20 @@ class Space(
         return self.transformation_config.length
 
     @property
+    @override
+    def annotation(self) -> str:
+        return self._annotation.replace(PYTHON_MULTILINE_STRING_DELIMITER, " ")
+
+    @property
     @abstractmethod
-    def annotation(self) -> str: ...
+    def _annotation(self) -> str: ...
 
     @property
     @abstractmethod
     def _allow_empty_fields(self) -> bool: ...
 
     @abstractmethod
-    def _create_default_node(
-        self, schema: SchemaObject
-    ) -> EmbeddingNode[AggregationInputT, EmbeddingInputT]: ...
+    def _create_default_node(self, schema: SchemaObject) -> EmbeddingNode[AggregationInputT, EmbeddingInputT]: ...
 
     @property
     @abstractmethod
@@ -102,9 +99,7 @@ class Space(
         self,
     ) -> dict[SchemaObject, EmbeddingNode[AggregationInputT, EmbeddingInputT]]: ...
 
-    def _get_embedding_node(
-        self, schema: SchemaObject
-    ) -> EmbeddingNode[AggregationInputT, EmbeddingInputT]:
+    def _get_embedding_node(self, schema: SchemaObject) -> EmbeddingNode[AggregationInputT, EmbeddingInputT]:
         if node := self._embedding_node_by_schema.get(schema):
             return node
         return self._handle_embedding_node_not_present(schema)

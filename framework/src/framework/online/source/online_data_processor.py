@@ -56,12 +56,8 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
             self._init_mandatory_field_names_by_schema(index)
         )
 
-    def _init_mandatory_field_names_by_schema(
-        self, index: Index
-    ) -> defaultdict[SchemaObject, list[str]]:
-        mandatory_field_names_by_schema: defaultdict[SchemaObject, list[str]] = (
-            defaultdict(list)
-        )
+    def _init_mandatory_field_names_by_schema(self, index: Index) -> defaultdict[SchemaObject, list[str]]:
+        mandatory_field_names_by_schema: defaultdict[SchemaObject, list[str]] = defaultdict(list)
         for field in index._fields:
             mandatory_field_names_by_schema[field.schema_obj].append(field.name)
         return mandatory_field_names_by_schema
@@ -81,9 +77,7 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
 
         logger.info(
             "stored input data",
-            schemas=list(
-                {parsed_schema.schema._schema_name for parsed_schema in messages}
-            ),
+            schemas=list({parsed_schema.schema._schema_name for parsed_schema in messages}),
             n_records=len(messages),
         )
 
@@ -91,9 +85,7 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
         field_names = [field.schema_field.name for field in message.fields]
         missing_fields = [
             field_name
-            for field_name in self._mandatory_field_names_by_schema.get(
-                message.schema, []
-            )
+            for field_name in self._mandatory_field_names_by_schema.get(message.schema, [])
             if field_name not in field_names
         ]
         if missing_fields:
@@ -106,21 +98,15 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
         self,
         event_parsed_schema: EventParsedSchema,
     ) -> None:
-        effect_parsed_schema_map = self._map_event_parsed_schema_by_dag_effects(
-            event_parsed_schema
-        )
+        effect_parsed_schema_map = self._map_event_parsed_schema_by_dag_effects(event_parsed_schema)
         for effect, parsed_schema_with_event in effect_parsed_schema_map.items():
-            self.evaluator.evaluate_by_dag_effect(
-                parsed_schema_with_event, self.context, effect
-            )
+            self.evaluator.evaluate_by_dag_effect(parsed_schema_with_event, self.context, effect)
 
     def _map_event_parsed_schema_by_dag_effects(
         self, event_parsed_schema: EventParsedSchema
     ) -> dict[DagEffect, ParsedSchemaWithEvent]:
         effects_with_schema_matching = [
-            effect
-            for effect in self._dag_effects
-            if effect.event_schema == event_parsed_schema.schema
+            effect for effect in self._dag_effects if effect.event_schema == event_parsed_schema.schema
         ]
         effects_with_all_matching_except_multiplier = [
             effect
@@ -135,8 +121,7 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
             affected_schema_ids = [
                 reference.value
                 for reference in event_parsed_schema.fields
-                if reference.schema_field
-                == effect.resolved_affected_schema_reference.reference_field
+                if reference.schema_field == effect.resolved_affected_schema_reference.reference_field
                 and reference.value is not None
             ]
             if len(affected_schema_ids) > 1:

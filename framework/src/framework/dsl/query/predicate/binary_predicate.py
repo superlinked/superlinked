@@ -45,13 +45,9 @@ class EvaluatedBinaryPredicate(Generic[BPT]):
 
     def __post_init__(self) -> None:
         if not isinstance(self.predicate.weight_param, float):
-            raise ValidationException(
-                f"{type(self.predicate).__name__} does not have a weight set."
-            )
+            raise ValidationException(f"{type(self.predicate).__name__} does not have a weight set.")
         if isinstance(self.predicate.params[1], Param):
-            raise ValidationException(
-                f"{type(self.predicate).__name__} does not have a value set."
-            )
+            raise ValidationException(f"{type(self.predicate).__name__} does not have a value set.")
 
     @property
     def weight(self) -> float:

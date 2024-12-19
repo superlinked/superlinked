@@ -39,6 +39,4 @@ class ImageEmbeddingNode(EmbeddingNode[Vector, ImageData]):
             schema,
         )
         self.image_node_id = image_blob_node.node_id if image_blob_node else None
-        self.description_node_id = (
-            description_node.node_id if description_node else None
-        )
+        self.description_node_id = description_node.node_id if description_node else None

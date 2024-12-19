@@ -78,6 +78,4 @@ class App(ABC, Generic[SourceT]):
             )
             for index in self._indices
         ]
-        self.storage_manager.init_search_indices(
-            search_index_params, create_search_indices
-        )
+        self.storage_manager.init_search_indices(search_index_params, create_search_indices)

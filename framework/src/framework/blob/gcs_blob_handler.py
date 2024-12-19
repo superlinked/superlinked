@@ -38,13 +38,9 @@ class GcsBlobHandler(BlobHandler):
         self._logger = logger.bind(bucket=self.__bucket_name)
 
     @override
-    def upload(
-        self, object_key: str, data: bytes, metadata: BlobMetadata | None = None
-    ) -> None:
+    def upload(self, object_key: str, data: bytes, metadata: BlobMetadata | None = None) -> None:
         future = self._executor.submit(self._upload_sync, object_key, data, metadata)
-        future.add_done_callback(
-            lambda f: self._task_done_callback(f, object_key, data)
-        )
+        future.add_done_callback(lambda f: self._task_done_callback(f, object_key, data))
 
     @override
     def download(self, object_key: str) -> bytes:
@@ -74,9 +70,7 @@ class GcsBlobHandler(BlobHandler):
     def get_supported_cloud_storage_scheme(self) -> str:
         return SUPPORTED_SCHEME
 
-    def _upload_sync(
-        self, object_key: str, data: bytes, metadata: BlobMetadata | None
-    ) -> None:
+    def _upload_sync(self, object_key: str, data: bytes, metadata: BlobMetadata | None) -> None:
         bucket = self.__client.bucket(self.__bucket_name)
         blob = bucket.blob(object_key)
         upload_args: dict[str, Any] = {"data": data}

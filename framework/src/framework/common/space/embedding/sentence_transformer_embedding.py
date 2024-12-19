@@ -40,15 +40,11 @@ class SentenceTransformerEmbedding(Embedding[str, TextSimilarityEmbeddingConfig]
         model_cache_dir: Path | None = None,
     ) -> None:
         super().__init__(embedding_config)
-        self.manager = SentenceTransformerManager(
-            self._config.model_name, model_cache_dir
-        )
+        self.manager = SentenceTransformerManager(self._config.model_name, model_cache_dir)
         self._cache = EmbeddingCache(self._config.cache_size)
 
     @override
-    def embed_multiple(
-        self, inputs: Sequence[str], context: ExecutionContext
-    ) -> list[Vector]:
+    def embed_multiple(self, inputs: Sequence[str], context: ExecutionContext) -> list[Vector]:
         cache_info = self._cache.calculate_cache_info(inputs)
         new_vectors = self.manager.embed_text(cache_info.inputs_to_embed)
         self._cache.update(cache_info.inputs_to_embed, new_vectors)

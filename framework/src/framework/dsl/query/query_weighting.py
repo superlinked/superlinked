@@ -29,9 +29,7 @@ class QueryWeighting:
     def __init__(self, dag: Dag) -> None:
         self.__node_id_weighable_node_id_map = self._init_weighable_node_map(dag)
 
-    def get_node_weights(
-        self, node_id_weight_map: dict[str, float]
-    ) -> dict[str, dict[str, float]]:
+    def get_node_weights(self, node_id_weight_map: dict[str, float]) -> dict[str, dict[str, float]]:
         return {
             self.get_weighable_node_id(node_id): {SPACE_WEIGHT_PARAM_NAME: weight}
             for node_id, weight in node_id_weight_map.items()
@@ -41,9 +39,7 @@ class QueryWeighting:
         return self.__node_id_weighable_node_id_map.get(node_id, node_id)
 
     def _init_weighable_node_map(self, dag: Dag) -> dict[str, str]:
-        concatenation_nodes_with_schema = self._get_concatenation_nodes_with_schema(
-            dag.nodes
-        )
+        concatenation_nodes_with_schema = self._get_concatenation_nodes_with_schema(dag.nodes)
         return {
             ancestor.node_id: cn_parent.node_id
             for cn, schema_ in concatenation_nodes_with_schema
@@ -55,24 +51,14 @@ class QueryWeighting:
         self,
         nodes: list[Node],
     ) -> list[tuple[ConcatenationNode, SchemaObject]]:
-        return [
-            self._get_concatenation_node_with_schema(node)
-            for node in nodes
-            if isinstance(node, ConcatenationNode)
-        ]
+        return [self._get_concatenation_node_with_schema(node) for node in nodes if isinstance(node, ConcatenationNode)]
 
     def _get_concatenation_node_with_schema(
         self, concatenation_node: ConcatenationNode
     ) -> tuple[ConcatenationNode, SchemaObject]:
-        item_schemas = [
-            schema_
-            for schema_ in concatenation_node.schemas
-            if not isinstance(schema_, EventSchemaObject)
-        ]
+        item_schemas = [schema_ for schema_ in concatenation_node.schemas if not isinstance(schema_, EventSchemaObject)]
         if len(item_schemas) != 1:
-            raise InvalidSchemaException(
-                "ConcatenationNode must have exactly 1 non-event type schemas."
-            )
+            raise InvalidSchemaException("ConcatenationNode must have exactly 1 non-event type schemas.")
         return (concatenation_node, item_schemas[0])
 
     def _get_ancestors_by_schema(self, node: Node, schema_: SchemaObject) -> set[Node]:

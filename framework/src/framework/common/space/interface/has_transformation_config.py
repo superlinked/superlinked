@@ -28,9 +28,7 @@ from superlinked.framework.common.space.config.transformation_config import (
 )
 
 
-class HasTransformationConfig(
-    HasLength, Generic[AggregationInputT, EmbeddingInputT], ABC
-):
+class HasTransformationConfig(HasLength, Generic[AggregationInputT, EmbeddingInputT], ABC):
     @property
     @abstractmethod
     def transformation_config(

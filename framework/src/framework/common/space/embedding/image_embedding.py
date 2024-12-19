@@ -49,33 +49,21 @@ class ImageEmbedding(Embedding[ImageData, ImageEmbeddingConfig]):
         model_cache_dir: Path | None = None,
     ) -> None:
         super().__init__(embedding_config)
-        self.manager = ImageEmbedding.init_manager(
-            self._config.model_handler, self._config.model_name, model_cache_dir
-        )
+        self.manager = ImageEmbedding.init_manager(self._config.model_handler, self._config.model_name, model_cache_dir)
 
     @override
-    def embed_multiple(
-        self, inputs: Sequence[ImageData], context: ExecutionContext
-    ) -> list[Vector]:
-        images, descriptions = zip(
-            *((input_.image, input_.description) for input_ in inputs)
-        )
+    def embed_multiple(self, inputs: Sequence[ImageData], context: ExecutionContext) -> list[Vector]:
+        images, descriptions = zip(*((input_.image, input_.description) for input_ in inputs))
         embeddings = self.manager.embed(images + descriptions)
         if all(embedding is None for embedding in embeddings):
             return [Vector.init_zero_vector(self._config.length)] * len(inputs)
         aggregation = VectorAggregation(VectorAggregationConfig(Vector))
         combined_embeddings = [
             aggregation.aggregate_weighted(
-                [
-                    Weighted(embedding)
-                    for embedding in (image_embedding, description_embedding)
-                    if embedding
-                ],
+                [Weighted(embedding) for embedding in (image_embedding, description_embedding) if embedding],
                 context,
             )
-            for image_embedding, description_embedding in zip(
-                embeddings[: len(inputs)], embeddings[len(inputs) :]
-            )
+            for image_embedding, description_embedding in zip(embeddings[: len(inputs)], embeddings[len(inputs) :])
         ]
         return combined_embeddings
 
@@ -89,9 +77,7 @@ class ImageEmbedding(Embedding[ImageData, ImageEmbeddingConfig]):
         return self._config.length
 
     @classmethod
-    def init_manager(
-        cls, model_handler: ModelHandler, model_name: str, model_cache_dir: Path | None
-    ) -> ModelManager:
+    def init_manager(cls, model_handler: ModelHandler, model_name: str, model_cache_dir: Path | None) -> ModelManager:
         manager_by_handler = {
             ModelHandler.SENTENCE_TRANSFORMERS: SentenceTransformerManager,
             ModelHandler.OPEN_CLIP: OpenClipManager,

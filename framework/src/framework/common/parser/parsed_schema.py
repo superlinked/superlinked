@@ -28,9 +28,7 @@ class ParsedSchemaField(Generic[SFT]):
         self.value = value
 
     @classmethod
-    def from_schema_field(
-        cls, schema_field: SchemaField[SFT], value: SFT
-    ) -> ParsedSchemaField:
+    def from_schema_field(cls, schema_field: SchemaField[SFT], value: SFT) -> ParsedSchemaField:
         return cls(schema_field, schema_field.parse(value))
 
 

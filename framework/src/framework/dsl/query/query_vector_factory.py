@@ -50,14 +50,10 @@ class QueryVectorFactory:
         schema: IdSchemaObject,
         context_base: ExecutionContext,
     ) -> Vector:
-        space_node_id_weight_map: dict[str, float] = (
-            self.__get_node_id_weight_map_from_space_weight_map(
-                schema, global_space_weight_map
-            )
+        space_node_id_weight_map: dict[str, float] = self.__get_node_id_weight_map_from_space_weight_map(
+            schema, global_space_weight_map
         )
-        context = self._create_query_context(
-            context_base, index_node_id, schema._schema_name, space_node_id_weight_map
-        )
+        context = self._create_query_context(context_base, index_node_id, schema._schema_name, space_node_id_weight_map)
         result = self._evaluator.evaluate(query_node_inputs_by_node_id, context)
         return result
 
@@ -73,19 +69,12 @@ class QueryVectorFactory:
             data=context_base.data,
             now_strategy=NowStrategy.CONTEXT_TIME,
         )
-        eval_context.update_data(
-            self._query_weighting.get_node_weights(node_id_weight_map)
-        )
-        eval_context.set_node_context_value(
-            index_node_id, QUERIED_SCHEMA_NAME_CONTEXT_KEY, schema_name
-        )
+        eval_context.update_data(self._query_weighting.get_node_weights(node_id_weight_map))
+        eval_context.set_node_context_value(index_node_id, QUERIED_SCHEMA_NAME_CONTEXT_KEY, schema_name)
         return eval_context
 
     @staticmethod
     def __get_node_id_weight_map_from_space_weight_map(
         schema: IdSchemaObject, space_weight_map: dict[Space, float]
     ) -> dict[str, float]:
-        return {
-            space._get_embedding_node(schema).node_id: weight
-            for space, weight in space_weight_map.items()
-        }
+        return {space._get_embedding_node(schema).node_id: weight for space, weight in space_weight_map.items()}

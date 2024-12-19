@@ -74,18 +74,14 @@ class SchemaReference(SchemaField[str], HasMultiplier, Generic[RST]):
 
 
 class MultipliedSchemaReference(HasMultiplier, Generic[RST]):
-    def __init__(
-        self, schema_reference: SchemaReference[RST], multiplier: float = 1.0
-    ) -> None:
+    def __init__(self, schema_reference: SchemaReference[RST], multiplier: float = 1.0) -> None:
         super().__init__(multiplier)
         self.__validate_multiplier()
         self.schema_reference = schema_reference
 
     def __validate_multiplier(self) -> None:
         if self.multiplier == 0:
-            raise InitializationException(
-                f"{self.__class__.__name__} cannot have 0 (zero) as its multiplier."
-            )
+            raise InitializationException(f"{self.__class__.__name__} cannot have 0 (zero) as its multiplier.")
 
     def __mul__(self, other: float | int) -> MultipliedSchemaReference:
         multiplier = self.multiplier * other
@@ -133,9 +129,7 @@ class EventSchemaObject(IdSchemaObject):
                         "SchemaReference should be annotated with the referred schema object type.",
                     )
                 )
-            value: SchemaReference = SchemaReference(
-                field_descriptor.name, self, field_descriptor.type_args[0]
-            )
+            value: SchemaReference = SchemaReference(field_descriptor.name, self, field_descriptor.type_args[0])
             setattr(self, field_descriptor.name, value)
             return value
         return super()._init_field(field_descriptor)

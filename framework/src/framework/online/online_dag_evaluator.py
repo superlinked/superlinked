@@ -50,13 +50,11 @@ class OnlineDagEvaluator:
         super().__init__()
         self._dag = dag
         self._schemas = schemas
-        self._schema_online_schema_dag_mapper = (
-            self.__init_schema_online_schema_dag_mapper(
-                self._schemas, self._dag, storage_manager
-            )
+        self._schema_online_schema_dag_mapper = self.__init_schema_online_schema_dag_mapper(
+            self._schemas, self._dag, storage_manager
         )
-        self._dag_effect_online_schema_dag_mapper = (
-            self.__init_dag_effect_online_schema_dag_mapper(self._dag, storage_manager)
+        self._dag_effect_online_schema_dag_mapper = self.__init_dag_effect_online_schema_dag_mapper(
+            self._dag, storage_manager
         )
         self._log_dag_init()
 
@@ -81,9 +79,7 @@ class OnlineDagEvaluator:
             )
 
     def __get_single_schema(self, parsed_schemas: list[ParsedSchema]) -> IdSchemaObject:
-        unique_schemas: set[IdSchemaObject] = {
-            parsed_schema.schema for parsed_schema in parsed_schemas
-        }
+        unique_schemas: set[IdSchemaObject] = {parsed_schema.schema for parsed_schema in parsed_schemas}
         if len(unique_schemas) != 1:
             raise InvalidSchemaException(
                 f"Multiple schemas ({[s._schema_name for s in unique_schemas]}) present in the index."
@@ -96,24 +92,18 @@ class OnlineDagEvaluator:
         context: ExecutionContext,
     ) -> list[EvaluationResult[Vector]]:
         index_schema = self.__get_single_schema(parsed_schemas)
-        if (
-            online_schema_dag := self._schema_online_schema_dag_mapper.get(index_schema)
-        ) is not None:
+        if (online_schema_dag := self._schema_online_schema_dag_mapper.get(index_schema)) is not None:
             results = online_schema_dag.evaluate(parsed_schemas, context)
             for i, result in enumerate(results):
                 logger.info(
                     "evaluated entity",
                     schema=index_schema._schema_name,
                     pii_vector=partial(str, result.main.value),
-                    pii_field_values=[
-                        field.value for field in parsed_schemas[i].fields
-                    ],
+                    pii_field_values=[field.value for field in parsed_schemas[i].fields],
                 )
             return results
 
-        raise InvalidSchemaException(
-            f"Schema ({index_schema._schema_name}) isn't present in the index."
-        )
+        raise InvalidSchemaException(f"Schema ({index_schema._schema_name}) isn't present in the index.")
 
     def evaluate_by_dag_effect(
         self,
@@ -121,31 +111,20 @@ class OnlineDagEvaluator:
         context: ExecutionContext,
         dag_effect: DagEffect,
     ) -> EvaluationResult[Vector]:
-        if (
-            online_schema_dag := self._dag_effect_online_schema_dag_mapper.get(
-                dag_effect
-            )
-        ) is not None:
+        if (online_schema_dag := self._dag_effect_online_schema_dag_mapper.get(dag_effect)) is not None:
             result = online_schema_dag.evaluate([parsed_schema_with_event], context)[0]
             self._log_evaluated_event(parsed_schema_with_event, result)
             return result
-        raise InvalidDagEffectException(
-            f"DagEffect ({dag_effect}) isn't present in the index."
-        )
+        raise InvalidDagEffectException(f"DagEffect ({dag_effect}) isn't present in the index.")
 
-    def _log_evaluated_event(
-        self, parsed_schema_with_event: ParsedSchemaWithEvent, result: EvaluationResult
-    ) -> None:
+    def _log_evaluated_event(self, parsed_schema_with_event: ParsedSchemaWithEvent, result: EvaluationResult) -> None:
         logger.info(
             "evaluated event",
             event_id=parsed_schema_with_event.event_parsed_schema.id_,
             affected_schema=parsed_schema_with_event.schema._schema_name,
             affecting_schema=parsed_schema_with_event.event_parsed_schema.schema._schema_name,
             pii_event_vector=partial(str, result.main.value),
-            pii_field_values=[
-                field.value
-                for field in parsed_schema_with_event.event_parsed_schema.fields
-            ],
+            pii_field_values=[field.value for field in parsed_schema_with_event.event_parsed_schema.fields],
         )
 
     def __init_schema_online_schema_dag_mapper(
@@ -166,13 +145,10 @@ class OnlineDagEvaluator:
         self, dag: Dag, storage_manager: StorageManager
     ) -> dict[DagEffect, OnlineSchemaDag]:
         dag_effect_schema_dag_map = {
-            dag_effect: dag.project_to_dag_effect(dag_effect)
-            for dag_effect in dag.dag_effects
+            dag_effect: dag.project_to_dag_effect(dag_effect) for dag_effect in dag.dag_effects
         }
         return {
-            dag_effect: OnlineSchemaDagCompiler(
-                set(schema_dag.nodes)
-            ).compile_schema_dag(
+            dag_effect: OnlineSchemaDagCompiler(set(schema_dag.nodes)).compile_schema_dag(
                 schema_dag,
                 storage_manager,
             )

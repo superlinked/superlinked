@@ -37,13 +37,9 @@ class IndexNode(Node[Vector], HasLength):
         )
         self.__length = cast(HasLength, self.parents[0]).length
 
-    def __validate_and_order_parents(
-        self, parents: set[Node[Vector]]
-    ) -> list[Node[Vector]]:
+    def __validate_and_order_parents(self, parents: set[Node[Vector]]) -> list[Node[Vector]]:
         if len(parents) == 0:
-            raise ParentCountException(
-                f"{self.class_name} must have at least 1 parent."
-            )
+            raise ParentCountException(f"{self.class_name} must have at least 1 parent.")
         return sorted(parents, key=lambda parent: parent.node_id)
 
     @property

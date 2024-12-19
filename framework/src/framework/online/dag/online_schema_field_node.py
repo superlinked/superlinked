@@ -58,9 +58,7 @@ class OnlineSchemaFieldNode(Generic[SFT], OnlineNode[SchemaFieldNode, SFT]):
         parsed_schema: ParsedSchema,
     ) -> EvaluationResult[SFT]:
         parsed_nodes: list[ParsedSchemaField] = [
-            field
-            for field in parsed_schema.fields
-            if field.schema_field == self.node.schema_field
+            field for field in parsed_schema.fields if field.schema_field == self.node.schema_field
         ]
         result: SFT
         if parsed_nodes:

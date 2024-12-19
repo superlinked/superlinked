@@ -79,8 +79,6 @@ class InMemoryExecutor(InteractiveExecutor[InMemorySource]):
         Returns:
             InMemoryApp: An instance of InMemoryApp.
         """
-        app = InMemoryApp(
-            self._sources, self._indices, self._vector_database, self._context
-        )
+        app = InMemoryApp(self._sources, self._indices, self._vector_database, self._context)
         self._logger.info("started in-memory app")
         return app

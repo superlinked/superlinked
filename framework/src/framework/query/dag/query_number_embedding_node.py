@@ -35,20 +35,13 @@ from superlinked.framework.query.dag.query_node import QueryNode
 from superlinked.framework.query.query_node_input import QueryNodeInput
 
 
-class QueryNumberEmbeddingNode(
-    QueryEmbeddingOrphanNode[float, NumberEmbeddingNode, float]
-):
+class QueryNumberEmbeddingNode(QueryEmbeddingOrphanNode[float, NumberEmbeddingNode, float]):
     def __init__(self, node: NumberEmbeddingNode, parents: Sequence[QueryNode]) -> None:
         super().__init__(node, parents, float)
 
     @override
-    def _pre_process_node_inputs(
-        self, inputs: Mapping[str, Sequence[QueryNodeInput]]
-    ) -> Sequence[QueryNodeInput]:
-        return [
-            self._pre_process_node_input(input_)
-            for input_ in inputs.get(self.node_id) or []
-        ]
+    def _pre_process_node_inputs(self, inputs: Mapping[str, Sequence[QueryNodeInput]]) -> Sequence[QueryNodeInput]:
+        return [self._pre_process_node_input(input_) for input_ in inputs.get(self.node_id) or []]
 
     def _pre_process_node_input(self, node_input: QueryNodeInput) -> QueryNodeInput:
         if isinstance(node_input.value.item, float):
@@ -64,9 +57,7 @@ class QueryNumberEmbeddingNode(
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,
     ) -> QueryEvaluationResult[Vector]:
-        embedding_config = cast(
-            NumberEmbeddingConfig, self.node.transformation_config.embedding_config
-        )
+        embedding_config = cast(NumberEmbeddingConfig, self.node.transformation_config.embedding_config)
         if embedding_config.mode in (Mode.MINIMUM, Mode.MAXIMUM):
             return QueryEvaluationResult(embedding_config.default_vector)
         return super().evaluate(inputs, context)

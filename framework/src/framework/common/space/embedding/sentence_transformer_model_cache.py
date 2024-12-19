@@ -74,12 +74,8 @@ class SentenceTransformerModelCache:
                 reason=str(e),
             )
 
-        embedding_model = cls.initialize_model(
-            model_name, CPU_DEVICE_TYPE, model_cache_dir
-        )
-        return embedding_model.get_sentence_embedding_dimension() or len(
-            embedding_model.encode("")
-        )
+        embedding_model = cls.initialize_model(model_name, CPU_DEVICE_TYPE, model_cache_dir)
+        return embedding_model.get_sentence_embedding_dimension() or len(embedding_model.encode(""))
 
     @classmethod
     def _ensure_model_downloaded(cls, model_name: str, model_cache_dir: Path) -> None:
@@ -109,9 +105,7 @@ class SentenceTransformerModelCache:
                 )
                 sleep(retry_delay)
 
-        raise RuntimeError(
-            f"Failed to acquire lock for downloading {model_name} after {max_retries} attempts."
-        )
+        raise RuntimeError(f"Failed to acquire lock for downloading {model_name} after {max_retries} attempts.")
 
     @classmethod
     def _is_model_downloaded(cls, model_name: str, model_cache_dir: Path) -> bool:
@@ -140,33 +134,21 @@ class SentenceTransformerModelCache:
 
     @classmethod
     def _get_repo_id(cls, model_name: str) -> str:
-        return (
-            SENTENCE_TRANSFORMERS_ORG_NAME + "/" + model_name
-            if "/" not in model_name
-            else model_name
-        )
+        return SENTENCE_TRANSFORMERS_ORG_NAME + "/" + model_name if "/" not in model_name else model_name
 
     @classmethod
     def _get_model_folder_path(cls, model_name: str, model_cache_dir: Path) -> Path:
-        return model_cache_dir / repo_folder_name(
-            repo_id=cls._get_repo_id(model_name), repo_type="model"
-        )
+        return model_cache_dir / repo_folder_name(repo_id=cls._get_repo_id(model_name), repo_type="model")
 
     @classmethod
-    def _get_length_from_cached_model(
-        cls, model_name: str, model_cache_dir: Path
-    ) -> int | None:
-        with open(
-            cls._get_local_path(model_name, model_cache_dir), encoding="utf-8"
-        ) as file:
+    def _get_length_from_cached_model(cls, model_name: str, model_cache_dir: Path) -> int | None:
+        with open(cls._get_local_path(model_name, model_cache_dir), encoding="utf-8") as file:
             return json.load(file).get(MODEL_DIMENSION, None)
 
     @classmethod
     def _get_local_path(cls, model_name: str, model_cache_dir: Path) -> str:
         model_folder = cls._get_model_folder_path(model_name, model_cache_dir)
-        with open(
-            MAIN_REF_FILE_PATH.format(model_folder=model_folder), "r", encoding="utf-8"
-        ) as file:
+        with open(MAIN_REF_FILE_PATH.format(model_folder=model_folder), "r", encoding="utf-8") as file:
             snapshot_value = file.read().strip()
         return CONFIG_FILE_PATH.format(
             model_folder=model_folder,

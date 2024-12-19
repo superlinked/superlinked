@@ -50,22 +50,17 @@ class EventSchema(EventSchemaObject):
     _schema_field_descriptors: list[SchemaFieldDescriptor]
 
     def __new__(cls) -> Self:
-        schema_information = SchemaFactory._calculate_schema_information(
-            cls, SchemaType.EVENT_SCHEMA
-        )
+        schema_information = SchemaFactory._calculate_schema_information(cls, SchemaType.EVENT_SCHEMA)
         instance = super().__new__(cls)
         instance._id_field_name = schema_information.id_field_name
-        instance._created_at_field_name = SchemaFactory.get_field_name_or_raise(
-            cls, CreatedAtField
-        )
+        instance._created_at_field_name = SchemaFactory.get_field_name_or_raise(cls, CreatedAtField)
         instance._schema_field_descriptors = schema_information.schema_field_descriptors
         return instance
 
     def __init__(self) -> None:
         super().__init__(type(self), self._id_field_name, self._created_at_field_name)
         self._schema_fields = [
-            self._init_field(schema_field_descriptor)
-            for schema_field_descriptor in self._schema_field_descriptors
+            self._init_field(schema_field_descriptor) for schema_field_descriptor in self._schema_field_descriptors
         ]
 
     def _get_schema_fields(self) -> Sequence[SchemaField]:

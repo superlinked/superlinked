@@ -30,9 +30,7 @@ class RedisVectorDatabase(VectorDatabase[RedisVDBConnector]):
     This class provides a Redis-based vector database connector.
     """
 
-    def __init__(
-        self, host: str, port: int, default_query_limit: int = 10, **extra_params: Any
-    ) -> None:
+    def __init__(self, host: str, port: int, default_query_limit: int = 10, **extra_params: Any) -> None:
         """
         Initialize the RedisVectorDatabase.
 

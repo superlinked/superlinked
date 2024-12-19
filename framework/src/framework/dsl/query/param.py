@@ -64,15 +64,12 @@ class Param:
         if self.default is not None:
             self._validate_value_allowed(self.default)
 
-    def _init_options(
-        self, options: Sequence[ParamInputType] | None
-    ) -> set[ParamInputType] | None:
+    def _init_options(self, options: Sequence[ParamInputType] | None) -> set[ParamInputType] | None:
         if options is None:
             return None
         if any(TypeValidator.is_sequence_safe(option) for option in options):
             raise ValueError(
-                f"Sequence option item is not allowed for parameter {self.name}. "
-                "Each option must be a single value."
+                f"Sequence option item is not allowed for parameter {self.name}. " "Each option must be a single value."
             )
         return set(options)
 
@@ -88,8 +85,7 @@ class Param:
                 )
         elif value not in self.options:
             raise ValueError(
-                f"Value {value} is not allowed for parameter {self.name}. "
-                f"Allowed values are: {self.options}"
+                f"Value {value} is not allowed for parameter {self.name}. " f"Allowed values are: {self.options}"
             )
 
     def to_evaluated(self, value: Any) -> Evaluated[Param]:
@@ -106,15 +102,7 @@ class Param:
 
 
 ParamInputType: TypeAlias = (
-    Sequence[str]
-    | Sequence[float]
-    | Image
-    | str
-    | int
-    | float
-    | bool
-    | None
-    | tuple[str | None, str | None]
+    Sequence[str] | Sequence[float] | Image | str | int | float | bool | None | tuple[str | None, str | None]
 )
 ParamType: TypeAlias = ParamInputType | Param
 StringParamType: TypeAlias = str | Param

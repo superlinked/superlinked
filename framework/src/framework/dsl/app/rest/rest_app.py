@@ -74,9 +74,7 @@ class RestApp(OnlineApp[RestSource | DataLoaderSource]):
         self._endpoint_configuration = endpoint_configuration
         self._queries = queries
 
-        self.__data_loader_sources = [
-            source for source in self._sources if isinstance(source, DataLoaderSource)
-        ]
+        self.__data_loader_sources = [source for source in self._sources if isinstance(source, DataLoaderSource)]
 
         self.__rest_handler = RestHandler(
             self,

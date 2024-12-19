@@ -30,9 +30,7 @@ class QdrantVectorDatabase(VectorDatabase[QdrantVDBConnector]):
     This class provides a Qdrant-based vector database connector.
     """
 
-    def __init__(
-        self, url: str, api_key: str, default_query_limit: int = 10, **extra_params: Any
-    ) -> None:
+    def __init__(self, url: str, api_key: str, default_query_limit: int = 10, **extra_params: Any) -> None:
         """
         Initialize the QdrantVectorDatabase.
 

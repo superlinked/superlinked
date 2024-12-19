@@ -51,20 +51,14 @@ class RedisFilter(VDBFilter):
     def get_prefix(self) -> str:
         operator_map = self._get_operator_map()
         if self.op == ComparisonOperationType.IN:
-            return self._join_operator(
-                operator_map, ComparisonOperationType.EQUAL, OR_OPERATOR
-            )
+            return self._join_operator(operator_map, ComparisonOperationType.EQUAL, OR_OPERATOR)
         if self.op == ComparisonOperationType.NOT_IN:
-            return self._join_operator(
-                operator_map, ComparisonOperationType.NOT_EQUAL, AND_OPERATOR
-            )
+            return self._join_operator(operator_map, ComparisonOperationType.NOT_EQUAL, AND_OPERATOR)
         if self.op in [
             ComparisonOperationType.CONTAINS,
             ComparisonOperationType.NOT_CONTAINS,
         ]:
-            value_text = f" {OR_OPERATOR} ".join(
-                f'"{value}"' for value in self.field_value.decode("utf-8").split(", ")
-            )
+            value_text = f" {OR_OPERATOR} ".join(f'"{value}"' for value in self.field_value.decode("utf-8").split(", "))
             return self._fill_template(operator_map, self.op, value_text)
         if self.op == ComparisonOperationType.CONTAINS_ALL:
             values = [
@@ -84,20 +78,12 @@ class RedisFilter(VDBFilter):
             return NUMBER_OPERATOR_MAP
         if self.field.data_type == FieldDataType.STRING_LIST:
             return STRING_LIST_OPERATOR_MAP
-        raise NotImplementedError(
-            f"Unsupported filter field type: {self.field.data_type}"
-        )
+        raise NotImplementedError(f"Unsupported filter field type: {self.field.data_type}")
 
-    def _join_operator(
-        self, operator_map: dict, op: ComparisonOperationType, join_operator: str
-    ) -> str:
-        return join_operator.join(
-            [self._fill_template(operator_map, op, value) for value in self.field_value]
-        )
+    def _join_operator(self, operator_map: dict, op: ComparisonOperationType, join_operator: str) -> str:
+        return join_operator.join([self._fill_template(operator_map, op, value) for value in self.field_value])
 
-    def _fill_template(
-        self, operator_map: dict, op: ComparisonOperationType, value: Any
-    ) -> str:
+    def _fill_template(self, operator_map: dict, op: ComparisonOperationType, value: Any) -> str:
         three_member_ops = [
             ComparisonOperationType.EQUAL,
             ComparisonOperationType.NOT_EQUAL,

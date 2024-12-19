@@ -104,30 +104,21 @@ class RedisFieldEncoder:
 
     def _decode_vector(self, vector: bytes) -> Vector:
         if not isinstance(vector, bytes):
-            raise NotImplementedError(
-                f"Cannot decode non-bytes type vector, got: {type(vector)}"
-            )
+            raise NotImplementedError(f"Cannot decode non-bytes type vector, got: {type(vector)}")
         return Vector(np.frombuffer(vector, np.float32).tolist())
 
     def encode_field(self, field: FieldData) -> RedisEncodedTypes:
         if encoder := self._encode_map.get(field.data_type):
             return encoder(field.value)
-        raise EncoderException(
-            f"Unknown field type: {field.data_type}, cannot encode field."
-        )
+        raise EncoderException(f"Unknown field type: {field.data_type}, cannot encode field.")
 
     def decode_field(self, field: Field, value: bytes) -> FieldData:
         if decoder := self._decode_map.get(field.data_type):
             return FieldData.from_field(field, decoder(value))
-        raise EncoderException(
-            f"Unknown field type: {field.data_type}, cannot decode field."
-        )
+        raise EncoderException(f"Unknown field type: {field.data_type}, cannot decode field.")
 
     def convert_bytes_keys_dict(self, data: dict[bytes, Any]) -> dict[str, Any]:
-        return {
-            self._decode_string(cast(bytes, key)): self.convert_bytes_keys(value)
-            for key, value in data.items()
-        }
+        return {self._decode_string(cast(bytes, key)): self.convert_bytes_keys(value) for key, value in data.items()}
 
     def convert_bytes_keys(self, data: Any) -> Any:
         if isinstance(data, dict):

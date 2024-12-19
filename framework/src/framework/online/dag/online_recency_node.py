@@ -45,10 +45,8 @@ class OnlineRecencyNode(DefaultOnlineNode[RecencyNode, Vector], HasLength):
         storage_manager: StorageManager,
     ) -> None:
         super().__init__(node, parents, storage_manager)
-        self._embedding_transformation = (
-            TransformationFactory.create_embedding_transformation(
-                self.node.transformation_config
-            )
+        self._embedding_transformation = TransformationFactory.create_embedding_transformation(
+            self.node.transformation_config
         )
 
     @property
@@ -74,10 +72,7 @@ class OnlineRecencyNode(DefaultOnlineNode[RecencyNode, Vector], HasLength):
         parent_results: list[dict[OnlineNode, SingleEvaluationResult]],
         context: ExecutionContext,
     ) -> Sequence[Vector | None]:
-        return [
-            self._evaluate_single(parent_result, context)
-            for parent_result in parent_results
-        ]
+        return [self._evaluate_single(parent_result, context) for parent_result in parent_results]
 
     def _evaluate_single(
         self,

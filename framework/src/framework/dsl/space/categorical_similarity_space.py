@@ -119,9 +119,7 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
         )
         self.__category = SpaceFieldSet[list[str]](
             self,
-            set(
-                category_input if isinstance(category_input, list) else [category_input]
-            ),
+            set(category_input if isinstance(category_input, list) else [category_input]),
         )
         self._embedding_config = CategoricalSimilarityEmbeddingConfig(
             list[str],
@@ -129,9 +127,7 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
             uncategorized_as_category=uncategorized_as_category,
             negative_filter=negative_filter,
         )
-        self._transformation_config = self._init_transformation_config(
-            self._embedding_config
-        )
+        self._transformation_config = self._init_transformation_config(self._embedding_config)
 
         unchecked_category_node_map = {
             single_category: CategoricalSimilarityNode(
@@ -139,13 +135,10 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
                 transformation_config=self.transformation_config,
                 fields_for_identification=self.__category.fields,
             )
-            for single_category in (
-                category_input if isinstance(category_input, list) else [category_input]
-            )
+            for single_category in (category_input if isinstance(category_input, list) else [category_input])
         }
         self.__schema_node_map: dict[SchemaObject, EmbeddingNode[Vector, list[str]]] = {
-            schema_field.schema_obj: node
-            for schema_field, node in unchecked_category_node_map.items()
+            schema_field.schema_obj: node for schema_field, node in unchecked_category_node_map.items()
         }
 
     @property
@@ -160,17 +153,11 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
     ) -> TransformationConfig[Vector, list[str]]:
         aggregation_config = VectorAggregationConfig(Vector)
         normalization_config = L2NormConfig()
-        return TransformationConfig(
-            normalization_config, aggregation_config, embedding_config
-        )
+        return TransformationConfig(normalization_config, aggregation_config, embedding_config)
 
     @override
-    def _create_default_node(
-        self, schema: SchemaObject
-    ) -> EmbeddingNode[Vector, list[str]]:
-        return CategoricalSimilarityNode(
-            None, self.transformation_config, self.__category.fields, schema
-        )
+    def _create_default_node(self, schema: SchemaObject) -> EmbeddingNode[Vector, list[str]]:
+        return CategoricalSimilarityNode(None, self.transformation_config, self.__category.fields, schema)
 
     @property
     @override
@@ -184,21 +171,19 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
 
     @property
     @override
-    def annotation(self) -> str:
-        not_text_for_uncategorized = (
-            "" if self._embedding_config.uncategorized_as_category else " not"
-        )
+    def _annotation(self) -> str:
+        not_text_for_uncategorized = "" if self._embedding_config.uncategorized_as_category else " not"
         return f"""The space creates a one-hot encoding where its value can be one or more
         of {self._embedding_config.categories}.
         Other values do{not_text_for_uncategorized} have a separate other category,
         so these are{not_text_for_uncategorized} similar to each other.
         Not matching categories are creating {self._embedding_config.negative_filter}
         similarity contribution.
+        Affected fields: {self.space_field_set.field_names_text}.
         There has to be a .similar clause in the Query corresponding to this space.
         Negative weights mean similarity to anything but that category,
         positive weights mean similar to the categories in the .similar clause, 0 weight means insensitivity.
-        Larger positive weights increase the effect on similarity compared to other spaces. Space weights do not
-        matter if there is only 1 space in the query.
+        Larger positive weights increase the effect on similarity compared to other spaces.
         Accepts str or list[str] type input for a corresponding .similar clause input."""
 
     @property

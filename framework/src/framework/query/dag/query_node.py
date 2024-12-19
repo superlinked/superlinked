@@ -57,9 +57,7 @@ class QueryNode(ABC, Generic[NT, QueryEvaluationResultT]):
     ) -> QueryEvaluationResult[QueryEvaluationResultT]:
         pass
 
-    def _validate_evaluation_inputs(
-        self, inputs: Mapping[str, Sequence[QueryNodeInput]]
-    ) -> None:
+    def _validate_evaluation_inputs(self, inputs: Mapping[str, Sequence[QueryNodeInput]]) -> None:
         pass
 
     def _merge_inputs(

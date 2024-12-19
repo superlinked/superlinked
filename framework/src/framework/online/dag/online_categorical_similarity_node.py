@@ -34,9 +34,7 @@ from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
 
 
-class OnlineCategoricalSimilarityNode(
-    OnlineNode[CategoricalSimilarityNode, Vector], HasLength
-):
+class OnlineCategoricalSimilarityNode(OnlineNode[CategoricalSimilarityNode, Vector], HasLength):
     def __init__(
         self,
         node: CategoricalSimilarityNode,
@@ -44,10 +42,8 @@ class OnlineCategoricalSimilarityNode(
         storage_manager: StorageManager,
     ) -> None:
         super().__init__(node, parents, storage_manager)
-        self._embedding_transformation = (
-            TransformationFactory.create_embedding_transformation(
-                self.node.transformation_config
-            )
+        self._embedding_transformation = TransformationFactory.create_embedding_transformation(
+            self.node.transformation_config
         )
 
     @property
@@ -78,9 +74,7 @@ class OnlineCategoricalSimilarityNode(
                 result = Vector.init_zero_vector(self.node.length)
         else:
             input_: str | list[str] = (
-                cast(
-                    OnlineNode[Node[str | list[str]], str | list[str]], self.parents[0]
-                )
+                cast(OnlineNode[Node[str | list[str]], str | list[str]], self.parents[0])
                 .evaluate_next_single(parsed_schema, context)
                 .main.value
             )

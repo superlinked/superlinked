@@ -47,11 +47,7 @@ class InMemorySearch:
         filters: Sequence[ComparisonOperation[Field]],
         has_fields: Sequence[Field],
     ) -> Sequence[str]:
-        return [
-            row_id
-            for row_id, values in vdb.items()
-            if InMemorySearch._is_subset(values, filters, has_fields)
-        ]
+        return [row_id for row_id, values in vdb.items() if InMemorySearch._is_subset(values, filters, has_fields)]
 
     def knn_search(
         self,
@@ -90,8 +86,7 @@ class InMemorySearch:
         filtered_unchecked_vectors = {
             row_id: values[vector_field.name]
             for row_id, values in vdb.items()
-            if InMemorySearch._is_subset(values, filters or [])
-            and values.get(vector_field.name) is not None
+            if InMemorySearch._is_subset(values, filters or []) and values.get(vector_field.name) is not None
         }
         filtered_vectors = self._validate_filtered_vectors(
             filtered_unchecked_vectors,
@@ -103,17 +98,11 @@ class InMemorySearch:
         self, filtered_unchecked_vectors: dict[str, Any], vector: Vector
     ) -> dict[str, Vector]:
         if wrong_types := {
-            type(value)
-            for value in filtered_unchecked_vectors.values()
-            if not isinstance(value, Vector)
+            type(value) for value in filtered_unchecked_vectors.values() if not isinstance(value, Vector)
         }:
-            raise VectorFieldTypeException(
-                f"Indexed vector field contains non-vectors: {wrong_types}"
-            )
+            raise VectorFieldTypeException(f"Indexed vector field contains non-vectors: {wrong_types}")
         if wrong_dimensions := {
-            value.dimension
-            for value in filtered_unchecked_vectors.values()
-            if value.dimension != vector.dimension
+            value.dimension for value in filtered_unchecked_vectors.values() if value.dimension != vector.dimension
         }:
             raise VectorFieldDimensionException(
                 f"Indexed vector field contains vectors with wrong dimensions: {wrong_dimensions}"
@@ -128,9 +117,7 @@ class InMemorySearch:
     ) -> dict[str, float]:
         vector_similarity_calculator = VectorSimilarityCalculator(distance_metric)
         return {
-            row_id: vector_similarity_calculator.calculate_similarity(
-                filtered_vector, vector
-            )
+            row_id: vector_similarity_calculator.calculate_similarity(filtered_vector, vector)
             for row_id, filtered_vector in filtered_vectors.items()
         }
 
@@ -141,9 +128,7 @@ class InMemorySearch:
     ) -> Sequence[tuple[str, float]]:
         return sorted(
             {
-                k: similarity
-                for k, similarity in similarities.items()
-                if not radius or similarity >= (1 - radius)
+                k: similarity for k, similarity in similarities.items() if not radius or similarity >= (1 - radius)
             }.items(),
             key=lambda x: x[1],
             reverse=True,
@@ -161,12 +146,8 @@ class InMemorySearch:
         if not (filters or has_fields):
             return True
         grouped_filters = ComparisonOperation._group_filters_by_group_key(filters)
-        filters_evaluation = InMemorySearch._evaluate_grouped_filters(
-            grouped_filters, raw_entity
-        )
-        has_fields_evaluation = InMemorySearch._evaluate_has_fields(
-            has_fields, raw_entity
-        )
+        filters_evaluation = InMemorySearch._evaluate_grouped_filters(grouped_filters, raw_entity)
+        has_fields_evaluation = InMemorySearch._evaluate_has_fields(has_fields, raw_entity)
         return filters_evaluation and has_fields_evaluation
 
     @staticmethod
@@ -175,8 +156,7 @@ class InMemorySearch:
         entity: dict[str, Any],
     ) -> bool:
         return all(
-            InMemorySearch._evaluate_group(group, group_key, entity)
-            for group_key, group in grouped_filters.items()
+            InMemorySearch._evaluate_group(group, group_key, entity) for group_key, group in grouped_filters.items()
         )
 
     @staticmethod
@@ -186,13 +166,8 @@ class InMemorySearch:
         entity: dict[str, Any],
     ) -> bool:
         evaluate_func = all if group_key is None else any
-        return evaluate_func(
-            filter_.evaluate(entity.get(cast(Field, filter_._operand).name))
-            for filter_ in group
-        )
+        return evaluate_func(filter_.evaluate(entity.get(cast(Field, filter_._operand).name)) for filter_ in group)
 
     @staticmethod
-    def _evaluate_has_fields(
-        has_fields: Sequence[Field] | None, entity: dict[str, Any]
-    ) -> bool:
+    def _evaluate_has_fields(has_fields: Sequence[Field] | None, entity: dict[str, Any]) -> bool:
         return all(entity.get(field.name) is not None for field in has_fields or [])

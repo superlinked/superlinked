@@ -52,9 +52,7 @@ class EntityBuilder:
             self._storage_naming.generate_field_name_from_schema_field(schema_field),
         )
 
-    def convert_parsed_schema_field_to_field_data(
-        self, parsed_schema_field: ParsedSchemaField
-    ) -> FieldData:
+    def convert_parsed_schema_field_to_field_data(self, parsed_schema_field: ParsedSchemaField) -> FieldData:
         field = self.convert_schema_field_to_field(parsed_schema_field.schema_field)
         return FieldData.from_field(field, parsed_schema_field.value)
 
@@ -66,13 +64,9 @@ class EntityBuilder:
     ) -> EntityData:
         entity_id = self.compose_entity_id(schema_id, object_id)
         admin_field_data = list(self._admin_fields.create_header_field_data(entity_id))
-        return EntityData(
-            entity_id, {fd.name: fd for fd in (list(field_data) + admin_field_data)}
-        )
+        return EntityData(entity_id, {fd.name: fd for fd in (list(field_data) + admin_field_data)})
 
-    def compose_entity_data_from_parsed_schema(
-        self, parsed_schema: ParsedSchema
-    ) -> EntityData:
+    def compose_entity_data_from_parsed_schema(self, parsed_schema: ParsedSchema) -> EntityData:
         return self.compose_entity_data(
             parsed_schema.schema._base_class_name,
             parsed_schema.id_,
@@ -124,18 +118,14 @@ class EntityBuilder:
             field_name,
         )
 
-    def compose_field_data(
-        self, field_name: str, field_value: NodeDataTypes
-    ) -> FieldData:
+    def compose_field_data(self, field_name: str, field_value: NodeDataTypes) -> FieldData:
         return FieldData(
             FieldTypeConverter.convert_node_data_type(type(field_value)),
             field_name,
             field_value,
         )
 
-    def compose_field_data_from_node_data(
-        self, node_id: str, node_data: dict[str, Any]
-    ) -> Sequence[FieldData]:
+    def compose_field_data_from_node_data(self, node_id: str, node_data: dict[str, Any]) -> Sequence[FieldData]:
         return [
             FieldData(
                 FieldTypeConverter.convert_node_data_type(type(value)),

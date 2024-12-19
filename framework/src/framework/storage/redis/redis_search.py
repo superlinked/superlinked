@@ -37,9 +37,7 @@ class RedisSearch(Search[VDBKNNSearchParams, RedisQuery, dict[bytes, Any]]):
         self._query_builder = RedisQueryBuilder(encoder)
 
     @override
-    def build_query(
-        self, search_params: VDBKNNSearchParams, returned_fields: Sequence[Field]
-    ) -> RedisQuery:
+    def build_query(self, search_params: VDBKNNSearchParams, returned_fields: Sequence[Field]) -> RedisQuery:
         return self._query_builder.build_query(search_params, returned_fields)
 
     @override
@@ -48,6 +46,4 @@ class RedisSearch(Search[VDBKNNSearchParams, RedisQuery, dict[bytes, Any]]):
         index_config: IndexConfig,
         query: RedisQuery,
     ) -> dict[bytes, Any]:
-        return self._client.ft(index_config.index_name).search(
-            query.query, query_params=query.query_params
-        )
+        return self._client.ft(index_config.index_name).search(query.query, query_params=query.query_params)

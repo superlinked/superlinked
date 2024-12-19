@@ -31,9 +31,7 @@ class IndexConfig:
     index_params: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        self.__indexed_field_names = [
-            field_descriptor.field_name for field_descriptor in self.field_descriptors
-        ]
+        self.__indexed_field_names = [field_descriptor.field_name for field_descriptor in self.field_descriptors]
 
     @property
     def indexed_field_names(self) -> Sequence[str]:

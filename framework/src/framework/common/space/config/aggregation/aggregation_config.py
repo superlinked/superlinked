@@ -37,21 +37,15 @@ class VectorAggregationConfig(AggregationConfig[Vector]):
 
 
 @dataclass(frozen=True)
-class AvgAggregationConfig(
-    Generic[NumberAggregationInputT], AggregationConfig[NumberAggregationInputT]
-):
+class AvgAggregationConfig(Generic[NumberAggregationInputT], AggregationConfig[NumberAggregationInputT]):
     pass
 
 
 @dataclass(frozen=True)
-class MinAggregationConfig(
-    Generic[NumberAggregationInputT], AggregationConfig[NumberAggregationInputT]
-):
+class MinAggregationConfig(Generic[NumberAggregationInputT], AggregationConfig[NumberAggregationInputT]):
     pass
 
 
 @dataclass(frozen=True)
-class MaxAggregationConfig(
-    Generic[NumberAggregationInputT], AggregationConfig[NumberAggregationInputT]
-):
+class MaxAggregationConfig(Generic[NumberAggregationInputT], AggregationConfig[NumberAggregationInputT]):
     pass

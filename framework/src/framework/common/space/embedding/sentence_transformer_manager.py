@@ -34,9 +34,7 @@ logger = structlog.getLogger()
 class SentenceTransformerManager(ModelManager):
 
     @override
-    def _embed(
-        self, inputs: Sequence[str | Image]
-    ) -> list[list[float]] | list[np.ndarray]:
+    def _embed(self, inputs: Sequence[str | Image]) -> list[list[float]] | list[np.ndarray]:
         model = self._get_embedding_model(len(inputs))
 
         try:
@@ -44,12 +42,8 @@ class SentenceTransformerManager(ModelManager):
                 list(inputs),  # type: ignore[arg-type] # it also accepts Image
             )
         except RuntimeError as e:
-            if "The size of tensor a" in str(
-                e
-            ) and "must match the size of tensor b" in str(e):
-                longest_input_len = max(
-                    len(str(x)) if isinstance(x, str) else 0 for x in inputs
-                )
+            if "The size of tensor a" in str(e) and "must match the size of tensor b" in str(e):
+                longest_input_len = max(len(str(x)) if isinstance(x, str) else 0 for x in inputs)
                 raise EmbeddingException(
                     f"Model {self._model_name} failed to encode inputs - input was too long. "
                     "Try shortening the input text.\n"
@@ -65,12 +59,8 @@ class SentenceTransformerManager(ModelManager):
 
     @override
     def calculate_length(self) -> int:
-        return SentenceTransformerModelCache.calculate_length(
-            self._model_name, self._model_cache_dir
-        )
+        return SentenceTransformerModelCache.calculate_length(self._model_name, self._model_cache_dir)
 
     def _get_embedding_model(self, number_of_inputs: int) -> SentenceTransformer:
         device_type = GpuEmbeddingUtil.get_device_type(number_of_inputs)
-        return SentenceTransformerModelCache.initialize_model(
-            self._model_name, device_type, self._model_cache_dir
-        )
+        return SentenceTransformerModelCache.initialize_model(self._model_name, device_type, self._model_cache_dir)

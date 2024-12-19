@@ -82,9 +82,7 @@ class MongoDBQuery:
                 "$vectorSearch": {
                     "index": search_params.index_name,
                     "path": search_params.vector_field.name,
-                    "queryVector": self._encoder.encode_field(
-                        search_params.vector_field
-                    ),
+                    "queryVector": self._encoder.encode_field(search_params.vector_field),
                     "numCandidates": search_params.num_candidates,
                     "limit": search_params.limit,
                     "filter": filters,
@@ -95,39 +93,26 @@ class MongoDBQuery:
     def add_radius_filter_dict(self, radius: float | None) -> Self:
         if radius is None:
             return self
-        return self.__add_query_part(
-            {"$match": {VECTOR_SCORE_ALIAS: {"$gt": 1 - radius}}}
-        )
+        return self.__add_query_part({"$match": {VECTOR_SCORE_ALIAS: {"$gt": 1 - radius}}})
 
     def add_projection_dict(
         self,
         returned_fields: Sequence[Field],
     ) -> Self:
-        field_set_dict: dict[str, Any] = {
-            returned_field.name: 1 for returned_field in returned_fields
-        }
-        field_set_dict.update(
-            {"_id": 1, VECTOR_SCORE_ALIAS: {"$meta": "vectorSearchScore"}}
-        )
+        field_set_dict: dict[str, Any] = {returned_field.name: 1 for returned_field in returned_fields}
+        field_set_dict.update({"_id": 1, VECTOR_SCORE_ALIAS: {"$meta": "vectorSearchScore"}})
         return self.__add_query_part({"$project": field_set_dict})
 
-    def _get_filters_dict(
-        self, filters: Sequence[ComparisonOperation[Field]] | None
-    ) -> dict[str, Any]:
+    def _get_filters_dict(self, filters: Sequence[ComparisonOperation[Field]] | None) -> dict[str, Any]:
         if not filters:
             return {}
         grouped_filters = ComparisonOperation._group_filters_by_group_key(filters)
         filter_dicts_by_group = {
-            group_key: [
-                self._vdb_filters_to_dict(filter_)
-                for filter_ in self._compile_filters(filters)
-            ]
+            group_key: [self._vdb_filters_to_dict(filter_) for filter_ in self._compile_filters(filters)]
             for group_key, filters in grouped_filters.items()
         }
         if len(filter_dicts_by_group) == 1:
-            filter_dicts: list[dict[str, Any]] = next(
-                iter(filter_dicts_by_group.values())
-            )
+            filter_dicts: list[dict[str, Any]] = next(iter(filter_dicts_by_group.values()))
             return filter_dicts[0] if len(filter_dicts) == 1 else {"$and": filter_dicts}
         return {
             "$and": [
@@ -136,9 +121,7 @@ class MongoDBQuery:
             ]
         }
 
-    def _compile_filters(
-        self, filters: Sequence[ComparisonOperation[Field]]
-    ) -> Sequence[VDBFilter]:
+    def _compile_filters(self, filters: Sequence[ComparisonOperation[Field]]) -> Sequence[VDBFilter]:
         contains_all_filters = []
         other_filters = []
 
@@ -154,10 +137,7 @@ class MongoDBQuery:
             for value in cast(Iterable, contains_filter._other)
         ]
 
-        return [
-            self._compile_filter(filter_)
-            for filter_ in other_filters + split_contains_filters
-        ]
+        return [self._compile_filter(filter_) for filter_ in other_filters + split_contains_filters]
 
     def _compile_filter(self, filter_: ComparisonOperation[Field]) -> VDBFilter:
         field_value = (
@@ -167,9 +147,7 @@ class MongoDBQuery:
         )
         return VDBFilter(cast(Field, filter_._operand), field_value, filter_._op)
 
-    def _encode_iterable_field(
-        self, operand: ComparisonOperand, other: Any
-    ) -> list[MongoDBEncodedTypes]:
+    def _encode_iterable_field(self, operand: ComparisonOperand, other: Any) -> list[MongoDBEncodedTypes]:
         other = self._get_other_as_sequence(other)
         return [self._encode_field(operand, other) for other in other]
 
@@ -178,23 +156,13 @@ class MongoDBQuery:
             return cast(Sequence, other)
         return [other]
 
-    def _encode_field(
-        self, operand: ComparisonOperand, other: object
-    ) -> MongoDBEncodedTypes:
-        return self._encoder.encode_field(
-            FieldData.from_field(cast(Field, operand), other)
-        )
+    def _encode_field(self, operand: ComparisonOperand, other: object) -> MongoDBEncodedTypes:
+        return self._encoder.encode_field(FieldData.from_field(cast(Field, operand), other))
 
     @staticmethod
     def _vdb_filters_to_dict(
         vdb_filter: VDBFilter,
     ) -> dict[str, dict[str, Any]]:
         if vdb_filter.op not in SUPPORTED_FILTER_DICT:
-            raise NotImplementedError(
-                f"Unsupported filter operation type: {vdb_filter.op.value}"
-            )
-        return {
-            vdb_filter.field.name: {
-                SUPPORTED_FILTER_DICT[vdb_filter.op]: vdb_filter.field_value
-            }
-        }
+            raise NotImplementedError(f"Unsupported filter operation type: {vdb_filter.op.value}")
+        return {vdb_filter.field.name: {SUPPORTED_FILTER_DICT[vdb_filter.op]: vdb_filter.field_value}}

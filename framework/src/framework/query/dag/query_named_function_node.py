@@ -30,12 +30,8 @@ from superlinked.framework.query.dag.query_node import QueryNode
 from superlinked.framework.query.query_node_input import QueryNodeInput
 
 
-class QueryNamedFunctionNode(
-    QueryNode[NamedFunctionNode[NodeDataT], NodeDataT], Generic[NodeDataT]
-):
-    def __init__(
-        self, node: NamedFunctionNode[NodeDataT], parents: Sequence[QueryNode]
-    ) -> None:
+class QueryNamedFunctionNode(QueryNode[NamedFunctionNode[NodeDataT], NodeDataT], Generic[NodeDataT]):
+    def __init__(self, node: NamedFunctionNode[NodeDataT], parents: Sequence[QueryNode]) -> None:
         super().__init__(node, parents)
 
     @override

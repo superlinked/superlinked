@@ -63,9 +63,7 @@ class MongoDBVectorDatabase(VectorDatabase[MongoDBVDBConnector]):
         self._connection_params = MongoDBConnectionParams(
             host,
             db_name,
-            MongoDBAdminParams(
-                cluster_name, project_id, admin_api_user, admin_api_password
-            ),
+            MongoDBAdminParams(cluster_name, project_id, admin_api_user, admin_api_password),
             **extra_params
         )
         self._settings = VDBSettings(default_query_limit)

@@ -44,10 +44,6 @@ class AggregationFactory:
     def create_aggregation(
         aggregation_config: AggregationConfig[AggregationInputT],
     ) -> Aggregation[AggregationInputT]:
-        if aggregation_class := AGGREGATION_BY_CONFIG_CLASS.get(
-            type(aggregation_config)
-        ):
+        if aggregation_class := AGGREGATION_BY_CONFIG_CLASS.get(type(aggregation_config)):
             return aggregation_class(aggregation_config)
-        raise ValueError(
-            f"Unknown aggregation config type: {type(aggregation_config).__name__}"
-        )
+        raise ValueError(f"Unknown aggregation config type: {type(aggregation_config).__name__}")

@@ -48,9 +48,7 @@ class RedisFieldDescriptorCompiler:
             field
             for field in [
                 RedisFieldDescriptorCompiler._compile_descriptor(field_descriptor)
-                for field_descriptor in (
-                    [vector_field_descriptor] + list(field_descriptors)
-                )
+                for field_descriptor in ([vector_field_descriptor] + list(field_descriptors))
             ]
             if field is not None
         ]
@@ -69,13 +67,9 @@ class RedisFieldDescriptorCompiler:
                     {
                         "TYPE": coordinate_type,
                         "DIM": field_descriptor.field_size,
-                        "DISTANCE_METRIC": DistanceMetricMap[
-                            field_descriptor.distance_metric
-                        ],
+                        "DISTANCE_METRIC": DistanceMetricMap[field_descriptor.distance_metric],
                     },
                 )
-        elif redis_field_cls := RedisFieldTypeByFieldDataType.get(
-            field_descriptor.field_data_type
-        ):
+        elif redis_field_cls := RedisFieldTypeByFieldDataType.get(field_descriptor.field_data_type):
             return redis_field_cls(field_descriptor.field_name, sortable=True)
         return None

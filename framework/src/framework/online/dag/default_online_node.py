@@ -46,17 +46,14 @@ class DefaultOnlineNode(OnlineNode[NT, NodeDataT], ABC, Generic[NT, NodeDataT]):
 
         parent_results = self.__get_parent_results(parsed_schemas, context)
         main_inputs: list[ParentResults] = [
-            {node: result.main for node, result in parent_result.items()}
-            for parent_result in parent_results
+            {node: result.main for node, result in parent_result.items()} for parent_result in parent_results
         ]
 
         mains: list[SingleEvaluationResult] = self._get_single_evaluation_results(
             self._evaluate_single_with_fallback(parsed_schemas, context, main_inputs)
         )
-        chunk_results_per_parsed_schema: list[list[NodeDataT]] = (
-            self.__get_chunk_results_per_parsed_schema(
-                parsed_schemas, context, parent_results
-            )
+        chunk_results_per_parsed_schema: list[list[NodeDataT]] = self.__get_chunk_results_per_parsed_schema(
+            parsed_schemas, context, parent_results
         )
         return [
             EvaluationResult(
@@ -79,31 +76,21 @@ class DefaultOnlineNode(OnlineNode[NT, NodeDataT], ABC, Generic[NT, NodeDataT]):
         chunked_parent_results = self.__filter_chunked_parent_results(parent_results)
         chunk_inputs_per_parsed_schema: list[list[ParentResults]] = [
             [
-                self.__get_chunk_input(
-                    parent_results[i], chunked_parent, chunked_result
-                )
+                self.__get_chunk_input(parent_results[i], chunked_parent, chunked_result)
                 for chunked_parent, chunked_results in chunked_parent_results[i].items()
                 for chunked_result in chunked_results.chunks
             ]
             for i in range(batch_size)
         ]
-        chunks_per_parsed_schema: list[list[NodeDataT]] = [
-            [] for i in range(batch_size)
-        ]
-        for batched_inputs in self.__batch_chunk_inputs_by_size(
-            chunk_inputs_per_parsed_schema, batch_size
-        ):
+        chunks_per_parsed_schema: list[list[NodeDataT]] = [[] for i in range(batch_size)]
+        for batched_inputs in self.__batch_chunk_inputs_by_size(chunk_inputs_per_parsed_schema, batch_size):
             chunked_batched_parent_results: list[ParentResults] = [
                 batched_input.input_ for batched_input in batched_inputs
             ]
-            batch_results = self._evaluate_single_with_fallback(
-                parsed_schemas, context, chunked_batched_parent_results
-            )
+            batch_results = self._evaluate_single_with_fallback(parsed_schemas, context, chunked_batched_parent_results)
 
             for batched_input, batch_result in zip(batched_inputs, batch_results):
-                chunks_per_parsed_schema[batched_input.parsed_schema_index].append(
-                    batch_result
-                )
+                chunks_per_parsed_schema[batched_input.parsed_schema_index].append(batch_result)
         return chunks_per_parsed_schema
 
     def __batch_chunk_inputs_by_size(
@@ -125,9 +112,7 @@ class DefaultOnlineNode(OnlineNode[NT, NodeDataT], ABC, Generic[NT, NodeDataT]):
             result.append(current_batch)
         return result
 
-    def _get_single_evaluation_results(
-        self, values: list[NodeDataT]
-    ) -> list[SingleEvaluationResult[NodeDataT]]:
+    def _get_single_evaluation_results(self, values: list[NodeDataT]) -> list[SingleEvaluationResult[NodeDataT]]:
         return [self._get_single_evaluation_result(value) for value in values]
 
     def __get_parent_results(
@@ -135,13 +120,9 @@ class DefaultOnlineNode(OnlineNode[NT, NodeDataT], ABC, Generic[NT, NodeDataT]):
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
     ) -> list[dict[OnlineNode, EvaluationResult]]:
-        inverse_parent_results = {
-            parent: parent.evaluate_next(parsed_schemas, context)
-            for parent in self.parents
-        }
+        inverse_parent_results = {parent: parent.evaluate_next(parsed_schemas, context) for parent in self.parents}
         return [
-            {parent: inverse_parent_results[parent][i] for parent in self.parents}
-            for i in range(len(parsed_schemas))
+            {parent: inverse_parent_results[parent][i] for parent in self.parents} for i in range(len(parsed_schemas))
         ]
 
     def __filter_chunked_parent_results(
@@ -149,11 +130,7 @@ class DefaultOnlineNode(OnlineNode[NT, NodeDataT], ABC, Generic[NT, NodeDataT]):
         parent_results: list[dict[OnlineNode, EvaluationResult]],
     ) -> list[dict[OnlineNode, EvaluationResult]]:
         return [
-            {
-                parent: result
-                for parent, result in parent_result_dict.items()
-                if result.chunks
-            }
+            {parent: result for parent, result in parent_result_dict.items() if result.chunks}
             for parent_result_dict in parent_results
         ]
 
@@ -164,9 +141,7 @@ class DefaultOnlineNode(OnlineNode[NT, NodeDataT], ABC, Generic[NT, NodeDataT]):
         chunked_result: SingleEvaluationResult,
     ) -> ParentResults:
         input_parent_results = {
-            parent: result.main
-            for parent, result in parent_results.items()
-            if parent.node_id != chunked_parent.node_id
+            parent: result.main for parent, result in parent_results.items() if parent.node_id != chunked_parent.node_id
         }
         input_parent_results[chunked_parent] = chunked_result
         return input_parent_results
@@ -179,11 +154,7 @@ class DefaultOnlineNode(OnlineNode[NT, NodeDataT], ABC, Generic[NT, NodeDataT]):
     ) -> list[NodeDataT]:
         single_result_all = self._evaluate_singles(parent_results, context)
         return [
-            (
-                single_result
-                if single_result is not None
-                else self.get_fallback_result(parsed_schemas[i])
-            )
+            (single_result if single_result is not None else self.get_fallback_result(parsed_schemas[i]))
             for i, single_result in enumerate(single_result_all)
         ]
 

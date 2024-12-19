@@ -34,11 +34,7 @@ class BlobHandlerSubscriber(Subscriber[ParsedSchema]):
 
     def update(self, messages: Sequence[ParsedSchema]) -> None:
         for message in messages:
-            blob_fields = [
-                field
-                for field in message.fields
-                if isinstance(field.schema_field, Blob)
-            ]
+            blob_fields = [field for field in message.fields if isinstance(field.schema_field, Blob)]
             for blob_field in blob_fields:
                 object_path = BlobIdGenerator.generate_id_with_path(
                     message.schema._schema_name,
@@ -54,6 +50,4 @@ class BlobHandlerSubscriber(Subscriber[ParsedSchema]):
                     continue
                 metadata = self.__blob_handler.calculate_metadata(blob_info)
 
-                self.__blob_handler.upload(
-                    object_path, base64.b64decode(blob_info.data), metadata
-                )
+                self.__blob_handler.upload(object_path, base64.b64decode(blob_info.data), metadata)

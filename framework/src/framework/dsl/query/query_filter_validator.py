@@ -30,25 +30,15 @@ from superlinked.framework.dsl.query.param import Param
 class QueryFilterValidator:
 
     @staticmethod
-    def validate_operation_operand_type(
-        comparison_operation: ComparisonOperation, allow_param: bool
-    ) -> None:
-        expected_type = GenericClassUtil.get_single_generic_type(
-            comparison_operation._operand
-        )
+    def validate_operation_operand_type(comparison_operation: ComparisonOperation, allow_param: bool) -> None:
+        expected_type = GenericClassUtil.get_single_generic_type(comparison_operation._operand)
         if comparison_operation._op in LIST_TYPE_COMPATIBLE_TYPES:
-            QueryFilterValidator._validate_list_type(
-                comparison_operation, expected_type, allow_param
-            )
+            QueryFilterValidator._validate_list_type(comparison_operation, expected_type, allow_param)
         else:
-            QueryFilterValidator._validate_single_type(
-                comparison_operation, expected_type, allow_param
-            )
+            QueryFilterValidator._validate_single_type(comparison_operation, expected_type, allow_param)
 
     @staticmethod
-    def _validate_list_type(
-        comparison_operation: ComparisonOperation, expected_type: Any, allow_param: bool
-    ) -> None:
+    def _validate_list_type(comparison_operation: ComparisonOperation, expected_type: Any, allow_param: bool) -> None:
         other = comparison_operation._other
         if allow_param and isinstance(other, Param):
             return
@@ -56,9 +46,7 @@ class QueryFilterValidator:
         # Map to base type for list-type fields - list[str] -> str
         if isinstance(expected_type(), list) and TypeValidator.is_sequence_safe(other):
             expected_type = expected_type.__args__[0]
-            TypeValidator.validate_list_item_type(
-                other, expected_type, "filter operand"
-            )
+            TypeValidator.validate_list_item_type(other, expected_type, "filter operand")
 
     @staticmethod
     def _validate_single_type(
@@ -71,12 +59,7 @@ class QueryFilterValidator:
 
         if not isinstance(comparison_operation._other, expected_type):
             allowed_types_text = " or ".join(
-                [
-                    allowed_type.__name__
-                    for allowed_type in (
-                        [expected_type] + ([Param] if allow_param else [])
-                    )
-                ]
+                [allowed_type.__name__ for allowed_type in ([expected_type] + ([Param] if allow_param else []))]
             )
             unsupported_type_text = type(comparison_operation._other).__name__
             raise QueryException(

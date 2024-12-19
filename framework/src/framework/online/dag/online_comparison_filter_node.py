@@ -46,9 +46,7 @@ class OnlineComparisonFilterNode(DefaultOnlineNode[ComparisonFilterNode, bool]):
         parent_results: list[dict[OnlineNode, SingleEvaluationResult]],
         context: ExecutionContext,
     ) -> Sequence[bool | None]:
-        return [
-            self._evaluate_single(parent_result) for parent_result in parent_results
-        ]
+        return [self._evaluate_single(parent_result) for parent_result in parent_results]
 
     def _evaluate_single(
         self,

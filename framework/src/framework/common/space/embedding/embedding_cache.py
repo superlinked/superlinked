@@ -32,10 +32,7 @@ class CacheInformation:
         new_index = 0
         item_count = len(self.existing_vectors) + len(self.inputs_to_embed)
         for i in range(item_count):
-            if (
-                existing_index < len(self.found_indices)
-                and self.found_indices[existing_index] == i
-            ):
+            if existing_index < len(self.found_indices) and self.found_indices[existing_index] == i:
                 vectors.append(self.existing_vectors[existing_index])
                 existing_index += 1
             else:
@@ -66,9 +63,7 @@ class EmbeddingCache:
                 found_indices.append(i)
         return CacheInformation(inputs_to_embed, found_indices, existing_vectors)
 
-    def update(
-        self, inputs_to_embed: Sequence[str], uncached_vectors: Sequence[Vector]
-    ) -> None:
+    def update(self, inputs_to_embed: Sequence[str], uncached_vectors: Sequence[Vector]) -> None:
         if self._cache_size == 0:
             return
         if not inputs_to_embed:

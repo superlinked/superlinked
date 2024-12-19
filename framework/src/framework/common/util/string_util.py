@@ -23,22 +23,10 @@ class StringUtil:
     def sort_and_serialize(dict_to_serialize: dict[str, Any]) -> str:
         def get_string_recursively(input_data: Any, outermost: bool = False) -> str:
             if isinstance(input_data, dict):
-                string_values = [
-                    f"{key}={get_string_recursively(value)}"
-                    for key, value in sorted(input_data.items())
-                ]
-                return (
-                    ", ".join(string_values)
-                    if outermost
-                    else "{" + ", ".join(string_values) + "}"
-                )
+                string_values = [f"{key}={get_string_recursively(value)}" for key, value in sorted(input_data.items())]
+                return ", ".join(string_values) if outermost else "{" + ", ".join(string_values) + "}"
             if isinstance(input_data, (set, list, tuple, frozenset)):
-                values = ", ".join(
-                    [
-                        get_string_recursively(element)
-                        for element in sorted(input_data, key=str)
-                    ]
-                )
+                values = ", ".join([get_string_recursively(element) for element in sorted(input_data, key=str)])
                 return f"[{values}]"
             return str(input_data)
 

@@ -22,9 +22,7 @@ SourceT = TypeVar("SourceT", bound="Source")
 
 
 class Source(Generic[IdSchemaObjectT, SourceTypeT]):
-    def __init__(
-        self, schema: IdSchemaObjectT, parser: DataParser[IdSchemaObjectT, SourceTypeT]
-    ) -> None:
+    def __init__(self, schema: IdSchemaObjectT, parser: DataParser[IdSchemaObjectT, SourceTypeT]) -> None:
         self._schema = schema
         self._parser: DataParser[IdSchemaObjectT, SourceTypeT] = parser
 

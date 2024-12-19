@@ -90,9 +90,7 @@ class MatchValueFilter(QdrantFilter):
                 + f"{MatchValue.__name__}, got {type(filter_._other)}"
             )
         return MatchValue(
-            value=encoder.encode_field(
-                FieldData.from_field(cast(Field, filter_._operand), filter_._other)
-            )
+            value=encoder.encode_field(FieldData.from_field(cast(Field, filter_._operand), filter_._other))
         )
 
 
@@ -111,26 +109,15 @@ class MatchAnyFilter(QdrantFilter):
             )
         ]
 
-    def _encode_match_any_filter(
-        self, filter_: ComparisonOperation[Field], encoder: QdrantFieldEncoder
-    ) -> MatchAny:
+    def _encode_match_any_filter(self, filter_: ComparisonOperation[Field], encoder: QdrantFieldEncoder) -> MatchAny:
         other = filter_._other if isinstance(filter_._other, list) else [filter_._other]
-        if invalid_any := [
-            type(o).__name__
-            for o in other
-            if not isinstance(other, MatchAnyFilter.valid_types)
-        ]:
+        if invalid_any := [type(o).__name__ for o in other if not isinstance(other, MatchAnyFilter.valid_types)]:
             raise ValueError(
                 f"Qdrant only supports {self.valid_types_string(MatchAnyFilter.valid_types)} "
                 + f"{MatchAny.__name__}, got {invalid_any}"
             )
         return MatchAny(
-            any=[
-                encoder.encode_field(
-                    FieldData.from_field(cast(Field, filter_._operand), o)
-                )
-                for o in other
-            ]
+            any=[encoder.encode_field(FieldData.from_field(cast(Field, filter_._operand), o)) for o in other]
         )
 
 
@@ -155,18 +142,14 @@ class MatchRangeFilter(QdrantFilter):
             )
         ]
 
-    def _encode_range_filter(
-        self, filter_: ComparisonOperation[Field], encoder: QdrantFieldEncoder
-    ) -> Range:
+    def _encode_range_filter(self, filter_: ComparisonOperation[Field], encoder: QdrantFieldEncoder) -> Range:
         if not isinstance(filter_._other, MatchRangeFilter.valid_types):
             raise ValueError(
                 f"Qdrant only supports {self.valid_types_string(MatchRangeFilter.valid_types)} "
                 + f"{MatchValue.__name__}, got {type(filter_._other)}"
             )
         range_args = {
-            MatchRangeFilter.range_arg_name_by_op_type[
-                filter_._op
-            ]: encoder.encode_field(
+            MatchRangeFilter.range_arg_name_by_op_type[filter_._op]: encoder.encode_field(
                 FieldData.from_field(cast(Field, filter_._operand), filter_._other)
             )
         }

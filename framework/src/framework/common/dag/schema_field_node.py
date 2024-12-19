@@ -21,9 +21,7 @@ from superlinked.framework.common.schema.schema_object import SFT, SchemaField
 
 
 class SchemaFieldNode(Generic[SFT], Node[SFT]):
-    def __init__(
-        self, schema_field: SchemaField[SFT], dag_effects: set[DagEffect] | None = None
-    ) -> None:
+    def __init__(self, schema_field: SchemaField[SFT], dag_effects: set[DagEffect] | None = None) -> None:
         super().__init__(
             schema_field.type_,
             [],

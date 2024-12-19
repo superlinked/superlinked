@@ -50,9 +50,7 @@ class OnlineNamedFunctionNode(OnlineNode[NamedFunctionNode[NodeDataT], NodeDataT
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
     ) -> list[EvaluationResult[NodeDataT]]:
-        result = EvaluationResult(
-            self._get_single_evaluation_result(self._evaluate_single(context))
-        )
+        result = EvaluationResult(self._get_single_evaluation_result(self._evaluate_single(context)))
         return [result] * len(parsed_schemas)
 
     def _evaluate_single(

@@ -58,15 +58,11 @@ class EffectWithReferencedSchemaObject(Generic[AggregationInputT, EmbeddingInput
         )
 
     @classmethod
-    def from_base_effect(
-        cls, base_effect: Effect, schemas: set[SchemaObject]
-    ) -> EffectWithReferencedSchemaObject:
+    def from_base_effect(cls, base_effect: Effect, schemas: set[SchemaObject]) -> EffectWithReferencedSchemaObject:
         (
             resolved_affected_schema_reference,
             resolved_affecting_schema_reference,
-        ) = EffectWithReferencedSchemaObject._init_resolved_schema_reference_fields(
-            base_effect, schemas
-        )
+        ) = EffectWithReferencedSchemaObject._init_resolved_schema_reference_fields(base_effect, schemas)
         event_schema = EffectWithReferencedSchemaObject._get_event_schema(
             resolved_affected_schema_reference,
             resolved_affecting_schema_reference,
@@ -82,16 +78,12 @@ class EffectWithReferencedSchemaObject(Generic[AggregationInputT, EmbeddingInput
     def _init_resolved_schema_reference_fields(
         effect: Effect, schemas: set[SchemaObject]
     ) -> tuple[ResolvedSchemaReference, ResolvedSchemaReference]:
-        resolved_affected_schema_reference = (
-            EffectWithReferencedSchemaObject._get_resolved_schema_reference(
-                effect.affected_schema_reference, schemas
-            )
+        resolved_affected_schema_reference = EffectWithReferencedSchemaObject._get_resolved_schema_reference(
+            effect.affected_schema_reference, schemas
         )
-        resolved_affecting_schema_reference = (
-            EffectWithReferencedSchemaObject._get_resolved_schema_reference(
-                effect.affecting_schema_reference,
-                schemas,
-            )
+        resolved_affecting_schema_reference = EffectWithReferencedSchemaObject._get_resolved_schema_reference(
+            effect.affecting_schema_reference,
+            schemas,
         )
         return (resolved_affected_schema_reference, resolved_affecting_schema_reference)
 
@@ -123,12 +115,8 @@ class EffectWithReferencedSchemaObject(Generic[AggregationInputT, EmbeddingInput
         (
             schema_reference,
             reference_multiplier,
-        ) = EffectWithReferencedSchemaObject._get_reference_and_multiplier(
-            unchecked_schema_reference
-        )
-        schema = EffectWithReferencedSchemaObject._get_schema_object_for_reference(
-            schema_reference, schemas
-        )
+        ) = EffectWithReferencedSchemaObject._get_reference_and_multiplier(unchecked_schema_reference)
+        schema = EffectWithReferencedSchemaObject._get_schema_object_for_reference(schema_reference, schemas)
         return ResolvedSchemaReference(
             schema,
             schema_reference,
@@ -146,9 +134,7 @@ class EffectWithReferencedSchemaObject(Generic[AggregationInputT, EmbeddingInput
         )
         multiplier = unchecked_schema_reference.multiplier
         if multiplier == 0:
-            raise InitializationException(
-                "SchemaReference cannot have 0 (zero) as its multiplier."
-            )
+            raise InitializationException("SchemaReference cannot have 0 (zero) as its multiplier.")
         return (result_schema_reference, multiplier)
 
     @staticmethod
@@ -156,11 +142,7 @@ class EffectWithReferencedSchemaObject(Generic[AggregationInputT, EmbeddingInput
         schema_reference: SchemaReference, schemas: set[SchemaObject]
     ) -> IdSchemaObject:
         schema_ = next(
-            (
-                schema_
-                for schema_ in schemas
-                if isinstance(schema_, schema_reference._referenced_schema)
-            ),
+            (schema_ for schema_ in schemas if isinstance(schema_, schema_reference._referenced_schema)),
             None,
         )
         if schema_ is None:

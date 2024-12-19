@@ -43,14 +43,11 @@ class CompiledNodeRegistry(Generic[CompiledNodeT]):
         self._compiled_node_type_by_node_type = dict[type[Node], type[CompiledNodeT]]()
         self._base_node_type = base_node_type
         self._compiled_node_type_by_node_type = {
-            CompiledNodeRegistry.get_node_type(node, base_node_type): node
-            for node in default_node_types or []
+            CompiledNodeRegistry.get_node_type(node, base_node_type): node for node in default_node_types or []
         }
 
     @staticmethod
-    def get_node_type(
-        node_type: type[CompiledNodeT], base_node_type: type[CompiledNodeT]
-    ) -> type[Node]:
+    def get_node_type(node_type: type[CompiledNodeT], base_node_type: type[CompiledNodeT]) -> type[Node]:
         """
         Checks if CompiledNodeT child implements CompiledNodeT containing Node child Generic type.
         If yes, returns that Node child type.
@@ -64,13 +61,9 @@ class CompiledNodeRegistry(Generic[CompiledNodeT]):
                     origin = getattr(arg, "__origin__", None)
                     if origin and issubclass(origin, Node):
                         return origin
-        raise NotImplementedException(
-            f"Node type not found for {base_node_type.__name__}."
-        )
+        raise NotImplementedException(f"Node type not found for {base_node_type.__name__}.")
 
-    def register_node(
-        self, node: type[Node], compiled_node: type[CompiledNodeT]
-    ) -> None:
+    def register_node(self, node: type[Node], compiled_node: type[CompiledNodeT]) -> None:
         self._compiled_node_type_by_node_type[node] = compiled_node
 
     def register_node_by_path(self, node_path: str, compiled_node_path: str) -> None:
@@ -81,24 +74,16 @@ class CompiledNodeRegistry(Generic[CompiledNodeT]):
         )
         self._compiled_node_type_by_node_type[node_class] = compiled_node_class
 
-    def __import_node_class(
-        self, path: str, expected_class: type[ImportedNodeT]
-    ) -> type[ImportedNodeT]:
+    def __import_node_class(self, path: str, expected_class: type[ImportedNodeT]) -> type[ImportedNodeT]:
         node_class = locate(path)
         if not isinstance(node_class, type):
             raise ValueError(f"Not a valid class path: {path}")
         if not issubclass(node_class, expected_class):
-            raise ValueError(
-                f"Not {expected_class.__name__} type: {node_class.__name__}"
-            )
+            raise ValueError(f"Not {expected_class.__name__} type: {node_class.__name__}")
         return cast(type[ImportedNodeT], node_class)
 
-    def init_compiled_node(
-        self, node: Node, parents: Sequence[CompiledNodeT], *args: Any
-    ) -> CompiledNodeT:
+    def init_compiled_node(self, node: Node, parents: Sequence[CompiledNodeT], *args: Any) -> CompiledNodeT:
         compiled_node_class = self._compiled_node_type_by_node_type.get(type(node))
         if compiled_node_class is None:
-            raise NotImplementedException(
-                f"Not implemented Node type: {type(node).__name__}"
-            )
+            raise NotImplementedException(f"Not implemented Node type: {type(node).__name__}")
         return compiled_node_class(node, parents, *args)  # type: ignore

@@ -56,9 +56,7 @@ from superlinked.framework.dsl.space.space import Space
 logger = structlog.getLogger()
 
 ValidatedSpaceList = Annotated[list[Space], TypeValidator.list_validator(Space)]
-ValidatedSchemaFieldList = Annotated[
-    list[SchemaField], TypeValidator.list_validator(SchemaField)
-]
+ValidatedSchemaFieldList = Annotated[list[SchemaField], TypeValidator.list_validator(SchemaField)]
 ValidatedEffectList = Annotated[list[Effect], TypeValidator.list_validator(Effect)]
 
 
@@ -106,22 +104,16 @@ class Index:  # pylint: disable=too-many-instance-attributes
         Raises:
             InitializationException: If no spaces are provided.
         """
-        event_modifier = EffectModifier(
-            max_age, max_count, temperature, event_influence, time_decay_floor
-        )
+        event_modifier = EffectModifier(max_age, max_count, temperature, event_influence, time_decay_floor)
         self.__spaces = self.__init_spaces(spaces)
         self.__space_schemas = self.__init_node_schemas(self.__spaces)
         self.__fields = self.__init_fields(fields)
         effects_with_schema = self.__init_effects_with_schema(effects, self.__spaces)
         self.__effect_schemas = self.__init_effect_schemas(effects_with_schema)
-        self.__node = self.__init_index_node(
-            self.__spaces, effects_with_schema, event_modifier
-        )
+        self.__node = self.__init_index_node(self.__spaces, effects_with_schema, event_modifier)
         self.__dag_effects = self.__init_dag_effects(effects_with_schema)
         self.__dag = self.__init_dag(self.__node, self.__dag_effects)
-        self.__schema_type_schema_mapper = self.__init_schema_type_schema_mapper(
-            effects_with_schema
-        )
+        self.__schema_type_schema_mapper = self.__init_schema_type_schema_mapper(effects_with_schema)
         self._logger = logger.bind(
             node_id=self._node_id,
             space_ids=[hash(space) for space in self._spaces],
@@ -211,9 +203,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
             if not (schema in seen or seen_add(schema))
         ]
 
-    def __init_fields(
-        self, fields: SchemaField | Sequence[SchemaField] | None
-    ) -> Sequence[SchemaField]:
+    def __init_fields(self, fields: SchemaField | Sequence[SchemaField] | None) -> Sequence[SchemaField]:
         if fields is None:
             return []
         if not isinstance(fields, Sequence):
@@ -229,34 +219,22 @@ class Index:  # pylint: disable=too-many-instance-attributes
             effects = [effects]
         self.__validate_effects(effects, spaces)
         return [
-            EffectWithReferencedSchemaObject.from_base_effect(
-                effect, set(self.__space_schemas)
-            )
-            for effect in effects
+            EffectWithReferencedSchemaObject.from_base_effect(effect, set(self.__space_schemas)) for effect in effects
         ]
 
-    def __init_effect_schemas(
-        self, effects: list[EffectWithReferencedSchemaObject]
-    ) -> list[EventSchemaObject]:
+    def __init_effect_schemas(self, effects: list[EffectWithReferencedSchemaObject]) -> list[EventSchemaObject]:
         seen = set[EventSchemaObject]()
         seen_add = seen.add
         return [
             effect_with_schema.event_schema
             for effect_with_schema in effects
-            if not (
-                effect_with_schema.event_schema in seen
-                or seen_add(effect_with_schema.event_schema)
-            )
+            if not (effect_with_schema.event_schema in seen or seen_add(effect_with_schema.event_schema))
         ]
 
     def __validate_effects(self, effects: list[Effect], spaces: list[Space]) -> None:
-        invalid_space_effects = [
-            effect for effect in effects if effect.space not in spaces
-        ]
+        invalid_space_effects = [effect for effect in effects if effect.space not in spaces]
         if invalid_space_effects:
-            raise ValidationException(
-                f"Effects must work on the Index's spaces, got ({invalid_space_effects})"
-            )
+            raise ValidationException(f"Effects must work on the Index's spaces, got ({invalid_space_effects})")
 
     def __init_index_node(
         self,
@@ -267,10 +245,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
         index_parents = set[Node[Vector]]()
         for schema in self.__space_schemas:
             parents = [
-                self.__init_parent_for_index_or_aggregation(
-                    space, schema, effects, effect_modifier
-                )
-                for space in spaces
+                self.__init_parent_for_index_or_aggregation(space, schema, effects, effect_modifier) for space in spaces
             ]
             if len(spaces) == 1:
                 index_parents.update(parents)
@@ -278,9 +253,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
                 index_parents.add(ConcatenationNode(parents))
         return IndexNode(index_parents)
 
-    def __init_dag_effects(
-        self, effects_with_schema: list[EffectWithReferencedSchemaObject]
-    ) -> set[DagEffect]:
+    def __init_dag_effects(self, effects_with_schema: list[EffectWithReferencedSchemaObject]) -> set[DagEffect]:
         return {effect.dag_effect for effect in effects_with_schema}
 
     def __init_parent_for_index_or_aggregation(
@@ -297,12 +270,8 @@ class Index:  # pylint: disable=too-many-instance-attributes
         )
         if not filtered_effects:
             return space._get_embedding_node(schema)
-        aggregation_effect_group = AggregationEffectGroup.from_filtered_effects(
-            filtered_effects
-        )
-        return AggregationNodeUtil.init_aggregation_node(
-            aggregation_effect_group, effect_modifier
-        )
+        aggregation_effect_group = AggregationEffectGroup.from_filtered_effects(filtered_effects)
+        return AggregationNodeUtil.init_aggregation_node(aggregation_effect_group, effect_modifier)
 
     @staticmethod
     def __filter_effects_by_space_and_schema(
@@ -313,16 +282,13 @@ class Index:  # pylint: disable=too-many-instance-attributes
         return [
             effect
             for effect in effects
-            if effect.base_effect.space == space
-            and effect.resolved_affected_schema_reference.schema == schema
+            if effect.base_effect.space == space and effect.resolved_affected_schema_reference.schema == schema
         ]
 
     def __init_dag(self, node: IndexNode, dag_effects: set[DagEffect]) -> Dag:
         def append_ancestors(node: Node, depth: int = 0) -> None:
             if depth > constants.MAX_DAG_DEPTH:
-                raise RecursionException(
-                    f"Max DAG depth ({constants.MAX_DAG_DEPTH}) exceeded."
-                )
+                raise RecursionException(f"Max DAG depth ({constants.MAX_DAG_DEPTH}) exceeded.")
             dag_dict[node.node_id] = node
             for parent in node.parents:
                 append_ancestors(parent, depth + 1)
@@ -338,14 +304,8 @@ class Index:  # pylint: disable=too-many-instance-attributes
         self, effects: list[EffectWithReferencedSchemaObject]
     ) -> dict[type[SchemaObject], IdSchemaObject]:
         resolved_schema_references = {
-            effect_with_schema.resolved_affected_schema_reference
-            for effect_with_schema in effects
-        }.union(
-            {
-                effect_with_schema.resolved_affecting_schema_reference
-                for effect_with_schema in effects
-            }
-        )
+            effect_with_schema.resolved_affected_schema_reference for effect_with_schema in effects
+        }.union({effect_with_schema.resolved_affecting_schema_reference for effect_with_schema in effects})
         return {
             resolved_schema_reference.reference_field._referenced_schema: resolved_schema_reference.schema
             for resolved_schema_reference in resolved_schema_references

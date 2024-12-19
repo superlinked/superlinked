@@ -49,16 +49,12 @@ from superlinked.framework.storage.mongo_db.search_index.mongo_db_search_index_m
 
 
 class MongoDBVDBConnector(VDBConnector):
-    def __init__(
-        self, connection_params: MongoDBConnectionParams, vdb_settings: VDBSettings
-    ) -> None:
+    def __init__(self, connection_params: MongoDBConnectionParams, vdb_settings: VDBSettings) -> None:
         super().__init__()
         self._client = MongoClient(connection_params.connection_string)
         self._db = self._client[connection_params.db_name]
         self._encoder = MongoDBFieldEncoder()
-        self._search_index_manager = MongoDBSearchIndexManager(
-            self._db.name, connection_params.admin_params
-        )
+        self._search_index_manager = MongoDBSearchIndexManager(self._db.name, connection_params.admin_params)
         self._search = MongoDBSearch(self._db, self._encoder)
         self.__vdb_settings = vdb_settings
 
@@ -85,10 +81,7 @@ class MongoDBVDBConnector(VDBConnector):
         docs = [
             {
                 "_id": MongoDBVDBConnector._get_mongo_id(ed.id_),
-                **{
-                    field_data.name: self._encoder.encode_field(field_data)
-                    for field_data in ed.field_data.values()
-                },
+                **{field_data.name: self._encoder.encode_field(field_data) for field_data in ed.field_data.values()},
             }
             for ed in entity_data
         ]
@@ -100,14 +93,9 @@ class MongoDBVDBConnector(VDBConnector):
         if not entities:
             return []
 
-        mongo_ids = [
-            MongoDBVDBConnector._get_mongo_id(entity.id_) for entity in entities
-        ]
+        mongo_ids = [MongoDBVDBConnector._get_mongo_id(entity.id_) for entity in entities]
 
-        docs = {
-            doc["_id"]: doc
-            for doc in self._db[self.collection_name].find({"_id": {"$in": mongo_ids}})
-        }
+        docs = {doc["_id"]: doc for doc in self._db[self.collection_name].find({"_id": {"$in": mongo_ids}})}
 
         return [
             EntityData(
@@ -144,9 +132,7 @@ class MongoDBVDBConnector(VDBConnector):
         )
         return [
             ResultEntityData(
-                MongoDBVDBConnector._get_entity_id_from_mongo_id(
-                    self._encoder._decode_string(document["_id"])
-                ),
+                MongoDBVDBConnector._get_entity_id_from_mongo_id(self._encoder._decode_string(document["_id"])),
                 self._extract_fields_from_document(document, returned_fields),
                 self._encoder._decode_double(document[VECTOR_SCORE_ALIAS]),
             )
@@ -157,9 +143,7 @@ class MongoDBVDBConnector(VDBConnector):
         self, document: dict[str, Any], returned_fields: Sequence[Field]
     ) -> dict[str, FieldData]:
         return {
-            returned_field.name: self._encoder.decode_field(
-                returned_field, document[returned_field.name]
-            )
+            returned_field.name: self._encoder.decode_field(returned_field, document[returned_field.name])
             for returned_field in returned_fields
             if document.get(returned_field.name) is not None
         }

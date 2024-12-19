@@ -47,6 +47,4 @@ class InMemoryApp(InteractiveApp):
             vector_database (VectorDatabase | None): Vector database instance. Defaults to InMemory.
             context (Mapping[str, Mapping[str, Any]]): Context mapping.
         """
-        super().__init__(
-            sources, indices, vector_database or InMemoryVectorDatabase(), context
-        )
+        super().__init__(sources, indices, vector_database or InMemoryVectorDatabase(), context)

@@ -41,9 +41,7 @@ class DataLoaderConfig:
     pandas_read_kwargs: dict[str, Any] | None = None
 
 
-class DataLoaderSource(
-    OnlineSource[IdSchemaObjectT, SourceTypeT], Generic[IdSchemaObjectT, SourceTypeT]
-):
+class DataLoaderSource(OnlineSource[IdSchemaObjectT, SourceTypeT], Generic[IdSchemaObjectT, SourceTypeT]):
     def __init__(
         self,
         schema: IdSchemaObjectT,

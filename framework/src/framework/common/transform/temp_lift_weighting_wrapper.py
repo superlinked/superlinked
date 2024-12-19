@@ -37,9 +37,7 @@ class TempLiftWeightingWrapper(
     ],
 ):
     @override
-    def wrap(
-        self, input_: Sequence[Weighted[StepInputT]]
-    ) -> WrappingResult[Sequence[StepInputT], Sequence[float]]:
+    def wrap(self, input_: Sequence[Weighted[StepInputT]]) -> WrappingResult[Sequence[StepInputT], Sequence[float]]:
         items = [item.item for item in input_]
         weights = [item.weight for item in input_]
         return WrappingResult(items, weights)
@@ -51,10 +49,5 @@ class TempLiftWeightingWrapper(
         wrapper_context: WrappingResult[Sequence[StepInputT], Sequence[float]],
     ) -> Sequence[Weighted[StepOutputT]]:
         if len(input_) != len(wrapper_context.context):
-            raise ValueError(
-                f"Mismatching input {len(input_)} and output {len(wrapper_context.context)} counts"
-            )
-        return [
-            Weighted(item, weight)
-            for item, weight in zip(input_, wrapper_context.context)
-        ]
+            raise ValueError(f"Mismatching input {len(input_)} and output {len(wrapper_context.context)} counts")
+        return [Weighted(item, weight) for item, weight in zip(input_, wrapper_context.context)]

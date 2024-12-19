@@ -25,10 +25,7 @@ from superlinked.framework.common.storage.search_index.search_algorithm import (
 
 class SearchIndexManager(ABC):
     def __init__(self, index_configs: Sequence[IndexConfig] | None = None) -> None:
-        self._index_configs = {
-            index_config.index_name: index_config
-            for index_config in index_configs or []
-        }
+        self._index_configs = {index_config.index_name: index_config for index_config in index_configs or []}
 
     @property
     @abstractmethod
@@ -44,12 +41,8 @@ class SearchIndexManager(ABC):
     ) -> None:
         self._index_configs.clear()
         if create_search_indices:
-            self._create_search_indices(
-                index_configs, collection_name, override_existing
-            )
-        self._index_configs.update(
-            {index_config.index_name: index_config for index_config in index_configs}
-        )
+            self._create_search_indices(index_configs, collection_name, override_existing)
+        self._index_configs.update({index_config.index_name: index_config for index_config in index_configs})
 
     @abstractmethod
     def _create_search_indices(
@@ -63,9 +56,7 @@ class SearchIndexManager(ABC):
     def get_index_config(self, index_name: str) -> IndexConfig:
         index_config = self._index_configs.get(index_name)
         if not index_config:
-            raise ValidationException(
-                f"Index with the given name {index_name} doesn't exist."
-            )
+            raise ValidationException(f"Index with the given name {index_name} doesn't exist.")
         return index_config
 
     def clear_configs(self) -> None:

@@ -76,15 +76,11 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
                 If None, uses the default cache directory. Defaults to None.
         """
         unchecked_texts = text if isinstance(text, list) else [text]
-        text_fields = [
-            self._get_root(unchecked_text) for unchecked_text in unchecked_texts
-        ]
+        text_fields = [self._get_root(unchecked_text) for unchecked_text in unchecked_texts]
         super().__init__(text_fields, String)
         self.text = SpaceFieldSet[str](self, set(text_fields))
         length = SentenceTransformerManager(model, model_cache_dir).calculate_length()
-        self._transformation_config = self._init_transformation_config(
-            model, cache_size, length
-        )
+        self._transformation_config = self._init_transformation_config(model, cache_size, length)
         self._schema_node_map: dict[SchemaObject, EmbeddingNode[Vector, str]] = {
             self._get_root(unchecked_text).schema_obj: self._generate_embedding_node(
                 unchecked_text, self._transformation_config
@@ -129,20 +125,18 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
 
     @override
     def _create_default_node(self, schema: SchemaObject) -> EmbeddingNode[Vector, str]:
-        default_node = TextEmbeddingNode(
-            None, self._transformation_config, self.text.fields, schema
-        )
+        default_node = TextEmbeddingNode(None, self._transformation_config, self.text.fields, schema)
         return default_node
 
     @property
     @override
-    def annotation(self) -> str:
+    def _annotation(self) -> str:
         return f"""The space encodes text using {self._model} embeddings.
         Negative weight would mean favoring text semantically dissimilar to the one present in the .similar clause
         corresponding to this space. Zero weight means insensitivity, positive weights mean favoring similar text.
-        Larger positive weights increase the effect on similarity compared to other spaces. Space weights do not matter
-        if there is only 1 space in the query.
-        Accepts str type input for a corresponding .similar clause input."""
+        Larger positive weights increase the effect on similarity compared to other spaces.
+        Accepts str type input for a corresponding .similar clause input.
+        Affected fields: {self.space_field_set.field_names_text}."""
 
     @property
     @override
@@ -155,9 +149,7 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
         embedding_config = TextSimilarityEmbeddingConfig(str, model, cache_size, length)
         aggregation_config = VectorAggregationConfig(Vector)
         normalization_config = L2NormConfig()
-        return TransformationConfig(
-            normalization_config, aggregation_config, embedding_config
-        )
+        return TransformationConfig(normalization_config, aggregation_config, embedding_config)
 
 
 @TypeValidator.wrap

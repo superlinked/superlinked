@@ -61,9 +61,7 @@ class MongoDBSearchIndexManager(DynamicSearchIndexManager):
         self.__database_name = database_name
         self.__cluster_name = admin_params.cluster_name
         self.__project_id = admin_params.project_id
-        self.__auth = HTTPDigestAuth(
-            admin_params.admin_api_user, admin_params.admin_api_password
-        )
+        self.__auth = HTTPDigestAuth(admin_params.admin_api_user, admin_params.admin_api_password)
         self.__base_url = (
             "https://cloud.mongodb.com/api/atlas/v2/groups"
             + f"/{self.__project_id}/clusters/{self.__cluster_name}/fts/indexes"
@@ -76,16 +74,10 @@ class MongoDBSearchIndexManager(DynamicSearchIndexManager):
 
     @override
     def _list_search_index_names_from_vdb(self, collection_name: str) -> Sequence[str]:
-        return list(
-            self.get_search_index_ids_by_name(
-                self.__database_name, collection_name
-            ).keys()
-        )
+        return list(self.get_search_index_ids_by_name(self.__database_name, collection_name).keys())
 
     @override
-    def _create_search_index(
-        self, index_config: IndexConfig, collection_name: str
-    ) -> None:
+    def _create_search_index(self, index_config: IndexConfig, collection_name: str) -> None:
         self.__create_search_index(
             self.__database_name,
             collection_name,
@@ -111,9 +103,7 @@ class MongoDBSearchIndexManager(DynamicSearchIndexManager):
             database=database_name,
             collectionName=collection_name,
             name=index_name,
-            fields=self._compile_index_field_descriptors(
-                vector_field_descriptor, field_descriptors
-            ),
+            fields=self._compile_index_field_descriptors(vector_field_descriptor, field_descriptors),
         )
         resp = requests.post(
             self.__base_url,
@@ -134,12 +124,8 @@ class MongoDBSearchIndexManager(DynamicSearchIndexManager):
                 }
             )
 
-    def __drop_search_index(
-        self, database_name: str, collection_name: str, index_name: str
-    ) -> None:
-        index_id_by_name = self.get_search_index_ids_by_name(
-            database_name, collection_name
-        )
+    def __drop_search_index(self, database_name: str, collection_name: str, index_name: str) -> None:
+        index_id_by_name = self.get_search_index_ids_by_name(database_name, collection_name)
         if index_id := index_id_by_name.get(index_name):
             resp = requests.delete(
                 f"{self.__base_url}/{index_id}",
@@ -190,12 +176,9 @@ class MongoDBSearchIndexManager(DynamicSearchIndexManager):
             type="vector",
             path=vector_field_descriptor.field_name,
             numDimensions=vector_field_descriptor.field_size,
-            similarity=SimilarityByDistanceMetric[
-                vector_field_descriptor.distance_metric
-            ],
+            similarity=SimilarityByDistanceMetric[vector_field_descriptor.distance_metric],
         )
         filter_fields = [
-            IndexField(type="filter", path=field_descriptor.field_name)
-            for field_descriptor in field_descriptors
+            IndexField(type="filter", path=field_descriptor.field_name) for field_descriptor in field_descriptors
         ]
         return filter_fields + [vector_field]

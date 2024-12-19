@@ -39,9 +39,7 @@ from superlinked.framework.common.schema.id_schema_object import (
 from superlinked.framework.common.schema.schema_object import Blob, String, Timestamp
 
 
-class DataFrameParser(
-    Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, pd.DataFrame]
-):
+class DataFrameParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, pd.DataFrame]):
     """
     DataFrameParser gets a `pd.DataFrame` and using column-string mapping
     it transforms the `DataFrame` to a desired schema.
@@ -56,9 +54,7 @@ class DataFrameParser(
             list[ParsedSchema]: A list of ParsedSchema objects that will be processed by the spaces.
         """
         data_copy = data.copy()
-        schema_cols: dict[str, SchemaField] = (
-            self._get_column_name_to_schema_field_mapping()
-        )
+        schema_cols: dict[str, SchemaField] = self._get_column_name_to_schema_field_mapping()
         self._ensure_id(data_copy)
         if self._is_event_data_parser:
             self.__ensure_created_at(data_copy)
@@ -68,31 +64,19 @@ class DataFrameParser(
         self._convert_columns_to_type(data_copy, schema_cols, String)
         self._convert_columns_to_type(data_copy, schema_cols, SchemaReference)
 
-        if blob_cols := [
-            key for key, value in schema_cols.items() if isinstance(value, Blob)
-        ]:
-            data_copy[blob_cols] = data_copy[blob_cols].apply(
-                lambda col: col.map(self.blob_loader.load)
-            )
+        if blob_cols := [key for key, value in schema_cols.items() if isinstance(value, Blob)]:
+            data_copy[blob_cols] = data_copy[blob_cols].apply(lambda col: col.map(self.blob_loader.load))
 
         if self._is_event_data_parser:
-            data_copy[self._created_at_name] = data_copy[self._created_at_name].astype(
-                int
-            )
+            data_copy[self._created_at_name] = data_copy[self._created_at_name].astype(int)
         schema_data = cast(pd.DataFrame, data_copy[list(schema_cols.keys())])
         records = cast(list[dict[str, Any]], schema_data.to_dict(orient="records"))
         return [self.__create_parsed_schema(record, schema_cols) for record in records]
 
-    def __create_parsed_schema(
-        self, record: dict[str, Any], schema_cols: dict[str, SchemaField]
-    ) -> ParsedSchema:
-        admin_field_names = [self._id_name] + (
-            [self._created_at_name] if self._is_event_data_parser else []
-        )
+    def __create_parsed_schema(self, record: dict[str, Any], schema_cols: dict[str, SchemaField]) -> ParsedSchema:
+        admin_field_names = [self._id_name] + ([self._created_at_name] if self._is_event_data_parser else [])
         other_fields = [
-            ParsedSchemaField.from_schema_field(
-                schema_field=schema_cols[key], value=value
-            )
+            ParsedSchemaField.from_schema_field(schema_field=schema_cols[key], value=value)
             for key, value in record.items()
             if key not in admin_field_names and self._field_has_non_null_value(value)
         ]
@@ -123,27 +107,18 @@ class DataFrameParser(
         Returns:
             list[pd.DataFrame]: A list of DataFrame representation of the parsed schemas.
         """
-        records = [
-            self.__create_record_dict(parsed_schema) for parsed_schema in parsed_schemas
-        ]
+        records = [self.__create_record_dict(parsed_schema) for parsed_schema in parsed_schemas]
         return [pd.DataFrame.from_records(records)]  # type: ignore[attr-defined]
 
     def __create_record_dict(self, parsed_schema: ParsedSchema) -> dict:
-        altered_parsed_schema_fields = self._handle_parsed_schema_fields(
-            parsed_schema.fields
-        )
+        altered_parsed_schema_fields = self._handle_parsed_schema_fields(parsed_schema.fields)
         record_dict = {
             **{self._id_name: parsed_schema.id_},
-            **{
-                field.schema_field.name: field.value
-                for field in altered_parsed_schema_fields
-            },
+            **{field.schema_field.name: field.value for field in altered_parsed_schema_fields},
         }
         if self._is_event_data_parser:
             if not isinstance(parsed_schema, EventParsedSchema):
-                raise MissingCreatedAtException(
-                    "Invalid parsed schema, type must be EventParsedSchema"
-                )
+                raise MissingCreatedAtException("Invalid parsed schema, type must be EventParsedSchema")
             record_dict.update({self._created_at_name: parsed_schema.created_at})
         return record_dict
 
@@ -160,14 +135,10 @@ class DataFrameParser(
             )
 
         if self._has_missing_ids(data):
-            raise MissingIdException(
-                "The mandatory id field has missing values in the input object."
-            )
+            raise MissingIdException("The mandatory id field has missing values in the input object.")
 
         if duplicate_ids := self._find_duplicate_ids(data):
-            raise DuplicateIdException(
-                f"Multiple rows have the same id: {', '.join([str(f) for f in duplicate_ids])}"
-            )
+            raise DuplicateIdException(f"Multiple rows have the same id: {', '.join([str(f) for f in duplicate_ids])}")
 
     def __ensure_created_at(self, data: pd.DataFrame) -> None:
         if self._created_at_name not in data.columns:
@@ -184,10 +155,7 @@ class DataFrameParser(
             )
 
     def _has_missing_ids(self, data: pd.DataFrame) -> bool:
-        return any(
-            not self._is_id_value_valid(id_val)
-            for id_val in data[self._id_name].tolist()
-        )
+        return any(not self._is_id_value_valid(id_val) for id_val in data[self._id_name].tolist())
 
     def _find_duplicate_ids(self, data: pd.DataFrame) -> list[str]:
         mask = data[self._id_name]

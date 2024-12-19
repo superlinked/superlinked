@@ -44,12 +44,9 @@ class SchemaDag:
         leaf_nodes = [node for node in nodes if len(node.children) == 0]
         if len(leaf_nodes) != 1:
             raise LeafNodeCountException(
-                f"{class_name} must have exactly one leaf Node, got {len(leaf_nodes)}"
-                + ""
+                f"{class_name} must have exactly one leaf Node, got {len(leaf_nodes)}" + ""
                 if len(leaf_nodes) == 0
                 else f"{[type(leaf_node) for leaf_node in leaf_nodes]}"
             )
         if not isinstance(leaf_nodes[0], IndexNode):
-            raise LeafNodeTypeException(
-                f"{class_name} must have a IndexNode leaf Node."
-            )
+            raise LeafNodeTypeException(f"{class_name} must have a IndexNode leaf Node.")

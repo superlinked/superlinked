@@ -34,9 +34,7 @@ class Embedding(HasDefaultVector, Generic[EmbeddingInputT, EmbeddingConfigT], AB
     def embed(self, input_: EmbeddingInputT, context: ExecutionContext) -> Vector:
         pass
 
-    def embed_multiple(
-        self, inputs: Sequence[EmbeddingInputT], context: ExecutionContext
-    ) -> list[Vector]:
+    def embed_multiple(self, inputs: Sequence[EmbeddingInputT], context: ExecutionContext) -> list[Vector]:
         return [self.embed(input_, context) for input_ in inputs]
 
     @override
@@ -60,9 +58,7 @@ class InvertibleEmbedding(
     ABC,
 ):
     @abstractmethod
-    def inverse_embed(
-        self, vector: Vector, context: ExecutionContext
-    ) -> EmbeddingInputT:
+    def inverse_embed(self, vector: Vector, context: ExecutionContext) -> EmbeddingInputT:
         pass
 
     @property
@@ -70,7 +66,5 @@ class InvertibleEmbedding(
     def needs_inversion_before_aggregation(self) -> bool:
         pass
 
-    def inverse_embed_multiple(
-        self, vectors: Sequence[Vector], context: ExecutionContext
-    ) -> list[EmbeddingInputT]:
+    def inverse_embed_multiple(self, vectors: Sequence[Vector], context: ExecutionContext) -> list[EmbeddingInputT]:
         return [self.inverse_embed(vector, context) for vector in vectors]

@@ -29,24 +29,16 @@ class EffectModifier:
 
     def __post_init__(self) -> None:
         if not 0 <= self.temperature <= 1:
-            raise ValueError(
-                f"temperature must be between 0 and 1, got {self.temperature}."
-            )
+            raise ValueError(f"temperature must be between 0 and 1, got {self.temperature}.")
         if not 0 <= self.event_influence <= 1:
-            raise ValueError(
-                f"event_influence must be between 0 and 1, got {self.event_influence}."
-            )
+            raise ValueError(f"event_influence must be between 0 and 1, got {self.event_influence}.")
 
         if self.max_age_delta is not None:
             max_age_delta_total_seconds = int(self.max_age_delta.total_seconds())
             if max_age_delta_total_seconds == 0:
-                raise ValueError(
-                    f"max_age cannot be 0 seconds, got {max_age_delta_total_seconds}."
-                )
+                raise ValueError(f"max_age cannot be 0 seconds, got {max_age_delta_total_seconds}.")
         if self.max_count is not None and self.max_count < 0:
-            raise ValueError(
-                f"max_count cannot be smaller than 0, got {self.max_count}."
-            )
+            raise ValueError(f"max_count cannot be smaller than 0, got {self.max_count}.")
 
     def __str__(self) -> str:
         return (

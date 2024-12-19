@@ -23,9 +23,7 @@ from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.settings import Settings
 
 SENTENCE_TRANSFORMERS_ORG_NAME = "sentence-transformers"
-DEFAULT_MODEL_CACHE_DIR = (
-    (Path.home() / ".cache" / SENTENCE_TRANSFORMERS_ORG_NAME).absolute().as_posix()
-)
+DEFAULT_MODEL_CACHE_DIR = (Path.home() / ".cache" / SENTENCE_TRANSFORMERS_ORG_NAME).absolute().as_posix()
 
 
 class ModelManager(ABC):
@@ -45,14 +43,10 @@ class ModelManager(ABC):
         return result
 
     @abstractmethod
-    def _embed(
-        self, inputs: Sequence[str | Image]
-    ) -> list[list[float]] | list[np.ndarray]: ...
+    def _embed(self, inputs: Sequence[str | Image]) -> list[list[float]] | list[np.ndarray]: ...
 
     @abstractmethod
     def calculate_length(self) -> int: ...
 
     def __get_cache_folder(self, model_cache_dir: Path | None) -> Path:
-        return model_cache_dir or Path(
-            Settings().MODEL_CACHE_DIR or DEFAULT_MODEL_CACHE_DIR
-        )
+        return model_cache_dir or Path(Settings().MODEL_CACHE_DIR or DEFAULT_MODEL_CACHE_DIR)

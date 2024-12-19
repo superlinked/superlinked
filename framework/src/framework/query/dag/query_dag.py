@@ -40,18 +40,13 @@ class QueryDag:
         result = self.leaf_node.evaluate_with_validation(inputs, context).value
         if not isinstance(result, Vector):
             raise QueryEvaluationException(
-                f"{type(self.leaf_node).__name__} must return a vector, "
-                + f"got {type(result).__name__}."
+                f"{type(self.leaf_node).__name__} must return a vector, " + f"got {type(result).__name__}."
             )
         return result
 
-    def __validate_and_get_leaf_node(
-        self, nodes: Sequence[QueryNode]
-    ) -> QueryIndexNode:
+    def __validate_and_get_leaf_node(self, nodes: Sequence[QueryNode]) -> QueryIndexNode:
         class_name = type(self).__name__
         index_nodes = [node for node in nodes if isinstance(node, QueryIndexNode)]
         if len(index_nodes) != 1:
-            raise LeafNodeCountException(
-                f"{class_name} must have exactly one {QueryIndexNode.__name__}."
-            )
+            raise LeafNodeCountException(f"{class_name} must have exactly one {QueryIndexNode.__name__}.")
         return index_nodes[0]

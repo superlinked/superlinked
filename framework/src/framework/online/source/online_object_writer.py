@@ -29,14 +29,10 @@ class OnlineObjectWriter(Subscriber[ParsedSchema]):
 
     def update(self, messages: Sequence[ParsedSchema]) -> None:
         object_jsons_to_persist: list[tuple[IdSchemaObject, str, dict[str, Any]]] = []
-        for message in [
-            m for m in messages if not isinstance(m.schema, EventSchemaObject)
-        ]:
+        for message in [m for m in messages if not isinstance(m.schema, EventSchemaObject)]:
             parser = JsonParser(message.schema)
             data = parser.marshal(message)
-            object_jsons_to_persist.extend(
-                (message.schema, message.id_, data_element) for data_element in data
-            )
+            object_jsons_to_persist.extend((message.schema, message.id_, data_element) for data_element in data)
 
         if object_jsons_to_persist:
             self.__storage_manager.write_object_jsons(object_jsons_to_persist)

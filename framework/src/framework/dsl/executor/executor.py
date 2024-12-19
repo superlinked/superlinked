@@ -36,9 +36,7 @@ class Executor(ABC, Generic[SourceT]):
     def __init__(
         self,
         sources: SourceT | Sequence[SourceT],
-        indices: (
-            Index | Annotated[Sequence[Index], TypeValidator.list_validator(Index)]
-        ),
+        indices: Index | Annotated[Sequence[Index], TypeValidator.list_validator(Index)],
         vector_database: VectorDatabase,
         context: ExecutionContext,
     ) -> None:
@@ -54,9 +52,7 @@ class Executor(ABC, Generic[SourceT]):
             sources = [sources]
         if not isinstance(indices, Sequence):
             indices = [indices]
-        TypeValidator.validate_list_item_type(
-            sources, GenericClassUtil.get_single_generic_type(self), "sources"
-        )
+        TypeValidator.validate_list_item_type(sources, GenericClassUtil.get_single_generic_type(self), "sources")
         self._sources = sources
         self._indices = indices
         self._vector_database = vector_database

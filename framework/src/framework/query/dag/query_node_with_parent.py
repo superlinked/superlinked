@@ -30,9 +30,7 @@ from superlinked.framework.query.dag.query_node import QueryNode
 from superlinked.framework.query.query_node_input import QueryNodeInput
 
 
-class QueryNodeWithParent(
-    QueryNode[NT, QueryEvaluationResultT], Generic[NT, QueryEvaluationResultT]
-):
+class QueryNodeWithParent(QueryNode[NT, QueryEvaluationResultT], Generic[NT, QueryEvaluationResultT]):
     @override
     def evaluate(
         self,
@@ -49,9 +47,7 @@ class QueryNodeWithParent(
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,  # pylint: disable=unused-argument
     ) -> dict[str, Sequence[QueryNodeInput]]:
-        inputs_to_invert = [
-            input_ for input_ in inputs.get(self.node_id, []) if input_.to_invert
-        ]
+        inputs_to_invert = [input_ for input_ in inputs.get(self.node_id, []) if input_.to_invert]
         if inputs_to_invert:
             if len(self.parents) > 1:
                 raise QueryEvaluationException(
@@ -59,25 +55,18 @@ class QueryNodeWithParent(
                     + f"be inverted {inputs_to_invert} is prohibited."
                 )
             if len(self.parents) == 1:
-                return self._merge_inputs(
-                    [inputs, {self.parents[0].node_id: inputs_to_invert}]
-                )
+                return self._merge_inputs([inputs, {self.parents[0].node_id: inputs_to_invert}])
         return dict(inputs)
 
     def _evaluate_parents(
         self, inputs: Mapping[str, Sequence[QueryNodeInput]], context: ExecutionContext
     ) -> list[QueryEvaluationResult]:
-        return [
-            parent.evaluate_with_validation(inputs, context) for parent in self.parents
-        ]
+        return [parent.evaluate_with_validation(inputs, context) for parent in self.parents]
 
-    def _validate_parent_results(
-        self, parent_results: Sequence[QueryEvaluationResult]
-    ) -> None:
+    def _validate_parent_results(self, parent_results: Sequence[QueryEvaluationResult]) -> None:
         if len(parent_results) != len(self.parents):
             raise QueryEvaluationException(
-                f"Mismatching number of parents {len(self.parents)} "
-                f"and parent results {len(parent_results)}."
+                f"Mismatching number of parents {len(self.parents)} " f"and parent results {len(parent_results)}."
             )
 
     @abstractmethod

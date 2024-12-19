@@ -23,9 +23,7 @@ from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.field.field_data import FieldData
 from superlinked.framework.common.storage.field.field_data_type import FieldDataType
 
-QdrantEncodedTypes = (
-    str | float | int | Sequence[float] | dict[str, Any] | Sequence[str]
-)
+QdrantEncodedTypes = str | float | int | Sequence[float] | dict[str, Any] | Sequence[str]
 QdrantEncodedT = TypeVar("QdrantEncodedT", bound=QdrantEncodedTypes)
 
 
@@ -79,13 +77,9 @@ class QdrantFieldEncoder:
     def encode_field(self, field: FieldData) -> QdrantEncodedTypes:
         if encoder := self._encode_map.get(field.data_type):
             return encoder(field.value)
-        raise EncoderException(
-            f"Unknown field type: {field.data_type}, cannot encode field."
-        )
+        raise EncoderException(f"Unknown field type: {field.data_type}, cannot encode field.")
 
     def decode_field(self, field: Field, value: Any) -> FieldData:
         if decoder := self._decode_map.get(field.data_type):
             return FieldData.from_field(field, decoder(value))
-        raise EncoderException(
-            f"Unknown field type: {field.data_type}, cannot decode field."
-        )
+        raise EncoderException(f"Unknown field type: {field.data_type}, cannot decode field.")

@@ -14,10 +14,11 @@
 
 from dataclasses import dataclass
 
-from beartype.typing import Any, Generic, cast
+from beartype.typing import Any, Generic, Sequence, cast
 
 from superlinked.framework.common.data_types import PythonTypes
 from superlinked.framework.common.schema.schema_object import SchemaField
+from superlinked.framework.common.util.generic_class_util import GenericClassUtil
 from superlinked.framework.dsl.space.space import SIT, Space
 
 
@@ -35,6 +36,15 @@ class SpaceFieldSet(Generic[SIT]):
 
     def __post_init__(self) -> None:
         self.__schema_field_map = {field.schema_obj: field for field in self.fields}
+        self._input_type: type[SIT] = GenericClassUtil.get_generic_types(self.space)[1]
+
+    @property
+    def input_type(self) -> type[SIT]:
+        return self._input_type
+
+    @property
+    def field_names_text(self) -> Sequence[str]:
+        return ",".join([f"{field.schema_obj._schema_name}.{field.name}" for field in self.fields])
 
     def _generate_space_input(self, value: PythonTypes) -> SIT:
         return cast(SIT, value)

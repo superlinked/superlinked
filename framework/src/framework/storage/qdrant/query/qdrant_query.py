@@ -78,12 +78,8 @@ class QdrantQueryBuilder:
         filter_ = self._compile_filters(search_params.filters)
         vector_field_name = search_params.vector_field.name
         returned_field_names = [field.name for field in returned_fields]
-        with_vector: str | bool = (
-            vector_field_name if vector_field_name in returned_field_names else False
-        )
-        returned_payload_fields = [
-            field for field in returned_field_names if field != vector_field_name
-        ]
+        with_vector: str | bool = vector_field_name if vector_field_name in returned_field_names else False
+        returned_payload_fields = [field for field in returned_field_names if field != vector_field_name]
         return QdrantQuery(
             search_params.collection_name,
             search_params.vector_field.value,
@@ -106,7 +102,5 @@ class QdrantQueryBuilder:
         for filter_ in filters:
             qdrant_filter = FILTER_BY_OP_TYPE[filter_._op]
             # Extends lists!
-            qdrant_filter.extend_filters(
-                filter_, self._encoder, must_filters, must_not_filters
-            )
+            qdrant_filter.extend_filters(filter_, self._encoder, must_filters, must_not_filters)
         return Filter(must=must_filters, must_not=must_not_filters)

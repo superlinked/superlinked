@@ -46,9 +46,7 @@ class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasL
         self._embedding_transformation = self._init_embedding_transformation()
 
     def _init_embedding_transformation(self) -> Step[Sequence[str], list[Vector]]:
-        return TransformationFactory.create_multi_embedding_transformation(
-            self.node.transformation_config
-        )
+        return TransformationFactory.create_multi_embedding_transformation(self.node.transformation_config)
 
     @property
     @override
@@ -80,12 +78,8 @@ class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasL
         parent_results: list[dict[OnlineNode, SingleEvaluationResult[str]]],
         context: ExecutionContext,
     ) -> Sequence[Vector | None]:
-        none_indices = [
-            i for i, parent_result in enumerate(parent_results) if not parent_result
-        ]
-        non_none_parent_results = [
-            parent_result for parent_result in parent_results if parent_result
-        ]
+        none_indices = [i for i, parent_result in enumerate(parent_results) if not parent_result]
+        non_none_parent_results = [parent_result for parent_result in parent_results if parent_result]
         input_ = list(
             map(
                 lambda parent_result: list(parent_result.values())[0].value,
@@ -97,7 +91,5 @@ class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasL
             embedded_texts.insert(i, None)
         return embedded_texts
 
-    def __embed_texts(
-        self, texts: Sequence[str], context: ExecutionContext
-    ) -> list[Vector]:
+    def __embed_texts(self, texts: Sequence[str], context: ExecutionContext) -> list[Vector]:
         return self.embedding_transformation.transform(texts, context)

@@ -47,9 +47,7 @@ class ClassHelper:
         ignore_missing_modules: Sequence[str] | None = None,
     ) -> ModuleType:
         if depth > ClassHelper.MAX_MODULE_DEPTH:
-            raise RecursionException(
-                f"Module import depth limit ({ClassHelper.MAX_MODULE_DEPTH}) exceeded."
-            )
+            raise RecursionException(f"Module import depth limit ({ClassHelper.MAX_MODULE_DEPTH}) exceeded.")
         base_module: ModuleType = ClassHelper._import_module(base_module_name)
         if recursive and hasattr(base_module, "__path__"):
             for _, modname, is_pkg in pkgutil.walk_packages(base_module.__path__):
@@ -68,9 +66,7 @@ class ClassHelper:
                             continue
                         raise
                 else:
-                    ClassHelper.import_module(
-                        module_name, recursive, depth + 1, ignore_missing_modules
-                    )
+                    ClassHelper.import_module(module_name, recursive, depth + 1, ignore_missing_modules)
         return base_module
 
     @staticmethod

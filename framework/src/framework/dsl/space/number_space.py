@@ -112,9 +112,7 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
         super().__init__(number, Number)
         number_fields = number if isinstance(number, list) else [number]
         self.number = SpaceFieldSet[float](self, set(number_fields))
-        self._aggregation_config_type_by_mode = (
-            self.__init_aggregation_config_type_by_mode()
-        )
+        self._aggregation_config_type_by_mode = self.__init_aggregation_config_type_by_mode()
         self._embedding_config = NumberEmbeddingConfig(
             float,
             float(min_value),
@@ -123,9 +121,7 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
             scale,
             negative_filter,
         )
-        self._transformation_config = self._init_transformation_config(
-            self._embedding_config, self._aggregation_mode
-        )
+        self._transformation_config = self._init_transformation_config(self._embedding_config, self._aggregation_mode)
         self.__schema_node_map: dict[SchemaObject, EmbeddingNode[float, float]] = {
             number_field.schema_obj: NumberEmbeddingNode(
                 parent=SchemaFieldNode(number_field),
@@ -163,7 +159,7 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
 
     @property
     @override
-    def annotation(self) -> str:
+    def _annotation(self) -> str:
         mode_text = self._embedding_config.mode.value
         mode_to_preference: dict[str, str] = {
             "minimum": "lower",
@@ -214,8 +210,8 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
         It has {mode_text} Mode so it favors the {mode_to_preference[mode_text]} number{similar_first_text}.
         For this {mode_text} mode space, negative weights mean favoring
         the {negative_text[mode_text]}. 0 weight means insensitivity.
-        Larger positive weights increase the effect on similarity compared to other spaces. Space weights do not matter
-        if there is only 1 space in the query.{end_text}"""
+        Larger positive weights increase the effect on similarity compared to other spaces.{end_text}
+        Affected fields: {self.space_field_set.field_names_text}."""
 
     @property
     @override
@@ -227,19 +223,13 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
         embedding_config: NumberEmbeddingConfig,
         aggregation_mode: InputAggregationMode,
     ) -> TransformationConfig[float, float]:
-        aggregation_config = self._aggregation_config_type_by_mode[aggregation_mode](
-            float
-        )
+        aggregation_config = self._aggregation_config_type_by_mode[aggregation_mode](float)
         normalization_config = NoNormConfig()
-        return TransformationConfig(
-            normalization_config, aggregation_config, embedding_config
-        )
+        return TransformationConfig(normalization_config, aggregation_config, embedding_config)
 
     @override
     def _create_default_node(self, schema: SchemaObject) -> EmbeddingNode[float, float]:
-        constant_node = ConstantNode(
-            value=self._default_constant_node_input, schema=schema
-        )
+        constant_node = ConstantNode(value=self._default_constant_node_input, schema=schema)
         default_node = NumberEmbeddingNode(
             parent=constant_node,
             transformation_config=self._transformation_config,

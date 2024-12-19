@@ -33,10 +33,7 @@ from superlinked.framework.common.util.generic_class_util import GenericClassUti
 
 valid_schema_field_types = {
     SchemaType.SCHEMA: ConcreteSchemaField | IdField,
-    SchemaType.EVENT_SCHEMA: ConcreteSchemaField
-    | IdField
-    | CreatedAtField
-    | SchemaReference,
+    SchemaType.EVENT_SCHEMA: ConcreteSchemaField | IdField | CreatedAtField | SchemaReference,
 }
 
 
@@ -74,18 +71,14 @@ class SchemaValidator:
                     )
                 )
 
-    def __validate_field_single(
-        self, cls: type[T], field_type: type, field_name: str
-    ) -> None:
+    def __validate_field_single(self, cls: type[T], field_type: type, field_name: str) -> None:
         field_names = [
             name
             for name, type_ in cls.__annotations__.items()
             if inspect.isclass(type_) and issubclass(type_, field_type)
         ]
         if len(field_names) != 1:
-            raise FieldException(
-                f"A schema must have exactly 1 {field_name}, got {len(field_names)} ({field_names})."
-            )
+            raise FieldException(f"A schema must have exactly 1 {field_name}, got {len(field_names)} ({field_names}).")
 
     def validate_id_field(self, cls: type[T]) -> None:
         self.__validate_field_single(cls, IdField, "id")

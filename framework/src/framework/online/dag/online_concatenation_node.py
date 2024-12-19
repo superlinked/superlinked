@@ -39,12 +39,8 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
         parents: list[OnlineNode],
         storage_manager: StorageManager,
     ) -> None:
-        super().__init__(
-            node, parents, storage_manager, ParentValidationType.AT_LEAST_ONE_PARENT
-        )
-        self._norm = ConstantNorm(
-            self.node.create_normalization_config([1.0] * len(self.node.parents))
-        )
+        super().__init__(node, parents, storage_manager, ParentValidationType.AT_LEAST_ONE_PARENT)
+        self._norm = ConstantNorm(self.node.create_normalization_config([1.0] * len(self.node.parents)))
 
     @property
     def length(self) -> int:
@@ -58,12 +54,10 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
     ) -> Sequence[Vector | None]:
         self._check_evaluation_inputs(parent_results)
         vector_and_nodes_list: list[list[tuple[Vector, OnlineNode]]] = [
-            [(result.value, parent) for parent, result in parent_result.items()]
-            for parent_result in parent_results
+            [(result.value, parent) for parent, result in parent_result.items()] for parent_result in parent_results
         ]
         weighted_vectors = [
-            self._apply_weights_and_concatenate(vector_and_nodes, context)
-            for vector_and_nodes in vector_and_nodes_list
+            self._apply_weights_and_concatenate(vector_and_nodes, context) for vector_and_nodes in vector_and_nodes_list
         ]
         return [self._norm.normalize(vector) for vector in weighted_vectors]
 
@@ -72,10 +66,7 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
         vector_and_nodes: list[tuple[Vector, OnlineNode]],
         context: ExecutionContext,
     ) -> Vector:
-        weighted_vectors = (
-            vector * context.get_weight_of_node(parent.node_id)
-            for vector, parent in vector_and_nodes
-        )
+        weighted_vectors = (vector * context.get_weight_of_node(parent.node_id) for vector, parent in vector_and_nodes)
         vector = reduce(lambda a, b: a.concatenate(b), weighted_vectors)
         return vector
 
@@ -89,15 +80,9 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
             for result in parent_result.values()
             if not isinstance(result.value, Vector)
         ):
-            raise ValidationException(
-                f"{self.class_name} can only process `Vector` inputs."
-            )
+            raise ValidationException(f"{self.class_name} can only process `Vector` inputs.")
 
-    def _split_vector(
-        self, vector: Vector, parents_without_duplicates: Sequence[OnlineNode]
-    ) -> list[Vector]:
-        lengths = [
-            cast(HasLength, parent).length for parent in parents_without_duplicates
-        ]
+    def _split_vector(self, vector: Vector, parents_without_duplicates: Sequence[OnlineNode]) -> list[Vector]:
+        lengths = [cast(HasLength, parent).length for parent in parents_without_duplicates]
         vectors: list[Vector] = vector.split(lengths)
         return vectors

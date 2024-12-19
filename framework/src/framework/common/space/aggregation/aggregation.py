@@ -36,9 +36,7 @@ VALUE_UNAFFECTING_AGGREGATION = 0
 
 
 class Aggregation(ABC, Generic[AggregationInputT]):
-    def __init__(
-        self, config: AggregationConfig[AggregationInputT] | None = None
-    ) -> None:
+    def __init__(self, config: AggregationConfig[AggregationInputT] | None = None) -> None:
         self._config = config
 
     @abstractmethod
@@ -59,36 +57,27 @@ class VectorAggregation(Aggregation[Vector]):
         weighted_vectors = [
             weighted
             for weighted in weighted_items
-            if not weighted.item.is_empty
-            and weighted.weight is not constants.DEFAULT_NOT_AFFECTING_WEIGHT
+            if not weighted.item.is_empty and weighted.weight is not constants.DEFAULT_NOT_AFFECTING_WEIGHT
         ]
         vectors_with_negative_filters_replaced = (
-            weighted.item.replace_negative_filters(VALUE_UNAFFECTING_AGGREGATION)
-            * weighted.weight
+            weighted.item.replace_negative_filters(VALUE_UNAFFECTING_AGGREGATION) * weighted.weight
             for weighted in weighted_vectors
         )
-        aggregated_vector = reduce(
-            lambda a, b: a.aggregate(b), vectors_with_negative_filters_replaced
-        )
+        aggregated_vector = reduce(lambda a, b: a.aggregate(b), vectors_with_negative_filters_replaced)
         vectors_without_weights = [weighted.item for weighted in weighted_vectors]
         return self.__apply_negative_filter(aggregated_vector, vectors_without_weights)
 
-    def __apply_negative_filter(
-        self, aggregated_vector: Vector, vectors: Sequence[Vector]
-    ) -> Vector:
+    def __apply_negative_filter(self, aggregated_vector: Vector, vectors: Sequence[Vector]) -> Vector:
         """
         Applies the previous negative filter on those indices where
         there was a negative filter in all aggregated vectors.
         """
-        all_negative_filter_indices = set().union(
-            *(vector.negative_filter_indices for vector in vectors)
-        )
+        all_negative_filter_indices = set().union(*(vector.negative_filter_indices for vector in vectors))
         return aggregated_vector.copy_with_new(
             negative_filter_indices={
                 i
                 for i, original_value in enumerate(aggregated_vector.value)
-                if original_value == VALUE_UNAFFECTING_AGGREGATION
-                and i in all_negative_filter_indices
+                if original_value == VALUE_UNAFFECTING_AGGREGATION and i in all_negative_filter_indices
             }
         ).replace_negative_filters(self.__calculate_negative_filter(vectors))
 
@@ -107,9 +96,7 @@ class VectorAggregation(Aggregation[Vector]):
         return VALUE_UNAFFECTING_AGGREGATION
 
 
-class NumberAggregation(
-    Generic[NumberAggregationInputT], Aggregation[NumberAggregationInputT], ABC
-):
+class NumberAggregation(Generic[NumberAggregationInputT], Aggregation[NumberAggregationInputT], ABC):
     @override
     def aggregate_weighted(
         self,
@@ -119,17 +106,14 @@ class NumberAggregation(
         weighted_items = [
             weighted
             for weighted in weighted_items
-            if weighted.weight is not constants.DEFAULT_NOT_AFFECTING_WEIGHT
-            and weighted.item is not None
+            if weighted.weight is not constants.DEFAULT_NOT_AFFECTING_WEIGHT and weighted.item is not None
         ]
         if len(weighted_items) == 0:
             raise ValueError("Cannot aggregate 0 items.")
         return self._aggregate_inputs(weighted_items)
 
     @abstractmethod
-    def _aggregate_inputs(
-        self, inputs: Sequence[Weighted[NumberAggregationInputT]]
-    ) -> NumberAggregationInputT:
+    def _aggregate_inputs(self, inputs: Sequence[Weighted[NumberAggregationInputT]]) -> NumberAggregationInputT:
         pass
 
 

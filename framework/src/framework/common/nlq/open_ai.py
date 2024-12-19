@@ -55,10 +55,7 @@ def suppress_tokenizer_warnings() -> Generator[None, Any, None]:
     def filter_stderr() -> None:
         with os.fdopen(read_fd) as f:
             for line in f:
-                if (
-                    not any(msg in line for msg in msgs_to_filter)
-                    and sys.__stderr__ is not None
-                ):
+                if not any(msg in line for msg in msgs_to_filter) and sys.__stderr__ is not None:
                     sys.__stderr__.write(line)
 
     thread = threading.Thread(target=filter_stderr)
@@ -78,9 +75,7 @@ class OpenAIClient:
         self._client = instructor.from_openai(open_ai)
         self._openai_model = config.model
 
-    def query(
-        self, prompt: str, instructor_prompt: str, response_model: type[BaseModel]
-    ) -> dict[str, Any]:
+    def query(self, prompt: str, instructor_prompt: str, response_model: type[BaseModel]) -> dict[str, Any]:
         with suppress_tokenizer_warnings():
             response: BaseModel = self._client.chat.completions.create(
                 model=self._openai_model,

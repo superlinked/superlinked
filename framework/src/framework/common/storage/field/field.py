@@ -28,18 +28,11 @@ class Field(ComparisonOperand):
         return hash((self.name, self.data_type))
 
     @staticmethod
-    def _built_in_equal(
-        left_operand: ComparisonOperand[Field], right_operand: object
-    ) -> bool:
+    def _built_in_equal(left_operand: ComparisonOperand[Field], right_operand: object) -> bool:
         if isinstance(left_operand, Field) and isinstance(right_operand, Field):
-            return (
-                right_operand.data_type == left_operand.data_type
-                and right_operand.name == left_operand.name
-            )
+            return right_operand.data_type == left_operand.data_type and right_operand.name == left_operand.name
         return False
 
     @staticmethod
-    def _built_in_not_equal(
-        left_operand: ComparisonOperand[Field], right_operand: object
-    ) -> bool:
+    def _built_in_not_equal(left_operand: ComparisonOperand[Field], right_operand: object) -> bool:
         return not Field._built_in_equal(left_operand, right_operand)

@@ -36,9 +36,7 @@ class Query:
             Defaults to None, which is equal weight for each space.
     """
 
-    def __init__(
-        self, index: Index, weights: Mapping[Space, NumericParamType] | None = None
-    ) -> None:
+    def __init__(self, index: Index, weights: Mapping[Space, NumericParamType] | None = None) -> None:
         """
         Initialize the Query.
 

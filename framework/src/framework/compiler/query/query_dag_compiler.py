@@ -48,11 +48,7 @@ class QueryDagCompiler:
         compiled_parents = [self.compile_node(parent) for parent in node.parents]
         compiled_node = self.__query_node_registry.init_compiled_node(
             node,
-            [
-                compiled_parent
-                for compiled_parent in compiled_parents
-                if compiled_parent is not None
-            ],
+            [compiled_parent for compiled_parent in compiled_parents if compiled_parent is not None],
         )
         self.__compiled_node_by_node_id[node.node_id] = compiled_node
         return compiled_node

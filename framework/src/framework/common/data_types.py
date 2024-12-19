@@ -46,9 +46,7 @@ class Vector:
         self.value: NPArray = value_to_set
         self.__dimension: int = len(self.value)
         self.__negative_filter_indices = (
-            frozenset(negative_filter_indices)
-            if negative_filter_indices
-            else frozenset({})
+            frozenset(negative_filter_indices) if negative_filter_indices else frozenset({})
         )
         self.__validate_negative_filter_indices()
         self.__vector_before_normalization = vector_before_normalization
@@ -118,14 +116,10 @@ class Vector:
             )
         index_min = min(self.negative_filter_indices)
         if index_min < 0:
-            raise NegativeFilterException(
-                f"Invalid negative filter index: {index_min}."
-            )
+            raise NegativeFilterException(f"Invalid negative filter index: {index_min}.")
         index_max = max(self.negative_filter_indices)
         if index_max > self.dimension - 1:
-            raise NegativeFilterException(
-                f"Invalid negative filter index: {index_max}."
-            )
+            raise NegativeFilterException(f"Invalid negative filter index: {index_max}.")
 
     def apply_negative_filter(self, other: Vector) -> Vector:
         if self.negative_filter_indices == other.negative_filter_indices:
@@ -136,11 +130,7 @@ class Vector:
         else:
             value_iterator = iter(self.value)
             values = [
-                (
-                    next(value_iterator)
-                    if i not in other.negative_filter_indices
-                    else value
-                )
+                (next(value_iterator) if i not in other.negative_filter_indices else value)
                 for i, value in enumerate(other.value)
             ]
         return self.copy_with_new(values, other.negative_filter_indices)
@@ -148,11 +138,7 @@ class Vector:
     def replace_negative_filters(self, new_negative_filter_value: float) -> Vector:
         return self.copy_with_new(
             [
-                (
-                    new_negative_filter_value
-                    if i in self.negative_filter_indices
-                    else original_value
-                )
+                (new_negative_filter_value if i in self.negative_filter_indices else original_value)
                 for i, original_value in enumerate(self.value)
             ]
         )
@@ -168,9 +154,7 @@ class Vector:
             {i + self.dimension for i in other.negative_filter_indices}
         )
         vector_before_normalization = (
-            self.vector_before_normalization.concatenate(
-                other.vector_before_normalization
-            )
+            self.vector_before_normalization.concatenate(other.vector_before_normalization)
             if self.vector_before_normalization and other.vector_before_normalization
             else None
         )
@@ -192,9 +176,7 @@ class Vector:
             start_index = indices[i - 1] if i > 0 else 0
             end_index = start_index + length
             negative_filter_indices = {
-                idx - start_index
-                for idx in self.negative_filter_indices
-                if start_index <= idx < end_index
+                idx - start_index for idx in self.negative_filter_indices if start_index <= idx < end_index
             }
             split_vectors.append(Vector(split_values[i], negative_filter_indices, None))
         return split_vectors
@@ -204,9 +186,7 @@ class Vector:
             return self
         if isinstance(other, int | float):
             return (
-                self.copy_with_new(self.value)
-                if float(other) == 1.0
-                else self.copy_with_new(self.value * float(other))
+                self.copy_with_new(self.value) if float(other) == 1.0 else self.copy_with_new(self.value * float(other))
             )
         if self.dimension != other.dimension:
             raise ValueError(
@@ -241,18 +221,12 @@ class Vector:
     ) -> Vector:
         value_to_use = self.value if value is None else value
         vector_before_normalization_to_use = (
-            (
-                self.vector_before_normalization.copy_with_new()
-                if self.vector_before_normalization is not None
-                else None
-            )
+            (self.vector_before_normalization.copy_with_new() if self.vector_before_normalization is not None else None)
             if vector_before_normalization is None
             else vector_before_normalization.copy_with_new()
         )
         negative_filter_indices_to_use = (
-            self.negative_filter_indices
-            if negative_filter_indices is None
-            else negative_filter_indices
+            self.negative_filter_indices if negative_filter_indices is None else negative_filter_indices
         )
         return Vector(
             value_to_use.copy(),

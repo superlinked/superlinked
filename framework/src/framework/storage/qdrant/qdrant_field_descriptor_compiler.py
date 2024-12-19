@@ -49,9 +49,7 @@ class QdrantFieldDescriptorCompiler:
         return {
             index_config.vector_field_descriptor.field_name: VectorParams(
                 size=index_config.vector_field_descriptor.field_size,
-                distance=DISTANCE_METRIC_MAP[
-                    index_config.vector_field_descriptor.distance_metric
-                ],
+                distance=DISTANCE_METRIC_MAP[index_config.vector_field_descriptor.distance_metric],
             )
             for index_config in index_configs
         }
@@ -61,8 +59,7 @@ class QdrantFieldDescriptorCompiler:
         if any(
             index_config
             for index_config in index_configs
-            if index_config.vector_field_descriptor.distance_metric
-            == DistanceMetric.COSINE_SIMILARITY
+            if index_config.vector_field_descriptor.distance_metric == DistanceMetric.COSINE_SIMILARITY
         ):
             raise InvalidIndexConfigException(
                 "Qdrant's cosine similarity isn't supported because a search index with "
@@ -75,15 +72,11 @@ class QdrantFieldDescriptorCompiler:
         index_configs: Sequence[IndexConfig],
     ) -> dict[str, PayloadSchemaType]:
         field_descriptors = [
-            field_descriptor
-            for index_config in index_configs
-            for field_descriptor in index_config.field_descriptors
+            field_descriptor for index_config in index_configs for field_descriptor in index_config.field_descriptors
         ]
         QdrantFieldDescriptorCompiler.validate_payload_field_types(field_descriptors)
         return {
-            field_descriptor.field_name: PAYLOAD_SCHEMA_BY_FIELD_DATA_TYPE[
-                field_descriptor.field_data_type
-            ]
+            field_descriptor.field_name: PAYLOAD_SCHEMA_BY_FIELD_DATA_TYPE[field_descriptor.field_data_type]
             for field_descriptor in field_descriptors
         }
 
@@ -96,18 +89,13 @@ class QdrantFieldDescriptorCompiler:
             for field_descriptor in field_descriptors
             if field_descriptor.field_data_type not in INDEXABLE_PAYLOAD_FIELD_TYPES
         ]:
-            indexable_types = ", ".join(
-                [fdt.value for fdt in INDEXABLE_PAYLOAD_FIELD_TYPES]
-            )
+            indexable_types = ", ".join([fdt.value for fdt in INDEXABLE_PAYLOAD_FIELD_TYPES])
             raise InvalidIndexConfigException(
-                "Can only index payload fields of the type(s) "
-                + f"{indexable_types}, got {', '.join(invalid_fields)}."
+                "Can only index payload fields of the type(s) " + f"{indexable_types}, got {', '.join(invalid_fields)}."
             )
         field_type_by_field_name = defaultdict(set)
         for field_descriptor in field_descriptors:
-            field_type_by_field_name[field_descriptor.field_name].add(
-                field_descriptor.field_data_type
-            )
+            field_type_by_field_name[field_descriptor.field_name].add(field_descriptor.field_data_type)
         if invalid_duplicates := {
             field_name: field_types
             for field_name, field_types in field_type_by_field_name.items()

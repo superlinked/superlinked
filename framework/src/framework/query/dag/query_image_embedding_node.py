@@ -23,8 +23,6 @@ from superlinked.framework.query.dag.query_embedding_orphan_node import (
 from superlinked.framework.query.dag.query_node import QueryNode
 
 
-class QueryImageEmbeddingNode(
-    QueryEmbeddingOrphanNode[Vector, ImageEmbeddingNode, ImageData]
-):
+class QueryImageEmbeddingNode(QueryEmbeddingOrphanNode[Vector, ImageEmbeddingNode, ImageData]):
     def __init__(self, node: ImageEmbeddingNode, parents: Sequence[QueryNode]) -> None:
         super().__init__(node, parents, ImageData)

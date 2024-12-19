@@ -36,41 +36,29 @@ class OpenClipManager(ModelManager):
         return len(self.encode_texts([""], embedding_model)[0])
 
     @override
-    def _embed(
-        self, inputs: Sequence[str | Image]
-    ) -> list[list[float]] | list[np.ndarray]:
+    def _embed(self, inputs: Sequence[str | Image]) -> list[list[float]] | list[np.ndarray]:
         embedding_model, preprocess_val = self._get_embedding_model(len(inputs))
         text_inputs, image_inputs = self._categorize_inputs(inputs)
         self._validate_inputs(inputs)
         with torch.no_grad():
             text_encodings = self.encode_texts(text_inputs, embedding_model)
-            image_encodings = self.encode_images(
-                image_inputs, embedding_model, preprocess_val
-            )
+            image_encodings = self.encode_images(image_inputs, embedding_model, preprocess_val)
         encodings = self._combine_encodings(inputs, text_encodings, image_encodings)
         return [self._normalize_encoding(encoding).tolist() for encoding in encodings]
 
     def _get_embedding_model(self, number_of_inputs: int) -> tuple[CLIP, Compose]:
         device_type = GpuEmbeddingUtil.get_device_type(number_of_inputs)
-        return OpenClipModelCache.initialize_model(
-            self._model_name, device_type, self._model_cache_dir
-        )
+        return OpenClipModelCache.initialize_model(self._model_name, device_type, self._model_cache_dir)
 
-    def _categorize_inputs(
-        self, inputs: Sequence[str | Image]
-    ) -> tuple[list[str], list[Image]]:
+    def _categorize_inputs(self, inputs: Sequence[str | Image]) -> tuple[list[str], list[Image]]:
         text_inputs = [inp for inp in inputs if isinstance(inp, str)]
         image_inputs = [inp for inp in inputs if isinstance(inp, Image)]
         return text_inputs, image_inputs
 
     def _validate_inputs(self, inputs: Sequence[str | Image]) -> None:
-        unsupported_item = next(
-            (inp for inp in inputs if not isinstance(inp, (str, Image))), None
-        )
+        unsupported_item = next((inp for inp in inputs if not isinstance(inp, (str, Image))), None)
         if unsupported_item:
-            raise ValueError(
-                f"Unsupported Image embedding input type: {type(unsupported_item).__name__}"
-            )
+            raise ValueError(f"Unsupported Image embedding input type: {type(unsupported_item).__name__}")
 
     def _combine_encodings(
         self,
@@ -80,10 +68,7 @@ class OpenClipManager(ModelManager):
     ) -> list[torch.Tensor]:
         text_iter = iter(text_encodings)
         image_iter = iter(image_encodings)
-        return [
-            next(text_iter) if isinstance(inp, str) else next(image_iter)
-            for inp in inputs
-        ]
+        return [next(text_iter) if isinstance(inp, str) else next(image_iter) for inp in inputs]
 
     def _normalize_encoding(self, encoding: torch.Tensor) -> torch.Tensor:
         return encoding / encoding.norm(dim=-1, keepdim=True)
@@ -95,28 +80,20 @@ class OpenClipManager(ModelManager):
         texts_tokenized = tokenizer(texts)
         return embedding_model.encode_text(texts_tokenized)
 
-    def encode_images(
-        self, images: list[Any], embedding_model: CLIP, preprocess_val: Compose
-    ) -> torch.Tensor:
+    def encode_images(self, images: list[Any], embedding_model: CLIP, preprocess_val: Compose) -> torch.Tensor:
         if not images:
             return torch.Tensor()
-        images_to_process = torch.tensor(
-            np.stack([preprocess_val(image) for image in images])
-        )
+        images_to_process = torch.tensor(np.stack([preprocess_val(image) for image in images]))
         return embedding_model.encode_image(images_to_process)
 
 
 class OpenClipModelCache:
     @staticmethod
     @lru_cache(maxsize=10)
-    def initialize_model(
-        model_name: str, device: str, cache_dir: Path
-    ) -> tuple[CLIP, Compose]:
+    def initialize_model(model_name: str, device: str, cache_dir: Path) -> tuple[CLIP, Compose]:
         model, _, preprocess_val = cast(
             tuple[CLIP, Any, Compose],
-            create_model_and_transforms(
-                model_name, device=device, cache_dir=str(cache_dir)
-            ),
+            create_model_and_transforms(model_name, device=device, cache_dir=str(cache_dir)),
         )
         return model, preprocess_val
 

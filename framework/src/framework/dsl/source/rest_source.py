@@ -21,9 +21,7 @@ from superlinked.framework.dsl.executor.rest.rest_descriptor import RestDescript
 from superlinked.framework.online.source.online_source import OnlineSource
 
 
-class RestSource(
-    OnlineSource[IdSchemaObjectT, dict[str, Any]], Generic[IdSchemaObjectT]
-):
+class RestSource(OnlineSource[IdSchemaObjectT, dict[str, Any]], Generic[IdSchemaObjectT]):
     def __init__(
         self,
         schema: IdSchemaObjectT,

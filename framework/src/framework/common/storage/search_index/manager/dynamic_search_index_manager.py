@@ -36,14 +36,9 @@ class DynamicSearchIndexManager(SearchIndexManager, ABC):
             if index_config.index_name not in existing_index_names or override_existing:
                 self._create_search_index_with_check(index_config, collection_name)
 
-    def _create_search_index_with_check(
-        self, index_config: IndexConfig, collection_name: str
-    ) -> None:
+    def _create_search_index_with_check(self, index_config: IndexConfig, collection_name: str) -> None:
         if index_config.index_name not in self._index_configs.keys():
-            if (
-                index_config.vector_field_descriptor.search_algorithm
-                not in self.supported_vector_indexing
-            ):
+            if index_config.vector_field_descriptor.search_algorithm not in self.supported_vector_indexing:
                 raise NotImplementedError(
                     f"The specified vector search algorithm {index_config.vector_field_descriptor.search_algorithm}"
                     + f" is not yet supported. Currently supported algorithms: {self.supported_vector_indexing}"
@@ -55,9 +50,7 @@ class DynamicSearchIndexManager(SearchIndexManager, ABC):
         pass
 
     @abstractmethod
-    def _create_search_index(
-        self, index_config: IndexConfig, collection_name: str
-    ) -> None:
+    def _create_search_index(self, index_config: IndexConfig, collection_name: str) -> None:
         pass
 
     @abstractmethod

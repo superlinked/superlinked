@@ -30,9 +30,7 @@ class ParentValidationType(Enum):
     validator: Callable[[int], bool]
     description: str
 
-    def __new__(
-        cls, validator: Callable[[int], bool], description: str
-    ) -> ParentValidationType:
+    def __new__(cls, validator: Callable[[int], bool], description: str) -> ParentValidationType:
         obj = object.__new__(cls)
         obj.validator = validator
         obj.description = description

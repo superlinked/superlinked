@@ -57,14 +57,10 @@ class Node(Generic[NodeDataT], ABC):
         self.children: list[Node] = []
         self.parents = parents
         self.schemas: set[SchemaObject] = (schemas or set()).union(
-            {schema for parent in parents for schema in parent.schemas}
-            if parents
-            else set()
+            {schema for parent in parents for schema in parent.schemas} if parents else set()
         )
         self.dag_effects: set[DagEffect] = (dag_effects or set()).union(
-            {dag_effect for parent in parents for dag_effect in parent.dag_effects}
-            if parents
-            else set()
+            {dag_effect for parent in parents for dag_effect in parent.dag_effects} if parents else set()
         )
         self._persistence_params = persistence_params or PersistenceParams()
         for parent in self.parents:
@@ -72,9 +68,7 @@ class Node(Generic[NodeDataT], ABC):
 
     def _append_child(self, child: Node) -> None:
         self.children.append(child)
-        self._persistence_params.persist_evaluation_result |= (
-            child._persistence_params.persist_parent_evaluation_result
-        )
+        self._persistence_params.persist_evaluation_result |= child._persistence_params.persist_parent_evaluation_result
 
     @property
     def node_data_type(self) -> type[NodeDataT]:
@@ -126,9 +120,7 @@ class Node(Generic[NodeDataT], ABC):
 
     def project_parents_for_dag_effect(self, dag_effect: DagEffect) -> Sequence[Node]:
         if dag_effect in self.dag_effects:
-            return [
-                parent for parent in self.parents if dag_effect in parent.dag_effects
-            ]
+            return [parent for parent in self.parents if dag_effect in parent.dag_effects]
         return []
 
     def find_ancestor(self, type_: type[Node]) -> Node[Any] | None:

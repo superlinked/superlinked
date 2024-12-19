@@ -87,26 +87,18 @@ class Result:
                 it contains the above-mentioned score column.
             ValueError: If both 'similarity_score' and 'superlinked_similarity_score' fields are present.
         """
-        dataframe_rows = [
-            self._create_dataframe_row(i, entry) for i, entry in enumerate(self.entries)
-        ]
+        dataframe_rows = [self._create_dataframe_row(i, entry) for i, entry in enumerate(self.entries)]
         return DataFrame(dataframe_rows)
 
     def _create_dataframe_row(self, index: int, entry: ResultEntry) -> dict[str, Any]:
         dataframe_row = entry.stored_object.copy()
-        score_field = self._determine_field_name(
-            dataframe_row, DEFAULT_SCORE_FIELD_NAME, FALLBACK_SCORE_FIELD_NAME
-        )
-        rank_field = self._determine_field_name(
-            dataframe_row, DEFAULT_RANK_FIELD_NAME, FALLBACK_RANK_FIELD_NAME
-        )
+        score_field = self._determine_field_name(dataframe_row, DEFAULT_SCORE_FIELD_NAME, FALLBACK_SCORE_FIELD_NAME)
+        rank_field = self._determine_field_name(dataframe_row, DEFAULT_RANK_FIELD_NAME, FALLBACK_RANK_FIELD_NAME)
         dataframe_row[score_field] = entry.entity.score
         dataframe_row[rank_field] = index
         return dataframe_row
 
-    def _determine_field_name(
-        self, dataframe_row: dict[str, Any], default_field: str, fallback_field: str
-    ) -> str:
+    def _determine_field_name(self, dataframe_row: dict[str, Any], default_field: str, fallback_field: str) -> str:
         if default_field not in dataframe_row:
             return default_field
         if fallback_field not in dataframe_row:

@@ -60,9 +60,7 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
     def node_id(self) -> str:
         return self.node.node_id
 
-    def _get_single_evaluation_result(
-        self, value: NodeDataT
-    ) -> SingleEvaluationResult[NodeDataT]:
+    def _get_single_evaluation_result(self, value: NodeDataT) -> SingleEvaluationResult[NodeDataT]:
         return SingleEvaluationResult(self.node_id, value)
 
     def evaluate_next(
@@ -117,9 +115,7 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
             pii_chunk_result=lambda: [str(chunk.value) for chunk in result.chunks],
         )
 
-    def load_stored_result(
-        self, object_id: str, schema: SchemaObject
-    ) -> NodeDataT | None:
+    def load_stored_result(self, object_id: str, schema: SchemaObject) -> NodeDataT | None:
         return self.storage_manager.read_node_result(
             schema,
             object_id,
@@ -144,6 +140,4 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
         parent_validation_type: ParentValidationType,
     ) -> None:
         if not parent_validation_type.validator(len(self.parents)):
-            raise ParentCountException(
-                f"{type(self).__name__} must have {parent_validation_type.description}."
-            )
+            raise ParentCountException(f"{type(self).__name__} must have {parent_validation_type.description}.")

@@ -39,9 +39,7 @@ class GenericClassUtil:
             None,
         )
         if not generic_base_class:
-            raise ValueError(
-                f"{object_.__class__.__name__} does not have a Generic base class."
-            )
+            raise ValueError(f"{object_.__class__.__name__} does not have a Generic base class.")
         return get_args(generic_base_class)
 
     @staticmethod

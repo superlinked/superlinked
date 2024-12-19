@@ -56,9 +56,7 @@ class QueueSubscriber(Generic[PayloadT], Subscriber[PayloadT]):
                     message = self.__generate_queue_message(item)
                     self.__queue.publish(self.__topic_name, message)
 
-    def __generate_queue_message(
-        self, payload: dict
-    ) -> QueueMessage[SchemaIdMessageBody[PayloadT]]:
+    def __generate_queue_message(self, payload: dict) -> QueueMessage[SchemaIdMessageBody[PayloadT]]:
         format_ = payload.__class__.__name__
         created_at = time_util.now()
         return QueueMessage(

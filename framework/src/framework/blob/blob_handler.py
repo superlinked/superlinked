@@ -22,9 +22,7 @@ from superlinked.framework.common.schema.blob_information import BlobInformation
 
 class BlobHandler:
     @abstractmethod
-    def upload(
-        self, object_key: str, data: bytes, metadata: BlobMetadata | None = None
-    ) -> None:
+    def upload(self, object_key: str, data: bytes, metadata: BlobMetadata | None = None) -> None:
         pass
 
     @abstractmethod
@@ -38,9 +36,7 @@ class BlobHandler:
     def calculate_metadata(self, blob_info: BlobInformation) -> BlobMetadata:
         last_url_segment = self._get_last_url_segment(blob_info.path)
         content_type = self._determine_content_type(last_url_segment)
-        return BlobMetadata(
-            content_type=content_type, original_file_name=last_url_segment
-        )
+        return BlobMetadata(content_type=content_type, original_file_name=last_url_segment)
 
     def _get_last_url_segment(self, url: str | None) -> str | None:
         path = urlparse(url).path

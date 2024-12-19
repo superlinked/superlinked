@@ -62,9 +62,7 @@ class NumberEmbeddingConfig(EmbeddingConfig[float]):
 
     def _validate_input(self) -> None:
         if isinstance(self.scale, LogarithmicScale) and self.min_value < 0:
-            raise ValueError(
-                "Min value must be 0 or higher when using logarithmic scale."
-            )
+            raise ValueError("Min value must be 0 or higher when using logarithmic scale.")
         if isinstance(self.scale, LogarithmicScale) and self.max_value < 0:
             raise ValueError("Max value cannot be 0 when using logarithmic scale.")
         if self.min_value >= self.max_value:
@@ -72,9 +70,7 @@ class NumberEmbeddingConfig(EmbeddingConfig[float]):
                 f"The maximum value ({self.max_value}) should be greater than the minimum value ({self.min_value})."
             )
         if self.negative_filter > 0:
-            raise ValueError(
-                f"The negative filter value should not be more than 0. Value is: {self.negative_filter}"
-            )
+            raise ValueError(f"The negative filter value should not be more than 0. Value is: {self.negative_filter}")
 
     @property
     @override

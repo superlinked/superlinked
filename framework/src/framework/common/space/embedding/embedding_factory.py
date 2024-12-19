@@ -72,6 +72,4 @@ class EmbeddingFactory:
     ) -> Embedding[EmbeddingInputT, Any]:
         if embedding_class := EMBEDDING_BY_CONFIG_CLASS.get(type(embedding_config)):
             return embedding_class(embedding_config)
-        raise ValueError(
-            f"Unknown embedding config type: {type(embedding_config).__name__}"
-        )
+        raise ValueError(f"Unknown embedding config type: {type(embedding_config).__name__}")

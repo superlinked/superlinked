@@ -22,9 +22,7 @@ DEFAULT_ADDITIONAL_SPLIT_CHARS: list[str] = [".", "!", "?"]
 
 class Chunker:
     @staticmethod
-    def _split_text_keep_sep(
-        text: str, separator: str, keep_sep: bool = True
-    ) -> list[str]:
+    def _split_text_keep_sep(text: str, separator: str, keep_sep: bool = True) -> list[str]:
         """Split text with separator and keep the separator at the end of each split."""
         parts = text.split(separator)
         result = [
@@ -34,9 +32,7 @@ class Chunker:
         ]
         return result
 
-    def _split_by_sep(
-        self, sep: str, keep_sep: bool = True
-    ) -> Callable[[str], list[str]]:
+    def _split_by_sep(self, sep: str, keep_sep: bool = True) -> Callable[[str], list[str]]:
         """Split text by separator."""
         return lambda text: self._split_text_keep_sep(text, sep, keep_sep)
 
@@ -61,10 +57,7 @@ class Chunker:
         new_splits: list[str] = []
         split_fns: list[Callable[[str], list[str]]] = [
             self._split_by_sep(sep, keep_sep=False) for sep in remove_splitter_chars
-        ] + [
-            self._split_by_sep(sep, keep_sep=True)
-            for sep in additional_splitter_chars + [" "]
-        ]
+        ] + [self._split_by_sep(sep, keep_sep=True) for sep in additional_splitter_chars + [" "]]
 
         while len(splits_to_process) > 0:
             current_split: str = splits_to_process.pop(0)
@@ -74,10 +67,7 @@ class Chunker:
                 sub_split: list[str] = next(
                     (
                         sub_split
-                        for sub_split in [
-                            split_fn(" ".join(current_split.split()))
-                            for split_fn in split_fns
-                        ]
+                        for sub_split in [split_fn(" ".join(current_split.split())) for split_fn in split_fns]
                         if len(sub_split) > 1
                     ),
                     [],
@@ -89,9 +79,7 @@ class Chunker:
 
         return new_splits
 
-    def _merge(
-        self, splits: list[str], chunk_size: int, chunk_overlap: int
-    ) -> list[str]:
+    def _merge(self, splits: list[str], chunk_size: int, chunk_overlap: int) -> list[str]:
         """Merge splits into chunks.
 
         The high-level idea is to keep adding splits to a chunk until we
@@ -144,15 +132,11 @@ class Chunker:
         if not text:
             return []
         chunk_size = DEFAULT_CHUNK_SIZE if chunk_size is None else chunk_size
-        chunk_overlap = (
-            DEFAULT_CHUNK_OVERLAP if chunk_overlap is None else chunk_overlap
-        )
+        chunk_overlap = DEFAULT_CHUNK_OVERLAP if chunk_overlap is None else chunk_overlap
         splits = self._split(
             text=text,
             chunk_size=chunk_size,
             remove_splitter_chars=split_chars_keep,
             additional_splitter_chars=split_chars_remove,
         )
-        return self._merge(
-            splits=splits, chunk_size=chunk_size, chunk_overlap=chunk_overlap
-        )
+        return self._merge(splits=splits, chunk_size=chunk_size, chunk_overlap=chunk_overlap)

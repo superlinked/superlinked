@@ -33,14 +33,10 @@ from superlinked.framework.query.dag.query_node_with_parent import QueryNodeWith
 
 
 class QueryAggregationNode(QueryNodeWithParent[AggregationNode, Vector]):
-    def __init__(
-        self, node: AggregationNode, parents: Sequence[QueryNode[Node[Vector], Vector]]
-    ) -> None:
+    def __init__(self, node: AggregationNode, parents: Sequence[QueryNode[Node[Vector], Vector]]) -> None:
         super().__init__(node, parents)
         if len(self.parents) != 1:
-            raise QueryDagInitializationException(
-                f"{type(self).__name__} must have exactly 1 parent."
-            )
+            raise QueryDagInitializationException(f"{type(self).__name__} must have exactly 1 parent.")
 
     @override
     def _evaluate_parent_results(
@@ -49,11 +45,7 @@ class QueryAggregationNode(QueryNodeWithParent[AggregationNode, Vector]):
         context: ExecutionContext,
     ) -> QueryEvaluationResult[Vector]:
         if len(parent_results) != 1:
-            raise QueryEvaluationException(
-                f"{type(self).__name__} can only evaluate exactly 1 parent result."
-            )
+            raise QueryEvaluationException(f"{type(self).__name__} can only evaluate exactly 1 parent result.")
         if not isinstance(parent_results[0].value, Vector):
-            raise QueryEvaluationException(
-                f"{type(self).__name__} can only evaluate vector type parent result."
-            )
+            raise QueryEvaluationException(f"{type(self).__name__} can only evaluate vector type parent result.")
         return parent_results[0]

@@ -44,17 +44,11 @@ from superlinked.framework.storage.redis.redis_search_index_manager import (
 
 
 class RedisVDBConnector(VDBConnector):
-    def __init__(
-        self, connection_params: RedisConnectionParams, vdb_settings: VDBSettings
-    ) -> None:
+    def __init__(self, connection_params: RedisConnectionParams, vdb_settings: VDBSettings) -> None:
         super().__init__()
-        self._client: redis.Redis = redis.from_url(
-            connection_params.connection_string, protocol=3
-        )
+        self._client: redis.Redis = redis.from_url(connection_params.connection_string, protocol=3)
         self._encoder = RedisFieldEncoder()
-        self.__search_index_manager = RedisSearchIndexManager(
-            self._client, self._encoder
-        )
+        self.__search_index_manager = RedisSearchIndexManager(self._client, self._encoder)
         self._search = RedisSearch(self._client, self._encoder)
         self.__vdb_settings = vdb_settings
 
@@ -81,8 +75,7 @@ class RedisVDBConnector(VDBConnector):
                     _pipeline.hset(
                         RedisVDBConnector._get_redis_id(ed.id_),
                         mapping={
-                            field_name: self._encoder.encode_field(field)
-                            for field_name, field in ed.field_data.items()
+                            field_name: self._encoder.encode_field(field) for field_name, field in ed.field_data.items()
                         },
                     )
             _pipeline.execute()
@@ -126,22 +119,14 @@ class RedisVDBConnector(VDBConnector):
     ) -> Sequence[ResultEntityData]:
         index_config = self._get_index_config(index_name)
         result = self._encoder.convert_bytes_keys_dict(
-            self._search.knn_search_with_checks(
-                index_config, returned_fields, vdb_knn_search_params
-            )
+            self._search.knn_search_with_checks(index_config, returned_fields, vdb_knn_search_params)
         )
         return [
             ResultEntityData(
-                RedisVDBConnector._get_entity_id_from_redis_id(
-                    self._encoder._decode_string(document["id"])
-                ),
-                self._extract_fields_from_document(
-                    document["extra_attributes"], returned_fields
-                ),
+                RedisVDBConnector._get_entity_id_from_redis_id(self._encoder._decode_string(document["id"])),
+                self._extract_fields_from_document(document["extra_attributes"], returned_fields),
                 self._convert_distance_to_score(
-                    self._encoder._decode_double(
-                        document["extra_attributes"][VECTOR_DISTANCE_ALIAS]
-                    )
+                    self._encoder._decode_double(document["extra_attributes"][VECTOR_DISTANCE_ALIAS])
                 ),
             )
             for document in result["results"]
@@ -154,9 +139,7 @@ class RedisVDBConnector(VDBConnector):
         self, document: dict[str, Any], returned_fields: Sequence[Field]
     ) -> dict[str, FieldData]:
         return {
-            returned_field.name: self._encoder.decode_field(
-                returned_field, document[returned_field.name]
-            )
+            returned_field.name: self._encoder.decode_field(returned_field, document[returned_field.name])
             for returned_field in returned_fields
             if document.get(returned_field.name) is not None
         }

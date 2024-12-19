@@ -35,9 +35,7 @@ class InMemorySearchIndexManager(DynamicSearchIndexManager):
         return list(self._index_configs.keys())
 
     @override
-    def _create_search_index(
-        self, index_config: IndexConfig, collection_name: str
-    ) -> None:
+    def _create_search_index(self, index_config: IndexConfig, collection_name: str) -> None:
         pass
 
     @override

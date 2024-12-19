@@ -52,9 +52,7 @@ class OnlineChunkingNode(OnlineNode[ChunkingNode, str]):
         split_chars_remove: list[str] | None = None,
     ) -> list[str]:
         chunker = Chunker()
-        return chunker.chunk_text(
-            text, chunk_size, chunk_overlap, split_chars_keep, split_chars_remove
-        )
+        return chunker.chunk_text(text, chunk_size, chunk_overlap, split_chars_keep, split_chars_remove)
 
     @override
     def evaluate_self(
@@ -69,9 +67,9 @@ class OnlineChunkingNode(OnlineNode[ChunkingNode, str]):
         parsed_schema: ParsedSchema,
         context: ExecutionContext,
     ) -> EvaluationResult[str]:
-        input_: EvaluationResult[str] = cast(
-            OnlineNode[Node[str], str], self.parents[0]
-        ).evaluate_next_single(parsed_schema, context)
+        input_: EvaluationResult[str] = cast(OnlineNode[Node[str], str], self.parents[0]).evaluate_next_single(
+            parsed_schema, context
+        )
         if len(input_.chunks) > 0:
             # We can just log a warning and proceed with input_.main.
             raise ChunkException(f"{self.class_name} cannot have a chunked input.")
@@ -84,8 +82,5 @@ class OnlineChunkingNode(OnlineNode[ChunkingNode, str]):
             self.node.split_chars_remove,
         )
         main = self._get_single_evaluation_result(input_value)
-        chunks = [
-            self._get_single_evaluation_result(chunk_input)
-            for chunk_input in chunk_inputs
-        ]
+        chunks = [self._get_single_evaluation_result(chunk_input) for chunk_input in chunk_inputs]
         return EvaluationResult(main, chunks)

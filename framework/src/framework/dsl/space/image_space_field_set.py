@@ -29,12 +29,16 @@ blob_loader = BlobLoader(allow_bytes=True)
 
 @dataclass
 class ImageSpaceFieldSet(SpaceFieldSet[ImageData]):
+
+    @property
+    @override
+    def input_type(self) -> type:
+        return str
+
     @override
     def _generate_space_input(self, value: PythonTypes) -> ImageData:
         if not isinstance(value, (str, PIL.Image.Image)):
-            raise ValueError(
-                f"Invalid type of input for {type(self).__name__}: {type(value)}"
-            )
+            raise ValueError(f"Invalid type of input for {type(self).__name__}: {type(value)}")
         loaded_image = blob_loader.load(value)
         opened_image: PIL.Image.Image | None = None
         if loaded_image.data:
@@ -44,10 +48,14 @@ class ImageSpaceFieldSet(SpaceFieldSet[ImageData]):
 
 @dataclass
 class ImageDescriptionSpaceFieldSet(SpaceFieldSet[ImageData]):
+
+    @property
+    @override
+    def input_type(self) -> type:
+        return str
+
     @override
     def _generate_space_input(self, value: PythonTypes) -> ImageData:
         if not isinstance(value, str):
-            raise ValueError(
-                f"Invalid type of input for {type(self).__name__}: {type(value)}"
-            )
+            raise ValueError(f"Invalid type of input for {type(self).__name__}: {type(value)}")
         return ImageData(image=None, description=value)

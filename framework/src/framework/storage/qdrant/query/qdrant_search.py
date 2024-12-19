@@ -42,9 +42,7 @@ class QdrantSearch(Search[QdrantVDBKNNSearchParams, QdrantQuery, QueryResponse])
         self._query_builder = QdrantQueryBuilder(encoder)
 
     @override
-    def build_query(
-        self, search_params: QdrantVDBKNNSearchParams, returned_fields: Sequence[Field]
-    ) -> QdrantQuery:
+    def build_query(self, search_params: QdrantVDBKNNSearchParams, returned_fields: Sequence[Field]) -> QdrantQuery:
         return self._query_builder.build(search_params, returned_fields)
 
     @override
@@ -53,10 +51,7 @@ class QdrantSearch(Search[QdrantVDBKNNSearchParams, QdrantQuery, QueryResponse])
         index_config: IndexConfig,
         query: QdrantQuery,
     ) -> QueryResponse:
-        is_exact_search = (
-            index_config.vector_field_descriptor.search_algorithm
-            == SearchAlgorithm.FLAT
-        )
+        is_exact_search = index_config.vector_field_descriptor.search_algorithm == SearchAlgorithm.FLAT
         return self._client.query_points(
             collection_name=query.collection_name,
             query=query.vector.value,

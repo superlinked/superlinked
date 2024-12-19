@@ -49,9 +49,7 @@ class ConcatenationNode(Node[Vector], HasLength):
 
     def __validate_parents(self) -> None:
         if len(self.parents) == 0:
-            raise ParentCountException(
-                f"{self.class_name} must have at least 1 parent."
-            )
+            raise ParentCountException(f"{self.class_name} must have at least 1 parent.")
 
     @property
     def length(self) -> int:
@@ -74,9 +72,5 @@ class ConcatenationNode(Node[Vector], HasLength):
             return self.parents
         return []
 
-    def create_normalization_config(
-        self, weights: Sequence[float]
-    ) -> ConstantNormConfig:
-        return ConstantNormConfig(
-            math.sqrt(sum(weight**2 for weight in weights)) or 1.0
-        )
+    def create_normalization_config(self, weights: Sequence[float]) -> ConstantNormConfig:
+        return ConstantNormConfig(math.sqrt(sum(weight**2 for weight in weights)) or 1.0)

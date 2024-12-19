@@ -45,14 +45,10 @@ class OnlineNumberEmbeddingNode(
         storage_manager: StorageManager,
     ) -> None:
         super().__init__(node, parents, storage_manager)
-        self._embedding_transformation = (
-            TransformationFactory.create_embedding_transformation(
-                self.node.transformation_config
-            )
+        self._embedding_transformation = TransformationFactory.create_embedding_transformation(
+            self.node.transformation_config
         )
-        self.embedding_config = cast(
-            NumberEmbeddingConfig, self.node.transformation_config.embedding_config
-        )
+        self.embedding_config = cast(NumberEmbeddingConfig, self.node.transformation_config.embedding_config)
 
     @property
     @override

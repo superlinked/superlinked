@@ -56,13 +56,11 @@ class Settings(BaseSettings):
 
     @override
     def model_post_init(self, __context: Any) -> None:
-        self.QUEUE_CLASS_ARGS = self.__parse_class_args(  # pylint: disable=invalid-name
-            self.QUEUE_CLASS_ARGS_STR
-        )
+        self.QUEUE_CLASS_ARGS = self.__parse_class_args(self.QUEUE_CLASS_ARGS_STR)  # pylint: disable=invalid-name
         self.__warn_for_incomplete_queue_params()
 
-        self.BLOB_HANDLER_CLASS_ARGS = (  # pylint: disable=invalid-name
-            self.__parse_class_args(self.BLOB_HANDLER_CLASS_ARGS_STR)
+        self.BLOB_HANDLER_CLASS_ARGS = self.__parse_class_args(  # pylint: disable=invalid-name
+            self.BLOB_HANDLER_CLASS_ARGS_STR
         )
         self.__warn_for_incomplete_blob_params()
 

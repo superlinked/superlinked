@@ -67,22 +67,16 @@ class OnlineSchemaDag:
         class_name = type(self).__name__
         leaf_nodes = [node for node in nodes if len(node.children) == 0]
         if len(leaf_nodes) != 1:
-            raise LeafNodeCountException(
-                f"{class_name} must have exactly one leaf Node."
-            )
+            raise LeafNodeCountException(f"{class_name} must have exactly one leaf Node.")
         if not isinstance(leaf_nodes[0], OnlineIndexNode):
-            raise LeafNodeTypeException(
-                f"{class_name} must have a OnlineIndexNode leaf Node."
-            )
+            raise LeafNodeTypeException(f"{class_name} must have a OnlineIndexNode leaf Node.")
         root_node_schemas = set(
             cast(SchemaFieldNode, node.node).schema_field.schema_obj
             for node in nodes
             if isinstance(node, OnlineSchemaFieldNode)
         )
         if len(root_node_schemas) != 1:
-            raise MultipleRootSchemaException(
-                f"{class_name}'s nodes must have the same root schema."
-            )
+            raise MultipleRootSchemaException(f"{class_name}'s nodes must have the same root schema.")
         if schema not in root_node_schemas:
             raise SchemaMismatchException(
                 (

@@ -42,17 +42,11 @@ class SchemaInformation:
 class SchemaFactory:
 
     @staticmethod
-    def _calculate_schema_information(
-        schema_cls: type[T], schema_type: SchemaType
-    ) -> SchemaInformation:
+    def _calculate_schema_information(schema_cls: type[T], schema_type: SchemaType) -> SchemaInformation:
         schema_validator = SchemaValidator(schema_type)
         schema_validator.check_class_attributes(schema_cls)
-        base_class = (
-            IdSchemaObject if schema_type == SchemaType.SCHEMA else EventSchemaObject
-        )
-        schema_field_descriptors = SchemaFactory.calculate_schema_field_descriptors(
-            schema_cls, base_class
-        )
+        base_class = IdSchemaObject if schema_type == SchemaType.SCHEMA else EventSchemaObject
+        schema_field_descriptors = SchemaFactory.calculate_schema_field_descriptors(schema_cls, base_class)
         return SchemaInformation(
             SchemaFactory.get_field_name_or_raise(schema_cls, IdField),
             schema_field_descriptors,
@@ -79,20 +73,14 @@ class SchemaFactory:
         ]
 
     @staticmethod
-    def decorate(
-        schema_cls: type[T], schema_type: SchemaType
-    ) -> type[IdSchemaObject | EventSchemaObject]:
+    def decorate(schema_cls: type[T], schema_type: SchemaType) -> type[IdSchemaObject | EventSchemaObject]:
         SchemaValidator(schema_type).check_unannotated_members(schema_cls)
-        schema_information = SchemaFactory._calculate_schema_information(
-            schema_cls, schema_type
-        )
+        schema_information = SchemaFactory._calculate_schema_information(schema_cls, schema_type)
 
         class Decorated(schema_information.base_class):  # type: ignore
             def __init__(self) -> None:
                 if schema_information.base_class is EventSchemaObject:
-                    created_at_field_name = SchemaFactory.get_field_name_or_raise(
-                        schema_cls, CreatedAtField
-                    )
+                    created_at_field_name = SchemaFactory.get_field_name_or_raise(schema_cls, CreatedAtField)
                     super().__init__(
                         schema_cls,
                         schema_information.id_field_name,

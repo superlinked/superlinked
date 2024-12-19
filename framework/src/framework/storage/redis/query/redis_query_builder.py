@@ -54,9 +54,7 @@ class RedisQueryBuilder:
     def __init__(self, encoder: RedisFieldEncoder) -> None:
         self._encoder = encoder
 
-    def build_query(
-        self, search_params: VDBKNNSearchParams, returned_fields: Sequence[Field]
-    ) -> RedisQuery:
+    def build_query(self, search_params: VDBKNNSearchParams, returned_fields: Sequence[Field]) -> RedisQuery:
         vector_field_param_name = f"{search_params.vector_field.name}_param"
         query_string = self._create_query_string(search_params, vector_field_param_name)
         query = self._init_query(query_string, search_params.limit, returned_fields)
@@ -64,16 +62,12 @@ class RedisQueryBuilder:
         query_params = {vector_field_param_name: query_vector}
         return RedisQuery(query, query_params)
 
-    def _compile_filters_to_redis_filters(
-        self, filters: Sequence[ComparisonOperation[Field]]
-    ) -> Sequence[RedisFilter]:
+    def _compile_filters_to_redis_filters(self, filters: Sequence[ComparisonOperation[Field]]) -> Sequence[RedisFilter]:
         return [self._compile_filter(filter_) for filter_ in filters]
 
     def _compile_filter(self, filter_: ComparisonOperation[Field]) -> RedisFilter:
         other = (
-            self._get_other_as_sequence(filter_._other)
-            if filter_._op in LIST_TYPE_COMPATIBLE_TYPES
-            else filter_._other
+            self._get_other_as_sequence(filter_._other) if filter_._op in LIST_TYPE_COMPATIBLE_TYPES else filter_._other
         )
         field_value = (
             self._encode_iterable_field(filter_._operand, other)
@@ -82,9 +76,7 @@ class RedisQueryBuilder:
         )
         return RedisFilter(cast(Field, filter_._operand), field_value, filter_._op)
 
-    def _encode_iterable_field(
-        self, operand: ComparisonOperand, other: Any
-    ) -> list[RedisEncodedTypes]:
+    def _encode_iterable_field(self, operand: ComparisonOperand, other: Any) -> list[RedisEncodedTypes]:
         return [self._encode_field(operand, item) for item in other]
 
     def _get_other_as_sequence(self, other: Any) -> Sequence[Any]:
@@ -92,21 +84,15 @@ class RedisQueryBuilder:
             return cast(Sequence, other)
         return [other]
 
-    def _encode_field(
-        self, operand: ComparisonOperand, other: object
-    ) -> RedisEncodedTypes:
-        return self._encoder.encode_field(
-            FieldData.from_field(cast(Field, operand), other)
-        )
+    def _encode_field(self, operand: ComparisonOperand, other: object) -> RedisEncodedTypes:
+        return self._encoder.encode_field(FieldData.from_field(cast(Field, operand), other))
 
     def _create_query_string(
         self,
         search_params: VDBKNNSearchParams,
         vector_field_param_name: str,
     ) -> str:
-        pre_filter_str = self.calculate_pre_filters_str(
-            search_params, vector_field_param_name
-        )
+        pre_filter_str = self.calculate_pre_filters_str(search_params, vector_field_param_name)
         return (
             f"{pre_filter_str}=>[KNN {search_params.limit} "
             + f"@{search_params.vector_field.name} ${vector_field_param_name} AS {VECTOR_DISTANCE_ALIAS}]"
@@ -117,14 +103,9 @@ class RedisQueryBuilder:
         search_params: VDBKNNSearchParams,
         vector_field_param_name: str,
     ) -> str:
-        grouped_filters = ComparisonOperation._group_filters_by_group_key(
-            search_params.filters or []
-        )
+        grouped_filters = ComparisonOperation._group_filters_by_group_key(search_params.filters or [])
         prefixes_by_group: dict[int | None, list[str]] = {
-            group_key: [
-                redis_filter.get_prefix()
-                for redis_filter in self._compile_filters_to_redis_filters(filters)
-            ]
+            group_key: [redis_filter.get_prefix() for redis_filter in self._compile_filters_to_redis_filters(filters)]
             for group_key, filters in grouped_filters.items()
         }
         if search_params.radius is not None:
@@ -146,9 +127,7 @@ class RedisQueryBuilder:
             return grouped_prefixes[0]
         return f"({' '.join(grouped_prefixes)})"
 
-    def _init_query(
-        self, query_string: str, limit: int, returned_fields: Sequence[Field]
-    ) -> Query:
+    def _init_query(self, query_string: str, limit: int, returned_fields: Sequence[Field]) -> Query:
         return (
             Query(query_string)
             .sort_by(VECTOR_DISTANCE_ALIAS, asc=True)

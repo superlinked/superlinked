@@ -29,9 +29,7 @@ from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.online.source.online_source import OnlineSource
 
 
-class InteractiveSource(
-    OnlineSource[IdSchemaObjectT, SourceTypeT], Generic[IdSchemaObjectT, SourceTypeT]
-):
+class InteractiveSource(OnlineSource[IdSchemaObjectT, SourceTypeT], Generic[IdSchemaObjectT, SourceTypeT]):
     """
     InteractiveSource represents a source of data, where you can put your data. This will supply
     the index with the data it needs to index and search in.
@@ -55,15 +53,11 @@ class InteractiveSource(
         """
         super().__init__(
             schema,
-            cast(
-                DataParser[IdSchemaObjectT, SourceTypeT], parser or JsonParser(schema)
-            ),
+            cast(DataParser[IdSchemaObjectT, SourceTypeT], parser or JsonParser(schema)),
         )
         self.__can_accept_data = False
         if not isinstance(schema, IdSchemaObject):
-            raise InitializationException(
-                f"Parameter `schema` is of invalid type: {schema.__class__.__name__}"
-            )
+            raise InitializationException(f"Parameter `schema` is of invalid type: {schema.__class__.__name__}")
 
     def allow_data_ingestion(self) -> None:
         self.__can_accept_data = True

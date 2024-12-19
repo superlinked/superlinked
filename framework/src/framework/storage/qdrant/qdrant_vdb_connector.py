@@ -67,9 +67,7 @@ ID_PAYLOAD_FIELD = Field(FieldDataType.STRING, ID_PAYLOAD_FIELD_NAME)
 
 
 class QdrantVDBConnector(VDBConnector):
-    def __init__(
-        self, connection_params: QdrantConnectionParams, vdb_settings: VDBSettings
-    ) -> None:
+    def __init__(self, connection_params: QdrantConnectionParams, vdb_settings: VDBSettings) -> None:
         super().__init__()
         self._client = QdrantClient(
             url=connection_params.connection_string,
@@ -102,22 +100,16 @@ class QdrantVDBConnector(VDBConnector):
         create_search_indices: bool,
         override_existing: bool = False,
     ) -> None:
-        super().init_search_index_configs(
-            index_configs, create_search_indices, override_existing
-        )
+        super().init_search_index_configs(index_configs, create_search_indices, override_existing)
         self._vector_field_names.extend(
-            [
-                index_config.vector_field_descriptor.field_name
-                for index_config in index_configs
-            ]
+            [index_config.vector_field_descriptor.field_name for index_config in index_configs]
         )
 
     @override
     def write_entities(self, entity_data: Sequence[EntityData]) -> None:
         if not self.search_index_manager._index_configs:
             raise IndexConfigNotFoundException(
-                f"{type(self).__name__} can work properly only after initializing "
-                + "the search indices."
+                f"{type(self).__name__} can work properly only after initializing " + "the search indices."
             )
         points = [
             PointStruct(
@@ -130,45 +122,29 @@ class QdrantVDBConnector(VDBConnector):
         non_existing_points, existing_points = self._split_points_by_existing(points)
         update_operations = list[UpdateOperation]()
         if non_existing_points:
-            update_operations.append(
-                UpsertOperation(upsert=PointsList(points=non_existing_points))
-            )
+            update_operations.append(UpsertOperation(upsert=PointsList(points=non_existing_points)))
         update_vectors_points = [
-            PointVectors(id=point.id, vector=point.vector)
-            for point in existing_points
-            if point.vector
+            PointVectors(id=point.id, vector=point.vector) for point in existing_points if point.vector
         ]
         if update_vectors_points:
-            update_operations.append(
-                UpdateVectorsOperation(
-                    update_vectors=UpdateVectors(points=update_vectors_points)
-                )
-            )
+            update_operations.append(UpdateVectorsOperation(update_vectors=UpdateVectors(points=update_vectors_points)))
         set_payload_operations = [
-            SetPayloadOperation(
-                set_payload=SetPayload(payload=point.payload, points=[point.id])
-            )
+            SetPayloadOperation(set_payload=SetPayload(payload=point.payload, points=[point.id]))
             for point in existing_points
             if point.payload
         ]
         if set_payload_operations:
             update_operations.extend(set_payload_operations)
-        self._client.batch_update_points(
-            self.collection_name, update_operations=update_operations
-        )
+        self._client.batch_update_points(self.collection_name, update_operations=update_operations)
 
-    def _get_point_vector_dict(
-        self, entity_data: EntityData
-    ) -> dict[str, QdrantEncodedTypes]:
+    def _get_point_vector_dict(self, entity_data: EntityData) -> dict[str, QdrantEncodedTypes]:
         return {
             field_data.name: self._encoder.encode_field(field_data)
             for field_data in entity_data.field_data.values()
             if field_data.name in self._vector_field_names
         }
 
-    def _get_point_payload_dict(
-        self, entity_data: EntityData
-    ) -> dict[str, QdrantEncodedTypes]:
+    def _get_point_payload_dict(self, entity_data: EntityData) -> dict[str, QdrantEncodedTypes]:
         field_data: list[FieldData] = list(entity_data.field_data.values()) + [
             FieldData.from_field(
                 ID_PAYLOAD_FIELD,
@@ -188,31 +164,19 @@ class QdrantVDBConnector(VDBConnector):
             self.collection_name, [point.id for point in points], with_payload=False
         )
         existing_point_ids = [point.id for point in existing_point_records]
-        non_existing_points = [
-            point for point in points if point.id not in existing_point_ids
-        ]
+        non_existing_points = [point for point in points if point.id not in existing_point_ids]
         existing_points = [point for point in points if point.id in existing_point_ids]
         return non_existing_points, existing_points
 
     @override
     def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
-        returned_field_names = {
-            field.name for entity in entities for field in entity.fields.values()
-        } | {ID_PAYLOAD_FIELD_NAME}
+        returned_field_names = {field.name for entity in entities for field in entity.fields.values()} | {
+            ID_PAYLOAD_FIELD_NAME
+        }
         vector_fields = list(
-            {
-                field_name
-                for field_name in returned_field_names
-                if field_name in self._vector_field_names
-            }
+            {field_name for field_name in returned_field_names if field_name in self._vector_field_names}
         )
-        payload_fields = list(
-            {
-                field_name
-                for field_name in returned_field_names
-                if field_name not in vector_fields
-            }
-        )
+        payload_fields = list({field_name for field_name in returned_field_names if field_name not in vector_fields})
         points = self._client.retrieve(
             self.collection_name,
             ids=[QdrantVDBConnector._get_qdrant_id(entity.id_) for entity in entities],
@@ -220,13 +184,9 @@ class QdrantVDBConnector(VDBConnector):
             with_payload=payload_fields or False,
         )
         entity_by_id = {entity.id_: entity for entity in entities}
-        return [
-            self._get_entity_data_from_point(point, entity_by_id) for point in points
-        ]
+        return [self._get_entity_data_from_point(point, entity_by_id) for point in points]
 
-    def _get_entity_data_from_point(
-        self, point: Record, entity_by_id: dict[EntityId, Entity]
-    ) -> EntityData:
+    def _get_entity_data_from_point(self, point: Record, entity_by_id: dict[EntityId, Entity]) -> EntityData:
         payload_fields = self._check_and_get_payload(point)
         vector_fields = self._check_and_get_vectors(point)
         all_returned_fields = payload_fields | vector_fields
@@ -235,9 +195,7 @@ class QdrantVDBConnector(VDBConnector):
         return EntityData(
             id_,
             {
-                field.name: self._encoder.decode_field(
-                    field, all_returned_fields.get(field.name)
-                )
+                field.name: self._encoder.decode_field(field, all_returned_fields.get(field.name))
                 for field in fields.values()
             },
         )
@@ -256,14 +214,9 @@ class QdrantVDBConnector(VDBConnector):
         result: QueryResponse = self._search.knn_search_with_checks(
             index_config,
             extended_returned_fields,
-            QdrantVDBKNNSearchParams.from_base(
-                vdb_knn_search_params, self.collection_name
-            ),
+            QdrantVDBKNNSearchParams.from_base(vdb_knn_search_params, self.collection_name),
         )
-        return [
-            self._get_result_entity_data_from_point(point, returned_fields)
-            for point in result.points
-        ]
+        return [self._get_result_entity_data_from_point(point, returned_fields) for point in result.points]
 
     def _get_result_entity_data_from_point(
         self, point: ScoredPoint, returned_fields: Sequence[Field]
@@ -275,23 +228,17 @@ class QdrantVDBConnector(VDBConnector):
         return ResultEntityData(
             id_,
             {
-                field.name: self._encoder.decode_field(
-                    field, all_returned_fields[field.name]
-                )
+                field.name: self._encoder.decode_field(field, all_returned_fields[field.name])
                 for field in returned_fields
                 if all_returned_fields.get(field.name) is not None
             },
             self._encoder._decode_base_type(point.score),
         )
 
-    def _check_and_get_vectors(
-        self, point: Record | ScoredPoint
-    ) -> dict[str, list[float]]:
+    def _check_and_get_vectors(self, point: Record | ScoredPoint) -> dict[str, list[float]]:
         if point.vector is None:
             return {}
-        if not isinstance(point.vector, dict) or any(
-            v for v in point.vector.values() if not isinstance(v, list)
-        ):
+        if not isinstance(point.vector, dict) or any(v for v in point.vector.values() if not isinstance(v, list)):
             raise ValueError(f"Retrieved point's payload is invalid: {[point.payload]}")
         return cast(dict[str, list[float]], point.payload)
 
@@ -302,9 +249,7 @@ class QdrantVDBConnector(VDBConnector):
 
     @staticmethod
     def _get_qdrant_id(entity_id: EntityId) -> str:
-        return StringUtil.deterministic_hash_of_strings(
-            [entity_id.schema_id, entity_id.object_id]
-        )
+        return StringUtil.deterministic_hash_of_strings([entity_id.schema_id, entity_id.object_id])
 
     @staticmethod
     def _entity_id_to_payload(entity_id: EntityId) -> str:
@@ -313,8 +258,6 @@ class QdrantVDBConnector(VDBConnector):
     def _entity_id_from_payload(self, payload: Payload) -> EntityId:
         id_str = payload.get(ID_PAYLOAD_FIELD_NAME)
         if id_str is None or not isinstance(id_str, str):
-            raise ValueError(
-                f"The mandatory {ID_PAYLOAD_FIELD_NAME} is invalid: {id_str}."
-            )
+            raise ValueError(f"The mandatory {ID_PAYLOAD_FIELD_NAME} is invalid: {id_str}.")
         schema_id, object_id = self._encoder._decode_base_type(id_str).split(":", 1)
         return EntityId(schema_id=schema_id, object_id=object_id)

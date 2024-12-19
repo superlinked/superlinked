@@ -17,7 +17,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from dataclasses import dataclass, replace
 
-from beartype.typing import Any, Generic, TypeVar, cast
+from beartype.typing import Any, Generic, Sequence, TypeVar, cast
 from typing_extensions import Self, override
 
 from superlinked.framework.common.const import constants
@@ -30,8 +30,10 @@ from superlinked.framework.common.interface.comparison_operation_type import (
     ComparisonOperationType,
 )
 from superlinked.framework.common.interface.evaluated import Evaluated
+from superlinked.framework.common.interface.has_annotation import HasAnnotation
 from superlinked.framework.common.nlq.open_ai import OpenAIClientConfig
 from superlinked.framework.common.schema.schema_object import SchemaField
+from superlinked.framework.common.util.generic_class_util import GenericClassUtil
 from superlinked.framework.dsl.query.param import (
     UNSET_PARAM_NAME,
     Param,
@@ -43,6 +45,9 @@ from superlinked.framework.dsl.query.predicate.binary_predicate import (
     SimilarPredicate,
 )
 from superlinked.framework.dsl.query.query_filter_validator import QueryFilterValidator
+from superlinked.framework.dsl.space.categorical_similarity_space import (
+    CategoricalSimilaritySpace,
+)
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
@@ -56,36 +61,58 @@ class QueryClause(Generic[EvaluatedQueryT]):
     def __post_init__(self) -> None:
         self._set_param_name_if_unset()
 
-    def alter_value(self, params: dict[str, Any], is_override_set: bool) -> Self:
-        if is_override_set or not isinstance(self.value_param, Evaluated):
-            param_to_alter = self.get_param(self.value_param)
-            if (value := params.get(param_to_alter.name)) is not None:
-                return replace(self, value_param=param_to_alter.to_evaluated(value))
-        return self
-
     @abstractmethod
     def evaluate(self) -> EvaluatedQueryT: ...
 
     @abstractmethod
     def get_default_value_param_name(self) -> str: ...
 
+    @property
+    def value_accepted_type(self) -> type:
+        raise RuntimeError("This method should not be used.")
+
+    @property
+    def params(self) -> Sequence[Param | Evaluated[Param]]:
+        return [self.value_param]
+
+    @property
+    def value_param_name(self) -> str:
+        return self.get_param(self.value_param).name
+
+    def alter_value(self, params: dict[str, Any], is_override_set: bool) -> Self:
+        if (is_override_set or not isinstance(self.value_param, Evaluated)) and (
+            value := params.get(self.value_param_name)
+        ) is not None:
+            param_to_alter = self.get_param(self.value_param)
+            return replace(self, value_param=param_to_alter.to_evaluated(value))
+        return self
+
     def get_value(self) -> PythonTypes | None:
         value = self.get_param_value(self.value_param)
         return cast(PythonTypes | None, value)
 
-    def get_param_value(self, param: Param | Evaluated[Param]) -> ParamInputType | None:
+    def get_allowed_values(self, param: Param | Evaluated[Param]) -> set[ParamInputType]:
+        return self.get_param(param).options or set()
+
+    @classmethod
+    def get_param_value(cls, param: Param | Evaluated[Param]) -> ParamInputType | None:
         if isinstance(param, Evaluated):
             if param.value is None:
                 return param.item.default
             return param.value
         return param.default
 
-    def get_param(self, param: Param | Evaluated[Param]) -> Param:
+    @classmethod
+    def get_param(cls, param: Param | Evaluated[Param]) -> Param:
         return param.item if isinstance(param, Evaluated) else param
 
     def _set_param_name_if_unset(self) -> None:
-        if (value_param := self.get_param(self.value_param)).name is UNSET_PARAM_NAME:
-            value_param.name = self.get_default_value_param_name()
+        if self.value_param_name is UNSET_PARAM_NAME:
+            self.get_param(self.value_param).name = self.get_default_value_param_name()
+
+    @classmethod
+    def _format_param_options(cls, param: Param) -> str:
+        return ", ".join(sorted(str(value) for value in param.options)) if param.options else ""
 
 
 QueryClauseT = TypeVar("QueryClauseT", bound=QueryClause)
@@ -96,10 +123,11 @@ class WeightedQueryClause(QueryClause[EvaluatedQueryT]):
     weight_param: Param | Evaluated[Param]
 
     def alter_weight(self, params: dict[str, Any], is_override_set: bool) -> Self:
-        if is_override_set or not isinstance(self.weight_param, Evaluated):
+        if (is_override_set or not isinstance(self.weight_param, Evaluated)) and (
+            weight := params.get(self.weight_param_name)
+        ) is not None:
             param_to_alter = self.get_param(self.weight_param)
-            if (weight := params.get(param_to_alter.name)) is not None:
-                return replace(self, weight_param=param_to_alter.to_evaluated(weight))
+            return replace(self, weight_param=param_to_alter.to_evaluated(weight))
         return self
 
     def get_weight(self) -> float:
@@ -107,32 +135,41 @@ class WeightedQueryClause(QueryClause[EvaluatedQueryT]):
         if weight is None:
             weight = constants.DEFAULT_WEIGHT
         if not isinstance(weight, (int, float)):
-            raise QueryException(
-                f"Clause weight should be numeric, got {type(weight).__name__}."
-            )
+            raise QueryException(f"Clause weight should be numeric, got {type(weight).__name__}.")
         return float(weight)
 
     @abstractmethod
     def get_default_weight_param_name(self) -> str: ...
 
+    @property
+    @override
+    def params(self) -> Sequence[Param | Evaluated[Param]]:
+        return [self.value_param, self.weight_param]
+
+    @property
+    def weight_param_name(self) -> str:
+        return self.get_param(self.weight_param).name
+
+    @property
+    def weight_accepted_type(self) -> type:
+        return float
+
     @override
     def _set_param_name_if_unset(self) -> None:
         super()._set_param_name_if_unset()
-        if (weight_param := self.get_param(self.weight_param)).name is UNSET_PARAM_NAME:
-            weight_param.name = self.get_default_weight_param_name()
+        if self.weight_param_name is UNSET_PARAM_NAME:
+            self.get_param(self.weight_param).name = self.get_default_weight_param_name()
 
 
 @dataclass(frozen=True)
-class SpaceWeightClause(QueryClause[tuple[Space, float]]):
+class SpaceWeightClause(QueryClause[tuple[Space, float]], HasAnnotation):
     space: Space
 
     @override
     def get_value(self) -> float:
         if (value := super().get_value()) is not None:
             if not isinstance(value, (int, float)):
-                raise QueryException(
-                    f"Space weight should be numeric, got {type(value).__name__}."
-                )
+                raise QueryException(f"Space weight should be numeric, got {type(value).__name__}.")
             return float(value)
         return constants.DEFAULT_NOT_AFFECTING_WEIGHT
 
@@ -144,10 +181,34 @@ class SpaceWeightClause(QueryClause[tuple[Space, float]]):
     def get_default_value_param_name(self) -> str:
         return f"space_weight_{type(self.space).__name__}_{hash(self.space)}_param"
 
+    @property
+    @override
+    def annotation(self) -> str:
+        param = self.get_param(self.value_param)
+        options = self._format_param_options(param)
+        description = param.description
+        return "".join(
+            (
+                f"  - {param.name}: A {self.value_accepted_type.__name__} "
+                "controlling the importance of this space compared to others.",
+                f"\n    - **Possible values:** {options}." if options else "",
+                f"\n    - **Description:** {description}" if description else "",
+                "\n    - **Usage:** Positive values (e.g., `1.0`) boost matches; ",
+                "higher values increase importance. Negative values (e.g., `-1.0`) penalize matches. ",
+                "Zero (`0.0`) means no effect.",
+            )
+        )
+
+    @property
+    @override
+    def value_accepted_type(self) -> type:
+        return float
+
 
 @dataclass(frozen=True)
 class LooksLikeFilterClause(
-    WeightedQueryClause[EvaluatedBinaryPredicate[LooksLikePredicate] | None]
+    WeightedQueryClause[EvaluatedBinaryPredicate[LooksLikePredicate] | None],
+    HasAnnotation,
 ):
     schema_field: SchemaField
 
@@ -170,10 +231,41 @@ class LooksLikeFilterClause(
     def get_default_weight_param_name(self) -> str:
         return f"with_vector_{self.schema_field.name}_weight_param"
 
+    @property
+    @override
+    def annotation(self) -> str:
+        value_param = self.get_param(self.value_param)
+        weight_param = self.get_param(self.weight_param)
+        v_options = self._format_param_options(value_param)
+        w_options = self._format_param_options(weight_param)
+        v_description = value_param.description or ""
+        w_description = weight_param.description or ""
+        return "".join(
+            (
+                f"  - {value_param.name}: A {self.value_accepted_type.__name__} "
+                "representing a similarity-search item for each space.",
+                f"\n    - **Possible values:** {v_options}." if v_options else "",
+                f"\n    - **Description:** {v_description}" if v_description else "",
+                "\n    - **Usage:** Retrieves a vector using the identifier, split it "
+                "into parts for each space, and treat each part as a similarity-search item.",
+                f"\n  - {weight_param.name}: A {self.weight_accepted_type.__name__} controlling "
+                "the importance of this similarity-search item within each space.",
+                (f"\n    - **Possible values:** {w_options}." if w_options else ""),
+                f"\n    - **Description:** {w_description}" if w_description else "",
+                "\n    - **Usage:** Same as `space_weight`, but within the space",
+            )
+        )
+
+    @property
+    @override
+    def value_accepted_type(self) -> type:
+        return str
+
 
 @dataclass(frozen=True)
 class SimilarFilterClause(
-    WeightedQueryClause[tuple[Space, EvaluatedBinaryPredicate[SimilarPredicate]] | None]
+    WeightedQueryClause[tuple[Space, EvaluatedBinaryPredicate[SimilarPredicate]] | None],
+    HasAnnotation,
 ):
     field_set: SpaceFieldSet
     schema_field: SchemaField
@@ -192,9 +284,7 @@ class SimilarFilterClause(
             return None
         node = self.space._get_embedding_node(self.schema_field.schema_obj)
         similar_filter = EvaluatedBinaryPredicate(
-            SimilarPredicate(
-                self.schema_field, cast(ParamInputType, value), weight, node
-            )
+            SimilarPredicate(self.schema_field, cast(ParamInputType, value), weight, node)
         )
         return self.space, similar_filter
 
@@ -206,9 +296,55 @@ class SimilarFilterClause(
     def get_default_weight_param_name(self) -> str:
         return f"similar_filter_{self.space}_{self.schema_field.name}_weight_param"
 
+    @property
+    @override
+    def annotation(self) -> str:
+        value_param = self.get_param(self.value_param)
+        weight_param = self.get_param(self.weight_param)
+        v_options = self._format_param_options(value_param)
+        w_options = self._format_param_options(weight_param)
+        v_description = value_param.description or ""
+        w_description = weight_param.description or ""
+        return "".join(
+            (
+                f"  - {value_param.name}: A {self.value_accepted_type.__name__} "
+                "representing a similarity-search item.",
+                f"\n    - **Possible values:** {v_options}." if v_options else "",
+                f"\n    - **Description:** {v_description}" if v_description else "",
+                "\n    - **Usage:** Encoded into a vector, used to find similar items, "
+                "and combined with others based on weights.",
+                f"\n  - {weight_param.name}: A {self.weight_accepted_type.__name__} "
+                "controlling the importance of this similarity-search item within the same space.",
+                (f"\n    - **Possible values:** {w_options}." if w_options else ""),
+                f"\n    - **Description:** {w_description}" if w_description else "",
+                "\n    - **Usage:** Same as `space_weight`, but within the space",
+            )
+        )
+
+    @property
+    @override
+    def value_accepted_type(self) -> type:
+        return self.field_set.input_type
+
+    @override
+    def get_allowed_values(self, param: Param | Evaluated[Param]) -> set[ParamInputType]:
+        if param == self.weight_param:
+            return super().get_allowed_values(self.weight_param)
+        categories: set[ParamInputType] = (
+            set(self.space._embedding_config.categories)
+            if isinstance(self.space, CategoricalSimilaritySpace)
+            else set()
+        )
+        options = self.get_param(param).options or set()
+        if options and not categories:
+            return options
+        if categories and not options:
+            return categories
+        return options.intersection(categories)
+
 
 @dataclass(frozen=True)
-class HardFilterClause(QueryClause[ComparisonOperation[SchemaField] | None]):
+class HardFilterClause(QueryClause[ComparisonOperation[SchemaField] | None], HasAnnotation):
     op: ComparisonOperationType
     operand: SchemaField
     group_key: int | None
@@ -223,10 +359,28 @@ class HardFilterClause(QueryClause[ComparisonOperation[SchemaField] | None]):
         if value is None:
             return None
         operation = ComparisonOperation(self.op, self.operand, value, self.group_key)
-        QueryFilterValidator.validate_operation_operand_type(
-            operation, allow_param=False
-        )
+        QueryFilterValidator.validate_operation_operand_type(operation, allow_param=False)
         return operation
+
+    @property
+    @override
+    def annotation(self) -> str:
+        value_param = self.get_param(self.value_param)
+        options = self._format_param_options(value_param)
+        description = value_param.description or ""
+        return "".join(
+            (
+                f"  - {value_param.name}: A {self.value_accepted_type.__name__} "
+                f"that must {self.op.value.replace('_', ' ')} the `body` field.",
+                f"\n    - **Possible values:** {options}." if options else "",
+                f"\n    - **Description:** {description}" if description else "",
+            )
+        )
+
+    @property
+    @override
+    def value_accepted_type(self) -> type:
+        return GenericClassUtil.get_single_generic_type(self.operand)
 
 
 @dataclass(frozen=True)
@@ -241,9 +395,7 @@ class NLQClause(QueryClause[str | None]):
     def evaluate(self) -> str | None:
         value = self.get_value()
         if value is not None and not isinstance(value, str):
-            raise QueryException(
-                f"NLQ prompt should be str, got {type(value).__name__}."
-            )
+            raise QueryException(f"NLQ prompt should be str, got {type(value).__name__}.")
         return value
 
 
@@ -258,9 +410,7 @@ class NLQSystemPromptClause(QueryClause[str | None]):
     def evaluate(self) -> str | None:
         value = self.get_value()
         if value is not None and not isinstance(value, str):
-            raise QueryException(
-                f"NLQ system prompt should be str, got {type(value).__name__}."
-            )
+            raise QueryException(f"NLQ system prompt should be str, got {type(value).__name__}.")
         return value
 
 
@@ -275,9 +425,7 @@ class LimitClause(QueryClause[int]):
     def get_value(self) -> int:
         if (value := super().get_value()) is not None:
             if not isinstance(value, int):
-                raise QueryException(
-                    f"Limit should be int, got {type(value).__name__}."
-                )
+                raise QueryException(f"Limit should be int, got {type(value).__name__}.")
             return value
         return constants.DEFAULT_LIMIT
 
@@ -296,9 +444,7 @@ class RadiusClause(QueryClause[float | None]):
     def get_value(self) -> float | None:
         if (value := super().get_value()) is not None:
             if not isinstance(value, int | float):
-                raise QueryException(
-                    f"Radius should be numeric, got {type(value).__name__}."
-                )
+                raise QueryException(f"Radius should be numeric, got {type(value).__name__}.")
             return float(value)
         return None
 
@@ -318,8 +464,6 @@ class OverriddenNowClause(QueryClause[int | None]):
     def evaluate(self) -> int | None:
         if (value := self.get_value()) is not None:
             if not isinstance(value, int):
-                raise QueryException(
-                    f"'now' should be int, got {type(value).__name__}."
-                )
+                raise QueryException(f"'now' should be int, got {type(value).__name__}.")
             return value
         return None

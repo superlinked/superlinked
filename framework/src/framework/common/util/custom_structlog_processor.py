@@ -24,9 +24,7 @@ class CustomStructlogProcessor:
 
     @staticmethod
     def _set_log_var(key: str, value: Any, override: bool = False) -> Processor:
-        def set_event_arg(
-            _: WrappedLogger, __: str, event_dict: EventDict
-        ) -> EventDict:
+        def set_event_arg(_: WrappedLogger, __: str, event_dict: EventDict) -> EventDict:
             if override or key not in event_dict:
                 event_dict[key] = value
             return event_dict
@@ -34,9 +32,7 @@ class CustomStructlogProcessor:
         return set_event_arg
 
     @staticmethod
-    def drop_color_message_key(
-        _: WrappedLogger, __: str, event_dict: EventDict
-    ) -> EventDict:
+    def drop_color_message_key(_: WrappedLogger, __: str, event_dict: EventDict) -> EventDict:
         """
         Uvicorn logs the message a second time in the extra `color_message`, but we don't
         need it. This processor drops the key from the event dict if it exists.
@@ -46,9 +42,7 @@ class CustomStructlogProcessor:
 
     @staticmethod
     def _get_json_file_renderer(log_file_path: str) -> Processor:
-        def render_to_json_file(
-            _: WrappedLogger, __: str, event_dict: EventDict
-        ) -> EventDict:
+        def render_to_json_file(_: WrappedLogger, __: str, event_dict: EventDict) -> EventDict:
             line = json.dumps(event_dict)
             with open(log_file_path, "a", encoding="utf-8") as log_file:
                 log_file.write(line + "\n")
@@ -58,15 +52,11 @@ class CustomStructlogProcessor:
 
     @staticmethod
     def filter_pii(_: WrappedLogger, __: str, event_dict: EventDict) -> EventDict:
-        event_dict = {
-            k: v for k, v in event_dict.items() if not k.startswith(PII_PREFIX)
-        }
+        event_dict = {k: v for k, v in event_dict.items() if not k.startswith(PII_PREFIX)}
         return event_dict
 
     @staticmethod
-    def evaluate_lazy_arguments(
-        _: WrappedLogger, __: str, event_dict: EventDict
-    ) -> EventDict:
+    def evaluate_lazy_arguments(_: WrappedLogger, __: str, event_dict: EventDict) -> EventDict:
         for key, value in event_dict.items():
             if callable(value):
                 event_dict[key] = value()

@@ -27,27 +27,17 @@ from superlinked.framework.common.space.embedding.embedding import Embedding
 CATEGORICAL_ENCODING_VALUE: int = 1
 
 
-class CategoricalSimilarityEmbedding(
-    Embedding[list[str], CategoricalSimilarityEmbeddingConfig]
-):
+class CategoricalSimilarityEmbedding(Embedding[list[str], CategoricalSimilarityEmbeddingConfig]):
     def __init__(self, embedding_config: CategoricalSimilarityEmbeddingConfig) -> None:
         super().__init__(embedding_config)
-        self._other_category_index: int | None = (
-            self.length - 1 if self._config.uncategorized_as_category else None
-        )
-        self._category_index_map: dict[str, int] = {
-            elem: i for i, elem in enumerate(self._config.categories)
-        }
-        self._default_n_hot_encoding = np.full(
-            self.length, self._config.negative_filter, dtype=np.float64
-        )
+        self._other_category_index: int | None = self.length - 1 if self._config.uncategorized_as_category else None
+        self._category_index_map: dict[str, int] = {elem: i for i, elem in enumerate(self._config.categories)}
+        self._default_n_hot_encoding = np.full(self.length, self._config.negative_filter, dtype=np.float64)
 
     @override
     def embed(self, input_: list[str], context: ExecutionContext) -> Vector:
         n_hot_encoding: NPArray = self._n_hot_encode(input_, context.is_query_context)
-        negative_filter_indices = set(
-            i for i in range(self.length) if i not in self._get_category_indices(input_)
-        )
+        negative_filter_indices = set(i for i in range(self.length) if i not in self._get_category_indices(input_))
         return Vector(n_hot_encoding, negative_filter_indices)
 
     def _n_hot_encode(self, category_list: Sequence[str], is_query: bool) -> NPArray:
@@ -64,8 +54,7 @@ class CategoricalSimilarityEmbedding(
             {
                 category_index
                 for category_value in text_input
-                if (category_index := self._get_index_for_category(category_value))
-                is not None
+                if (category_index := self._get_index_for_category(category_value)) is not None
             }
         )
 

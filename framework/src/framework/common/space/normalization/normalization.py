@@ -105,10 +105,7 @@ class ConstantNorm(Normalization[ConstantNormConfig]):
 
     @override
     def __eq__(self, other: Any) -> bool:
-        return (
-            isinstance(other, type(self))
-            and self._config.length == other._config.length
-        )
+        return isinstance(other, type(self)) and self._config.length == other._config.length
 
 
 class NoNorm(Normalization[NoNormConfig]):

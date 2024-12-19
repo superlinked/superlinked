@@ -56,9 +56,7 @@ class RedisSearchIndexManager(DynamicSearchIndexManager):
         )
 
     @override
-    def _create_search_index(
-        self, index_config: IndexConfig, collection_name: str
-    ) -> None:
+    def _create_search_index(self, index_config: IndexConfig, collection_name: str) -> None:
         index_def = IndexDefinition(index_type=IndexType.HASH)
         fields = RedisFieldDescriptorCompiler.compile_descriptors(
             index_config.vector_field_descriptor, index_config.field_descriptors

@@ -68,17 +68,13 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
 
     def __init_named_parents(self) -> None:
         inputs_to_aggregate = [
-            parent
-            for parent in self.parents
-            if parent.node.node_id == self.node.input_to_aggregate.node_id
+            parent for parent in self.parents if parent.node.node_id == self.node.input_to_aggregate.node_id
         ]
         if len(inputs_to_aggregate) > 1:
             raise ParentCountException(
                 f"{self.class_name} cannot have more than 1 parents to aggregate, got {len(inputs_to_aggregate)}"
             )
-        self._input_to_aggregate = (
-            inputs_to_aggregate[0] if len(inputs_to_aggregate) > 0 else None
-        )
+        self._input_to_aggregate = inputs_to_aggregate[0] if len(inputs_to_aggregate) > 0 else None
         self.weighted_filter_parents = {
             parent: self.__get_parent_weight(parent)
             for parent in self.parents
@@ -87,11 +83,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
 
     def __get_parent_weight(self, parent: OnlineNode) -> float:
         return next(
-            (
-                filter_.weight
-                for filter_ in self.node.filters
-                if filter_.item == parent.node
-            ),
+            (filter_.weight for filter_ in self.node.filters if filter_.item == parent.node),
             constants.DEFAULT_WEIGHT,
         )
 
@@ -114,10 +106,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         context: ExecutionContext,
     ) -> EvaluationResult[Vector]:
         self.__check_schema_validity(parsed_schema.schema)
-        stored_result = (
-            self.load_stored_result(parsed_schema.id_, parsed_schema.schema)
-            or Vector.empty_vector()
-        )
+        stored_result = self.load_stored_result(parsed_schema.id_, parsed_schema.schema) or Vector.empty_vector()
         input_to_aggregate = self._input_to_aggregate
         if (
             not isinstance(parsed_schema, ParsedSchemaWithEvent)
@@ -129,16 +118,12 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         affecting_vector = self._calculate_affecting_vector(
             context, parsed_schema.event_parsed_schema, input_to_aggregate
         )
-        weights = self._calculate_affecting_weights(
-            parsed_schema.event_parsed_schema, context
-        )
+        weights = self._calculate_affecting_weights(parsed_schema.event_parsed_schema, context)
         if self._should_return_stored_result(affecting_vector, weights):
             return EvaluationResult(self._get_single_evaluation_result(stored_result))
 
         avg_affecting_weight = sum(weights) / len(weights)
-        event_metadata: EventMetadata = self._calculate_and_store_metadata(
-            parsed_schema, len(weights)
-        )
+        event_metadata: EventMetadata = self._calculate_and_store_metadata(parsed_schema, len(weights))
         event_aggregator_params = EventAggregatorParams(
             context,
             stored_result,
@@ -150,9 +135,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         event_vector = EventAggregator(event_aggregator_params).calculate_event_vector()
         return EvaluationResult(self._get_single_evaluation_result(event_vector))
 
-    def _should_return_stored_result(
-        self, affecting_vector: Vector, weights: Sequence[float]
-    ) -> bool:
+    def _should_return_stored_result(self, affecting_vector: Vector, weights: Sequence[float]) -> bool:
         """
         For 2 event effects, 2 OnlineEventAggregationNode (OEAN) will be created.
         When receiving an event, both OEANs will be evaluated. The `weights`
@@ -168,17 +151,12 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         event_parsed_schema: EventParsedSchema,
         input_to_aggregate: OnlineNode,
     ) -> Vector:
-        affecting_parsed_schema = self._map_event_schema_to_affecting_schema(
-            event_parsed_schema
-        )
-        affecting_vector = input_to_aggregate.evaluate_next_single(
-            affecting_parsed_schema, context
-        ).main.value
+        affecting_parsed_schema = self._map_event_schema_to_affecting_schema(event_parsed_schema)
+        affecting_vector = input_to_aggregate.evaluate_next_single(affecting_parsed_schema, context).main.value
 
         if not isinstance(affecting_vector, Vector):
             raise DagEvaluationException(
-                "parent_to_aggregate's evaluation result must be of type Vector"
-                + f", got {type(affecting_vector)}"
+                "parent_to_aggregate's evaluation result must be of type Vector" + f", got {type(affecting_vector)}"
             )
 
         return affecting_vector
@@ -199,14 +177,10 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         return [
             weight
             for filter_parent, weight in self.weighted_filter_parents.items()
-            if filter_parent.evaluate_next_single(
-                event_parsed_schema, context
-            ).main.value
+            if filter_parent.evaluate_next_single(event_parsed_schema, context).main.value
         ]
 
-    def _map_event_schema_to_affecting_schema(
-        self, event_parsed_schema: EventParsedSchema
-    ) -> ParsedSchema:
+    def _map_event_schema_to_affecting_schema(self, event_parsed_schema: EventParsedSchema) -> ParsedSchema:
         return next(
             ParsedSchema(self.node.affecting_schema.schema, field.value, [])
             for field in event_parsed_schema.fields
@@ -257,9 +231,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         recalculated_effect_count: int,
         new_effect_count: int,
     ) -> int:
-        previous_avg_ts = stored_by_key.get(
-            OnlineEventAggregationNode.EFFECT_AVG_TS_KEY
-        )
+        previous_avg_ts = stored_by_key.get(OnlineEventAggregationNode.EFFECT_AVG_TS_KEY)
         if previous_avg_ts and new_effect_count == 0:
             return previous_avg_ts
         return (
@@ -274,12 +246,8 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
             else parsed_schema.event_parsed_schema.created_at
         )
 
-    def _calculate_oldest_ts(
-        self, stored_by_key: dict, parsed_schema: ParsedSchemaWithEvent
-    ) -> int:
-        previous_oldest_ts = stored_by_key.get(
-            OnlineEventAggregationNode.EFFECT_OLDEST_TS_KEY
-        )
+    def _calculate_oldest_ts(self, stored_by_key: dict, parsed_schema: ParsedSchemaWithEvent) -> int:
+        previous_oldest_ts = stored_by_key.get(OnlineEventAggregationNode.EFFECT_OLDEST_TS_KEY)
         return (
             min(previous_oldest_ts, parsed_schema.event_parsed_schema.created_at)
             if previous_oldest_ts

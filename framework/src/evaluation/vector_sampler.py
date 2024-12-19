@@ -55,9 +55,7 @@ class VectorCollection:
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, VectorCollection):
-            return (self.id_list == other.id_list) & np.allclose(
-                self.vectors, other.vectors
-            )
+            return (self.id_list == other.id_list) & np.allclose(self.vectors, other.vectors)
         return False
 
     def __str__(self) -> str:
@@ -121,17 +119,10 @@ class VectorSampler:
         weights = [weight_dict.get(space, 1) for space in spaces]
         vector_slices = np.split(vector_value, list(lengths.cumsum()))
         weighted_vector_values = np.concatenate(
-            [
-                vector_slice * weight
-                for vector_slice, weight in zip(vector_slices, weights)
-            ]
+            [vector_slice * weight for vector_slice, weight in zip(vector_slices, weights)]
         )
-        normalized_vector_values = weighted_vector_values / linalg.norm(
-            weighted_vector_values
-        )
-        vector.value[vector.non_negative_filter_mask] = normalized_vector_values[
-            vector.non_negative_filter_mask
-        ]
+        normalized_vector_values = weighted_vector_values / linalg.norm(weighted_vector_values)
+        vector.value[vector.non_negative_filter_mask] = normalized_vector_values[vector.non_negative_filter_mask]
 
         return vector
 
@@ -165,13 +156,10 @@ class VectorSampler:
         if readable_id_ is None:
             readable_ids = ids
         else:
-            readable_ids = (
-                [readable_id_] if isinstance(readable_id_, str) else readable_id_
-            )
+            readable_ids = [readable_id_] if isinstance(readable_id_, str) else readable_id_
         if len(ids) != len(readable_ids):
             raise ValueError(
-                f"id_ and readable_id_ should have the same length. "
-                f"Got {len(ids)} and {len(readable_ids)}"
+                f"id_ and readable_id_ should have the same length. " f"Got {len(ids)} and {len(readable_ids)}"
             )
 
         entity_vectors: list[NPArray] = []
@@ -225,44 +213,24 @@ class VectorSampler:
         Raises:
             VectorNotFoundError: If no vector is found for any entities.
         """
-        headers = self._read_node_results(
-            schema, index._node.node_id, index._node.node_data_type
-        )
+        headers = self._read_node_results(schema, index._node.node_id, index._node.node_data_type)
         if include_chunks:
             entity_ids: list[str] = [header.object_id for header in headers]
-            readable_ids: list[str] = [
-                self.human_readable_id_for_chunks(header) for header in headers
-            ]
-            return self.get_vectors_by_ids(
-                entity_ids, index, schema, weight_dict, readable_ids
-            )
+            readable_ids: list[str] = [self.human_readable_id_for_chunks(header) for header in headers]
+            return self.get_vectors_by_ids(entity_ids, index, schema, weight_dict, readable_ids)
 
-        entity_ids = list(
-            {
-                self.__get_id_for_standalone_entity_origin_id_for_chunk(header)
-                for header in headers
-            }
-        )
+        entity_ids = list({self.__get_id_for_standalone_entity_origin_id_for_chunk(header) for header in headers})
         return self.get_vectors_by_ids(entity_ids, index, schema)
 
-    def _read_node_results(
-        self, schema: SchemaObject, node_id: str, result_type: type
-    ) -> Sequence[Header]:
+    def _read_node_results(self, schema: SchemaObject, node_id: str, result_type: type) -> Sequence[Header]:
         entity_builder = self.__app.storage_manager._entity_builder
         in_memory_vdb = cast(InMemoryVDB, self.__app.storage_manager._vdb_connector)
 
-        schema_filter = (
-            entity_builder._admin_fields.schema_id.field == schema._schema_name
-        )
+        schema_filter = entity_builder._admin_fields.schema_id.field == schema._schema_name
         result_field = entity_builder.compose_field(node_id, result_type)
         returned_fields = entity_builder._admin_fields.header_fields
-        entity_data = in_memory_vdb.read_entities_matching_filters(
-            [schema_filter], [result_field], returned_fields
-        )
-        return [
-            entity_builder._admin_fields.extract_header(ed.field_data)
-            for ed in entity_data
-        ]
+        entity_data = in_memory_vdb.read_entities_matching_filters([schema_filter], [result_field], returned_fields)
+        return [entity_builder._admin_fields.extract_header(ed.field_data) for ed in entity_data]
 
     @staticmethod
     def __get_id_for_standalone_entity_origin_id_for_chunk(

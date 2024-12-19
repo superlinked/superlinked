@@ -39,16 +39,12 @@ class AggregationEffectGroup(Generic[AggregationInputT, EmbeddingInputT]):
 
     space: Space[AggregationInputT, EmbeddingInputT]
     affected_schema: SchemaObject
-    effects: Sequence[
-        EffectWithReferencedSchemaObject[AggregationInputT, EmbeddingInputT]
-    ]
+    effects: Sequence[EffectWithReferencedSchemaObject[AggregationInputT, EmbeddingInputT]]
 
     @classmethod
     def from_filtered_effects(
         cls,
-        filtered_effects: Sequence[
-            EffectWithReferencedSchemaObject[AggregationInputT, EmbeddingInputT]
-        ],
+        filtered_effects: Sequence[EffectWithReferencedSchemaObject[AggregationInputT, EmbeddingInputT]],
     ) -> AggregationEffectGroup[AggregationInputT, EmbeddingInputT]:
         effect_sample = filtered_effects[0]
         return cls(

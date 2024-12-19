@@ -25,14 +25,10 @@ from torchvision.transforms.transforms import Compose  # type:ignore[import-unty
 class OpenClipModelCache:
     @staticmethod
     @lru_cache(maxsize=10)
-    def initialize_model(
-        model_name: str, device: str, cache_dir: Path
-    ) -> tuple[CLIP, Compose]:
+    def initialize_model(model_name: str, device: str, cache_dir: Path) -> tuple[CLIP, Compose]:
         model, _, preprocess_val = cast(
             tuple[CLIP, Any, Compose],
-            create_model_and_transforms(
-                model_name, device=device, cache_dir=str(cache_dir)
-            ),
+            create_model_and_transforms(model_name, device=device, cache_dir=str(cache_dir)),
         )
         return model, preprocess_val
 

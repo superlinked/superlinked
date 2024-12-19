@@ -40,18 +40,14 @@ class BlobLoader:
             "https": BlobLoader.load_from_url,
         }
         if handler := BlobHandlerFactory.create_blob_handler():
-            self._scheme_to_load_function[
-                handler.get_supported_cloud_storage_scheme()
-            ] = handler.download
+            self._scheme_to_load_function[handler.get_supported_cloud_storage_scheme()] = handler.download
 
     def load(self, blob_like_input: str | Image | None | Any) -> BlobInformation:
         if not isinstance(blob_like_input, str | Image) or not blob_like_input:
             type_text = type(blob_like_input).__name__
             if type_text == "str":
                 type_text = f"empty {type_text}"
-            raise ValueError(
-                f"Blob field must contain a non-empty str or PIL.Image.Image input, got: {type_text}."
-            )
+            raise ValueError(f"Blob field must contain a non-empty str or PIL.Image.Image input, got: {type_text}.")
 
         if isinstance(blob_like_input, Image):
             with io.BytesIO() as buffer:
@@ -64,9 +60,7 @@ class BlobLoader:
                 encoded_bytes = base64.b64encode(decoded_bytes)
                 return BlobInformation(encoded_bytes)
             logger.error("byte input not enabled", allow_bytes=self.allow_bytes)
-            raise ValueError(
-                "Base64 encoded input is not supported in this operation mode."
-            )
+            raise ValueError("Base64 encoded input is not supported in this operation mode.")
 
         blob_path = cast(str, blob_like_input)
         loader = self._get_loader(blob_path)

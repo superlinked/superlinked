@@ -76,11 +76,7 @@ class PubSubQueue(Queue[MessageT], Generic[MessageT]):
 
     def __init_retry(self) -> retries.Retry:
         return retries.Retry(
-            timeout=(
-                float(self._retry_timeout)
-                if self._retry_timeout is not None
-                else PubSubQueue.DEFAULT_TIMEOUT
-            ),
+            timeout=(float(self._retry_timeout) if self._retry_timeout is not None else PubSubQueue.DEFAULT_TIMEOUT),
             predicate=retries.if_exception_type(*EXCEPTIONS_TO_RETRY),
             on_error=on_error,
         )

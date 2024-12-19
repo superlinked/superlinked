@@ -53,9 +53,7 @@ FIELD_DATA_TYPE_BY_NODE_DATA_TYPE: dict[type[NodeDataTypes | dict], FieldDataTyp
     BlobInformation: FieldDataType.BLOB,
 }
 
-VALID_TYPE_BY_FIELD_DATA_TYPE: dict[
-    FieldDataType, Sequence[type[NodeDataTypes | dict]]
-] = {
+VALID_TYPE_BY_FIELD_DATA_TYPE: dict[FieldDataType, Sequence[type[NodeDataTypes | dict]]] = {
     FieldDataType.BLOB: [BlobInformation],
     FieldDataType.DOUBLE: [int, float],
     FieldDataType.INT: [int],
@@ -77,15 +75,11 @@ class FieldTypeConverter:
             cast(type[ConcreteSchemaField], schema_field_cls)
         ):
             return field_data_type
-        raise NotImplementedError(
-            f"Unknown schema field type: {schema_field_cls.__name__}"
-        )
+        raise NotImplementedError(f"Unknown schema field type: {schema_field_cls.__name__}")
 
     @staticmethod
     def convert_node_data_type(type_: type[NodeDataTypes]) -> FieldDataType:
-        if field_data_type := FIELD_DATA_TYPE_BY_NODE_DATA_TYPE.get(
-            cast(type[NodeDataTypes], type_)
-        ):
+        if field_data_type := FIELD_DATA_TYPE_BY_NODE_DATA_TYPE.get(cast(type[NodeDataTypes], type_)):
             return field_data_type
         raise NotImplementedError(f"Unknown python type: {type_}")
 
@@ -93,7 +87,4 @@ class FieldTypeConverter:
     def get_valid_node_data_types(
         data_type: FieldDataType,
     ) -> Sequence[type[NodeDataTypes]]:
-        return [
-            GenericClassUtil.if_not_class_get_origin(type_)
-            for type_ in VALID_TYPE_BY_FIELD_DATA_TYPE[data_type]
-        ]
+        return [GenericClassUtil.if_not_class_get_origin(type_) for type_ in VALID_TYPE_BY_FIELD_DATA_TYPE[data_type]]

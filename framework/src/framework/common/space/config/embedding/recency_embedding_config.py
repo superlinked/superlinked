@@ -42,9 +42,7 @@ class RecencyEmbeddingConfig(EmbeddingConfig[int]):
         if self.negative_filter > 0:
             sum_weights: float = sum(param.weight for param in self.period_time_list)
 
-            max_period_time: timedelta = max(
-                param.period_time for param in self.period_time_list
-            )
+            max_period_time: timedelta = max(param.period_time for param in self.period_time_list)
             max_period_time_str = (
                 f"{max_period_time.days} days"
                 if max_period_time.days

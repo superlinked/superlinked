@@ -86,9 +86,7 @@ class ExecutionContext:
             case NowStrategy.SYSTEM_TIME:
                 return time_util.now()
             case _:
-                raise NotImplementedException(
-                    f"Unknown now strategy: {self.now_strategy}"
-                )
+                raise NotImplementedException(f"Unknown now strategy: {self.now_strategy}")
 
     @property
     def environment(self) -> ExecutionEnvironment:
@@ -110,16 +108,10 @@ class ExecutionContext:
         return cast(T, value)
 
     def get_weight_of_node(self, node_id: str) -> float:
-        weight_param = self.get_node_context_value(
-            node_id, SPACE_WEIGHT_PARAM_NAME, float
-        )
-        return float(
-            weight_param if weight_param is not None else constants.DEFAULT_WEIGHT
-        )
+        weight_param = self.get_node_context_value(node_id, SPACE_WEIGHT_PARAM_NAME, float)
+        return float(weight_param if weight_param is not None else constants.DEFAULT_WEIGHT)
 
-    def set_node_context_value(
-        self, node_id: str, key: str, value: ContextValue | None
-    ) -> None:
+    def set_node_context_value(self, node_id: str, key: str, value: ContextValue | None) -> None:
         self.__node_context(node_id)[key] = value
 
     def get_common_value(self, key: str, _: type[T]) -> T | None:

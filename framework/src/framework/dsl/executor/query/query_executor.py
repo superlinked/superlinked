@@ -90,13 +90,9 @@ class QueryExecutor:
             QueryException: If the query index is not amongst the executor's indices.
         """
         self.__check_executor_has_index()
-        query_descriptor = QueryParamValueSetter.set_values(
-            self._query_descriptor, params
-        )
+        query_descriptor = QueryParamValueSetter.set_values(self._query_descriptor, params)
         knn_search_params = self._produce_knn_search_params(query_descriptor)
-        entities: Sequence[SearchResultItem] = self._knn_search(
-            knn_search_params, query_descriptor
-        )
+        entities: Sequence[SearchResultItem] = self._knn_search(knn_search_params, query_descriptor)
         self._logger.info(
             "executed query",
             n_results=len(entities),
@@ -111,9 +107,7 @@ class QueryExecutor:
             knn_search_params.vector,
         )
 
-    def _produce_knn_search_params(
-        self, query_descriptor: QueryDescriptor
-    ) -> KNNSearchParams:
+    def _produce_knn_search_params(self, query_descriptor: QueryDescriptor) -> KNNSearchParams:
         limit = query_descriptor.get_limit()
         radius = query_descriptor.get_radius()
         hard_filters = query_descriptor.get_hard_filters()
@@ -123,9 +117,7 @@ class QueryExecutor:
     def _produce_query_vector(self, query_descriptor: QueryDescriptor) -> Vector:
         weight_by_space = query_descriptor.get_weights_by_space()
         context = self._create_query_context_base(query_descriptor)
-        query_node_inputs_by_node_id = self.calculate_query_node_inputs_by_node_id(
-            query_descriptor
-        )
+        query_node_inputs_by_node_id = self.calculate_query_node_inputs_by_node_id(query_descriptor)
         return self.query_vector_factory.produce_vector(
             query_descriptor.index._node_id,
             query_node_inputs_by_node_id,
@@ -134,9 +126,7 @@ class QueryExecutor:
             context,
         )
 
-    def _create_query_context_base(
-        self, query_descriptor: QueryDescriptor
-    ) -> ExecutionContext:
+    def _create_query_context_base(self, query_descriptor: QueryDescriptor) -> ExecutionContext:
         eval_context = ExecutionContext(
             environment=ExecutionEnvironment.QUERY,
             data=self.app._context.data,
@@ -174,9 +164,7 @@ class QueryExecutor:
             weight = similar_clause.get_weight()
             if value is None or not weight:
                 continue
-            node_id = similar_clause.space._get_embedding_node(
-                query_descriptor.schema
-            ).node_id
+            node_id = similar_clause.space._get_embedding_node(query_descriptor.schema).node_id
             add_input(
                 node_id,
                 similar_clause.field_set._generate_space_input(value),
@@ -199,9 +187,7 @@ class QueryExecutor:
             Vector,
         )
         if vector is None:
-            raise QueryException(
-                f"Entity not found object_id: {object_id} node_id: {index_node_id}"
-            )
+            raise QueryException(f"Entity not found object_id: {object_id} node_id: {index_node_id}")
         return vector
 
     def _knn_search(
@@ -217,12 +203,7 @@ class QueryExecutor:
     def _map_entities_to_result_entries(
         self, schema: IdSchemaObject, result_items: Sequence[SearchResultItem]
     ) -> Sequence[ResultEntry]:
-        object_ids = list(
-            {
-                entity.header.origin_id or entity.header.object_id
-                for entity in result_items
-            }
-        )
+        object_ids = list({entity.header.origin_id or entity.header.object_id for entity in result_items})
 
         object_jsons = self.app.storage_manager.read_object_jsons(schema, object_ids)
 
@@ -231,22 +212,13 @@ class QueryExecutor:
                 f"Unable to find {schema._schema_name} objects in storage with the following IDs: {missing_ids}"
             )
 
-        return [
-            ResultEntry(item, self.__get_object_json_by_id(object_jsons, item))
-            for item in result_items
-        ]
+        return [ResultEntry(item, self.__get_object_json_by_id(object_jsons, item)) for item in result_items]
 
-    def __get_object_json_by_id(
-        self, object_jsons: dict, search_result_item: SearchResultItem
-    ) -> dict:
-        object_id = (
-            search_result_item.header.origin_id or search_result_item.header.object_id
-        )
+    def __get_object_json_by_id(self, object_jsons: dict, search_result_item: SearchResultItem) -> dict:
+        object_id = search_result_item.header.origin_id or search_result_item.header.object_id
         if object_json := object_jsons.get(object_id):
             return object_json
-        raise QueryException(
-            f"No object json found in VDB for item: {search_result_item.header}"
-        )
+        raise QueryException(f"No object json found in VDB for item: {search_result_item.header}")
 
     def __check_executor_has_index(self) -> None:
         if self._query_descriptor.index not in self.app._indices:

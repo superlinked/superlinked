@@ -66,17 +66,11 @@ class RecencyPlotter:
         self.context: ExecutionContext = ExecutionContext.from_context_data(
             context_data, environment=ExecutionEnvironment.IN_MEMORY
         )
-        self._embedding_config = cast(
-            RecencyEmbeddingConfig, recency_space.transformation_config.embedding_config
+        self._embedding_config = cast(RecencyEmbeddingConfig, recency_space.transformation_config.embedding_config)
+        self._embedding_transformation = TransformationFactory.create_embedding_transformation(
+            recency_space.transformation_config
         )
-        self._embedding_transformation = (
-            TransformationFactory.create_embedding_transformation(
-                recency_space.transformation_config
-            )
-        )
-        self._negative_filter_time_period_showcase_multiplier = (
-            negative_filter_time_period_showcase_multiplier
-        )
+        self._negative_filter_time_period_showcase_multiplier = negative_filter_time_period_showcase_multiplier
         self.vector_similarity_calculator = vector_similarity_calculator
 
     def plot_recency_curve(
@@ -100,23 +94,14 @@ class RecencyPlotter:
         """
         now_ts: int = self.context.now()
         max_period_time_ts: int = int(
-            max(
-                period_time.period_time
-                for period_time in self._embedding_config.period_time_list
-            ).total_seconds()
+            max(period_time.period_time for period_time in self._embedding_config.period_time_list).total_seconds()
         )
 
         oldest_ts_to_plot: int = int(
-            now_ts
-            - (
-                max_period_time_ts
-                * self._negative_filter_time_period_showcase_multiplier
-            )
+            now_ts - (max_period_time_ts * self._negative_filter_time_period_showcase_multiplier)
         )
 
-        df: pd.DataFrame = self._generate_recency_scores(
-            oldest_ts_to_plot, now_ts, num_points
-        )
+        df: pd.DataFrame = self._generate_recency_scores(oldest_ts_to_plot, now_ts, num_points)
 
         return (
             alt.Chart(df)
@@ -126,32 +111,20 @@ class RecencyPlotter:
                 y=alt.Y("score", title="Recency score"),
                 tooltip=["date"],
             )
-            .properties(
-                width=width, height=height, title="Recency scores (unit weight)"
-            )
+            .properties(width=width, height=height, title="Recency scores (unit weight)")
         )
 
-    def _generate_recency_scores(
-        self, oldest_ts_to_plot: int, now_ts: int, num_points: int
-    ) -> pd.DataFrame:
-        plot_timestamps: np.ndarray = np.linspace(
-            start=oldest_ts_to_plot, stop=now_ts, num=num_points
-        )
+    def _generate_recency_scores(self, oldest_ts_to_plot: int, now_ts: int, num_points: int) -> pd.DataFrame:
+        plot_timestamps: np.ndarray = np.linspace(start=oldest_ts_to_plot, stop=now_ts, num=num_points)
         recency_vectors: list[Vector] = [
-            self._embedding_transformation.transform(plot_ts, self.context)
-            for plot_ts in plot_timestamps
+            self._embedding_transformation.transform(plot_ts, self.context) for plot_ts in plot_timestamps
         ]
         now_vector: Vector = self._embedding_transformation.transform(
             now_ts,
-            ExecutionContext.from_context_data(
-                self.context.data, environment=ExecutionEnvironment.QUERY
-            ),
+            ExecutionContext.from_context_data(self.context.data, environment=ExecutionEnvironment.QUERY),
         )
         recency_scores: list[float] = [
-            self.vector_similarity_calculator.calculate_similarity(now_vector, vec)
-            for vec in recency_vectors
+            self.vector_similarity_calculator.calculate_similarity(now_vector, vec) for vec in recency_vectors
         ]
-        date_labels: list[datetime.datetime] = [
-            datetime.datetime.fromtimestamp(ts) for ts in plot_timestamps
-        ]
+        date_labels: list[datetime.datetime] = [datetime.datetime.fromtimestamp(ts) for ts in plot_timestamps]
         return pd.DataFrame({"date": date_labels, "score": recency_scores})

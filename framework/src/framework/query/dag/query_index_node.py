@@ -41,13 +41,9 @@ class QueryIndexNode(QueryNodeWithParent[IndexNode, Vector]):
         super().__init__(node, parents)
 
     @override
-    def _validate_evaluation_inputs(
-        self, inputs: Mapping[str, Sequence[QueryNodeInput]]
-    ) -> None:
+    def _validate_evaluation_inputs(self, inputs: Mapping[str, Sequence[QueryNodeInput]]) -> None:
         super()._validate_evaluation_inputs(inputs)
-        if invalid_index_node_inputs := [
-            input_ for input_ in inputs.get(self.node_id, []) if not input_.to_invert
-        ]:
+        if invalid_index_node_inputs := [input_ for input_ in inputs.get(self.node_id, []) if not input_.to_invert]:
             raise QueryEvaluationException(
                 "Query index node can only be addressed with items to be inverted, "
                 + f"got {invalid_index_node_inputs}"
@@ -57,14 +53,10 @@ class QueryIndexNode(QueryNodeWithParent[IndexNode, Vector]):
     def _propagate_inputs_to_invert(
         self, inputs: Mapping[str, Sequence[QueryNodeInput]], context: ExecutionContext
     ) -> dict[str, Sequence[QueryNodeInput]]:
-        inputs_to_invert = [
-            input_ for input_ in inputs.get(self.node_id, []) if input_.to_invert
-        ]
+        inputs_to_invert = [input_ for input_ in inputs.get(self.node_id, []) if input_.to_invert]
         if inputs_to_invert:
             active_parent = self._get_active_parent(context)
-            return self._merge_inputs(
-                [inputs, {active_parent.node_id: inputs_to_invert}]
-            )
+            return self._merge_inputs([inputs, {active_parent.node_id: inputs_to_invert}])
         return dict(inputs)
 
     @override
@@ -75,13 +67,9 @@ class QueryIndexNode(QueryNodeWithParent[IndexNode, Vector]):
         return [active_parent.evaluate_with_validation(inputs, context)]
 
     @override
-    def _validate_parent_results(
-        self, parent_results: Sequence[QueryEvaluationResult]
-    ) -> None:
+    def _validate_parent_results(self, parent_results: Sequence[QueryEvaluationResult]) -> None:
         if len(parent_results) != 1:
-            raise QueryEvaluationException(
-                f"{type(self).__name__} must have exactly 1 parent result."
-            )
+            raise QueryEvaluationException(f"{type(self).__name__} must have exactly 1 parent result.")
 
     @override
     def _evaluate_parent_results(
@@ -90,34 +78,24 @@ class QueryIndexNode(QueryNodeWithParent[IndexNode, Vector]):
         context: ExecutionContext,
     ) -> QueryEvaluationResult[Vector]:
         if (count := len(parent_results)) != 1:
-            raise QueryEvaluationException(
-                f"Query index must receive exactly 1 parent result, got {count}."
-            )
+            raise QueryEvaluationException(f"Query index must receive exactly 1 parent result, got {count}.")
         if not isinstance(parent_results[0].value, Vector):
             raise QueryEvaluationException(
-                "Query index's parent result must be a vector, "
-                + f"got {type(parent_results[0].value).__name__}."
+                "Query index's parent result must be a vector, " + f"got {type(parent_results[0].value).__name__}."
             )
         return parent_results[0]
 
-    def _get_active_parent(
-        self, context: ExecutionContext
-    ) -> QueryNode[Node[Vector], Vector]:
-        queried_schema_name = context.get_node_context_value(
-            self.node_id, QUERIED_SCHEMA_NAME_CONTEXT_KEY, str
-        )
+    def _get_active_parent(self, context: ExecutionContext) -> QueryNode[Node[Vector], Vector]:
+        queried_schema_name = context.get_node_context_value(self.node_id, QUERIED_SCHEMA_NAME_CONTEXT_KEY, str)
         if queried_schema_name is None:
             raise QueryEvaluationException("Missing schema name for query.")
         active_parent = [
             parent
             for parent in self.parents
-            if queried_schema_name
-            in [schema._schema_name for schema in parent.node.schemas]
+            if queried_schema_name in [schema._schema_name for schema in parent.node.schemas]
         ]
         if len(active_parent) == 0:
-            raise QueryEvaluationException(
-                f"Query dag doesn't have the given schema {queried_schema_name}."
-            )
+            raise QueryEvaluationException(f"Query dag doesn't have the given schema {queried_schema_name}.")
         if len(active_parent) > 1:
             raise QueryEvaluationException(
                 "Ambiguous query dag definition, query index node cannot "

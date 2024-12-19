@@ -77,35 +77,23 @@ class TransformationFactory:
     def create_embedding_transformation(
         transformation_config: TransformationConfig[AggregationInputT, EmbeddingInputT]
     ) -> Step[EmbeddingInputT, Vector]:
-        embedding = EmbeddingFactory.create_embedding(
-            transformation_config.embedding_config
-        )
-        normalization = NormalizationFactory.create_normalization(
-            transformation_config.normalization_config
-        )
+        embedding = EmbeddingFactory.create_embedding(transformation_config.embedding_config)
+        normalization = NormalizationFactory.create_normalization(transformation_config.normalization_config)
         return EmbeddingStep(embedding).combine(NormalizationStep(normalization))
 
     @staticmethod
     def create_multi_embedding_transformation(
         transformation_config: TransformationConfig[AggregationInputT, EmbeddingInputT]
     ) -> Step[Sequence[EmbeddingInputT], list[Vector]]:
-        embedding = EmbeddingFactory.create_embedding(
-            transformation_config.embedding_config
-        )
-        normalization = NormalizationFactory.create_normalization(
-            transformation_config.normalization_config
-        )
-        return MultiEmbeddingStep(embedding).combine(
-            MultiNormalizationStep(normalization)
-        )
+        embedding = EmbeddingFactory.create_embedding(transformation_config.embedding_config)
+        normalization = NormalizationFactory.create_normalization(transformation_config.normalization_config)
+        return MultiEmbeddingStep(embedding).combine(MultiNormalizationStep(normalization))
 
     @staticmethod
     def create_aggregation_transformation(
         transformation_config: TransformationConfig[AggregationInputT, EmbeddingInputT],
     ) -> Step[Sequence[Weighted[Vector]], Vector]:
-        base_transformations = TransformationFactory.__create_base_transformations(
-            transformation_config
-        )
+        base_transformations = TransformationFactory.__create_base_transformations(transformation_config)
         aggregation_step = AggregationStep(base_transformations.aggregation)
         transformation: Step[Sequence[Weighted[Vector]], Vector]
         if (
@@ -116,10 +104,7 @@ class TransformationFactory:
                 transformation_config, base_transformations
             )
         else:
-            if (
-                transformation_config.aggregation_config.aggregation_input_type
-                is not Vector
-            ):
+            if transformation_config.aggregation_config.aggregation_input_type is not Vector:
                 raise TransformationConfigurationException(
                     "Cannot create non-vector aggregation step without an invertible embedding. "
                     + f"Got {transformation_config.embedding_config}"
@@ -148,35 +133,21 @@ class TransformationFactory:
                 "Cannot create aggregation step using an embedding with a different input type. "
                 + f"Got {transformation_config.embedding_config}"
             )
-        inverse_multi_normalization_step = MultiNormalizationStep(
-            base_transformations.normalization, denormalize=True
-        )
-        inverse_multi_embedding_step = InverseMultiEmbeddingStep(
-            base_transformations.embedding
-        )
+        inverse_multi_normalization_step = MultiNormalizationStep(base_transformations.normalization, denormalize=True)
+        inverse_multi_embedding_step = InverseMultiEmbeddingStep(base_transformations.embedding)
         temp_lift_weighting_wrapper = TempLiftWeightingWrapper(
             inverse_multi_normalization_step.combine(inverse_multi_embedding_step)
         )
         normalization_step = NormalizationStep(base_transformations.normalization)
         aggregation_step = AggregationStep(base_transformations.aggregation)
         embedding_step = EmbeddingStep(base_transformations.embedding)
-        return (
-            temp_lift_weighting_wrapper.combine(aggregation_step)
-            .combine(embedding_step)
-            .combine(normalization_step)
-        )
+        return temp_lift_weighting_wrapper.combine(aggregation_step).combine(embedding_step).combine(normalization_step)
 
     @staticmethod
     def __create_base_transformations(
         transformation_config: TransformationConfig[AggregationInputT, EmbeddingInputT]
     ) -> BaseTransformations[AggregationInputT, EmbeddingInputT]:
-        normalization = NormalizationFactory.create_normalization(
-            transformation_config.normalization_config
-        )
-        aggregation = AggregationFactory.create_aggregation(
-            transformation_config.aggregation_config
-        )
-        embedding = EmbeddingFactory.create_embedding(
-            transformation_config.embedding_config
-        )
+        normalization = NormalizationFactory.create_normalization(transformation_config.normalization_config)
+        aggregation = AggregationFactory.create_aggregation(transformation_config.aggregation_config)
+        embedding = EmbeddingFactory.create_embedding(transformation_config.embedding_config)
         return BaseTransformations(normalization, aggregation, embedding)

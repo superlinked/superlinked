@@ -37,19 +37,15 @@ class RestHandler:
         endpoint_config: RestEndpointConfiguration,
     ) -> None:
         self.__query_mixin = query_mixin
-        self.__path_to_source_map: dict[str, RestSource] = (
-            self.__create_path_to_resource_mapping(
-                sources,
-                endpoint_config.api_root_path,
-                endpoint_config.ingest_path_prefix,
-            )
+        self.__path_to_source_map: dict[str, RestSource] = self.__create_path_to_resource_mapping(
+            sources,
+            endpoint_config.api_root_path,
+            endpoint_config.ingest_path_prefix,
         )
-        self.__path_to_query_map: dict[str, RestQuery] = (
-            self.__create_path_to_resource_mapping(
-                queries,
-                endpoint_config.api_root_path,
-                endpoint_config.query_path_prefix,
-            )
+        self.__path_to_query_map: dict[str, RestQuery] = self.__create_path_to_resource_mapping(
+            queries,
+            endpoint_config.api_root_path,
+            endpoint_config.query_path_prefix,
         )
 
     @property
@@ -77,9 +73,7 @@ class RestHandler:
         path_to_resource = {}
         for resource in resources:
             path_string = str(
-                furl(path=api_root_path)
-                .path.add(path_prefix)
-                .add(to_snake(resource.path))  # type: ignore[arg-type]
+                furl(path=api_root_path).path.add(path_prefix).add(to_snake(resource.path))  # type: ignore[arg-type]
             )
             if path_string in path_to_resource:
                 raise DuplicateEndpointException(

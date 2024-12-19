@@ -60,9 +60,7 @@ class EventAggregationEffectGroup(Generic[AggregationInputT, EmbeddingInputT]):
     @classmethod
     def group_by_event_and_affecting_schema(
         cls,
-        effects: Sequence[
-            EffectWithReferencedSchemaObject[AggregationInputT, EmbeddingInputT]
-        ],
+        effects: Sequence[EffectWithReferencedSchemaObject[AggregationInputT, EmbeddingInputT]],
     ) -> list[EventAggregationEffectGroup[AggregationInputT, EmbeddingInputT]]:
         return [
             cls(

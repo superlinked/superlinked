@@ -46,9 +46,7 @@ class Search(ABC, Generic[SearchParamsT, QuertT, KNNReturnT]):
         return self.knn_search(index_config, query)
 
     @abstractmethod
-    def build_query(
-        self, search_params: SearchParamsT, returned_fields: Sequence[Field]
-    ) -> QuertT:
+    def build_query(self, search_params: SearchParamsT, returned_fields: Sequence[Field]) -> QuertT:
         pass
 
     @abstractmethod
@@ -56,9 +54,7 @@ class Search(ABC, Generic[SearchParamsT, QuertT, KNNReturnT]):
         pass
 
     @staticmethod
-    def check_vector_field(
-        index_config: IndexConfig, vector_field: VectorFieldData
-    ) -> None:
+    def check_vector_field(index_config: IndexConfig, vector_field: VectorFieldData) -> None:
         if vector_field.value is None:
             raise ValidationException("Cannot search with NoneType vector!")
         if index_config.vector_field_descriptor.field_name != vector_field.name:
@@ -75,9 +71,6 @@ class Search(ABC, Generic[SearchParamsT, QuertT, KNNReturnT]):
         if not filters:
             return
         if unindexed_filters := [
-            filter_
-            for filter_ in filters
-            if cast(Field, filter_._operand).name
-            not in index_config.indexed_field_names
+            filter_ for filter_ in filters if cast(Field, filter_._operand).name not in index_config.indexed_field_names
         ]:
             raise ValidationException(f"Unindexed filters found: {unindexed_filters}")

@@ -47,9 +47,7 @@ class DataParser(ABC, Generic[IdSchemaObjectT, SourceTypeT]):
             as `SchemaField`-`str` pairs such as `{movie_schema.title: "movie_title"}`.
     """
 
-    def __init__(
-        self, schema: IdSchemaObjectT, mapping: Mapping[SchemaField, str] | None = None
-    ) -> None:
+    def __init__(self, schema: IdSchemaObjectT, mapping: Mapping[SchemaField, str] | None = None) -> None:
         """
         Initialize DataParser
 
@@ -65,9 +63,7 @@ class DataParser(ABC, Generic[IdSchemaObjectT, SourceTypeT]):
             InitializationException: Parameter `schema` is of invalid type.
         """
         if not isinstance(schema, IdSchemaObject):
-            raise InitializationException(
-                f"Parameter `schema` is of invalid type: {schema.__class__.__name__}"
-            )
+            raise InitializationException(f"Parameter `schema` is of invalid type: {schema.__class__.__name__}")
         self._is_event_data_parser = isinstance(schema, EventSchemaObject)
         mapping = mapping or {}
         self.__validate_mapping_against_schema(schema, mapping)
@@ -75,9 +71,7 @@ class DataParser(ABC, Generic[IdSchemaObjectT, SourceTypeT]):
         self._schema = schema
         self._id_name = self._get_path(self._schema.id)
         if self._is_event_data_parser:
-            self._created_at_name = self._get_path(
-                cast(EventSchemaObject, schema).created_at
-            )
+            self._created_at_name = self._get_path(cast(EventSchemaObject, schema).created_at)
         self.__allow_bytes_input = True
 
     @property
@@ -181,35 +175,24 @@ class DataParser(ABC, Generic[IdSchemaObjectT, SourceTypeT]):
     def _get_path(self, field: SchemaField[SFT]) -> str:
         return self.mapping.get(field, field.name)
 
-    def __validate_mapping_against_schema(
-        self, schema: IdSchemaObjectT, mapping: Mapping[SchemaField, str]
-    ) -> None:
+    def __validate_mapping_against_schema(self, schema: IdSchemaObjectT, mapping: Mapping[SchemaField, str]) -> None:
         schema_fields = list(schema._get_schema_fields()) + [schema.id]
         if self._is_event_data_parser:
             schema_fields.append(cast(EventSchemaObject, schema).created_at)
         if invalid_keys := [key for key in mapping.keys() if key not in schema_fields]:
-            invalid_key_names = [
-                f"{key.schema_obj._base_class_name}.{key.name}" for key in invalid_keys
-            ]
-            raise InvalidMappingException(
-                f"{invalid_key_names} don't belong to the {schema._base_class_name} schema."
-            )
+            invalid_key_names = [f"{key.schema_obj._base_class_name}.{key.name}" for key in invalid_keys]
+            raise InvalidMappingException(f"{invalid_key_names} don't belong to the {schema._base_class_name} schema.")
 
     def _handle_parsed_schema_fields(
         self, parsed_schema_fields: Sequence[ParsedSchemaField]
     ) -> list[ParsedSchemaField]:
-        return [
-            DataParser._re_parse_if_blob(parsed_field)
-            for parsed_field in parsed_schema_fields
-        ]
+        return [DataParser._re_parse_if_blob(parsed_field) for parsed_field in parsed_schema_fields]
 
     @staticmethod
     def _re_parse_if_blob(parsed_field: ParsedSchemaField) -> ParsedSchemaField:
         if isinstance(parsed_field.schema_field, Blob):
             parsed_field = cast(ParsedSchemaField[BlobInformation], parsed_field)
-            parsed_field = ParsedSchemaField(
-                parsed_field.schema_field, parsed_field.value.original
-            )
+            parsed_field = ParsedSchemaField(parsed_field.schema_field, parsed_field.value.original)
         return parsed_field
 
     def __check_parsed_schemas(self, parsed_schemas: list[ParsedSchema]) -> None:

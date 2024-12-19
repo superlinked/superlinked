@@ -43,9 +43,7 @@ class TransformerPublisher(Generic[ReceivedMessageT, PublishedMessageT]):
     def register_pre_transform(self, subscriber: Subscriber[ReceivedMessageT]) -> None:
         self._pre_transform_subscribers.append(subscriber)
 
-    def unregister_pre_transform(
-        self, subscriber: Subscriber[ReceivedMessageT]
-    ) -> None:
+    def unregister_pre_transform(self, subscriber: Subscriber[ReceivedMessageT]) -> None:
         self._pre_transform_subscribers.remove(subscriber)
 
     def register(self, subscriber: Subscriber[PublishedMessageT]) -> None:
@@ -58,29 +56,19 @@ class TransformerPublisher(Generic[ReceivedMessageT, PublishedMessageT]):
     def transform(self, message: ReceivedMessageT) -> list[PublishedMessageT]:
         pass
 
-    def _dispatch(
-        self, messages: ReceivedMessageT | Sequence[ReceivedMessageT]
-    ) -> None:
+    def _dispatch(self, messages: ReceivedMessageT | Sequence[ReceivedMessageT]) -> None:
         messages = cast(
             Sequence[ReceivedMessageT],
-            (
-                [messages]
-                if not isinstance(messages, Sequence) or isinstance(messages, str)
-                else messages
-            ),
+            ([messages] if not isinstance(messages, Sequence) or isinstance(messages, str) else messages),
         )
         for batch in chunk_list(data=messages, chunk_size=self._chunk_size):
             for pre_transform_subscriber in self._pre_transform_subscribers:
                 pre_transform_subscriber.update(batch)
 
         transformed_messages = [
-            transformed_message
-            for message in messages
-            for transformed_message in self.transform(message)
+            transformed_message for message in messages for transformed_message in self.transform(message)
         ]
-        for transformed_batch in chunk_list(
-            data=transformed_messages, chunk_size=self._chunk_size
-        ):
+        for transformed_batch in chunk_list(data=transformed_messages, chunk_size=self._chunk_size):
             for subscriber in self._subscribers:
                 subscriber.update(transformed_batch)
 

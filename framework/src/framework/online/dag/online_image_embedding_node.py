@@ -47,27 +47,19 @@ class OnlineImageEmbeddingNode(OnlineNode[ImageEmbeddingNode, Vector], HasLength
         super().__init__(node, parents, storage_manager)
         self._embedding_transformation = self._init_embedding_transformation()
         self._blob_loader = BlobLoader(allow_bytes=True)
-        self._description_node = self._get_schema_field_node(
-            self.node.description_node_id
-        )
+        self._description_node = self._get_schema_field_node(self.node.description_node_id)
         self._image_node = self._get_schema_field_node(self.node.image_node_id)
 
     def _get_schema_field_node(self, node_id: str | None) -> SchemaFieldNode | None:
         if node_id is None:
             return None
         return next(
-            (
-                cast(SchemaFieldNode, parent.node)
-                for parent in self.parents
-                if parent.node_id == node_id
-            ),
+            (cast(SchemaFieldNode, parent.node) for parent in self.parents if parent.node_id == node_id),
             None,
         )
 
     def _init_embedding_transformation(self) -> Step[Sequence[ImageData], list[Vector]]:
-        return TransformationFactory.create_multi_embedding_transformation(
-            self.node.transformation_config
-        )
+        return TransformationFactory.create_multi_embedding_transformation(self.node.transformation_config)
 
     @property
     @override
@@ -84,16 +76,11 @@ class OnlineImageEmbeddingNode(OnlineNode[ImageEmbeddingNode, Vector], HasLength
         parsed_schemas: list[ParsedSchema],
         context: ExecutionContext,
     ) -> list[EvaluationResult[Vector]]:
-        image_data_list = [
-            self._get_image_data(parsed_schema) for parsed_schema in parsed_schemas
-        ]
-        embedded_images = self.embedding_transformation.transform(
-            image_data_list, context
-        )
+        image_data_list = [self._get_image_data(parsed_schema) for parsed_schema in parsed_schemas]
+        embedded_images = self.embedding_transformation.transform(image_data_list, context)
 
         return [
-            EvaluationResult(self._get_single_evaluation_result(embedded_image))
-            for embedded_image in embedded_images
+            EvaluationResult(self._get_single_evaluation_result(embedded_image)) for embedded_image in embedded_images
         ]
 
     def _get_image_data(self, parsed_schema: ParsedSchema) -> ImageData:
@@ -103,14 +90,10 @@ class OnlineImageEmbeddingNode(OnlineNode[ImageEmbeddingNode, Vector], HasLength
             loaded_image = ImageUtil.open_image(image.data)
         return ImageData(loaded_image, description)
 
-    def __load_input(
-        self, parsed_schema: ParsedSchema
-    ) -> tuple[BlobInformation | None, str | None]:
+    def __load_input(self, parsed_schema: ParsedSchema) -> tuple[BlobInformation | None, str | None]:
         description = self._get_field_value(parsed_schema, self._description_node)
         if description is not None and not isinstance(description, str):
-            raise ValueError(
-                f"Invalid image description type: {type(description).__name__}."
-            )
+            raise ValueError(f"Invalid image description type: {type(description).__name__}.")
         image = self._get_field_value(parsed_schema, self._image_node)
         if image is not None and not isinstance(image, BlobInformation):
             image = self._blob_loader.load(image)
@@ -124,10 +107,6 @@ class OnlineImageEmbeddingNode(OnlineNode[ImageEmbeddingNode, Vector], HasLength
         if schema_field_node is None:
             return None
         return next(
-            (
-                field.value
-                for field in parsed_schema.fields
-                if field.schema_field == schema_field_node.schema_field
-            ),
+            (field.value for field in parsed_schema.fields if field.schema_field == schema_field_node.schema_field),
             None,
         )

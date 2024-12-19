@@ -51,9 +51,7 @@ logger = structlog.getLogger()
 DEFAULT_PERIOD_TIME = PeriodTime(period_time=timedelta(days=14))
 
 
-class RecencySpace(
-    Space[int, int], HasSpaceFieldSet
-):  # pylint: disable=too-many-instance-attributes
+class RecencySpace(Space[int, int], HasSpaceFieldSet):  # pylint: disable=too-many-instance-attributes
     """
     Recency space encodes timestamp type data measured in seconds and in unix timestamp format.
     Recency space is utilized to encode how recent items are. Use period_time_list
@@ -108,20 +106,12 @@ class RecencySpace(
                 Defaults to 0.0.
         """
         super().__init__(timestamp, Timestamp)
-        self._aggregation_config_type_by_mode = (
-            self.__init_aggregation_config_type_by_mode()
-        )
-        self.timestamp = SpaceFieldSet[int](
-            self, set(timestamp if isinstance(timestamp, list) else [timestamp])
-        )
+        self._aggregation_config_type_by_mode = self.__init_aggregation_config_type_by_mode()
+        self.timestamp = SpaceFieldSet[int](self, set(timestamp if isinstance(timestamp, list) else [timestamp]))
         recency_periods: list[PeriodTime] = (
             period_time_list
             if isinstance(period_time_list, list)
-            else (
-                [period_time_list]
-                if period_time_list is not None
-                else [DEFAULT_PERIOD_TIME]
-            )
+            else ([period_time_list] if period_time_list is not None else [DEFAULT_PERIOD_TIME])
         )
         self._aggregation_mode: InputAggregationMode = aggregation_mode
         self._embedding_config = RecencyEmbeddingConfig(
@@ -142,9 +132,7 @@ class RecencySpace(
             for field in self.timestamp.fields
         }
         self._max_period_time_days = (
-            max(
-                self._embedding_config.period_time_list, key=lambda p: p.period_time
-            ).period_time.total_seconds()
+            max(self._embedding_config.period_time_list, key=lambda p: p.period_time).period_time.total_seconds()
             / 86400
         )
 
@@ -176,7 +164,7 @@ class RecencySpace(
 
     @property
     @override
-    def annotation(self) -> str:
+    def _annotation(self) -> str:
         return f"""The space encodes timestamps between now and now - {self._max_period_time_days} days.
         Older timestamps will have negative_filter similarity (assuming weight = 1).
         There is no differentiation between items older than {self._max_period_time_days} days.
@@ -186,9 +174,9 @@ class RecencySpace(
         Also take into account that max_period_time is {self._max_period_time_days} days".
         Favoring values from {self._max_period_time_days/2} days ago could best be achieved using positive weights
         lower than the other weights in the query.
-        Larger positive weights increase the effect on similarity compared to other spaces. Space weights do not
-        matter if there is only 1 space in the query.
-        Does not have input as querying will always happen using the utc timestamp of the system's NOW."""
+        Larger positive weights increase the effect on similarity compared to other spaces.
+        Does not have input as querying will always happen using the utc timestamp of the system's NOW.
+        Affected fields: {self.space_field_set.field_names_text}."""
 
     @property
     @override
@@ -201,9 +189,7 @@ class RecencySpace(
         aggregation_mode: InputAggregationMode,
         recency_periods: Sequence[PeriodTime],
     ) -> TransformationConfig[int, int]:
-        aggregation_config = self._aggregation_config_type_by_mode[aggregation_mode](
-            int
-        )
+        aggregation_config = self._aggregation_config_type_by_mode[aggregation_mode](int)
         normalization_config = ConstantNormConfig(
             math.sqrt(sum(period_time.weight**2 for period_time in recency_periods))
         )

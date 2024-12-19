@@ -44,9 +44,7 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, dict[str,
     it transforms the `Json` to a desired schema.
     """
 
-    def unmarshal(
-        self, data: dict[str, Any] | Sequence[dict[str, Any]]
-    ) -> list[ParsedSchema]:
+    def unmarshal(self, data: dict[str, Any] | Sequence[dict[str, Any]]) -> list[ParsedSchema]:
         """
         Parses the given Json into a list of ParsedSchema objects according to the defined schema and mapping.
 
@@ -61,15 +59,12 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, dict[str,
             data = [data]
         return [self._unmarshal_single(json_data) for json_data in data]
 
-    def _unmarshal_single(
-        self, json_data: dict[str, Any]
-    ) -> EventParsedSchema | ParsedSchema:
+    def _unmarshal_single(self, json_data: dict[str, Any]) -> EventParsedSchema | ParsedSchema:
         id_ = self.__ensure_id(json_data)
         parsed_fields: list[ParsedSchemaField] = [
             ParsedSchemaField.from_schema_field(field, parsed_value)
             for field, parsed_value in [
-                (field, self._parse_schema_field_value(field, json_data))
-                for field in self._schema._get_schema_fields()
+                (field, self._parse_schema_field_value(field, json_data)) for field in self._schema._get_schema_fields()
             ]
             if parsed_value is not None
         ]
@@ -101,17 +96,12 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, dict[str,
         return [
             self.__construct_json(list_of_schema_fields)
             for list_of_schema_fields in [
-                self.__get_all_fields_from_parsed_schema(parsed_schema)
-                for parsed_schema in parsed_schemas
+                self.__get_all_fields_from_parsed_schema(parsed_schema) for parsed_schema in parsed_schemas
             ]
         ]
 
-    def __construct_json(
-        self, parsed_schema_fields: list[ParsedSchemaField]
-    ) -> dict[str, Any]:
-        altered_parsed_schema_fields = self._handle_parsed_schema_fields(
-            parsed_schema_fields
-        )
+    def __construct_json(self, parsed_schema_fields: list[ParsedSchemaField]) -> dict[str, Any]:
+        altered_parsed_schema_fields = self._handle_parsed_schema_fields(parsed_schema_fields)
         return DotSeparatedPathUtil.to_dict(
             [
                 ValuedDotSeparatedPath(
@@ -125,22 +115,16 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, dict[str,
     def __ensure_id(self, data: dict[str, Any]) -> str:
         id_ = DotSeparatedPathUtil.get(data, self._id_name)
         if not self._is_id_value_valid(id_):
-            raise MissingIdException(
-                "The mandatory id field is missing from the input object."
-            )
+            raise MissingIdException("The mandatory id field is missing from the input object.")
         return str(id_)
 
     def __ensure_created_at(self, data: dict[str, Any]) -> int:
         created_at = DotSeparatedPathUtil.get(data, self._created_at_name)
         if not self._is_created_at_value_valid(created_at):
-            raise MissingCreatedAtException(
-                "The mandatory created_at field is missing from the input object."
-            )
+            raise MissingCreatedAtException("The mandatory created_at field is missing from the input object.")
         return cast(int, created_at)
 
-    def _parse_schema_field_value(
-        self, field: SchemaField[SFT], data: dict[str, Any]
-    ) -> SFT | None:
+    def _parse_schema_field_value(self, field: SchemaField[SFT], data: dict[str, Any]) -> SFT | None:
         path: str = self._get_path(field)
         parsed_value = DotSeparatedPathUtil.get(data, path)
 
@@ -152,9 +136,7 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, dict[str,
 
         return parsed_value
 
-    def __get_all_fields_from_parsed_schema(
-        self, parsed_schema: ParsedSchema
-    ) -> list[ParsedSchemaField]:
+    def __get_all_fields_from_parsed_schema(self, parsed_schema: ParsedSchema) -> list[ParsedSchemaField]:
         return (
             list(parsed_schema.fields)
             + [ParsedSchemaField.from_schema_field(self._schema.id, parsed_schema.id_)]

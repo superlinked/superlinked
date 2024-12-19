@@ -37,14 +37,10 @@ class Step(ABC, Generic[StepInputT, StepOutputT]):
     ) -> StepOutputT:
         pass
 
-    def combine(
-        self, step: Step[StepOutputT, StepCombinedOutputT]
-    ) -> Transform[StepInputT, StepCombinedOutputT]:
+    def combine(self, step: Step[StepOutputT, StepCombinedOutputT]) -> Transform[StepInputT, StepCombinedOutputT]:
         return Transform(self, step)
 
-    def __mul__(
-        self, step: Step[StepOutputT, StepCombinedOutputT]
-    ) -> Transform[StepInputT, StepCombinedOutputT]:
+    def __mul__(self, step: Step[StepOutputT, StepCombinedOutputT]) -> Transform[StepInputT, StepCombinedOutputT]:
         return self.combine(step)
 
 
@@ -88,18 +84,12 @@ class WrapperStep(
         self._step = step
 
     @override
-    def transform(
-        self, input_: WrapperInputT, context: ExecutionContext
-    ) -> WrapperOutputT:
+    def transform(self, input_: WrapperInputT, context: ExecutionContext) -> WrapperOutputT:
         wrapper_context = self.wrap(input_)
-        return self.unwrap(
-            self._step.transform(wrapper_context.value, context), wrapper_context
-        )
+        return self.unwrap(self._step.transform(wrapper_context.value, context), wrapper_context)
 
     @abstractmethod
-    def wrap(
-        self, input_: WrapperInputT
-    ) -> WrappingResult[StepInputT, WrappingContextT]:
+    def wrap(self, input_: WrapperInputT) -> WrappingResult[StepInputT, WrappingContextT]:
         pass
 
     @abstractmethod

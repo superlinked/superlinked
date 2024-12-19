@@ -68,9 +68,7 @@ class OnlineApp(App[OnlineSourceT], Generic[OnlineSourceT], QueryMixin):
             source_to_queue_map (dict[OnlineSourceT, Queue] | None): a mapping from sources
                 to messaging queues persisting the ingested data on the given source; defaults to None.
         """
-        super().__init__(
-            sources, indices, vector_database, context, init_search_indices
-        )
+        super().__init__(sources, indices, vector_database, context, init_search_indices)
         self._data_processors: list[OnlineDataProcessor] = []
 
         self.setup_query_execution(self._indices)
@@ -85,9 +83,7 @@ class OnlineApp(App[OnlineSourceT], Generic[OnlineSourceT], QueryMixin):
         """
         Set up the execution environment by initializing data processors and object writers.
         """
-        self._data_processors = [
-            self._create_data_processor(index) for index in self._indices
-        ]
+        self._data_processors = [self._create_data_processor(index) for index in self._indices]
         for data_processor, index in zip(self._data_processors, self._indices):
             for source in self.__filter_index_sources(index):
                 source.register(data_processor)

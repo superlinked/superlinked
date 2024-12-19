@@ -37,9 +37,7 @@ class AdminFieldDescriptor:
     def extract_value(self, field_data: dict[str, FieldData], _: type[FT]) -> FT | None:
         data = field_data.get(self.field.name)
         if not self.nullable and data is None:
-            raise ValueError(
-                f"None value found for the non-null {self.field.name} admin field."
-            )
+            raise ValueError(f"None value found for the non-null {self.field.name} admin field.")
         value = data.value if data is not None else None
         return cast(FT, value)
 
@@ -49,24 +47,16 @@ class AdminFieldDescriptor:
     ) -> FieldData | None:
         if value is None:
             if not self.nullable:
-                raise ValueError(
-                    f"None value cannot be assigned to {self.field.name} admin field."
-                )
+                raise ValueError(f"None value cannot be assigned to {self.field.name} admin field.")
             return None
         return FieldData.from_field(self.field, value)
 
 
 class AdminFields:
     def __init__(self) -> None:
-        self.schema_id = AdminFieldDescriptor(
-            Field(FieldDataType.STRING, StorageNaming.SCHEMA_INDEX_NAME)
-        )
-        self.object_id = AdminFieldDescriptor(
-            Field(FieldDataType.STRING, StorageNaming.OBJECT_ID_INDEX_NAME)
-        )
-        self.origin_id = AdminFieldDescriptor(
-            Field(FieldDataType.STRING, StorageNaming.ORIGIN_ID_INDEX_NAME), True
-        )
+        self.schema_id = AdminFieldDescriptor(Field(FieldDataType.STRING, StorageNaming.SCHEMA_INDEX_NAME))
+        self.object_id = AdminFieldDescriptor(Field(FieldDataType.STRING, StorageNaming.OBJECT_ID_INDEX_NAME))
+        self.origin_id = AdminFieldDescriptor(Field(FieldDataType.STRING, StorageNaming.ORIGIN_ID_INDEX_NAME), True)
         self.object_json = AdminFieldDescriptor(
             Field(FieldDataType.JSON, StorageNaming.OBJECT_JSON_INDEX_NAME), True, False
         )
@@ -76,10 +66,7 @@ class AdminFields:
             self.origin_id,
             self.object_json,
         ]
-        admin_fields = [
-            admin_field_descriptor.field
-            for admin_field_descriptor in admin_field_descriptors
-        ]
+        admin_fields = [admin_field_descriptor.field for admin_field_descriptor in admin_field_descriptors]
         self.__admin_field_names = [admin_field.name for admin_field in admin_fields]
         self.__header_fields = [
             admin_field_descriptor.field
@@ -107,9 +94,7 @@ class AdminFields:
             }
         )
 
-    def create_object_json_field_data(
-        self, object_json: dict[str, Any]
-    ) -> FieldData | None:
+    def create_object_json_field_data(self, object_json: dict[str, Any]) -> FieldData | None:
         field_data = self.__create_admin_field_data({self.object_json: object_json})
         return field_data[0] if field_data else None
 
@@ -120,8 +105,7 @@ class AdminFields:
         return [
             admin_field_data
             for admin_field_data in [
-                admin_field.create_field_data(value)
-                for admin_field, value in value_by_admin_field.items()
+                admin_field.create_field_data(value) for admin_field, value in value_by_admin_field.items()
             ]
             if admin_field_data is not None
         ]
@@ -138,7 +122,5 @@ class AdminFields:
             raise ValueError("None value found for the non-null admin field.")
         return value
 
-    def extract_object_json_field_data(
-        self, field_data: dict[str, FieldData]
-    ) -> dict[str, Any] | None:
+    def extract_object_json_field_data(self, field_data: dict[str, FieldData]) -> dict[str, Any] | None:
         return self.object_json.extract_value(field_data, dict[str, Any])

@@ -35,9 +35,7 @@ class JsonDecoder(json.JSONDecoder):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(object_hook=self.decode_dict, *args, **kwargs)
 
-    def decode_dict(
-        self, dict_: dict[str, Any]
-    ) -> Vector | BlobInformation | dict[str, Any]:
+    def decode_dict(self, dict_: dict[str, Any]) -> Vector | BlobInformation | dict[str, Any]:
         if "type" in dict_:
             if dict_["type"] == "__Vector__":
                 return Vector(np.array(dict_["value"]))

@@ -41,9 +41,7 @@ class EmbeddingStep(Generic[EmbeddingInputT], Step[EmbeddingInputT, Vector]):
         return self._embedding.embed(input_, context)
 
 
-class MultiEmbeddingStep(
-    Generic[EmbeddingInputT], Step[Sequence[EmbeddingInputT], Sequence[Vector]]
-):
+class MultiEmbeddingStep(Generic[EmbeddingInputT], Step[Sequence[EmbeddingInputT], Sequence[Vector]]):
     def __init__(self, embedding: Embedding[EmbeddingInputT, Any]) -> None:
         super().__init__()
         self._embedding = embedding
@@ -71,9 +69,7 @@ class InverseEmbeddingStep(Generic[EmbeddingInputT], Step[Vector, EmbeddingInput
         return self._embedding.inverse_embed(input_, context)
 
 
-class InverseMultiEmbeddingStep(
-    Generic[EmbeddingInputT], Step[list[Vector], Sequence[EmbeddingInputT]]
-):
+class InverseMultiEmbeddingStep(Generic[EmbeddingInputT], Step[list[Vector], Sequence[EmbeddingInputT]]):
     def __init__(self, embedding: InvertibleEmbedding[EmbeddingInputT, Any]) -> None:
         super().__init__()
         self._embedding = embedding

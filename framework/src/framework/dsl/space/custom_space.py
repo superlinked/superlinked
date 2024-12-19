@@ -67,13 +67,9 @@ class CustomSpace(Space[Vector, Vector], HasSpaceFieldSet):
               consistency in vector operations.
         """
         super().__init__(vector, FloatList)
-        self.vector = SpaceFieldSet[list[float]](
-            self, set(vector if isinstance(vector, list) else [vector])
-        )
+        self.vector = SpaceFieldSet[list[float]](self, set(vector if isinstance(vector, list) else [vector]))
         self._transformation_config = self._init_transformation_config(length)
-        self._schema_node_map = self._calculate_schema_node_map(
-            self._transformation_config
-        )
+        self._schema_node_map = self._calculate_schema_node_map(self._transformation_config)
         self._description = description
         self._length = length
 
@@ -96,10 +92,10 @@ class CustomSpace(Space[Vector, Vector], HasSpaceFieldSet):
 
     @property
     @override
-    def annotation(self) -> str:
+    def _annotation(self) -> str:
         return f"""{self._description + " " if self._description else ""}Larger positive weights increase the effect on
-        similarity compared to other spaces.
-        Space weights do not matter if there is only 1 space in the query. The space uses already encoded {self._length}
+        similarity compared to other spaces. Affected fields: {self.space_field_set.field_names_text}.
+        The space uses already encoded {self._length}
         long vectors. Accepts list[float] type input for a corresponding .similar clause input."""
 
     @property
@@ -107,23 +103,15 @@ class CustomSpace(Space[Vector, Vector], HasSpaceFieldSet):
     def _allow_empty_fields(self) -> bool:
         return False
 
-    def _init_transformation_config(
-        self, length: int
-    ) -> TransformationConfig[Vector, Vector]:
+    def _init_transformation_config(self, length: int) -> TransformationConfig[Vector, Vector]:
         embedding_config = CustomEmbeddingConfig(Vector, length)
         aggregation_config = VectorAggregationConfig(Vector)
         normalization_config = L2NormConfig()
-        return TransformationConfig(
-            normalization_config, aggregation_config, embedding_config
-        )
+        return TransformationConfig(normalization_config, aggregation_config, embedding_config)
 
     @override
-    def _create_default_node(
-        self, schema: SchemaObject
-    ) -> EmbeddingNode[Vector, Vector]:
-        return CustomVectorEmbeddingNode(
-            None, self.transformation_config, self.vector.fields, schema
-        )
+    def _create_default_node(self, schema: SchemaObject) -> EmbeddingNode[Vector, Vector]:
+        return CustomVectorEmbeddingNode(None, self.transformation_config, self.vector.fields, schema)
 
     def _calculate_schema_node_map(
         self, transformation_config: TransformationConfig
@@ -137,7 +125,6 @@ class CustomSpace(Space[Vector, Vector], HasSpaceFieldSet):
             for vector_schema_field in self.vector.fields
         }
         schema_node_map: dict[SchemaObject, EmbeddingNode[Vector, Vector]] = {
-            schema_field.schema_obj: node
-            for schema_field, node in unchecked_custom_node_map.items()
+            schema_field.schema_obj: node for schema_field, node in unchecked_custom_node_map.items()
         }
         return schema_node_map

@@ -99,23 +99,16 @@ class ImageSpace(Space[Vector, ImageData]):
             InvalidSpaceParamException: If the image and description fields are not
                 from the same schema.
         """
-        described_blobs = [
-            self._get_described_blob(img)
-            for img in (image if isinstance(image, Sequence) else [image])
-        ]
+        described_blobs = [self._get_described_blob(img) for img in (image if isinstance(image, Sequence) else [image])]
         image_fields = [described.blob for described in described_blobs]
         super().__init__(image_fields, Blob)
-        length = ImageEmbedding.init_manager(
-            model_handler, model, model_cache_dir
-        ).calculate_length()
+        length = ImageEmbedding.init_manager(model_handler, model, model_cache_dir).calculate_length()
         self.image = ImageSpaceFieldSet(self, set(image_fields))
         self.description = ImageDescriptionSpaceFieldSet(
             self, set(described.description for described in described_blobs)
         )
         self._all_fields = self.image.fields | self.description.fields
-        self._transformation_config = self._init_transformation_config(
-            model, length, model_handler
-        )
+        self._transformation_config = self._init_transformation_config(model, length, model_handler)
         self._schema_field_nodes_by_schema: dict[
             SchemaObject, tuple[SchemaFieldNode[BlobInformation], SchemaFieldNode[str]]
         ] = {
@@ -125,9 +118,7 @@ class ImageSpace(Space[Vector, ImageData]):
             )
             for described_blob in described_blobs
         }
-        self.__embedding_node_by_schema: dict[
-            SchemaObject, EmbeddingNode[Vector, ImageData]
-        ] = {
+        self.__embedding_node_by_schema: dict[SchemaObject, EmbeddingNode[Vector, ImageData]] = {
             schema: ImageEmbeddingNode(
                 image_blob_node=image_blob_node,
                 description_node=description_node,
@@ -144,13 +135,9 @@ class ImageSpace(Space[Vector, ImageData]):
     def _get_described_blob(self, image: Blob | DescribedBlob) -> DescribedBlob:
         if isinstance(image, DescribedBlob):
             if image.description.schema_obj != image.blob.schema_obj:
-                raise InvalidSpaceParamException(
-                    "ImageSpace image and description field must be in the same schema."
-                )
+                raise InvalidSpaceParamException("ImageSpace image and description field must be in the same schema.")
             return image
-        description = String(
-            DEFAULT_DESCRIPTION_FIELD_PREFIX + image.name, image.schema_obj
-        )
+        description = String(DEFAULT_DESCRIPTION_FIELD_PREFIX + image.name, image.schema_obj)
         return DescribedBlob(image, description)
 
     @property
@@ -166,23 +153,19 @@ class ImageSpace(Space[Vector, ImageData]):
         return self.__embedding_node_by_schema
 
     @override
-    def _create_default_node(
-        self, schema: SchemaObject
-    ) -> EmbeddingNode[Vector, ImageData]:
-        default_node = ImageEmbeddingNode(
-            None, None, self._transformation_config, self._all_fields, schema
-        )
+    def _create_default_node(self, schema: SchemaObject) -> EmbeddingNode[Vector, ImageData]:
+        default_node = ImageEmbeddingNode(None, None, self._transformation_config, self._all_fields, schema)
         return default_node
 
     @property
     @override
-    def annotation(self) -> str:
+    def _annotation(self) -> str:
         return f"""The space encodes images using {self._model} embeddings.
+        Affected fields: {self.description.field_names_text}.
         Negative weight would mean favoring images with descriptions that are semantically dissimilar
         to the one present in the .similar clause corresponding to this space.
         Zero weight means insensitivity, positive weights mean favoring images with similar descriptions.
         Larger positive weights increase the effect on similarity compared to other spaces.
-        Space weights do not matter if there is only 1 space in the query.
         Accepts str type input describing an image for a corresponding .similar clause input."""
 
     @property
@@ -201,6 +184,4 @@ class ImageSpace(Space[Vector, ImageData]):
         )
         aggregation_config = VectorAggregationConfig(Vector)
         normalization_config = L2NormConfig()
-        return TransformationConfig(
-            normalization_config, aggregation_config, embedding_config
-        )
+        return TransformationConfig(normalization_config, aggregation_config, embedding_config)

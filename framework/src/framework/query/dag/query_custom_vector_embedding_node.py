@@ -27,22 +27,13 @@ from superlinked.framework.query.dag.query_node import QueryNode
 from superlinked.framework.query.query_node_input import QueryNodeInput
 
 
-class QueryCustomVectorEmbeddingNode(
-    QueryEmbeddingOrphanNode[Vector, CustomVectorEmbeddingNode, Vector]
-):
-    def __init__(
-        self, node: CustomVectorEmbeddingNode, parents: Sequence[QueryNode]
-    ) -> None:
+class QueryCustomVectorEmbeddingNode(QueryEmbeddingOrphanNode[Vector, CustomVectorEmbeddingNode, Vector]):
+    def __init__(self, node: CustomVectorEmbeddingNode, parents: Sequence[QueryNode]) -> None:
         super().__init__(node, parents, Vector)
 
     @override
-    def _pre_process_node_inputs(
-        self, inputs: Mapping[str, Sequence[QueryNodeInput]]
-    ) -> Sequence[QueryNodeInput]:
-        return [
-            self._pre_process_node_input(input_)
-            for input_ in inputs.get(self.node_id) or []
-        ]
+    def _pre_process_node_inputs(self, inputs: Mapping[str, Sequence[QueryNodeInput]]) -> Sequence[QueryNodeInput]:
+        return [self._pre_process_node_input(input_) for input_ in inputs.get(self.node_id) or []]
 
     def _pre_process_node_input(self, node_input: QueryNodeInput) -> QueryNodeInput:
         result: QueryNodeInput[Vector]
@@ -65,6 +56,5 @@ class QueryCustomVectorEmbeddingNode(
     def __validate_pre_processed(self, input_: QueryNodeInput[Vector]) -> None:
         if input_.value.item.dimension != self.node.length:
             raise ValueError(
-                f"Wrong dimension of input, expected {self.node.length}, "
-                + f"got {input_.value.item.dimension}"
+                f"Wrong dimension of input, expected {self.node.length}, " + f"got {input_.value.item.dimension}"
             )

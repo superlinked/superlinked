@@ -68,16 +68,10 @@ class NumberEmbedding(InvertibleEmbedding[NumberT, NumberEmbeddingConfig]):
         transformed_input = self._transform_to_log_if_logarithmic(input_)
         transformed_min = self._transform_to_log_if_logarithmic(self._config.min_value)
         transformed_max = self._transform_to_log_if_logarithmic(self._config.max_value)
-        constrained_input: float = min(
-            max(transformed_min, transformed_input), transformed_max
-        )
-        normalized_input = (constrained_input - transformed_min) / (
-            transformed_max - transformed_min
-        )
+        constrained_input: float = min(max(transformed_min, transformed_input), transformed_max)
+        normalized_input = (constrained_input - transformed_min) / (transformed_max - transformed_min)
         angle_in_radians = normalized_input * self._circle_size_in_rad
-        vector_input = np.array(
-            [math.sin(angle_in_radians), math.cos(angle_in_radians)]
-        )
+        vector_input = np.array([math.sin(angle_in_radians), math.cos(angle_in_radians)])
         return Vector(np.append(vector_input, [0.0]), {2})
 
     @override
@@ -87,13 +81,9 @@ class NumberEmbedding(InvertibleEmbedding[NumberT, NumberEmbeddingConfig]):
         but it essentially performs the inverse operation of the embed function.
         """
         if len(vector.value) != self.length:
-            raise ValueError(
-                f"Mismatching length {len(vector.value)} of the vector to inverse embed"
-            )
+            raise ValueError(f"Mismatching length {len(vector.value)} of the vector to inverse embed")
         if list(vector.value) == self._value_when_out_of_bounds:
-            out_of_bounds_bias: float = (
-                self._config.max_value - self._config.min_value
-            ) / 1000.0
+            out_of_bounds_bias: float = (self._config.max_value - self._config.min_value) / 1000.0
             if self._config.mode == Mode.MAXIMUM:
                 return cast(NumberT, self._config.min_value - out_of_bounds_bias)
             # INFO: for similar it doesn't matter, which direction is it out of bounds
@@ -102,9 +92,7 @@ class NumberEmbedding(InvertibleEmbedding[NumberT, NumberEmbeddingConfig]):
         transformed_number = angle_in_radians / self._circle_size_in_rad
         transformed_max = self._transform_to_log_if_logarithmic(self._config.max_value)
         transformed_min = self._transform_to_log_if_logarithmic(self._config.min_value)
-        transformed_input_ = (
-            transformed_number * (transformed_max - transformed_min) + transformed_min
-        )
+        transformed_input_ = transformed_number * (transformed_max - transformed_min) + transformed_min
         input_ = self._transform_from_log_if_logarithmic(transformed_input_)
         return cast(NumberT, input_)
 
@@ -115,17 +103,11 @@ class NumberEmbedding(InvertibleEmbedding[NumberT, NumberEmbeddingConfig]):
 
     def _transform_to_log_if_logarithmic(self, value: float) -> float:
         return (
-            math.log(1 + value, self._config.scale.base)
-            if isinstance(self._config.scale, LogarithmicScale)
-            else value
+            math.log(1 + value, self._config.scale.base) if isinstance(self._config.scale, LogarithmicScale) else value
         )
 
     def _transform_from_log_if_logarithmic(self, value: float) -> float:
         return round(
-            (
-                self._config.scale.base**value - 1
-                if isinstance(self._config.scale, LogarithmicScale)
-                else value
-            ),
+            (self._config.scale.base**value - 1 if isinstance(self._config.scale, LogarithmicScale) else value),
             10,
         )

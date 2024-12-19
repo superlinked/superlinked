@@ -54,17 +54,10 @@ class SchemaObject:
         return self._base_class_name
 
     def __str__(self) -> str:
-        schema_fields = ", ".join(
-            [
-                f"(name={field.name}, type={field.type_})"
-                for field in self._get_schema_fields()
-            ]
-        )
+        schema_fields = ", ".join([f"(name={field.name}, type={field.type_})" for field in self._get_schema_fields()])
         return f"{self.__class__.__name__}(schema_name={self._schema_name}, schema_fields=[{schema_fields}])"
 
-    def _init_field(
-        self: SchemaObjectT, field_descriptor: SchemaFieldDescriptor
-    ) -> SchemaField:
+    def _init_field(self: SchemaObjectT, field_descriptor: SchemaFieldDescriptor) -> SchemaField:
         value = field_descriptor.type_(field_descriptor.name, self)
         setattr(self, field_descriptor.name, value)
         return value
@@ -101,22 +94,13 @@ class SchemaField(ComparisonOperand, Generic[SFT]):
         )
 
     @staticmethod
-    def _built_in_equal(
-        left_operand: ComparisonOperand[SchemaField], right_operand: object
-    ) -> bool:
-        if isinstance(left_operand, SchemaField) and isinstance(
-            right_operand, SchemaField
-        ):
-            return (
-                right_operand.name == left_operand.name
-                and right_operand.schema_obj == left_operand.schema_obj
-            )
+    def _built_in_equal(left_operand: ComparisonOperand[SchemaField], right_operand: object) -> bool:
+        if isinstance(left_operand, SchemaField) and isinstance(right_operand, SchemaField):
+            return right_operand.name == left_operand.name and right_operand.schema_obj == left_operand.schema_obj
         return False
 
     @staticmethod
-    def _built_in_not_equal(
-        left_operand: ComparisonOperand[SchemaField], right_operand: object
-    ) -> bool:
+    def _built_in_not_equal(left_operand: ComparisonOperand[SchemaField], right_operand: object) -> bool:
         return not SchemaField._built_in_equal(left_operand, right_operand)
 
 
@@ -224,9 +208,7 @@ class DescribedBlob:
     description: String
 
 
-ConcreteSchemaField = (
-    String | Timestamp | Float | Integer | FloatList | StringList | Blob
-)
+ConcreteSchemaField = String | Timestamp | Float | Integer | FloatList | StringList | Blob
 ConcreteSchemaFieldT = TypeVar("ConcreteSchemaFieldT", bound="ConcreteSchemaField")
 
 

@@ -63,9 +63,7 @@ class InteractiveExecutor(Executor[InteractiveSourceT], Generic[InteractiveSourc
             sources,
             indices,
             vector_database or InMemoryVectorDatabase(),
-            ExecutionContext.from_context_data(
-                context_data, environment=ExecutionEnvironment.IN_MEMORY
-            ),
+            ExecutionContext.from_context_data(context_data, environment=ExecutionEnvironment.IN_MEMORY),
         )
         self._logger = logger.bind(
             source_schemas=[source._schema._schema_name for source in self._sources],
@@ -78,8 +76,6 @@ class InteractiveExecutor(Executor[InteractiveSourceT], Generic[InteractiveSourc
         Returns:
             InteractiveApp: An instance of InteractiveApp.
         """
-        app = InteractiveApp(
-            self._sources, self._indices, self._vector_database, self._context
-        )
+        app = InteractiveApp(self._sources, self._indices, self._vector_database, self._context)
         self._logger.info("started interactive app")
         return app

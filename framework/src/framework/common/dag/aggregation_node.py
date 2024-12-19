@@ -63,22 +63,12 @@ class AggregationNode(
 
     def _validate_parents(self) -> None:
         if len(self.parents) == 0:
-            raise ParentCountException(
-                f"{self.class_name} must have at least 1 parent."
-            )
+            raise ParentCountException(f"{self.class_name} must have at least 1 parent.")
         length = cast(HasLength, self.parents[0]).length
-        wrong_length_parents = {
-            parent
-            for parent in self.parents
-            if cast(HasLength, parent).length != length
-        }
+        wrong_length_parents = {parent for parent in self.parents if cast(HasLength, parent).length != length}
         if any(wrong_length_parents):
-            lengths = {length}.union(
-                {cast(HasLength, parent).length for parent in wrong_length_parents}
-            )
-            raise ValidationException(
-                f"{self.class_name} must have parents with the same length, got {lengths}"
-            )
+            lengths = {length}.union({cast(HasLength, parent).length for parent in wrong_length_parents})
+            raise ValidationException(f"{self.class_name} must have parents with the same length, got {lengths}")
 
     @property
     @override
@@ -99,8 +89,7 @@ class AggregationNode(
     @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
         weighted_parents = [
-            {"node_id": parent.item.node_id, "weight": parent.weight}
-            for parent in self.weighted_parents
+            {"node_id": parent.item.node_id, "weight": parent.weight} for parent in self.weighted_parents
         ]
         return {
             "weighted_parents": weighted_parents,

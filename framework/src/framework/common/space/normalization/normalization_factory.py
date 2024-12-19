@@ -42,6 +42,4 @@ class NormalizationFactory:
     ) -> Normalization[Any]:
         if normalization_class := NORMALIZATION_BY_TYPE.get(type(normalization_config)):
             return normalization_class(normalization_config)
-        raise ValueError(
-            f"Unknown normalization config type: {type(normalization_config)}"
-        )
+        raise ValueError(f"Unknown normalization config type: {type(normalization_config)}")

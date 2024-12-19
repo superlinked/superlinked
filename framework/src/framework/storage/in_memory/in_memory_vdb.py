@@ -70,9 +70,7 @@ class InMemoryVDB(VDBConnector):
     def write_entities(self, entity_data: Sequence[EntityData]) -> None:
         for ed in entity_data:
             row_id = InMemoryVDB._get_row_id_from_entity_id(ed.id_)
-            self._vdb[row_id].update(
-                {name: fd.value for name, fd in ed.field_data.items()}
-            )
+            self._vdb[row_id].update({name: fd.value for name, fd in ed.field_data.items()})
 
     @override
     def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
@@ -87,9 +85,7 @@ class InMemoryVDB(VDBConnector):
             for entity in entities
         ]
 
-    def _find_field_data(
-        self, row_id: str, fields: Sequence[Field]
-    ) -> dict[str, FieldData]:
+    def _find_field_data(self, row_id: str, fields: Sequence[Field]) -> dict[str, FieldData]:
         raw_entity = self._vdb[row_id]
         return {
             field.name: FieldData.from_field(field, raw_entity.get(field.name))
@@ -122,13 +118,8 @@ class InMemoryVDB(VDBConnector):
         **params: Any,
     ) -> Sequence[ResultEntityData]:
         index_config = self._get_index_config(index_name)
-        sorted_scores = self._search.knn_search(
-            index_config, self._vdb, vdb_knn_search_params
-        )
-        return [
-            self._get_result_entity_data(row_id, score, returned_fields)
-            for row_id, score in sorted_scores
-        ]
+        sorted_scores = self._search.knn_search(index_config, self._vdb, vdb_knn_search_params)
+        return [self._get_result_entity_data(row_id, score, returned_fields) for row_id, score in sorted_scores]
 
     @override
     def persist(self, serializer: ObjectSerializer) -> None:
@@ -148,9 +139,7 @@ class InMemoryVDB(VDBConnector):
             )
         )
 
-    def _get_result_entity_data(
-        self, row_id: str, score: float, returned_fields: Sequence[Field]
-    ) -> ResultEntityData:
+    def _get_result_entity_data(self, row_id: str, score: float, returned_fields: Sequence[Field]) -> ResultEntityData:
         return ResultEntityData(
             InMemoryVDB._get_entity_id_from_row_id(row_id),
             self._find_field_data(row_id, returned_fields),

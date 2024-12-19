@@ -52,8 +52,7 @@ class VDBConnector(ABC):
         self._search_algorithm = search_algorithm
         self._vector_coordinate_type = vector_coordinate_type
         self._index_configs: dict[str, IndexConfig] = {
-            index_config.index_name: index_config
-            for index_config in (index_configs or [])
+            index_config.index_name: index_config for index_config in (index_configs or [])
         }
         self._app_id = self._generate_app_id(index_configs or [])
 
@@ -104,9 +103,7 @@ class VDBConnector(ABC):
         """
 
     def _generate_app_id(self, index_configs: Sequence[IndexConfig]) -> str | None:
-        hash_ = StringUtil.deterministic_hash_of_strings(
-            [index_config.index_name for index_config in index_configs]
-        )
+        hash_ = StringUtil.deterministic_hash_of_strings([index_config.index_name for index_config in index_configs])
         return hash_ if hash_ else None
 
     def init_search_index_configs(
@@ -151,9 +148,7 @@ class VDBConnector(ABC):
             filters=vdb_knn_search_params.filters,
             radius=vdb_knn_search_params.radius,
         )
-        return self._knn_search(
-            index_name, schema_name, returned_fields, search_params, **params
-        )
+        return self._knn_search(index_name, schema_name, returned_fields, search_params, **params)
 
     @abstractmethod
     def _knn_search(

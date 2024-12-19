@@ -68,12 +68,9 @@ class EventAggregationNode(
     ) -> None:
         super().__init__(
             Vector,
-            [init_params.input_to_aggregate]
-            + [filter.item for filter in init_params.filter_inputs],
+            [init_params.input_to_aggregate] + [filter.item for filter in init_params.filter_inputs],
             dag_effects=set(init_params.dag_effects),
-            persistence_params=PersistenceParams(
-                persist_evaluation_result=True, persist_parent_evaluation_result=True
-            ),
+            persistence_params=PersistenceParams(persist_evaluation_result=True, persist_parent_evaluation_result=True),
         )
         self.schemas = {
             init_params.event_schema,
@@ -100,10 +97,7 @@ class EventAggregationNode(
 
     @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
-        filters = [
-            {"node_id": filter_.item.node_id, "weight": filter_.weight}
-            for filter_ in self.filters
-        ]
+        filters = [{"node_id": filter_.item.node_id, "weight": filter_.weight} for filter_ in self.filters]
         return {
             "dag_effects": self.dag_effects,
             "schemas": self.schemas,

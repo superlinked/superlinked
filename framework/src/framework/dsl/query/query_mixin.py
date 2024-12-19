@@ -41,9 +41,7 @@ class QueryMixin:
             indices (Sequence[Index]): A sequence of Index instances to be used for query execution.
             storage_manager (StorageManager): The storage manager instance to be used.
         """
-        self._query_vector_factory_by_index = {
-            index: QueryVectorFactory(index._dag) for index in indices
-        }
+        self._query_vector_factory_by_index = {index: QueryVectorFactory(index._dag) for index in indices}
 
     def query(self, query_descriptor: QueryDescriptor, **params: Any) -> Result:
         """
@@ -59,9 +57,7 @@ class QueryMixin:
         Raises:
             QueryException: If the query index is not found among the executor's indices.
         """
-        if query_vector_factory := self._query_vector_factory_by_index.get(
-            query_descriptor.index
-        ):
+        if query_vector_factory := self._query_vector_factory_by_index.get(query_descriptor.index):
             # 'self' is an App instance; MyPy can't infer the inheriting class. See [FAI-2085].
             return QueryExecutor(self, query_descriptor, query_vector_factory).query(**params)  # type: ignore
 

@@ -64,9 +64,7 @@ class ComparisonOperand(ABC, Generic[COT]):
     @property
     def _built_in_operation_mapping(
         self,
-    ) -> dict[
-        ComparisonOperationType, Callable[[ComparisonOperand[COT], object], bool]
-    ]:
+    ) -> dict[ComparisonOperationType, Callable[[ComparisonOperand[COT], object], bool]]:
         return self.__built_in_operation_mapping
 
     def _get_built_in_operation(
@@ -79,9 +77,7 @@ class ComparisonOperand(ABC, Generic[COT]):
 
     @staticmethod
     @abstractmethod
-    def _built_in_equal(
-        left_operand: ComparisonOperand[COT], right_operand: object
-    ) -> bool:
+    def _built_in_equal(left_operand: ComparisonOperand[COT], right_operand: object) -> bool:
         pass
 
     def __ne__(self, __value: object) -> ComparisonOperation[COT]:  # type: ignore[override]
@@ -89,75 +85,55 @@ class ComparisonOperand(ABC, Generic[COT]):
 
     @staticmethod
     @abstractmethod
-    def _built_in_not_equal(
-        left_operand: ComparisonOperand[COT], right_operand: object
-    ) -> bool:
+    def _built_in_not_equal(left_operand: ComparisonOperand[COT], right_operand: object) -> bool:
         pass
 
     def __gt__(self, __value: object) -> ComparisonOperation[COT]:  # type: ignore[override]
         return ComparisonOperation(ComparisonOperationType.GREATER_THAN, self, __value)
 
     @staticmethod
-    def _built_in_greater_than(
-        left_operand: ComparisonOperand[COT], right_operand: object
-    ) -> bool:
+    def _built_in_greater_than(left_operand: ComparisonOperand[COT], right_operand: object) -> bool:
         raise NotImplementedError()
 
     def __lt__(self, __value: object) -> ComparisonOperation[COT]:  # type: ignore[override]
         return ComparisonOperation(ComparisonOperationType.LESS_THAN, self, __value)
 
     @staticmethod
-    def _built_in_less_than(
-        left_operand: ComparisonOperand[COT], right_operand: object
-    ) -> bool:
+    def _built_in_less_than(left_operand: ComparisonOperand[COT], right_operand: object) -> bool:
         raise NotImplementedError()
 
     def __ge__(self, __value: object) -> ComparisonOperation[COT]:  # type: ignore[override]
         return ComparisonOperation(ComparisonOperationType.GREATER_EQUAL, self, __value)
 
     @staticmethod
-    def _built_in_greater_equal(
-        left_operand: ComparisonOperand[COT], right_operand: object
-    ) -> bool:
+    def _built_in_greater_equal(left_operand: ComparisonOperand[COT], right_operand: object) -> bool:
         raise NotImplementedError()
 
     def __le__(self, __value: object) -> ComparisonOperation[COT]:  # type: ignore[override]
         return ComparisonOperation(ComparisonOperationType.LESS_EQUAL, self, __value)
 
     @staticmethod
-    def _built_in_less_equal(
-        left_operand: ComparisonOperand[COT], right_operand: object
-    ) -> bool:
+    def _built_in_less_equal(left_operand: ComparisonOperand[COT], right_operand: object) -> bool:
         raise NotImplementedError()
 
     @staticmethod
-    def _built_in_in(
-        left_operand: ComparisonOperand[COT], right_operand: object
-    ) -> bool:
+    def _built_in_in(left_operand: ComparisonOperand[COT], right_operand: object) -> bool:
         raise NotImplementedError()
 
     @staticmethod
-    def _built_in_not_in(
-        left_operand: ComparisonOperand[COT], right_operand: object
-    ) -> bool:
+    def _built_in_not_in(left_operand: ComparisonOperand[COT], right_operand: object) -> bool:
         raise NotImplementedError()
 
     @staticmethod
-    def _built_in_contains(
-        left_operand: ComparisonOperand[COT], right_operand: object
-    ) -> bool:
+    def _built_in_contains(left_operand: ComparisonOperand[COT], right_operand: object) -> bool:
         raise NotImplementedError()
 
     @staticmethod
-    def _built_in_not_contains(
-        left_operand: ComparisonOperand[COT], right_operand: object
-    ) -> bool:
+    def _built_in_not_contains(left_operand: ComparisonOperand[COT], right_operand: object) -> bool:
         raise NotImplementedError()
 
     @staticmethod
-    def _built_in_contains_all(
-        left_operand: ComparisonOperand[COT], right_operand: object
-    ) -> bool:
+    def _built_in_contains_all(left_operand: ComparisonOperand[COT], right_operand: object) -> bool:
         raise NotImplementedError()
 
 
@@ -183,17 +159,13 @@ class _Or(Generic[COT]):
         return self | other
 
     @staticmethod
-    def _built_in_equal(
-        left_operand: ComparisonOperand[COT], right_operand: object
-    ) -> bool:
+    def _built_in_equal(left_operand: ComparisonOperand[COT], right_operand: object) -> bool:
         if isinstance(left_operand, _Or) and isinstance(right_operand, _Or):
             return right_operand.operations == left_operand.operations
         return False
 
     @staticmethod
-    def _built_in_not_equal(
-        left_operand: ComparisonOperand[COT], right_operand: object
-    ) -> bool:
+    def _built_in_not_equal(left_operand: ComparisonOperand[COT], right_operand: object) -> bool:
         return not _Or._built_in_equal(left_operand, right_operand)
 
     @staticmethod
@@ -206,9 +178,7 @@ class _Or(Generic[COT]):
             return operation.operations
         if isinstance(operation, ComparisonOperation):
             return [operation]
-        raise ValueError(
-            f"operand of or clause must be {ComparisonOperation} or {_Or}, got {type(operation)}."
-        )
+        raise ValueError(f"operand of or clause must be {ComparisonOperation} or {_Or}, got {type(operation)}.")
 
 
 class ComparisonOperation(Generic[COT]):
@@ -231,9 +201,7 @@ class ComparisonOperation(Generic[COT]):
         return self | other
 
     def __bool__(self) -> bool:
-        return self._operand._get_built_in_operation(self._op)(
-            self._operand, self._other
-        )
+        return self._operand._get_built_in_operation(self._op)(self._operand, self._other)
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(op={self._op}, operand={self._operand}, other={self._other})"

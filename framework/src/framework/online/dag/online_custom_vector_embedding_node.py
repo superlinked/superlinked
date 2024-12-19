@@ -33,9 +33,7 @@ from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
 
 
-class OnlineCustomVectorEmbeddingNode(
-    OnlineNode[CustomVectorEmbeddingNode, Vector], HasLength
-):
+class OnlineCustomVectorEmbeddingNode(OnlineNode[CustomVectorEmbeddingNode, Vector], HasLength):
     def __init__(
         self,
         node: CustomVectorEmbeddingNode,
@@ -43,10 +41,8 @@ class OnlineCustomVectorEmbeddingNode(
         storage_manager: StorageManager,
     ) -> None:
         super().__init__(node, parents, storage_manager)
-        self._embedding_transformation = (
-            TransformationFactory.create_embedding_transformation(
-                self.node.transformation_config
-            )
+        self._embedding_transformation = TransformationFactory.create_embedding_transformation(
+            self.node.transformation_config
         )
 
     @property
@@ -81,9 +77,7 @@ class OnlineCustomVectorEmbeddingNode(
             ).evaluate_next_single(parsed_schema, context)
             input_value = input_.main.value
             self._validate_input_value(input_value)
-            result = self.embedding_transformation.transform(
-                Vector(input_value), context
-            )
+            result = self.embedding_transformation.transform(Vector(input_value), context)
         return EvaluationResult(self._get_single_evaluation_result(result))
 
     def _validate_input_value(self, input_value: list[float]) -> None:

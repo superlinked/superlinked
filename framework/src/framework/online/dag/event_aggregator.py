@@ -61,10 +61,8 @@ class EventAggregator:
             self._params.transformation_config.aggregation_config,
             self._params.transformation_config.embedding_config,
         )
-        self._aggregation_transformation = (
-            TransformationFactory.create_aggregation_transformation(
-                transform_config_with_no_norm
-            )
+        self._aggregation_transformation = TransformationFactory.create_aggregation_transformation(
+            transform_config_with_no_norm
         )
 
     def calculate_event_vector(self) -> Vector:
@@ -80,17 +78,13 @@ class EventAggregator:
             aggregated_affecting_vector,
             self._params.effect_modifier.temperature,
         )
-        weighted_stored_vector = Weighted(
-            self._params.stored_result, self._calculate_stored_weight()
-        )
+        weighted_stored_vector = Weighted(self._params.stored_result, self._calculate_stored_weight())
         not_empty_weighted_vectors = [
             weighted_vector
             for weighted_vector in [weighted_affecting_vector, weighted_stored_vector]
             if not weighted_vector.item.is_empty
         ]
-        normalized_weighted_vectors = self.calculate_normalized_weighted_vectors(
-            not_empty_weighted_vectors
-        )
+        normalized_weighted_vectors = self.calculate_normalized_weighted_vectors(not_empty_weighted_vectors)
         return self._aggregation_transformation.transform(
             normalized_weighted_vectors,
             self._params.context,
@@ -102,10 +96,7 @@ class EventAggregator:
         # * We have to normalize the weight as we want to avoid L2 norm on the result vector.
         weights = [v.weight for v in not_empty_weighted_vectors]
         normalized_weights = L1Norm().normalize(Vector(weights)).value
-        return [
-            Weighted(vector.item, normalized_weights[i])
-            for i, vector in enumerate(not_empty_weighted_vectors)
-        ]
+        return [Weighted(vector.item, normalized_weights[i]) for i, vector in enumerate(not_empty_weighted_vectors)]
 
     def _calculate_stored_weight(self) -> float:
         return (
@@ -129,11 +120,7 @@ class EventAggregator:
         max_age_delta: timedelta | None,
         time_decay_floor: float,
     ) -> float:
-        max_age_delta_seconds = (
-            int(max_age_delta.total_seconds())
-            if max_age_delta
-            else now - effect_oldest_ts
-        )
+        max_age_delta_seconds = int(max_age_delta.total_seconds()) if max_age_delta else now - effect_oldest_ts
         if max_age_delta_seconds == 0:
             return 1.0
         avg_effect_delta = now - effect_avg_ts
