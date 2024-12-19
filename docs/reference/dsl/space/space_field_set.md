@@ -27,6 +27,14 @@ Classes
     `space: superlinked.framework.dsl.space.space.Space`
     :
 
+    ### Instance variables
+
+    `field_names_text: Sequence[str]`
+    :
+
+    `input_type: type[~SIT]`
+    :
+
     ### Methods
 
     `get_field_for_schema(self, schema_: Any) ‑> superlinked.framework.common.schema.schema_object.SchemaField | None`

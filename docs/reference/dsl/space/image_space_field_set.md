@@ -12,6 +12,11 @@ Classes
     * superlinked.framework.dsl.space.space_field_set.SpaceFieldSet
     * typing.Generic
 
+    ### Instance variables
+
+    `input_type: type`
+    :
+
 `ImageSpaceFieldSet(space: superlinked.framework.dsl.space.space.Space, fields: set[superlinked.framework.common.schema.schema_object.SchemaField])`
 :   ImageSpaceFieldSet(space: superlinked.framework.dsl.space.space.Space, fields: set[superlinked.framework.common.schema.schema_object.SchemaField])
 
@@ -19,3 +24,8 @@ Classes
 
     * superlinked.framework.dsl.space.space_field_set.SpaceFieldSet
     * typing.Generic
+
+    ### Instance variables
+
+    `input_type: type`
+    :

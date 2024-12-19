@@ -43,12 +43,10 @@ Classes
     * superlinked.framework.common.space.interface.has_transformation_config.HasTransformationConfig
     * superlinked.framework.common.interface.has_length.HasLength
     * typing.Generic
+    * superlinked.framework.common.interface.has_annotation.HasAnnotation
     * abc.ABC
 
     ### Instance variables
-
-    `annotation: str`
-    :
 
     `transformation_config: superlinked.framework.common.space.config.transformation_config.TransformationConfig[superlinked.framework.common.data_types.Vector, superlinked.framework.common.schema.image_data.ImageData]`
     :

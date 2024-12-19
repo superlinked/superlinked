@@ -26,9 +26,6 @@ Classes
     `append_missing_mandatory_clauses(self) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :
 
-    `calculate_param_infos(self) ‑> list[superlinked.framework.dsl.query.query_param_information.ParamInfo]`
-    :
-
     `calculate_value_by_param_name(self) ‑> dict[str, typing.Any]`
     :
 
@@ -101,7 +98,7 @@ Classes
         Returns:
             Self: The query object itself.
 
-    `nlq_suggestions(self, feedback: str | None = None) ‑> superlinked.framework.dsl.query.nlq_param_evaluator.QuerySuggestionsModel`
+    `nlq_suggestions(self, feedback: str | None = None) ‑> superlinked.framework.dsl.query.nlq.suggestion.query_suggestion_model.QuerySuggestionsModel`
     :   Get suggestions for improving the natural language query parameters.
         
         This method analyzes the current query parameters and provides suggestions for improvement,

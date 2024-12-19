@@ -11,6 +11,8 @@ Classes
 
     * superlinked.framework.dsl.query.query_clause.QueryClause
     * typing.Generic
+    * superlinked.framework.common.interface.has_annotation.HasAnnotation
+    * abc.ABC
 
     ### Class variables
 
@@ -21,6 +23,14 @@ Classes
     :
 
     `operand: superlinked.framework.common.schema.schema_object.SchemaField`
+    :
+
+    ### Instance variables
+
+    `annotation: str`
+    :
+
+    `value_accepted_type: type`
     :
 
     ### Methods
@@ -58,10 +68,20 @@ Classes
     * superlinked.framework.dsl.query.query_clause.WeightedQueryClause
     * superlinked.framework.dsl.query.query_clause.QueryClause
     * typing.Generic
+    * superlinked.framework.common.interface.has_annotation.HasAnnotation
+    * abc.ABC
 
     ### Class variables
 
     `schema_field: superlinked.framework.common.schema.schema_object.SchemaField`
+    :
+
+    ### Instance variables
+
+    `annotation: str`
+    :
+
+    `value_accepted_type: type`
     :
 
     ### Methods
@@ -151,6 +171,25 @@ Classes
     `value_param: superlinked.framework.dsl.query.param.Param | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.param.Param]`
     :
 
+    ### Static methods
+
+    `get_param(param: Param | Evaluated[Param]) ‑> superlinked.framework.dsl.query.param.Param`
+    :
+
+    `get_param_value(param: Param | Evaluated[Param]) ‑> collections.abc.Sequence[str] | collections.abc.Sequence[float] | PIL.Image.Image | str | int | float | bool | None | tuple[str | None, str | None]`
+    :
+
+    ### Instance variables
+
+    `params: Sequence[Param | Evaluated[Param]]`
+    :
+
+    `value_accepted_type: type`
+    :
+
+    `value_param_name: str`
+    :
+
     ### Methods
 
     `alter_value(self, params: dict[str, Any], is_override_set: bool) ‑> Self`
@@ -159,13 +198,10 @@ Classes
     `evaluate(self) ‑> ~EvaluatedQueryT`
     :
 
+    `get_allowed_values(self, param: Param | Evaluated[Param]) ‑> set[collections.abc.Sequence[str] | collections.abc.Sequence[float] | PIL.Image.Image | str | int | float | bool | None | tuple[str | None, str | None]]`
+    :
+
     `get_default_value_param_name(self) ‑> str`
-    :
-
-    `get_param(self, param: Param | Evaluated[Param]) ‑> superlinked.framework.dsl.query.param.Param`
-    :
-
-    `get_param_value(self, param: Param | Evaluated[Param]) ‑> collections.abc.Sequence[str] | collections.abc.Sequence[float] | PIL.Image.Image | str | int | float | bool | None | tuple[str | None, str | None]`
     :
 
     `get_value(self) ‑> float | int | str | superlinked.framework.common.data_types.Vector | list[float] | list[str] | superlinked.framework.common.schema.blob_information.BlobInformation | None`
@@ -198,6 +234,8 @@ Classes
     * superlinked.framework.dsl.query.query_clause.WeightedQueryClause
     * superlinked.framework.dsl.query.query_clause.QueryClause
     * typing.Generic
+    * superlinked.framework.common.interface.has_annotation.HasAnnotation
+    * abc.ABC
 
     ### Class variables
 
@@ -209,12 +247,21 @@ Classes
 
     ### Instance variables
 
+    `annotation: str`
+    :
+
     `space: Space`
+    :
+
+    `value_accepted_type: type`
     :
 
     ### Methods
 
     `evaluate(self) ‑> tuple[superlinked.framework.dsl.space.space.Space, superlinked.framework.dsl.query.predicate.binary_predicate.EvaluatedBinaryPredicate[superlinked.framework.dsl.query.predicate.binary_predicate.SimilarPredicate]] | None`
+    :
+
+    `get_allowed_values(self, param: Param | Evaluated[Param]) ‑> set[collections.abc.Sequence[str] | collections.abc.Sequence[float] | PIL.Image.Image | str | int | float | bool | None | tuple[str | None, str | None]]`
     :
 
     `get_default_value_param_name(self) ‑> str`
@@ -230,10 +277,20 @@ Classes
 
     * superlinked.framework.dsl.query.query_clause.QueryClause
     * typing.Generic
+    * superlinked.framework.common.interface.has_annotation.HasAnnotation
+    * abc.ABC
 
     ### Class variables
 
     `space: superlinked.framework.dsl.space.space.Space`
+    :
+
+    ### Instance variables
+
+    `annotation: str`
+    :
+
+    `value_accepted_type: type`
     :
 
     ### Methods
@@ -263,6 +320,17 @@ Classes
     ### Class variables
 
     `weight_param: superlinked.framework.dsl.query.param.Param | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.param.Param]`
+    :
+
+    ### Instance variables
+
+    `params: Sequence[Param | Evaluated[Param]]`
+    :
+
+    `weight_accepted_type: type`
+    :
+
+    `weight_param_name: str`
     :
 
     ### Methods

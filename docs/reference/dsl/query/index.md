@@ -5,8 +5,7 @@ Queries can have parameters and weights that you can provide at query time to co
 
 Sub-modules
 -----------
-* superlinked.framework.dsl.query.nlq_param_evaluator
-* superlinked.framework.dsl.query.nlq_pydantic_model_builder
+* superlinked.framework.dsl.query.nlq
 * superlinked.framework.dsl.query.param
 * superlinked.framework.dsl.query.predicate
 * superlinked.framework.dsl.query.query
@@ -14,7 +13,6 @@ Sub-modules
 * superlinked.framework.dsl.query.query_descriptor
 * superlinked.framework.dsl.query.query_filter_validator
 * superlinked.framework.dsl.query.query_mixin
-* superlinked.framework.dsl.query.query_param_information
 * superlinked.framework.dsl.query.query_param_value_setter
 * superlinked.framework.dsl.query.query_vector_factory
 * superlinked.framework.dsl.query.query_weighting
