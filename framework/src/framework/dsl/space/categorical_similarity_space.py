@@ -40,6 +40,7 @@ from superlinked.framework.common.space.config.normalization.normalization_confi
 from superlinked.framework.common.space.config.transformation_config import (
     TransformationConfig,
 )
+from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.space.has_space_field_set import HasSpaceFieldSet
 from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
@@ -112,6 +113,7 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
             InvalidSchemaException: If a schema object does not have a corresponding node in the similarity space,
             indicating a configuration or implementation error.
         """
+        TypeValidator.validate_list_item_type(categories, str, "categories")
         # TODO this type ignore is not needed but linting is flaky in CI
         super().__init__(
             category_input,
