@@ -44,6 +44,8 @@ class QueryNumberEmbeddingNode(QueryEmbeddingOrphanNode[float, NumberEmbeddingNo
         return [self._pre_process_node_input(input_) for input_ in inputs.get(self.node_id) or []]
 
     def _pre_process_node_input(self, node_input: QueryNodeInput) -> QueryNodeInput:
+        if isinstance(node_input.value.item, Vector):
+            return node_input
         if isinstance(node_input.value.item, float):
             return node_input
         return QueryNodeInput(
