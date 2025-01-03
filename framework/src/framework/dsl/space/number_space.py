@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import math
 
 from typing_extensions import override
 
@@ -29,7 +28,6 @@ from superlinked.framework.common.space.config.aggregation.aggregation_config im
 )
 from superlinked.framework.common.space.config.embedding.number_embedding_config import (
     LinearScale,
-    LogarithmicScale,
     Mode,
     NumberEmbeddingConfig,
     Scale,
@@ -183,30 +181,12 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
             if self._embedding_config.mode == Mode.SIMILAR
             else ""
         )
-        scaling_text = (
-            f"logarithmically with the base of {self._embedding_config.scale.base}"
-            if isinstance(self._embedding_config.scale, LogarithmicScale)
-            else "linearly"
-        )
-        min_value = (
-            math.log(
-                1 + self._embedding_config.min_value,
-                self._embedding_config.scale.base,
-            )
-            if isinstance(self._embedding_config.scale, LogarithmicScale)
-            else self._embedding_config.min_value
-        )
-        max_value = (
-            math.log(
-                1 + self._embedding_config.max_value,
-                self._embedding_config.scale.base,
-            )
-            if isinstance(self._embedding_config.scale, LogarithmicScale)
-            else self._embedding_config.max_value
-        )
+        min_value = self._embedding_config.min_value
+        max_value = self._embedding_config.max_value
+
         return f"""The space encodes numbers between {min_value}
         and {max_value}, being the domain of the space.
-        Values are {scaling_text} spaced in {min_value} and {max_value}.
+        Values are spaced between {min_value} and {max_value}.
         It has {mode_text} Mode so it favors the {mode_to_preference[mode_text]} number{similar_first_text}.
         For this {mode_text} mode space, negative weights mean favoring
         the {negative_text[mode_text]}. 0 weight means insensitivity.

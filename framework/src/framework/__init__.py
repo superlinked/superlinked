@@ -68,6 +68,8 @@ from superlinked.framework.common.space.config.embedding.image_embedding_config 
     ModelHandler,
 )
 from superlinked.framework.common.space.config.embedding.number_embedding_config import (
+    LinearScale,
+    LogarithmicScale,
     Mode,
 )
 from superlinked.framework.common.util.interactive_util import get_altair_renderer
@@ -101,11 +103,7 @@ from superlinked.framework.dsl.space.categorical_similarity_space import (
 )
 from superlinked.framework.dsl.space.custom_space import CustomSpace
 from superlinked.framework.dsl.space.image_space import ImageSpace
-from superlinked.framework.dsl.space.number_space import (
-    LinearScale,
-    LogarithmicScale,
-    NumberSpace,
-)
+from superlinked.framework.dsl.space.number_space import NumberSpace
 from superlinked.framework.dsl.space.recency_space import RecencySpace
 from superlinked.framework.dsl.space.text_similarity_space import (
     TextSimilaritySpace,
