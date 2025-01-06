@@ -16,6 +16,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from beartype.typing import Sequence
+
+from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
@@ -27,13 +30,12 @@ class QdrantVDBKNNSearchParams(VDBKNNSearchParams):
 
     @classmethod
     def from_base(
-        cls,
-        search_params: VDBKNNSearchParams,
-        collection_name: str,
+        cls, search_params: VDBKNNSearchParams, collection_name: str, fields_to_return: Sequence[Field]
     ) -> QdrantVDBKNNSearchParams:
         return cls(
             search_params.vector_field,
             search_params.limit,
+            fields_to_return,
             search_params.filters,
             search_params.radius,
             collection_name,

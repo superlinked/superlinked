@@ -26,6 +26,7 @@ from qdrant_client.models import (
     UpdateVectors,
     UpdateVectorsOperation,
     UpsertOperation,
+    VectorStruct,
 )
 from typing_extensions import override
 
@@ -83,8 +84,8 @@ class QdrantVDBConnector(VDBConnector):
     def close_connection(self) -> None:
         self._client.close()
 
-    @override
     @property
+    @override
     def search_index_manager(self) -> SearchIndexManager:
         return self.__search_index_manager
 
@@ -114,7 +115,7 @@ class QdrantVDBConnector(VDBConnector):
         points = [
             PointStruct(
                 id=QdrantVDBConnector._get_qdrant_id(ed.id_),
-                vector=self._get_point_vector_dict(ed),
+                vector=cast(VectorStruct, self._get_point_vector_dict(ed)),
                 payload=self._get_point_payload_dict(ed),
             )
             for ed in entity_data
@@ -122,7 +123,7 @@ class QdrantVDBConnector(VDBConnector):
         non_existing_points, existing_points = self._split_points_by_existing(points)
         update_operations = list[UpdateOperation]()
         if non_existing_points:
-            update_operations.append(UpsertOperation(upsert=PointsList(points=non_existing_points)))
+            update_operations.append(UpsertOperation(upsert=PointsList(points=list(non_existing_points))))
         update_vectors_points = [
             PointVectors(id=point.id, vector=point.vector) for point in existing_points if point.vector
         ]
@@ -189,13 +190,13 @@ class QdrantVDBConnector(VDBConnector):
     def _get_entity_data_from_point(self, point: Record, entity_by_id: dict[EntityId, Entity]) -> EntityData:
         payload_fields = self._check_and_get_payload(point)
         vector_fields = self._check_and_get_vectors(point)
-        all_returned_fields = payload_fields | vector_fields
+        all_fields_to_return = payload_fields | vector_fields
         id_ = self._entity_id_from_payload(payload_fields)
         fields = entity_by_id[id_].fields
         return EntityData(
             id_,
             {
-                field.name: self._encoder.decode_field(field, all_returned_fields.get(field.name))
+                field.name: self._encoder.decode_field(field, all_fields_to_return.get(field.name))
                 for field in fields.values()
             },
         )
@@ -205,32 +206,33 @@ class QdrantVDBConnector(VDBConnector):
         self,
         index_name: str,
         schema_name: str,
-        returned_fields: Sequence[Field],
         vdb_knn_search_params: VDBKNNSearchParams,
         **params: Any,
     ) -> Sequence[ResultEntityData]:
         index_config = self._get_index_config(index_name)
-        extended_returned_fields = list(returned_fields) + [ID_PAYLOAD_FIELD]
+        extended_fields_to_return = list(vdb_knn_search_params.fields_to_return) + [ID_PAYLOAD_FIELD]
         result: QueryResponse = self._search.knn_search_with_checks(
             index_config,
-            extended_returned_fields,
-            QdrantVDBKNNSearchParams.from_base(vdb_knn_search_params, self.collection_name),
+            QdrantVDBKNNSearchParams.from_base(vdb_knn_search_params, self.collection_name, extended_fields_to_return),
         )
-        return [self._get_result_entity_data_from_point(point, returned_fields) for point in result.points]
+        return [
+            self._get_result_entity_data_from_point(point, vdb_knn_search_params.fields_to_return)
+            for point in result.points
+        ]
 
     def _get_result_entity_data_from_point(
-        self, point: ScoredPoint, returned_fields: Sequence[Field]
+        self, point: ScoredPoint, fields_to_return: Sequence[Field]
     ) -> ResultEntityData:
         payload_fields = self._check_and_get_payload(point)
         vector_fields = self._check_and_get_vectors(point)
-        all_returned_fields = payload_fields | vector_fields
+        all_fields_to_return = payload_fields | vector_fields
         id_ = self._entity_id_from_payload(payload_fields)
         return ResultEntityData(
             id_,
             {
-                field.name: self._encoder.decode_field(field, all_returned_fields[field.name])
-                for field in returned_fields
-                if all_returned_fields.get(field.name) is not None
+                field.name: self._encoder.decode_field(field, all_fields_to_return[field.name])
+                for field in fields_to_return
+                if all_fields_to_return.get(field.name) is not None
             },
             self._encoder._decode_base_type(point.score),
         )

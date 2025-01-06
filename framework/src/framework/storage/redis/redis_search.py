@@ -13,11 +13,10 @@
 # limitations under the License.
 
 
-from beartype.typing import Any, Sequence
+from beartype.typing import Any, cast
 from redis import Redis
 from typing_extensions import override
 
-from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.index_config import IndexConfig
 from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
@@ -37,8 +36,8 @@ class RedisSearch(Search[VDBKNNSearchParams, RedisQuery, dict[bytes, Any]]):
         self._query_builder = RedisQueryBuilder(encoder)
 
     @override
-    def build_query(self, search_params: VDBKNNSearchParams, returned_fields: Sequence[Field]) -> RedisQuery:
-        return self._query_builder.build_query(search_params, returned_fields)
+    def build_query(self, search_params: VDBKNNSearchParams) -> RedisQuery:
+        return self._query_builder.build_query(search_params)
 
     @override
     def knn_search(
@@ -46,4 +45,5 @@ class RedisSearch(Search[VDBKNNSearchParams, RedisQuery, dict[bytes, Any]]):
         index_config: IndexConfig,
         query: RedisQuery,
     ) -> dict[bytes, Any]:
-        return self._client.ft(index_config.index_name).search(query.query, query_params=query.query_params)
+        result = self._client.ft(index_config.index_name).search(query.query, query_params=query.query_params)
+        return cast(dict[bytes, Any], result)

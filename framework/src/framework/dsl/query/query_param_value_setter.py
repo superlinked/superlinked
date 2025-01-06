@@ -15,10 +15,11 @@
 from __future__ import annotations
 
 import structlog
-from beartype.typing import Any
+from beartype.typing import Any, Mapping
 
 from superlinked.framework.common.interface.evaluated import Evaluated
 from superlinked.framework.dsl.query.nlq.nlq_handler import NLQHandler
+from superlinked.framework.dsl.query.param import ParamInputType
 from superlinked.framework.dsl.query.query_clause import (
     NLQClause,
     NLQSystemPromptClause,
@@ -32,7 +33,7 @@ logger = structlog.getLogger()
 
 class QueryParamValueSetter:
     @classmethod
-    def set_values(cls, query_descriptor: QueryDescriptor, params: dict[str, Any]) -> QueryDescriptor:
+    def set_values(cls, query_descriptor: QueryDescriptor, params: Mapping[str, ParamInputType]) -> QueryDescriptor:
         query_descriptor_with_all_clauses = query_descriptor.append_missing_mandatory_clauses()
         cls.validate_params(query_descriptor_with_all_clauses, params)
         altered_query_descriptor = cls.__alter_query_descriptor(query_descriptor_with_all_clauses, params, True)
@@ -42,7 +43,7 @@ class QueryParamValueSetter:
         return cls.__alter_query_descriptor(nlq_altered_query_descriptor, space_weight_params, False)
 
     @classmethod
-    def validate_params(cls, query_descriptor: QueryDescriptor, params_to_set: dict[str, Any]) -> None:
+    def validate_params(cls, query_descriptor: QueryDescriptor, params_to_set: Mapping[str, Any]) -> None:
         weight_params = [clause.weight_param for clause in query_descriptor.get_weighted_clauses()]
         value_params = [clause.value_param for clause in query_descriptor.clauses]
         all_params = weight_params + value_params
@@ -56,14 +57,16 @@ class QueryParamValueSetter:
     def __alter_query_descriptor(
         cls,
         query_descriptor: QueryDescriptor,
-        params: dict[str, Any],
+        params: Mapping[str, ParamInputType],
         is_override_set: bool,
     ) -> QueryDescriptor:
         altered_clauses = [cls.__alter_clause(clause, params, is_override_set) for clause in query_descriptor.clauses]
         return query_descriptor.replace_clauses(altered_clauses)
 
     @classmethod
-    def __alter_clause(cls, clause: QueryClause, params: dict[str, Any], is_override_set: bool) -> QueryClause:
+    def __alter_clause(
+        cls, clause: QueryClause, params: Mapping[str, ParamInputType], is_override_set: bool
+    ) -> QueryClause:
         clause = clause.alter_value(params, is_override_set)
         if isinstance(clause, WeightedQueryClause):
             clause = clause.alter_weight(params, is_override_set)

@@ -56,8 +56,8 @@ class RedisVDBConnector(VDBConnector):
     def close_connection(self) -> None:
         self._client.close()
 
-    @override
     @property
+    @override
     def search_index_manager(self) -> SearchIndexManager:
         return self.__search_index_manager
 
@@ -113,18 +113,19 @@ class RedisVDBConnector(VDBConnector):
         self,
         index_name: str,
         schema_name: str,
-        returned_fields: Sequence[Field],
         vdb_knn_search_params: VDBKNNSearchParams,
         **params: Any,
     ) -> Sequence[ResultEntityData]:
         index_config = self._get_index_config(index_name)
         result = self._encoder.convert_bytes_keys_dict(
-            self._search.knn_search_with_checks(index_config, returned_fields, vdb_knn_search_params)
+            self._search.knn_search_with_checks(index_config, vdb_knn_search_params)
         )
         return [
             ResultEntityData(
                 RedisVDBConnector._get_entity_id_from_redis_id(self._encoder._decode_string(document["id"])),
-                self._extract_fields_from_document(document["extra_attributes"], returned_fields),
+                self._extract_fields_from_document(
+                    document["extra_attributes"], vdb_knn_search_params.fields_to_return
+                ),
                 self._convert_distance_to_score(
                     self._encoder._decode_double(document["extra_attributes"][VECTOR_DISTANCE_ALIAS])
                 ),
@@ -136,11 +137,11 @@ class RedisVDBConnector(VDBConnector):
         return 1 - distance
 
     def _extract_fields_from_document(
-        self, document: dict[str, Any], returned_fields: Sequence[Field]
+        self, document: dict[str, Any], fields_to_return: Sequence[Field]
     ) -> dict[str, FieldData]:
         return {
             returned_field.name: self._encoder.decode_field(returned_field, document[returned_field.name])
-            for returned_field in returned_fields
+            for returned_field in fields_to_return
             if document.get(returned_field.name) is not None
         }
 

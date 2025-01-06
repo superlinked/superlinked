@@ -21,7 +21,6 @@ from superlinked.framework.common.const import constants
 from superlinked.framework.common.exception import InitializationException
 from superlinked.framework.common.storage.entity.entity import Entity
 from superlinked.framework.common.storage.entity.entity_data import EntityData
-from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.index_config import IndexConfig
 from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
@@ -132,7 +131,6 @@ class VDBConnector(ABC):
         self,
         index_name: str,
         schema_name: str,
-        returned_fields: Sequence[Field],
         vdb_knn_search_params: VDBKNNSearchParams,
         **params: Any,
     ) -> Sequence[ResultEntityData]:
@@ -145,17 +143,17 @@ class VDBConnector(ABC):
         search_params = VDBKNNSearchParams(
             vector_field=vdb_knn_search_params.vector_field,
             limit=limit,
+            fields_to_return=vdb_knn_search_params.fields_to_return,
             filters=vdb_knn_search_params.filters,
             radius=vdb_knn_search_params.radius,
         )
-        return self._knn_search(index_name, schema_name, returned_fields, search_params, **params)
+        return self._knn_search(index_name, schema_name, search_params, **params)
 
     @abstractmethod
     def _knn_search(
         self,
         index_name: str,
         schema_name: str,
-        returned_fields: Sequence[Field],
         vdb_knn_search_params: VDBKNNSearchParams,
         **params: Any,
     ) -> Sequence[ResultEntityData]:

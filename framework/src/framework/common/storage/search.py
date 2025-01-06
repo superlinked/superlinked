@@ -37,16 +37,15 @@ class Search(ABC, Generic[SearchParamsT, QuertT, KNNReturnT]):
     def knn_search_with_checks(
         self,
         index_config: IndexConfig,
-        returned_fields: Sequence[Field],
         search_params: SearchParamsT,
     ) -> KNNReturnT:
         self.check_vector_field(index_config, search_params.vector_field)
         self.check_filters(index_config, search_params.filters)
-        query = self.build_query(search_params, returned_fields)
+        query = self.build_query(search_params)
         return self.knn_search(index_config, query)
 
     @abstractmethod
-    def build_query(self, search_params: SearchParamsT, returned_fields: Sequence[Field]) -> QuertT:
+    def build_query(self, search_params: SearchParamsT) -> QuertT:
         pass
 
     @abstractmethod

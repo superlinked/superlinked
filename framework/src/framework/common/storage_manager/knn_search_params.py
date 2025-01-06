@@ -28,4 +28,5 @@ class KNNSearchParams:
     vector: Vector
     limit: int
     filters: Sequence[ComparisonOperation[SchemaField]]
+    schema_fields_to_return: Sequence[SchemaField]
     radius: float | None = None

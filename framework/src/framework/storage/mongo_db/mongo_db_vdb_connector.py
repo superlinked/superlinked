@@ -64,8 +64,8 @@ class MongoDBVDBConnector(VDBConnector):
         # type-checkers mistake 'close' for a database.
         self._client.close()  # type: ignore
 
-    @override
     @property
+    @override
     def search_index_manager(self) -> SearchIndexManager:
         return self._search_index_manager
 
@@ -115,14 +115,12 @@ class MongoDBVDBConnector(VDBConnector):
         self,
         index_name: str,
         schema_name: str,
-        returned_fields: Sequence[Field],
         vdb_knn_search_params: VDBKNNSearchParams,
         **params: Any,
     ) -> Sequence[ResultEntityData]:
         index_config = self._get_index_config(index_name)
         results = self._search.knn_search_with_checks(
             index_config,
-            returned_fields,
             MongoDBVDBKNNSearchParams.from_base(
                 vdb_knn_search_params,
                 self.collection_name,
@@ -133,18 +131,18 @@ class MongoDBVDBConnector(VDBConnector):
         return [
             ResultEntityData(
                 MongoDBVDBConnector._get_entity_id_from_mongo_id(self._encoder._decode_string(document["_id"])),
-                self._extract_fields_from_document(document, returned_fields),
+                self._extract_fields_from_document(document, vdb_knn_search_params.fields_to_return),
                 self._encoder._decode_double(document[VECTOR_SCORE_ALIAS]),
             )
             for document in results
         ]
 
     def _extract_fields_from_document(
-        self, document: dict[str, Any], returned_fields: Sequence[Field]
+        self, document: dict[str, Any], fields_to_return: Sequence[Field]
     ) -> dict[str, FieldData]:
         return {
             returned_field.name: self._encoder.decode_field(returned_field, document[returned_field.name])
-            for returned_field in returned_fields
+            for returned_field in fields_to_return
             if document.get(returned_field.name) is not None
         }
 

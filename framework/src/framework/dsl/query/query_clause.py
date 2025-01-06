@@ -17,7 +17,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from dataclasses import dataclass, replace
 
-from beartype.typing import Any, Generic, Sequence, TypeVar, cast
+from beartype.typing import Any, Generic, Mapping, Sequence, TypeVar, cast
 from typing_extensions import Self, override
 
 from superlinked.framework.common.const import constants
@@ -34,6 +34,7 @@ from superlinked.framework.common.interface.has_annotation import HasAnnotation
 from superlinked.framework.common.nlq.open_ai import OpenAIClientConfig
 from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.util.generic_class_util import GenericClassUtil
+from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.query.param import (
     UNSET_PARAM_NAME,
     Param,
@@ -79,13 +80,18 @@ class QueryClause(Generic[EvaluatedQueryT]):
     def value_param_name(self) -> str:
         return self.get_param(self.value_param).name
 
-    def alter_value(self, params: dict[str, Any], is_override_set: bool) -> Self:
+    def alter_value(self, params: Mapping[str, ParamInputType], is_override_set: bool) -> Self:
         if (is_override_set or not isinstance(self.value_param, Evaluated)) and (
             value := params.get(self.value_param_name)
         ) is not None:
             param_to_alter = self.get_param(self.value_param)
-            return replace(self, value_param=param_to_alter.to_evaluated(value))
+            overridden_value = self._transform_param_value(value)
+            return replace(self, value_param=param_to_alter.to_evaluated(overridden_value))
         return self
+
+    def _transform_param_value(self, param_value: Any) -> Any:
+        # * can be overridden in child classes
+        return param_value
 
     def get_value(self) -> PythonTypes | None:
         value = self.get_param_value(self.value_param)
@@ -122,7 +128,7 @@ QueryClauseT = TypeVar("QueryClauseT", bound=QueryClause)
 class WeightedQueryClause(QueryClause[EvaluatedQueryT]):
     weight_param: Param | Evaluated[Param]
 
-    def alter_weight(self, params: dict[str, Any], is_override_set: bool) -> Self:
+    def alter_weight(self, params: Mapping[str, ParamInputType], is_override_set: bool) -> Self:
         if (is_override_set or not isinstance(self.weight_param, Evaluated)) and (
             weight := params.get(self.weight_param_name)
         ) is not None:
@@ -179,7 +185,7 @@ class SpaceWeightClause(QueryClause[tuple[Space, float]], HasAnnotation):
 
     @override
     def get_default_value_param_name(self) -> str:
-        return f"space_weight_{type(self.space).__name__}_{hash(self.space)}_param"
+        return f"space_weight_{type(self.space).__name__}_{hash(self.space)}_param__"
 
     @property
     @override
@@ -225,11 +231,11 @@ class LooksLikeFilterClause(
 
     @override
     def get_default_value_param_name(self) -> str:
-        return f"with_vector_{self.schema_field.name}_value_param"
+        return f"with_vector_{self.schema_field.name}_value_param__"
 
     @override
     def get_default_weight_param_name(self) -> str:
-        return f"with_vector_{self.schema_field.name}_weight_param"
+        return f"with_vector_{self.schema_field.name}_weight_param__"
 
     @property
     @override
@@ -290,11 +296,11 @@ class SimilarFilterClause(
 
     @override
     def get_default_value_param_name(self) -> str:
-        return f"similar_filter_{self.space}_{self.schema_field.name}_value_param"
+        return f"similar_filter_{self.space}_{self.schema_field.name}_value_param__"
 
     @override
     def get_default_weight_param_name(self) -> str:
-        return f"similar_filter_{self.space}_{self.schema_field.name}_weight_param"
+        return f"similar_filter_{self.space}_{self.schema_field.name}_weight_param__"
 
     @property
     @override
@@ -351,7 +357,7 @@ class HardFilterClause(QueryClause[ComparisonOperation[SchemaField] | None], Has
 
     @override
     def get_default_value_param_name(self) -> str:
-        return f"hard_filter_{self.operand.name}_{self.op.value}_param"
+        return f"hard_filter_{self.operand.name}_{self.op.value}_param__"
 
     @override
     def evaluate(self) -> ComparisonOperation[SchemaField] | None:
@@ -389,7 +395,7 @@ class NLQClause(QueryClause[str | None]):
 
     @override
     def get_default_value_param_name(self) -> str:
-        return "natural_query_param"
+        return "natural_query_param__"
 
     @override
     def evaluate(self) -> str | None:
@@ -404,7 +410,7 @@ class NLQSystemPromptClause(QueryClause[str | None]):
 
     @override
     def get_default_value_param_name(self) -> str:
-        return "system_prompt_param"
+        return "system_prompt_param__"
 
     @override
     def evaluate(self) -> str | None:
@@ -419,7 +425,7 @@ class LimitClause(QueryClause[int]):
 
     @override
     def get_default_value_param_name(self) -> str:
-        return "limit_param"
+        return "limit_param__"
 
     @override
     def get_value(self) -> int:
@@ -435,10 +441,35 @@ class LimitClause(QueryClause[int]):
 
 
 @dataclass(frozen=True)
+class SelectClause(QueryClause[list[str]]):
+    @override
+    def get_default_value_param_name(self) -> str:
+        return "select_param__"
+
+    @override
+    def get_value(self) -> list[str]:
+        value = super().get_value()
+        if value is None:
+            return []
+        TypeValidator.validate_list_item_type(value, str, "Query select clause value")
+        return cast(list[str], value)
+
+    @override
+    def evaluate(self) -> list[str]:
+        return self.get_value()
+
+    @override
+    def _transform_param_value(self, param_value: Any) -> Any:
+        if TypeValidator.is_sequence_safe(param_value):
+            return [value.name if isinstance(value, SchemaField) else value for value in param_value]
+        return param_value
+
+
+@dataclass(frozen=True)
 class RadiusClause(QueryClause[float | None]):
     @override
     def get_default_value_param_name(self) -> str:
-        return "radius_param"
+        return "radius_param__"
 
     @override
     def get_value(self) -> float | None:
@@ -458,7 +489,7 @@ class OverriddenNowClause(QueryClause[int | None]):
 
     @override
     def get_default_value_param_name(self) -> str:
-        return "overridden_now_param"
+        return "overridden_now_param__"
 
     @override
     def evaluate(self) -> int | None:

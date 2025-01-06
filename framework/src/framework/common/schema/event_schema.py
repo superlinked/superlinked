@@ -14,7 +14,7 @@
 
 
 from beartype.typing import Sequence, cast
-from typing_extensions import Self
+from typing_extensions import Self, override
 
 from superlinked.framework.common.schema.event_schema_object import (
     CreatedAtField,
@@ -59,10 +59,8 @@ class EventSchema(EventSchemaObject):
 
     def __init__(self) -> None:
         super().__init__(type(self), self._id_field_name, self._created_at_field_name)
-        self._schema_fields = [
-            self._init_field(schema_field_descriptor) for schema_field_descriptor in self._schema_field_descriptors
-        ]
 
-    def _get_schema_fields(self) -> Sequence[SchemaField]:
+    @override
+    def _init_schema_fields(self) -> Sequence[SchemaField]:
         """Returns all declared SchemaFields. Does not include the mandatory "id" and "created_at" fields."""
-        return self._schema_fields
+        return [self._init_field(schema_field_descriptor) for schema_field_descriptor in self._schema_field_descriptors]

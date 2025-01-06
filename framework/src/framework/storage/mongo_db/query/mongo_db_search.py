@@ -12,12 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Sequence
 from pymongo.command_cursor import CommandCursor
 from pymongo.database import Database
 from typing_extensions import override
 
-from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.index_config import IndexConfig
 from superlinked.framework.common.storage.search import Search
 from superlinked.framework.storage.mongo_db.mongo_db_field_encoder import (
@@ -38,18 +36,14 @@ class MongoDBSearch(Search[MongoDBVDBKNNSearchParams, MongoDBQuery, CommandCurso
         self._encoder = encoder
 
     @override
-    def build_query(
-        self,
-        search_params: MongoDBVDBKNNSearchParams,
-        returned_fields: Sequence[Field],
-    ) -> MongoDBQuery:
+    def build_query(self, search_params: MongoDBVDBKNNSearchParams) -> MongoDBQuery:
         if search_params.num_candidates > MAX_NUMBER_OF_CANDIDATES:
             raise ValueError("Number of nearest neighbors exeeded")
         return (
             MongoDBQuery(self._encoder, search_params.collection_name)
             # Order is important!
             .add_vector_search_dict(search_params)
-            .add_projection_dict(returned_fields)
+            .add_projection_dict(search_params.fields_to_return)
             .add_radius_filter_dict(search_params.radius)
         )
 

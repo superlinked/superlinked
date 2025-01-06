@@ -64,7 +64,7 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, dict[str,
         parsed_fields: list[ParsedSchemaField] = [
             ParsedSchemaField.from_schema_field(field, parsed_value)
             for field, parsed_value in [
-                (field, self._parse_schema_field_value(field, json_data)) for field in self._schema._get_schema_fields()
+                (field, self._parse_schema_field_value(field, json_data)) for field in self._schema.schema_fields
             ]
             if parsed_value is not None
         ]

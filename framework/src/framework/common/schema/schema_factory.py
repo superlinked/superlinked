@@ -89,13 +89,11 @@ class SchemaFactory:
                 else:
                     super().__init__(schema_cls, schema_information.id_field_name)
 
-                self._schema_fields = [
+            def _init_schema_fields(self) -> Sequence[SchemaField]:
+                """Returns all declared SchemaFields. Does not include the mandatory "id" field."""
+                return [
                     self._init_field(schema_field_descriptor)
                     for schema_field_descriptor in schema_information.schema_field_descriptors
                 ]
-
-            def _get_schema_fields(self) -> Sequence[SchemaField]:
-                """Returns all declared SchemaFields. Does not include the mandatory "id" field."""
-                return self._schema_fields
 
         return Decorated

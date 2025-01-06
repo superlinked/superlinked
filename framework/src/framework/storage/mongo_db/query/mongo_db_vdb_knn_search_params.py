@@ -39,6 +39,7 @@ class MongoDBVDBKNNSearchParams(VDBKNNSearchParams):
         return cls(
             search_params.vector_field,
             search_params.limit,
+            search_params.fields_to_return,
             search_params.filters,
             search_params.radius,
             collection_name,

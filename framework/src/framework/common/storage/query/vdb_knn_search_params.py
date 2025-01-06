@@ -27,5 +27,6 @@ from superlinked.framework.common.storage.field.field_data import VectorFieldDat
 class VDBKNNSearchParams:
     vector_field: VectorFieldData
     limit: int
+    fields_to_return: Sequence[Field]
     filters: Sequence[ComparisonOperation[Field]] | None
     radius: float | None

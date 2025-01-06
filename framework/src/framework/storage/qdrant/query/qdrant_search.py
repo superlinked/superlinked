@@ -13,13 +13,11 @@
 # limitations under the License.
 
 
-from beartype.typing import Sequence
 from qdrant_client import QdrantClient
 from qdrant_client.conversions.common_types import QueryResponse
 from qdrant_client.models import SearchParams
 from typing_extensions import override
 
-from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.index_config import IndexConfig
 from superlinked.framework.common.storage.search import Search
 from superlinked.framework.common.storage.search_index.search_algorithm import (
@@ -42,8 +40,8 @@ class QdrantSearch(Search[QdrantVDBKNNSearchParams, QdrantQuery, QueryResponse])
         self._query_builder = QdrantQueryBuilder(encoder)
 
     @override
-    def build_query(self, search_params: QdrantVDBKNNSearchParams, returned_fields: Sequence[Field]) -> QdrantQuery:
-        return self._query_builder.build(search_params, returned_fields)
+    def build_query(self, search_params: QdrantVDBKNNSearchParams) -> QdrantQuery:
+        return self._query_builder.build(search_params)
 
     @override
     def knn_search(

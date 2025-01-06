@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+from abc import abstractmethod
 from dataclasses import dataclass
 
 from beartype.typing import Any, Generic, Sequence, TypeVar, cast
@@ -22,6 +23,7 @@ from typing_extensions import override
 from superlinked.framework.common.data_types import PythonTypes
 from superlinked.framework.common.interface.comparison_operand import ComparisonOperand
 from superlinked.framework.common.schema.blob_information import BlobInformation
+from superlinked.framework.common.schema.exception import FieldException
 
 # Exclude from documentation.
 # A better approach would be to separate this file into atomic objects,
@@ -44,6 +46,11 @@ class SchemaObject:
 
     def __init__(self, base_cls: type) -> None:
         self._base_cls = base_cls
+        self._schema_fields = self._init_schema_fields()
+        self._schema_fields_by_name = {field.name: field for field in self._schema_fields}
+
+    @abstractmethod
+    def _init_schema_fields(self) -> Sequence[SchemaField]: ...
 
     @property
     def _base_class_name(self) -> str:
@@ -53,8 +60,12 @@ class SchemaObject:
     def _schema_name(self) -> str:
         return self._base_class_name
 
+    @property
+    def schema_fields(self) -> Sequence[SchemaField]:
+        return self._schema_fields
+
     def __str__(self) -> str:
-        schema_fields = ", ".join([f"(name={field.name}, type={field.type_})" for field in self._get_schema_fields()])
+        schema_fields = ", ".join([f"(name={field.name}, type={field.type_})" for field in self.schema_fields])
         return f"{self.__class__.__name__}(schema_name={self._schema_name}, schema_fields=[{schema_fields}])"
 
     def _init_field(self: SchemaObjectT, field_descriptor: SchemaFieldDescriptor) -> SchemaField:
@@ -62,8 +73,21 @@ class SchemaObject:
         setattr(self, field_descriptor.name, value)
         return value
 
-    def _get_schema_fields(self) -> Sequence[SchemaField]:
-        return []
+    def _get_fields_by_names(self, field_names: Sequence[str]) -> list[SchemaField]:
+        matched_fields = []
+        missing_field_names = []
+
+        for field_name in field_names:
+            if field := self._schema_fields_by_name.get(field_name):
+                matched_fields.append(field)
+            else:
+                missing_field_names.append(field_name)
+
+        if missing_field_names:
+            missing_field_names_text = ", ".join(missing_field_names)
+            raise FieldException(f"Fields {missing_field_names_text} not found in schema {self._schema_name}.")
+
+        return matched_fields
 
 
 class SchemaField(ComparisonOperand, Generic[SFT]):

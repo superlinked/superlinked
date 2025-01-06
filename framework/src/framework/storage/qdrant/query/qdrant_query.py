@@ -15,8 +15,8 @@
 
 from dataclasses import dataclass
 
-from beartype.typing import Sequence
-from qdrant_client.models import FieldCondition, Filter
+from beartype.typing import Sequence, cast
+from qdrant_client.models import Condition, FieldCondition, Filter
 
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.interface.comparison_operand import (
@@ -70,14 +70,10 @@ class QdrantQueryBuilder:
     def __init__(self, encoder: QdrantFieldEncoder) -> None:
         self._encoder = encoder
 
-    def build(
-        self,
-        search_params: QdrantVDBKNNSearchParams,
-        returned_fields: Sequence[Field],
-    ) -> QdrantQuery:
+    def build(self, search_params: QdrantVDBKNNSearchParams) -> QdrantQuery:
         filter_ = self._compile_filters(search_params.filters)
         vector_field_name = search_params.vector_field.name
-        returned_field_names = [field.name for field in returned_fields]
+        returned_field_names = [field.name for field in search_params.fields_to_return]
         with_vector: str | bool = vector_field_name if vector_field_name in returned_field_names else False
         returned_payload_fields = [field for field in returned_field_names if field != vector_field_name]
         return QdrantQuery(
@@ -103,4 +99,5 @@ class QdrantQueryBuilder:
             qdrant_filter = FILTER_BY_OP_TYPE[filter_._op]
             # Extends lists!
             qdrant_filter.extend_filters(filter_, self._encoder, must_filters, must_not_filters)
-        return Filter(must=must_filters, must_not=must_not_filters)
+        # casting is needed as Filter only accepts `Condition` type but it also works with FieldCondition
+        return Filter(must=cast(list[Condition], must_filters), must_not=cast(list[Condition], must_not_filters))

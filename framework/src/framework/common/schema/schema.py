@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 from beartype.typing import Sequence, cast
-from typing_extensions import Self
+from typing_extensions import Self, override
 
 from superlinked.framework.common.schema.general_type import T
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
@@ -68,10 +68,8 @@ class Schema(IdSchemaObject):
         base_cls: type = type(self)
         id_field_name: str = self._id_field_name
         super().__init__(base_cls, id_field_name)
-        self._schema_fields = [
-            self._init_field(schema_field_descriptor) for schema_field_descriptor in self._schema_field_descriptors
-        ]
 
-    def _get_schema_fields(self) -> Sequence[SchemaField]:
+    @override
+    def _init_schema_fields(self) -> Sequence[SchemaField]:
         """Returns all declared SchemaFields. Does not include the mandatory "id" field."""
-        return self._schema_fields
+        return [self._init_field(schema_field_descriptor) for schema_field_descriptor in self._schema_field_descriptors]

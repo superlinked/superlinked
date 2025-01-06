@@ -67,6 +67,7 @@ from superlinked.framework.dsl.query.query_clause import (
     QueryClause,
     QueryClauseT,
     RadiusClause,
+    SelectClause,
     SimilarFilterClause,
     SpaceWeightClause,
     WeightedQueryClause,
@@ -174,6 +175,49 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         clause = LimitClause(param)
         altered_query_descriptor = self.__append_clause(clause)
         return altered_query_descriptor
+
+    def select(self, *fields: SchemaField | str | Param) -> QueryDescriptor:
+        """
+        Select specific fields from the schema to be returned in the query results.
+
+        Args:
+            *fields (SchemaField | str | Param): The fields to select. Can be:
+                - One or more SchemaField objects
+                - One or more field names as strings
+                - A single Param object that will be filled with fields later
+                If no fields are provided, returns an empty selection.
+
+        Returns:
+            Self: The query object itself.
+
+        Raises:
+            QueryException: If multiple Param objects are provided or Param is mixed with other field types.
+            TypeException: If any of the fields are of unsupported types.
+            FieldException: If any of the schema fields are not part of the schema.
+        """
+        param = self.__handle_select_param(list(fields))
+        clause = SelectClause(param)
+        altered_query_descriptor = self.__append_clause(clause)
+        return altered_query_descriptor
+
+    def __handle_select_param(self, fields: Sequence[SchemaField | str | Param]) -> Param | Evaluated[Param]:
+        if len(fields) == 0:
+            return Param.init_evaluated([])
+        if len(fields) == 1 and isinstance(fields[0], Param):
+            return fields[0]
+        if any(isinstance(item, Param) for item in fields):
+            raise QueryException("Query select clause can only contain either a single Param or non-Param fields.")
+        field_names = [field.name if isinstance(field, SchemaField) else field for field in fields]
+        return self.__to_param(field_names)
+
+    def select_all(self) -> QueryDescriptor:
+        """
+        Select all fields from the schema to be returned in the query results.
+
+        Returns:
+            Self: The query object itself.
+        """
+        return self.select(*self.__schema.schema_fields)
 
     def with_natural_query(
         self,
@@ -342,6 +386,10 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
     def get_radius(self) -> float | None:
         return self.get_mandatory_clause_by_type(RadiusClause).evaluate()
 
+    def get_selected_fields(self) -> Sequence[SchemaField]:
+        field_names = self.get_mandatory_clause_by_type(SelectClause).evaluate()
+        return self.schema._get_fields_by_names(field_names)
+
     def get_hard_filters(self) -> list[ComparisonOperation[SchemaField]]:
         return [
             hard_filter
@@ -385,6 +433,8 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
             clauses.append(LimitClause(Param.init_evaluated(constants.DEFAULT_LIMIT)))
         if self.get_clause_by_type(RadiusClause) is None:
             clauses.append(RadiusClause(Param.init_evaluated(None)))
+        if self.get_clause_by_type(SelectClause) is None:
+            clauses.append(SelectClause(Param.init_evaluated([])))
         missing_spaces = self._calculate_missing_spaces()
         clauses.extend(SpaceWeightClause(Param.init_default(), space) for space in missing_spaces)
         return self.__append_clauses(clauses)
@@ -484,6 +534,7 @@ class QueryDescriptorValidator:
         QueryDescriptorValidator.__validate_looks_like_filter_clause(query_descriptor)
         QueryDescriptorValidator.__validate_limit_clause(query_descriptor)
         QueryDescriptorValidator.__validate_radius_clause(query_descriptor)
+        QueryDescriptorValidator.__validate_select_clause(query_descriptor)
         QueryDescriptorValidator.__validate_overridden_now_clause(query_descriptor)
         QueryDescriptorValidator.__validate_weighted_clauses(query_descriptor)
 
@@ -549,6 +600,14 @@ class QueryDescriptorValidator:
                 f"Not a valid Radius value ({radius}). It should be between "
                 f"{constants.RADIUS_MAX} and {constants.RADIUS_MIN}."
             )
+
+    @staticmethod
+    def __validate_select_clause(query_descriptor: QueryDescriptor) -> None:
+        clause = query_descriptor.get_clause_by_type(SelectClause)
+        if clause is None:
+            return
+        field_names = clause.get_value()
+        query_descriptor.schema._get_fields_by_names(field_names)  # this also validates
 
     @staticmethod
     def __validate_overridden_now_clause(query_descriptor: QueryDescriptor) -> None:

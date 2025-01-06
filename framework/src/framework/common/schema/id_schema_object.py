@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from abc import ABC
 from types import UnionType
 
 from beartype.typing import TypeVar, cast
@@ -35,7 +36,7 @@ class IdField(SchemaField[str]):
         super().__init__(id_field_name, schema_obj, str)
 
 
-class IdSchemaObject(SchemaObject):
+class IdSchemaObject(SchemaObject, ABC):
     """
     Schema object with required ID field.
     """

@@ -95,11 +95,8 @@ class MongoDBQuery:
             return self
         return self.__add_query_part({"$match": {VECTOR_SCORE_ALIAS: {"$gt": 1 - radius}}})
 
-    def add_projection_dict(
-        self,
-        returned_fields: Sequence[Field],
-    ) -> Self:
-        field_set_dict: dict[str, Any] = {returned_field.name: 1 for returned_field in returned_fields}
+    def add_projection_dict(self, fields_to_return: Sequence[Field]) -> Self:
+        field_set_dict: dict[str, Any] = {returned_field.name: 1 for returned_field in fields_to_return}
         field_set_dict.update({"_id": 1, VECTOR_SCORE_ALIAS: {"$meta": "vectorSearchScore"}})
         return self.__add_query_part({"$project": field_set_dict})
 

@@ -176,7 +176,7 @@ class DataParser(ABC, Generic[IdSchemaObjectT, SourceTypeT]):
         return self.mapping.get(field, field.name)
 
     def __validate_mapping_against_schema(self, schema: IdSchemaObjectT, mapping: Mapping[SchemaField, str]) -> None:
-        schema_fields = list(schema._get_schema_fields()) + [schema.id]
+        schema_fields = list(schema.schema_fields) + [schema.id]
         if self._is_event_data_parser:
             schema_fields.append(cast(EventSchemaObject, schema).created_at)
         if invalid_keys := [key for key in mapping.keys() if key not in schema_fields]:

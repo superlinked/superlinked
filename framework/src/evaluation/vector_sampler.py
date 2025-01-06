@@ -228,8 +228,8 @@ class VectorSampler:
 
         schema_filter = entity_builder._admin_fields.schema_id.field == schema._schema_name
         result_field = entity_builder.compose_field(node_id, result_type)
-        returned_fields = entity_builder._admin_fields.header_fields
-        entity_data = in_memory_vdb.read_entities_matching_filters([schema_filter], [result_field], returned_fields)
+        fields_to_return = entity_builder._admin_fields.header_fields
+        entity_data = in_memory_vdb.read_entities_matching_filters([schema_filter], [result_field], fields_to_return)
         return [entity_builder._admin_fields.extract_header(ed.field_data) for ed in entity_data]
 
     @staticmethod

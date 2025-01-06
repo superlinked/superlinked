@@ -37,6 +37,7 @@ from superlinked.framework.common.storage_manager.search_result_item import (
     SearchResultItem,
 )
 from superlinked.framework.dsl.executor.executor import App
+from superlinked.framework.dsl.query.param import ParamInputType
 from superlinked.framework.dsl.query.query_clause import (
     LooksLikeFilterClause,
     SimilarFilterClause,
@@ -76,7 +77,7 @@ class QueryExecutor:
         self.query_vector_factory = query_vector_factory
         self._logger = logger.bind(schema=self._query_descriptor.schema._schema_name)
 
-    def query(self, **params: Any) -> Result:
+    def query(self, **params: ParamInputType) -> Result:
         """
         Execute a query with keyword parameters.
 
@@ -110,9 +111,10 @@ class QueryExecutor:
     def _produce_knn_search_params(self, query_descriptor: QueryDescriptor) -> KNNSearchParams:
         limit = query_descriptor.get_limit()
         radius = query_descriptor.get_radius()
+        schema_fields_to_return = query_descriptor.get_selected_fields()
         hard_filters = query_descriptor.get_hard_filters()
         query_vector = self._produce_query_vector(query_descriptor)
-        return KNNSearchParams(query_vector, limit, hard_filters, radius)
+        return KNNSearchParams(query_vector, limit, hard_filters, schema_fields_to_return, radius)
 
     def _produce_query_vector(self, query_descriptor: QueryDescriptor) -> Vector:
         weight_by_space = query_descriptor.get_weights_by_space()
@@ -165,12 +167,7 @@ class QueryExecutor:
             if value is None or not weight:
                 continue
             node_id = similar_clause.space._get_embedding_node(query_descriptor.schema).node_id
-            add_input(
-                node_id,
-                similar_clause.field_set._generate_space_input(value),
-                weight,
-                False,
-            )
+            add_input(node_id, similar_clause.field_set._generate_space_input(value), weight, False)
 
         return inputs
 
@@ -194,10 +191,7 @@ class QueryExecutor:
         self, knn_search_params: KNNSearchParams, query_descriptor: QueryDescriptor
     ) -> Sequence[SearchResultItem]:
         return self.app.storage_manager.knn_search(
-            query_descriptor.index._node,
-            query_descriptor.schema,
-            knn_search_params,
-            schema_fields_to_return=None,
+            query_descriptor.index._node, query_descriptor.schema, knn_search_params
         )
 
     def _map_entities_to_result_entries(

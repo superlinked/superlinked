@@ -54,10 +54,10 @@ class RedisQueryBuilder:
     def __init__(self, encoder: RedisFieldEncoder) -> None:
         self._encoder = encoder
 
-    def build_query(self, search_params: VDBKNNSearchParams, returned_fields: Sequence[Field]) -> RedisQuery:
+    def build_query(self, search_params: VDBKNNSearchParams) -> RedisQuery:
         vector_field_param_name = f"{search_params.vector_field.name}_param"
         query_string = self._create_query_string(search_params, vector_field_param_name)
-        query = self._init_query(query_string, search_params.limit, returned_fields)
+        query = self._init_query(query_string, search_params.limit, search_params.fields_to_return)
         query_vector = self._encoder.encode_field(search_params.vector_field)
         query_params = {vector_field_param_name: query_vector}
         return RedisQuery(query, query_params)
@@ -127,7 +127,7 @@ class RedisQueryBuilder:
             return grouped_prefixes[0]
         return f"({' '.join(grouped_prefixes)})"
 
-    def _init_query(self, query_string: str, limit: int, returned_fields: Sequence[Field]) -> Query:
+    def _init_query(self, query_string: str, limit: int, fields_to_return: Sequence[Field]) -> Query:
         return (
             Query(query_string)
             .sort_by(VECTOR_DISTANCE_ALIAS, asc=True)
@@ -135,7 +135,7 @@ class RedisQueryBuilder:
             .return_fields(
                 *(
                     [VECTOR_DISTANCE_ALIAS, RANGE_DISTANCE_PARAM_NAME]
-                    + [returned_field.name for returned_field in returned_fields]
+                    + [returned_field.name for returned_field in fields_to_return]
                 )
             )
             .dialect(2)

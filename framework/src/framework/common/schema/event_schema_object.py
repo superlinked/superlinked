@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+from abc import ABC
 from types import UnionType
 
 from beartype.typing import Generic, TypeVar, cast
@@ -100,7 +101,7 @@ class CreatedAtField(SchemaField[int]):
         super().__init__(created_at_field_name, schema_obj, int)
 
 
-class EventSchemaObject(IdSchemaObject):
+class EventSchemaObject(IdSchemaObject, ABC):
     """
     Custom decorated event schema class.
     Event schemas can be used to reference other schema and to define interactions between schemas.

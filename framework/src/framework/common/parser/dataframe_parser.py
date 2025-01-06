@@ -123,7 +123,7 @@ class DataFrameParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, pd.D
         return record_dict
 
     def _get_column_name_to_schema_field_mapping(self) -> dict[str, SchemaField]:
-        schema_fields = list(self._schema._get_schema_fields()) + [self._schema.id]
+        schema_fields = list(self._schema.schema_fields) + [self._schema.id]
         if self._is_event_data_parser:
             schema_fields.append(cast(EventSchemaObject, self._schema).created_at)
         return {self._get_path(field): field for field in schema_fields}

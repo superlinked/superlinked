@@ -56,13 +56,13 @@ class InMemoryVDB(VDBConnector):
         self._vdb = defaultdict[str, dict[str, Any]](dict)
         self.search_index_manager.clear_configs()
 
-    @override
     @property
+    @override
     def search_index_manager(self) -> SearchIndexManager:
         return self.__search_index_manager
 
-    @override
     @property
+    @override
     def _default_search_limit(self) -> int:
         return self.__vdb_settings.default_query_limit
 
@@ -113,13 +113,15 @@ class InMemoryVDB(VDBConnector):
         self,
         index_name: str,
         schema_name: str,
-        returned_fields: Sequence[Field],
         vdb_knn_search_params: VDBKNNSearchParams,
         **params: Any,
     ) -> Sequence[ResultEntityData]:
         index_config = self._get_index_config(index_name)
         sorted_scores = self._search.knn_search(index_config, self._vdb, vdb_knn_search_params)
-        return [self._get_result_entity_data(row_id, score, returned_fields) for row_id, score in sorted_scores]
+        return [
+            self._get_result_entity_data(row_id, score, vdb_knn_search_params.fields_to_return)
+            for row_id, score in sorted_scores
+        ]
 
     @override
     def persist(self, serializer: ObjectSerializer) -> None:
@@ -139,10 +141,10 @@ class InMemoryVDB(VDBConnector):
             )
         )
 
-    def _get_result_entity_data(self, row_id: str, score: float, returned_fields: Sequence[Field]) -> ResultEntityData:
+    def _get_result_entity_data(self, row_id: str, score: float, fields_to_return: Sequence[Field]) -> ResultEntityData:
         return ResultEntityData(
             InMemoryVDB._get_entity_id_from_row_id(row_id),
-            self._find_field_data(row_id, returned_fields),
+            self._find_field_data(row_id, fields_to_return),
             score,
         )
 

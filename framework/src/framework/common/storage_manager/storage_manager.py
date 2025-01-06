@@ -107,31 +107,29 @@ class StorageManager:
         index_node: IndexNode,
         schema: IdSchemaObject,
         knn_search_params: KNNSearchParams,
-        schema_fields_to_return: Sequence[SchemaField] | None = None,
         **params: Any,
     ) -> Sequence[SearchResultItem]:
-        self._validate_knn_search_input(schema, schema_fields_to_return)
-        if schema_fields_to_return is None:
-            schema_fields_to_return = schema._get_schema_fields()
+        self._validate_knn_search_input(schema, knn_search_params.schema_fields_to_return)
         index_name = self._storage_naming.get_index_name_from_node_id(index_node.node_id)
         vector_field = cast(
             VectorFieldData,
             self._entity_builder.compose_field_data(index_node.node_id, knn_search_params.vector),
         )
-        returned_fields = self._map_schema_fields_to_fields(schema_fields_to_return)
+        schema_fields_by_fields = self._map_schema_fields_to_fields(knn_search_params.schema_fields_to_return)
+        fields_to_return = list(schema_fields_by_fields.keys()) + list(self._entity_builder._admin_fields.header_fields)
         search_result: Sequence[ResultEntityData] = self._vdb_connector.knn_search(
             index_name,
             schema._schema_name,
-            list(returned_fields.keys()) + list(self._entity_builder._admin_fields.header_fields),
             VDBKNNSearchParams(
                 vector_field,
                 knn_search_params.limit,
+                fields_to_return,
                 self._compose_filter_field_data(schema, knn_search_params.filters),
                 knn_search_params.radius,
             ),
             **params,
         )
-        schema_field_by_field_name = self._create_schema_field_by_field_name(returned_fields)
+        schema_field_by_field_name = self._create_schema_field_by_field_name(schema_fields_by_fields)
         return [
             SearchResultItem(
                 self._entity_builder._admin_fields.extract_header(result_entity_data.field_data),
