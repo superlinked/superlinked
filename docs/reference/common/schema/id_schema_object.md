@@ -20,6 +20,7 @@ Classes
     ### Ancestors (in MRO)
 
     * superlinked.framework.common.schema.schema_object.SchemaObject
+    * abc.ABC
 
     ### Descendants
 

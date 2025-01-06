@@ -163,6 +163,7 @@ Classes
     * superlinked.framework.dsl.query.query_clause.NLQSystemPromptClause
     * superlinked.framework.dsl.query.query_clause.OverriddenNowClause
     * superlinked.framework.dsl.query.query_clause.RadiusClause
+    * superlinked.framework.dsl.query.query_clause.SelectClause
     * superlinked.framework.dsl.query.query_clause.SpaceWeightClause
     * superlinked.framework.dsl.query.query_clause.WeightedQueryClause
 
@@ -192,7 +193,7 @@ Classes
 
     ### Methods
 
-    `alter_value(self, params: dict[str, Any], is_override_set: bool) ‑> Self`
+    `alter_value(self, params: Mapping[str, ParamInputType], is_override_set: bool) ‑> Self`
     :
 
     `evaluate(self) ‑> ~EvaluatedQueryT`
@@ -224,6 +225,25 @@ Classes
     :
 
     `get_value(self) ‑> float | None`
+    :
+
+`SelectClause(value_param: Param | Evaluated[Param])`
+:   SelectClause(value_param: 'Param | Evaluated[Param]')
+
+    ### Ancestors (in MRO)
+
+    * superlinked.framework.dsl.query.query_clause.QueryClause
+    * typing.Generic
+
+    ### Methods
+
+    `evaluate(self) ‑> list[str]`
+    :
+
+    `get_default_value_param_name(self) ‑> str`
+    :
+
+    `get_value(self) ‑> list[str]`
     :
 
 `SimilarFilterClause(value_param: Param | Evaluated[Param], weight_param: Param | Evaluated[Param], field_set: SpaceFieldSet, schema_field: SchemaField)`
@@ -335,7 +355,7 @@ Classes
 
     ### Methods
 
-    `alter_weight(self, params: dict[str, Any], is_override_set: bool) ‑> Self`
+    `alter_weight(self, params: Mapping[str, ParamInputType], is_override_set: bool) ‑> Self`
     :
 
     `get_default_weight_param_name(self) ‑> str`

@@ -22,6 +22,7 @@ Classes
 
     * superlinked.framework.common.schema.id_schema_object.IdSchemaObject
     * superlinked.framework.common.schema.schema_object.SchemaObject
+    * abc.ABC
 
     ### Descendants
 

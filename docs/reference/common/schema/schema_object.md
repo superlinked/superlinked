@@ -120,6 +120,11 @@ Classes
 
     * superlinked.framework.common.schema.id_schema_object.IdSchemaObject
 
+    ### Instance variables
+
+    `schema_fields: Sequence[SchemaField]`
+    :
+
 `String(name: str, schema_obj: SchemaObjectT)`
 :   Field of a schema that represents a string value.
     
