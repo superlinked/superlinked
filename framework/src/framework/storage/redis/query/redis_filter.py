@@ -81,7 +81,8 @@ class RedisFilter(VDBFilter):
         raise NotImplementedError(f"Unsupported filter field type: {self.field.data_type}")
 
     def _join_operator(self, operator_map: dict, op: ComparisonOperationType, join_operator: str) -> str:
-        return join_operator.join([self._fill_template(operator_map, op, value) for value in self.field_value])
+        value_text = join_operator.join([self._fill_template(operator_map, op, value) for value in self.field_value])
+        return f"({value_text})"
 
     def _fill_template(self, operator_map: dict, op: ComparisonOperationType, value: Any) -> str:
         three_member_ops = [
