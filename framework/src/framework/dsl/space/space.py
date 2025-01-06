@@ -78,6 +78,11 @@ class Space(
         return self.transformation_config.length
 
     @property
+    def allow_similar_clause(self) -> bool:
+        # To be overridden in child classes
+        return True
+
+    @property
     @override
     def annotation(self) -> str:
         return self._annotation.replace(PYTHON_MULTILINE_STRING_DELIMITER, " ")

@@ -107,10 +107,6 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
                 lower than the min_value. It can be a float. It defaults to 0 (No effect)
         """
         self._aggregation_mode = aggregation_mode  # this must be set before super init for _handle_node_not_present
-        super().__init__(number, Number)
-        number_fields = number if isinstance(number, list) else [number]
-        self.number = SpaceFieldSet[float](self, set(number_fields))
-        self._aggregation_config_type_by_mode = self.__init_aggregation_config_type_by_mode()
         self._embedding_config = NumberEmbeddingConfig(
             float,
             float(min_value),
@@ -119,6 +115,10 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
             scale,
             negative_filter,
         )
+        super().__init__(number, Number)
+        number_fields = number if isinstance(number, list) else [number]
+        self.number = SpaceFieldSet[float](self, set(number_fields))
+        self._aggregation_config_type_by_mode = self.__init_aggregation_config_type_by_mode()
         self._transformation_config = self._init_transformation_config(self._embedding_config, self._aggregation_mode)
         self.__schema_node_map: dict[SchemaObject, EmbeddingNode[float, float]] = {
             number_field.schema_obj: NumberEmbeddingNode(
@@ -165,14 +165,12 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
             "similar": "similar",
         }
         similar_first_text = (
-            """
-            s to the one supplied in a .similar clause during a Query.
-            """
+            " to the one supplied in a .similar clause during a Query"
             if self._embedding_config.mode == Mode.SIMILAR
             else ""
         )
         negative_text: dict[str, str] = {
-            "similar": "the values further from the value in the corresponding mandatory similar clause.",
+            "similar": "the values further from the value in the corresponding mandatory similar clause",
             "minimum": "higher values",
             "maximum": "lower values",
         }
@@ -196,7 +194,12 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
     @property
     @override
     def _allow_empty_fields(self) -> bool:
-        return self._aggregation_mode == Mode.SIMILAR
+        return self._embedding_config.mode == Mode.SIMILAR
+
+    @property
+    @override
+    def allow_similar_clause(self) -> bool:
+        return self._embedding_config.mode == Mode.SIMILAR
 
     def _init_transformation_config(
         self,

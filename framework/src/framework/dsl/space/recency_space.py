@@ -183,6 +183,11 @@ class RecencySpace(Space[int, int], HasSpaceFieldSet):  # pylint: disable=too-ma
     def _allow_empty_fields(self) -> bool:
         return True
 
+    @property
+    @override
+    def allow_similar_clause(self) -> bool:
+        return False
+
     def _init_transformation_config(
         self,
         embedding_config: RecencyEmbeddingConfig,

@@ -562,6 +562,10 @@ class QueryDescriptorValidator:
     def __validate_similar_clauses(query_descriptor: QueryDescriptor) -> None:
         clauses = query_descriptor.get_clauses_by_type(SimilarFilterClause)
         for space in [clause.field_set.space for clause in clauses]:
+            if not space.allow_similar_clause:
+                raise QueryException(
+                    f"Similar clause is not possible for {type(space).__name__} as the space configuration implies it."
+                )
             if not query_descriptor.index.has_space(space):
                 raise QueryException(f"Space isn't present in the index: {type(space).__name__}.")
 

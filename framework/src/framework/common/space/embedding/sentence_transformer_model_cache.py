@@ -56,7 +56,7 @@ class SentenceTransformerModelCache:
         }
         try:
             return SentenceTransformer(**common_params, local_files_only=True)
-        except (OSError, AttributeError):
+        except (OSError, AttributeError, TypeError):
             logger.exception("Failed to use downloaded model, re-downloading.")
             return SentenceTransformer(**common_params, local_files_only=False)
 
