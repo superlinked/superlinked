@@ -28,6 +28,9 @@ Classes
 
     ### Instance variables
 
+    `allow_similar_clause: bool`
+    :
+
     `annotation: str`
     :
 

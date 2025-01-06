@@ -59,6 +59,9 @@ Classes
 
     ### Instance variables
 
+    `allow_similar_clause: bool`
+    :
+
     `space_field_set: superlinked.framework.dsl.space.space_field_set.SpaceFieldSet`
     :
 
