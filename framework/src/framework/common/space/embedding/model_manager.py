@@ -19,6 +19,7 @@ import numpy as np
 from beartype.typing import Sequence
 from PIL.Image import Image
 
+from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.settings import Settings
 
@@ -31,19 +32,21 @@ class ModelManager(ABC):
         self._model_name = model_name
         self._model_cache_dir = self.__get_cache_folder(model_cache_dir)
 
-    def embed(self, inputs: Sequence[str | Image | None]) -> list[Vector | None]:
+    def embed(self, inputs: Sequence[str | Image | None], context: ExecutionContext) -> list[Vector | None]:
         inputs_without_nones = [input_ for input_ in inputs if input_ is not None]
         if not inputs_without_nones:
             return [None] * len(inputs)
         none_indices = [i for i, input_ in enumerate(inputs) if input_ is None]
-        embeddings = self._embed(inputs_without_nones)
+        embeddings = self._embed(inputs_without_nones, context)
         result: list[Vector | None] = [Vector(embedding) for embedding in embeddings]
         for index in none_indices:
             result.insert(index, None)
         return result
 
     @abstractmethod
-    def _embed(self, inputs: Sequence[str | Image]) -> list[list[float]] | list[np.ndarray]: ...
+    def _embed(
+        self, inputs: Sequence[str | Image], context: ExecutionContext
+    ) -> list[list[float]] | list[np.ndarray]: ...
 
     @abstractmethod
     def calculate_length(self) -> int: ...

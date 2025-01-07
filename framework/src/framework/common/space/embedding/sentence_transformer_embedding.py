@@ -46,7 +46,7 @@ class SentenceTransformerEmbedding(Embedding[str, TextSimilarityEmbeddingConfig]
     @override
     def embed_multiple(self, inputs: Sequence[str], context: ExecutionContext) -> list[Vector]:
         cache_info = self._cache.calculate_cache_info(inputs)
-        new_vectors = self.manager.embed_text(cache_info.inputs_to_embed)
+        new_vectors = self.manager.embed_text(cache_info.inputs_to_embed, context)
         self._cache.update(cache_info.inputs_to_embed, new_vectors)
         combined_vectors = cache_info.combine_vectors(new_vectors)
         return combined_vectors

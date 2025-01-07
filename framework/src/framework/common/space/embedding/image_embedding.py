@@ -54,7 +54,7 @@ class ImageEmbedding(Embedding[ImageData, ImageEmbeddingConfig]):
     @override
     def embed_multiple(self, inputs: Sequence[ImageData], context: ExecutionContext) -> list[Vector]:
         images, descriptions = zip(*((input_.image, input_.description) for input_ in inputs))
-        embeddings = self.manager.embed(images + descriptions)
+        embeddings = self.manager.embed(images + descriptions, context)
         if all(embedding is None for embedding in embeddings):
             return [Vector.init_zero_vector(self._config.length)] * len(inputs)
         aggregation = VectorAggregation(VectorAggregationConfig(Vector))
