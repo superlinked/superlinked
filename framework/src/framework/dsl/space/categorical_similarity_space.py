@@ -114,7 +114,7 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
             indicating a configuration or implementation error.
         """
         TypeValidator.validate_list_item_type(categories, str, "categories")
-        # TODO this type ignore is not needed but linting is flaky in CI
+        # TODO FAI-2843 this type ignore is not needed but linting is flaky in CI
         super().__init__(
             category_input,
             String | StringList,  # type: ignore[misc] # interface supports only one type

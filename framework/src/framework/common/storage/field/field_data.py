@@ -78,12 +78,12 @@ class JsonFieldData(FieldData[dict[str, Any]]):
         super().__init__(FieldDataType.JSON, name, value)
 
 
-class FloatListFieldData(FieldData[Sequence[float]]):  # TODO currently unused
+class FloatListFieldData(FieldData[Sequence[float]]):
     def __init__(self, name: str, value: Sequence[float]) -> None:
         super().__init__(FieldDataType.FLOAT_LIST, name, value)
 
 
-class StringListFieldData(FieldData[list[str]]):  # TODO currently unused
+class StringListFieldData(FieldData[list[str]]):
     def __init__(self, name: str, value: list[str]) -> None:
         super().__init__(FieldDataType.STRING_LIST, name, value)
 

@@ -177,7 +177,7 @@ class StorageManager:
             for filter_ in filters
         ] + [self._entity_builder._admin_fields.schema_id.field == schema._schema_name]
 
-    # TODO: FAI-2737 to solve the parameters
+    # TODO FAI-2737 to solve the parameters
     def write_object_jsons(self, object_jsons: Sequence[tuple[IdSchemaObject, str, dict[str, Any]]]) -> None:
         entities = [
             self._entity_builder.compose_entity_data(

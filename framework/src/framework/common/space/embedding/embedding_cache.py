@@ -18,6 +18,7 @@ from beartype.typing import Sequence
 from cachetools import LRUCache
 
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.space.embedding.exception import EmbeddingException
 
 
 @dataclass(frozen=True)
@@ -68,5 +69,7 @@ class EmbeddingCache:
             return
         if not inputs_to_embed:
             return
+        if (input_len := len(inputs_to_embed)) != (vector_len := len(uncached_vectors)):
+            raise EmbeddingException(f"Number of inputs ({input_len}) must match number of vectors ({vector_len})")
         for input_, vector in zip(inputs_to_embed, uncached_vectors):
             self._cache[input_] = vector
