@@ -31,6 +31,12 @@ class ParsedSchemaField(Generic[SFT]):
     def from_schema_field(cls, schema_field: SchemaField[SFT], value: SFT) -> ParsedSchemaField:
         return cls(schema_field, schema_field.parse(value))
 
+    def __str__(self) -> str:
+        return f"{type(self).__name__} of ({self.schema_field})"
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
 
 @dataclass
 class ParsedSchema:
