@@ -1,19 +1,15 @@
-from superlinked.framework.common.schema.id_schema_object import IdField
-from superlinked.framework.common.schema.schema import schema
-from superlinked.framework.common.schema.schema_object import String
-from superlinked.framework.dsl.index.index import Index
-from superlinked.framework.dsl.space.text_similarity_space import TextSimilaritySpace
+from superlinked import framework as sl
 
 
-@schema
+@sl.schema
 class YourSchema:
-    id: IdField
-    attribute: String
+    id: sl.IdField
+    attribute: sl.String
 
 
 your_schema = YourSchema()
 
-model_name = "<your model name goes here>"  # Ensure that you replace this with a valid model name!
-text_space = TextSimilaritySpace(text=your_schema.attribute, model=model_name)
+MODEL_NAME = "<your model name goes here>"  # Ensure that you replace this with a valid model name!
+text_space = sl.TextSimilaritySpace(text=your_schema.attribute, model=MODEL_NAME)
 
-index = Index(text_space)
+index = sl.Index(text_space)

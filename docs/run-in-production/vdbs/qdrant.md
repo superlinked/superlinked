@@ -12,9 +12,9 @@ Once your Qdrant instance is up and running, ensure it is accessible from the se
 
 To integrate Qdrant, you need to add the `QdrantVectorDatabase` class and include it in the executor. Here’s how you can do it:
 ```python
-from superlinked.framework import QdrantVectorDatabase
+from superlinked import framework as sl
 
-vector_database = QdrantVectorDatabase(
+vector_database = sl.QdrantVectorDatabase(
     "<your_qdrant_url>", # (Mandatory) This is your qdrant URL generally with a port but without any extra fields
     "<your_api_key>", # (Mandatory) This is the api key to your qdrant cluster
     # The following params must be in a form of kwarg params. Here you can specify anything that the official python client enables. For more details visit:
@@ -26,10 +26,10 @@ vector_database = QdrantVectorDatabase(
 Once you have configured the vector database just simply pass it to the executor.
 ```python
 ...
-executor = RestExecutor(
+executor = sl.RestExecutor(
     sources=[source],
     indices=[index],
-    queries=[RestQuery(RestDescriptor("query"), query)],
+    queries=[sl.RestQuery(sl.RestDescriptor("query"), query)],
     vector_database=vector_database,
 )
 ...

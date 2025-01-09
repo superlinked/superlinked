@@ -1,88 +1,66 @@
 from datetime import datetime, timedelta, timezone
 
-from superlinked.framework.common.dag.context import CONTEXT_COMMON, CONTEXT_COMMON_NOW
-from superlinked.framework.common.dag.period_time import PeriodTime
-from superlinked.framework.common.schema.id_schema_object import IdField
-from superlinked.framework.common.schema.schema import schema
-from superlinked.framework.common.schema.schema_object import Integer, String, StringList, Timestamp
-from superlinked.framework.dsl.executor.rest.rest_configuration import (
-    RestQuery,
-)
-from superlinked.framework.dsl.executor.rest.rest_descriptor import RestDescriptor
-from superlinked.framework.dsl.executor.rest.rest_executor import RestExecutor
-from superlinked.framework.dsl.index.index import Index
-from superlinked.framework.dsl.query.param import Param
-from superlinked.framework.dsl.query.query import Query
-from superlinked.framework.dsl.registry.superlinked_registry import SuperlinkedRegistry
-from superlinked.framework.dsl.source.data_loader_source import DataFormat, DataLoaderConfig, DataLoaderSource
-from superlinked.framework.dsl.source.rest_source import RestSource
-from superlinked.framework.dsl.space.categorical_similarity_space import (
-    CategoricalSimilaritySpace,
-)
-from superlinked.framework.dsl.space.number_space import Mode, NumberSpace
-from superlinked.framework.dsl.space.recency_space import RecencySpace
-from superlinked.framework.dsl.space.text_similarity_space import TextSimilaritySpace
-from superlinked.framework.dsl.storage.in_memory_vector_database import InMemoryVectorDatabase
+from superlinked import framework as sl
 
 START_OF_2024_TS = int(datetime(2024, 1, 2, tzinfo=timezone.utc).timestamp())
-EXECUTOR_DATA = {CONTEXT_COMMON: {CONTEXT_COMMON_NOW: START_OF_2024_TS}}
+EXECUTOR_DATA = {sl.CONTEXT_COMMON: {sl.CONTEXT_COMMON_NOW: START_OF_2024_TS}}
 
 
-@schema
+@sl.schema
 class Review:
-    rating: Integer
-    timestamp: Timestamp
-    verified_purchase: StringList
-    review_text: String
-    id: IdField
+    rating: sl.Integer
+    timestamp: sl.Timestamp
+    verified_purchase: sl.StringList
+    review_text: sl.String
+    id: sl.IdField
 
 
 review = Review()
 
 
-rating_space = NumberSpace(review.rating, min_value=1, max_value=5, mode=Mode.MAXIMUM)
-recency_space = RecencySpace(review.timestamp, period_time_list=PeriodTime(timedelta(days=3650)))
-verified_category_space = CategoricalSimilaritySpace(
+rating_space = sl.NumberSpace(review.rating, min_value=1, max_value=5, mode=sl.Mode.MAXIMUM)
+recency_space = sl.RecencySpace(review.timestamp, period_time_list=sl.PeriodTime(timedelta(days=3650)))
+verified_category_space = sl.CategoricalSimilaritySpace(
     review.verified_purchase,
     categories=["True", "False"],
     uncategorized_as_category=False,
     negative_filter=-5,
 )
-relevance_space = TextSimilaritySpace(review.review_text, model="sentence-transformers/all-mpnet-base-v2")
+relevance_space = sl.TextSimilaritySpace(review.review_text, model="sentence-transformers/all-mpnet-base-v2")
 
-index = Index([relevance_space, recency_space, rating_space, verified_category_space])
+index = sl.Index([relevance_space, recency_space, rating_space, verified_category_space])
 
-source: RestSource = RestSource(review)
+source: sl.RestSource = sl.RestSource(review)
 
 
 query = (
-    Query(
+    sl.Query(
         index,
         weights={
-            rating_space: Param("rating_weight"),
-            recency_space: Param("recency_weight"),
-            verified_category_space: Param("verified_category_weight"),
-            relevance_space: Param("relevance_weight"),
+            rating_space: sl.Param("rating_weight"),
+            recency_space: sl.Param("recency_weight"),
+            verified_category_space: sl.Param("verified_category_weight"),
+            relevance_space: sl.Param("relevance_weight"),
         },
     )
     .find(review)
-    .similar(relevance_space.text, Param("query_text"))
-    .similar(verified_category_space.category, Param("query_verified"))
+    .similar(relevance_space.text, sl.Param("query_text"))
+    .similar(verified_category_space.category, sl.Param("query_verified"))
 )
 
-config = DataLoaderConfig(
+config = sl.DataLoaderConfig(
     "https://storage.googleapis.com/superlinked-preview-test-data/amazon_dataset_1000.jsonl",
-    DataFormat.JSON,
+    sl.DataFormat.JSON,
     pandas_read_kwargs={"lines": True},
 )
-loader_source: DataLoaderSource = DataLoaderSource(review, config)
+loader_source: sl.DataLoaderSource = sl.DataLoaderSource(review, config)
 
-executor = RestExecutor(
+executor = sl.RestExecutor(
     sources=[source, loader_source],
     indices=[index],
-    queries=[RestQuery(RestDescriptor("query"), query)],
-    vector_database=InMemoryVectorDatabase(),
+    queries=[sl.RestQuery(sl.RestDescriptor("query"), query)],
+    vector_database=sl.InMemoryVectorDatabase(),
     context_data=EXECUTOR_DATA,
 )
 
-SuperlinkedRegistry.register(executor)
+sl.SuperlinkedRegistry.register(executor)

@@ -14,9 +14,9 @@ To integrate Redis, you need to add the `RedisVectorDatabase` class and include 
 
 To configure your Redis, the following code will help you:
 ```python
-from superlinked.framework import RedisVectorDatabase
+from superlinked import framework as sl
 
-vector_database = RedisVectorDatabase(
+vector_database = sl.RedisVectorDatabase(
     "<your_redis_host>", # (Mandatory) This is your Redis' URL without any port or extra fields.
     12315, # (Mandatory) This is the port and it must be an integer.
     default_query_limit=10, # This optional parameter specifies the maximum number of query results returned. If not set, it defaults to 10.
@@ -30,10 +30,10 @@ vector_database = RedisVectorDatabase(
 Once you have configured the vector database just simply set it as your vector database.
 ```python
 ...
-executor = RestExecutor(
+executor = sl.RestExecutor(
     sources=[source],
     indices=[index],
-    queries=[RestQuery(RestDescriptor("query"), query)],
+    queries=[sl.RestQuery(sl.RestDescriptor("query"), query)],
     vector_database=vector_database, # Or any variable that you assigned your `RedisVectorDatabase`
 )
 ...
