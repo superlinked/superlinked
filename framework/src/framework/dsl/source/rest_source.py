@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from beartype.typing import Any, Generic, cast
+from pydantic.alias_generators import to_snake
 
 from superlinked.framework.common.parser.data_parser import DataParser
 from superlinked.framework.common.parser.json_parser import JsonParser
@@ -39,7 +40,7 @@ class RestSource(OnlineSource[IdSchemaObjectT, dict[str, Any]], Generic[IdSchema
         self.__path = (
             self.__rest_descriptor.source_path
             if self.__rest_descriptor and self.__rest_descriptor.source_path
-            else self._schema._schema_name
+            else to_snake(self._schema._schema_name)
         )
 
     @property

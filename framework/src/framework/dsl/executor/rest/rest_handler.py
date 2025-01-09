@@ -14,7 +14,6 @@
 
 from beartype.typing import Sequence, TypeVar
 from furl import furl
-from pydantic.alias_generators import to_snake
 
 from superlinked.framework.dsl.executor.exception import DuplicateEndpointException
 from superlinked.framework.dsl.executor.rest.rest_configuration import (
@@ -73,7 +72,7 @@ class RestHandler:
         path_to_resource = {}
         for resource in resources:
             path_string = str(
-                furl(path=api_root_path).path.add(path_prefix).add(to_snake(resource.path))  # type: ignore[arg-type]
+                furl(path=api_root_path).path.add(path_prefix).add(resource.path)  # type: ignore[arg-type]
             )
             if path_string in path_to_resource:
                 raise DuplicateEndpointException(
