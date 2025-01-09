@@ -27,6 +27,7 @@ logger = structlog.getLogger()
 
 @singleton
 class Settings(BaseSettings):
+    APP_ID: str = "default"
     ONLINE_PUT_CHUNK_SIZE: int = 10000
     MODEL_CACHE_DIR: str | None = None
     SENTENCE_TRANSFORMERS_MODEL_LOCK_MAX_RETRIES: int = 10

@@ -19,6 +19,7 @@ from beartype.typing import Any, Sequence
 from superlinked.framework.common.calculation.distance_metric import DistanceMetric
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.exception import InitializationException
+from superlinked.framework.common.settings import Settings
 from superlinked.framework.common.storage.entity.entity import Entity
 from superlinked.framework.common.storage.entity.entity_data import EntityData
 from superlinked.framework.common.storage.index_config import IndexConfig
@@ -35,7 +36,6 @@ from superlinked.framework.common.storage.search_index.search_algorithm import (
 from superlinked.framework.common.storage.search_index.vector_component_precision import (
     VectorComponentPrecision,
 )
-from superlinked.framework.common.util.string_util import StringUtil
 from superlinked.framework.storage.in_memory.object_serializer import ObjectSerializer
 
 
@@ -53,7 +53,7 @@ class VDBConnector(ABC):
         self._index_configs: dict[str, IndexConfig] = {
             index_config.index_name: index_config for index_config in (index_configs or [])
         }
-        self._app_id = self._generate_app_id(index_configs or [])
+        self._app_id = Settings().APP_ID
 
     @property
     def distance_metric(self) -> DistanceMetric:
@@ -101,17 +101,12 @@ class VDBConnector(ABC):
         Restore the state of the VDB. Implement this method in subclasses if restoration is supported.
         """
 
-    def _generate_app_id(self, index_configs: Sequence[IndexConfig]) -> str | None:
-        hash_ = StringUtil.deterministic_hash_of_strings([index_config.index_name for index_config in index_configs])
-        return hash_ if hash_ else None
-
     def init_search_index_configs(
         self,
         index_configs: Sequence[IndexConfig],
         create_search_indices: bool,
         override_existing: bool = False,
     ) -> None:
-        self._app_id = self._generate_app_id(index_configs)
         self.search_index_manager.init_search_indices(
             index_configs,
             self.collection_name,
