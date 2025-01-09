@@ -50,6 +50,7 @@ In this file, a schema is defined to structure your input data. Additionally, a 
 
 ```python
 from superlinked import framework as sl
+
 from .index import index, text_space, your_schema
 
 query = (

@@ -1,44 +1,31 @@
-from superlinked.framework.common.schema.id_schema_object import IdField
-from superlinked.framework.common.schema.schema import schema
-from superlinked.framework.common.schema.schema_object import String
-from superlinked.framework.dsl.executor.rest.rest_configuration import (
-    RestQuery,
-)
-from superlinked.framework.dsl.executor.rest.rest_descriptor import RestDescriptor
-from superlinked.framework.dsl.executor.rest.rest_executor import RestExecutor
-from superlinked.framework.dsl.index.index import Index
-from superlinked.framework.dsl.query.param import Param
-from superlinked.framework.dsl.query.query import Query
-from superlinked.framework.dsl.registry.superlinked_registry import SuperlinkedRegistry
-from superlinked.framework.dsl.source.rest_source import RestSource
-from superlinked.framework.dsl.space.text_similarity_space import TextSimilaritySpace
-from superlinked.framework.dsl.storage.mongo_db_vector_database import MongoDBVectorDatabase
+from superlinked import framework as sl
 
-@schema
+
+@sl.schema
 class CarSchema:
-    id: IdField
-    make: String
-    model: String
+    id: sl.IdField
+    make: sl.String
+    model: sl.String
 
 
 car_schema = CarSchema()
 
-car_make_text_space = TextSimilaritySpace(text=car_schema.make, model="all-MiniLM-L6-v2")
-car_model_text_space = TextSimilaritySpace(text=car_schema.model, model="all-MiniLM-L6-v2")
+car_make_text_space = sl.TextSimilaritySpace(text=car_schema.make, model="all-MiniLM-L6-v2")
+car_model_text_space = sl.TextSimilaritySpace(text=car_schema.model, model="all-MiniLM-L6-v2")
 
-index = Index([car_make_text_space, car_model_text_space])
+index = sl.Index([car_make_text_space, car_model_text_space])
 
 query = (
-    Query(index)
+    sl.Query(index)
     .find(car_schema)
-    .similar(car_make_text_space.text, Param("make"))
-    .similar(car_model_text_space.text, Param("model"))
-    .limit(Param("limit"))
+    .similar(car_make_text_space.text, sl.Param("make"))
+    .similar(car_model_text_space.text, sl.Param("model"))
+    .limit(sl.Param("limit"))
 )
 
-car_source: RestSource = RestSource(car_schema)
+car_source: sl.RestSource = sl.RestSource(car_schema)
 
-mongo_db_vector_database = MongoDBVectorDatabase(
+mongo_db_vector_database = sl.MongoDBVectorDatabase(
     "<USER>:<PASSWORD>@<HOST_URL>",
     "<DATABASE_NAME>",
     "<CLUSTER_NAME>",
@@ -47,11 +34,11 @@ mongo_db_vector_database = MongoDBVectorDatabase(
     "<API_PRIVATE_KEY>",
 )
 
-executor = RestExecutor(
+executor = sl.RestExecutor(
     sources=[car_source],
     indices=[index],
-    queries=[RestQuery(RestDescriptor("query"), query)],
+    queries=[sl.RestQuery(sl.RestDescriptor("query"), query)],
     vector_database=mongo_db_vector_database,
 )
 
-SuperlinkedRegistry.register(executor)
+sl.SuperlinkedRegistry.register(executor)

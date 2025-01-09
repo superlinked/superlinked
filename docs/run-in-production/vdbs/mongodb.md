@@ -16,9 +16,9 @@ Due to the reasons above, an API key with the `Project Data Access Admin` role i
 
 To integrate MongoDB, you need to add the `MongoDBVectorDatabase` class and include it in the executor. Here’s how you can do it:
 ```python
-from superlinked.framework import MongoDBVectorDatabase
+from superlinked import framework as sl
 
-vector_database = MongoDBVectorDatabase(
+vector_database = sl.MongoDBVectorDatabase(
     host="<USER>:<PASSWORD>@<HOST_URL>", # The DB's host URL with the username and password.
     db_name="<DATABASE_NAME>", # Name of your database inside your cluster. You need to create it, the system won't do it automatically.
     cluster_name="<CLUSTER_NAME>", # Name of your cluster inside your project.
@@ -39,10 +39,10 @@ Alternatively, click on your project on Atlas and in the URL you will find the i
 Once you have configured the `MongoDBVectorDatabase`, set it as your `vector_database` in the `RestExecutor`:
 ```python
 ...
-executor = RestExecutor(
+executor = sl.RestExecutor(
     sources=[source],
     indices=[index],
-    queries=[RestQuery(RestDescriptor("query"), query)],
+    queries=[sl.RestQuery(sl.RestDescriptor("query"), query)],
     vector_database=vector_database, # Or any variable that you assigned your `MongoDBVectorDatabase`.
 )
 ...

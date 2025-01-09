@@ -1,21 +1,16 @@
-from superlinked.framework.dsl.executor.rest.rest_configuration import RestQuery
-from superlinked.framework.dsl.executor.rest.rest_descriptor import RestDescriptor
-from superlinked.framework.dsl.executor.rest.rest_executor import RestExecutor
-from superlinked.framework.dsl.registry.superlinked_registry import SuperlinkedRegistry
-from superlinked.framework.dsl.source.rest_source import RestSource
-from superlinked.framework.dsl.storage.in_memory_vector_database import InMemoryVectorDatabase
+from superlinked import framework as sl
 
 from .index import index, your_schema
 from .query import query
 
-your_source: RestSource = RestSource(your_schema)
-your_query = RestQuery(RestDescriptor("query"), query)
+your_source: sl.RestSource = sl.RestSource(your_schema)
+your_query = sl.RestQuery(sl.RestDescriptor("query"), query)
 
-executor = RestExecutor(
+executor = sl.RestExecutor(
     sources=[your_source],
     indices=[index],
     queries=[your_query],
-    vector_database=InMemoryVectorDatabase(),
+    vector_database=sl.InMemoryVectorDatabase(),
 )
 
-SuperlinkedRegistry.register(executor)
+sl.SuperlinkedRegistry.register(executor)

@@ -1,18 +1,16 @@
 from datetime import datetime, timezone
 
-from superlinked.framework.common.dag.context import CONTEXT_COMMON, CONTEXT_COMMON_NOW
-from superlinked.framework.dsl.executor.in_memory.in_memory_executor import InMemoryExecutor
-from superlinked.framework.dsl.source.in_memory_source import InMemorySource
+from superlinked import framework as sl
 
 from .index import index, review
 from .query import query
 
 START_OF_2024_TS = int(datetime(2024, 1, 2, tzinfo=timezone.utc).timestamp())
-EXECUTOR_DATA = {CONTEXT_COMMON: {CONTEXT_COMMON_NOW: START_OF_2024_TS}}
+EXECUTOR_DATA = {sl.CONTEXT_COMMON: {sl.CONTEXT_COMMON_NOW: START_OF_2024_TS}}
 
-source: InMemorySource = InMemorySource(review)
+source: sl.InMemorySource = sl.InMemorySource(review)
 
-executor = InMemoryExecutor(
+executor = sl.InMemoryExecutor(
     sources=[source],
     indices=[index],
     context_data=EXECUTOR_DATA,
