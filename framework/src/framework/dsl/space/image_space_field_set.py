@@ -29,7 +29,6 @@ blob_loader = BlobLoader(allow_bytes=True)
 
 @dataclass
 class ImageSpaceFieldSet(SpaceFieldSet[ImageData]):
-
     @property
     @override
     def input_type(self) -> type:

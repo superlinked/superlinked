@@ -31,6 +31,7 @@ from superlinked.framework.common.interface.comparison_operation_type import (
 )
 from superlinked.framework.common.interface.evaluated import Evaluated
 from superlinked.framework.common.interface.has_annotation import HasAnnotation
+from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.nlq.open_ai import OpenAIClientConfig
 from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.util.generic_class_util import GenericClassUtil
@@ -43,7 +44,6 @@ from superlinked.framework.dsl.query.param import (
 from superlinked.framework.dsl.query.predicate.binary_predicate import (
     EvaluatedBinaryPredicate,
     LooksLikePredicate,
-    SimilarPredicate,
 )
 from superlinked.framework.dsl.query.query_filter_validator import QueryFilterValidator
 from superlinked.framework.dsl.space.categorical_similarity_space import (
@@ -270,11 +270,10 @@ class LooksLikeFilterClause(
 
 @dataclass(frozen=True)
 class SimilarFilterClause(
-    WeightedQueryClause[tuple[Space, EvaluatedBinaryPredicate[SimilarPredicate]] | None],
+    WeightedQueryClause[tuple[Space, Weighted[PythonTypes]] | None],
     HasAnnotation,
 ):
     field_set: SpaceFieldSet
-    schema_field: SchemaField
 
     @property
     def space(self) -> Space:
@@ -283,24 +282,20 @@ class SimilarFilterClause(
     @override
     def evaluate(
         self,
-    ) -> tuple[Space, EvaluatedBinaryPredicate[SimilarPredicate]] | None:
+    ) -> tuple[Space, Weighted[PythonTypes]] | None:
         value = self.get_value()
         weight = self.get_weight()
         if value is None or weight == constants.DEFAULT_NOT_AFFECTING_WEIGHT:
             return None
-        node = self.space._get_embedding_node(self.schema_field.schema_obj)
-        similar_filter = EvaluatedBinaryPredicate(
-            SimilarPredicate(self.schema_field, cast(ParamInputType, value), weight, node)
-        )
-        return self.space, similar_filter
+        return (self.space, Weighted(value, weight))
 
     @override
     def get_default_value_param_name(self) -> str:
-        return f"similar_filter_{self.space}_{self.schema_field.name}_value_param__"
+        return f"similar_filter_{self.space}_{self.field_set.fields_id}_value_param__"
 
     @override
     def get_default_weight_param_name(self) -> str:
-        return f"similar_filter_{self.space}_{self.schema_field.name}_weight_param__"
+        return f"similar_filter_{self.space}_{self.field_set.fields_id}_weight_param__"
 
     @property
     @override

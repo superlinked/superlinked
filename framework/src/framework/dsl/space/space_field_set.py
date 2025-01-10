@@ -35,12 +35,17 @@ class SpaceFieldSet(Generic[SIT]):
     fields: set[SchemaField]
 
     def __post_init__(self) -> None:
-        self.__schema_field_map = {field.schema_obj: field for field in self.fields}
+        self._schema_field_map = {field.schema_obj: field for field in self.fields}
         self._input_type: type[SIT] = GenericClassUtil.get_generic_types(self.space)[1]
+        self._fields_id = self.__generate_fields_id(self.fields)
 
     @property
     def input_type(self) -> type[SIT]:
         return self._input_type
+
+    @property
+    def fields_id(self) -> str:
+        return self._fields_id
 
     @property
     def field_names_text(self) -> Sequence[str]:
@@ -50,4 +55,9 @@ class SpaceFieldSet(Generic[SIT]):
         return cast(SIT, value)
 
     def get_field_for_schema(self, schema_: Any) -> SchemaField | None:
-        return self.__schema_field_map.get(schema_)
+        return self._schema_field_map.get(schema_)
+
+    def __generate_fields_id(self, fields: set[SchemaField]) -> str:
+        field_ids = [f"{field.schema_obj._schema_name}_{field.name}" for field in fields]
+        field_ids.sort()
+        return "_".join(field_ids)

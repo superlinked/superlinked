@@ -106,7 +106,6 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
             negative_filter (float): This is a value that will be set for everything that is equal or
                 lower than the min_value. It can be a float. It defaults to 0 (No effect)
         """
-        self._aggregation_mode = aggregation_mode  # this must be set before super init for _handle_node_not_present
         self._embedding_config = NumberEmbeddingConfig(
             float,
             float(min_value),
@@ -119,7 +118,7 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
         number_fields = number if isinstance(number, list) else [number]
         self.number = SpaceFieldSet[float](self, set(number_fields))
         self._aggregation_config_type_by_mode = self.__init_aggregation_config_type_by_mode()
-        self._transformation_config = self._init_transformation_config(self._embedding_config, self._aggregation_mode)
+        self._transformation_config = self._init_transformation_config(self._embedding_config, aggregation_mode)
         self.__schema_node_map: dict[SchemaObject, EmbeddingNode[float, float]] = {
             number_field.schema_obj: NumberEmbeddingNode(
                 parent=SchemaFieldNode(number_field),

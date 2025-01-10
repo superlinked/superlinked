@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 
-from beartype.typing import Generic, TypeAlias, TypeVar
+from beartype.typing import Generic, Sequence, TypeAlias, TypeVar
 from typing_extensions import override
 
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
@@ -54,16 +54,16 @@ class Space(
 
     def __init__(
         self,
-        fields: SpaceSchemaFieldT | list[SpaceSchemaFieldT],
+        fields: SpaceSchemaFieldT | Sequence[SpaceSchemaFieldT],
         type_: type | TypeAlias,
     ) -> None:
         super().__init__()
-        field_list: list[SpaceSchemaFieldT] = fields if isinstance(fields, list) else [fields]
+        field_list = fields if isinstance(fields, Sequence) else [fields]
         TypeValidator.validate_list_item_type(field_list, type_, "field_list")
         self.__validate_fields(field_list)
         self._field_set = set(field_list)
 
-    def __validate_fields(self, field_list: list[SpaceSchemaFieldT]) -> None:
+    def __validate_fields(self, field_list: Sequence[SpaceSchemaFieldT]) -> None:
         if not self._allow_empty_fields and not field_list:
             raise InvalidSpaceParamException(f"{self.__class__.__name__} field input must not be empty.")
         schema_list = [field.schema_obj for field in field_list]

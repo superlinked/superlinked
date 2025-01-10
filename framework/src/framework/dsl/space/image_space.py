@@ -22,11 +22,11 @@ from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.image_embedding_node import ImageEmbeddingNode
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.schema.image_data import ImageData
 from superlinked.framework.common.schema.schema_object import (
     Blob,
     DescribedBlob,
+    SchemaField,
     SchemaObject,
     String,
 )
@@ -99,37 +99,19 @@ class ImageSpace(Space[Vector, ImageData]):
             InvalidSpaceParamException: If the image and description fields are not
                 from the same schema.
         """
-        described_blobs = [self._get_described_blob(img) for img in (image if isinstance(image, Sequence) else [image])]
-        image_fields = [described.blob for described in described_blobs]
+        self.__validate_field_schemas(image)
+        image_fields, description_fields = self._split_images_from_descriptions(image)
         super().__init__(image_fields, Blob)
         length = ImageEmbedding.init_manager(model_handler, model, model_cache_dir).calculate_length()
         self.image = ImageSpaceFieldSet(self, set(image_fields))
         self.description = ImageDescriptionSpaceFieldSet(
-            self, set(described.description for described in described_blobs)
+            self, set(description for description in description_fields if description is not None)
         )
         self._all_fields = self.image.fields | self.description.fields
         self._transformation_config = self._init_transformation_config(model, length, model_handler)
-        self._schema_field_nodes_by_schema: dict[
-            SchemaObject, tuple[SchemaFieldNode[BlobInformation], SchemaFieldNode[str]]
-        ] = {
-            described_blob.blob.schema_obj: (
-                SchemaFieldNode(described_blob.blob),
-                SchemaFieldNode(described_blob.description),
-            )
-            for described_blob in described_blobs
-        }
-        self.__embedding_node_by_schema: dict[SchemaObject, EmbeddingNode[Vector, ImageData]] = {
-            schema: ImageEmbeddingNode(
-                image_blob_node=image_blob_node,
-                description_node=description_node,
-                transformation_config=self.transformation_config,
-                fields_for_identification=self._all_fields,
-            )
-            for schema, (
-                image_blob_node,
-                description_node,
-            ) in self._schema_field_nodes_by_schema.items()
-        }
+        self.__embedding_node_by_schema = self._init_embedding_node_by_schema(
+            image_fields, description_fields, self._all_fields, self.transformation_config
+        )
         self._model = model
 
     def _get_described_blob(self, image: Blob | DescribedBlob) -> DescribedBlob:
@@ -139,6 +121,26 @@ class ImageSpace(Space[Vector, ImageData]):
             return image
         description = String(DEFAULT_DESCRIPTION_FIELD_PREFIX + image.name, image.schema_obj)
         return DescribedBlob(image, description)
+
+    def __validate_field_schemas(self, images: Blob | DescribedBlob | Sequence[Blob | DescribedBlob]) -> None:
+        if any(
+            image.description.schema_obj != image.blob.schema_obj
+            for image in (images if isinstance(images, Sequence) else [images])
+            if isinstance(image, DescribedBlob)
+        ):
+            raise InvalidSpaceParamException("ImageSpace image and description field must be in the same schema.")
+
+    def _split_images_from_descriptions(
+        self, images: Blob | DescribedBlob | Sequence[Blob | DescribedBlob]
+    ) -> tuple[list[Blob], list[String | None]]:
+        images = images if isinstance(images, Sequence) else [images]
+        blobs, descriptions = zip(
+            *[
+                (image.blob, image.description) if isinstance(image, DescribedBlob) else (image, None)
+                for image in images
+            ]
+        )
+        return list(blobs), list(descriptions)
 
     @property
     @override
@@ -185,3 +187,20 @@ class ImageSpace(Space[Vector, ImageData]):
         aggregation_config = VectorAggregationConfig(Vector)
         normalization_config = L2NormConfig()
         return TransformationConfig(normalization_config, aggregation_config, embedding_config)
+
+    def _init_embedding_node_by_schema(
+        self,
+        image_fields: Sequence[Blob],
+        description_fields: Sequence[String | None],
+        all_fields: set[SchemaField],
+        transformation_config: TransformationConfig[Vector, ImageData],
+    ) -> dict[SchemaObject, EmbeddingNode[Vector, ImageData]]:
+        return {
+            image_field.schema_obj: ImageEmbeddingNode(
+                image_blob_node=SchemaFieldNode(image_field),
+                description_node=SchemaFieldNode(description_field) if description_field is not None else None,
+                transformation_config=transformation_config,
+                fields_for_identification=all_fields,
+            )
+            for image_field, description_field in zip(image_fields, description_fields)
+        }

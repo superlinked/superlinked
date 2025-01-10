@@ -14,7 +14,6 @@
 
 from __future__ import annotations
 
-from collections import defaultdict
 from collections.abc import Mapping
 
 import structlog
@@ -55,7 +54,6 @@ from superlinked.framework.dsl.query.param import (
 from superlinked.framework.dsl.query.predicate.binary_predicate import (
     EvaluatedBinaryPredicate,
     LooksLikePredicate,
-    SimilarPredicate,
 )
 from superlinked.framework.dsl.query.query_clause import (
     HardFilterClause,
@@ -152,14 +150,16 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         field_set = (
             space_field_set.space_field_set if isinstance(space_field_set, HasSpaceFieldSet) else space_field_set
         )
-        schema_field = field_set.get_field_for_schema(self.schema)
-        if not schema_field:
-            raise InvalidSchemaException(f"'find' ({type(self.schema)}) is not in similarity field's schema types.")
+        self.__validate_schema(field_set)
         value_param = self.__to_param(param)
         weight_param = self.__to_param(weight)
-        clause = SimilarFilterClause(value_param, weight_param, field_set, schema_field)
+        clause = SimilarFilterClause(value_param, weight_param, field_set)
         altered_query_descriptor = self.__append_clause(clause)
         return altered_query_descriptor
+
+    def __validate_schema(self, field_set: SpaceFieldSet) -> None:
+        if self.schema not in field_set.space._embedding_node_by_schema:
+            raise InvalidSchemaException(f"'find' ({type(self.schema)}) is not in similarity field's schema types.")
 
     def limit(self, limit: IntParamType | None) -> QueryDescriptor:
         """
@@ -407,16 +407,9 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         looks_like_filter = looks_like_clause.evaluate() if looks_like_clause is not None else None
         return looks_like_filter
 
-    def get_similar_filters(
-        self,
-    ) -> dict[Space, list[EvaluatedBinaryPredicate[SimilarPredicate]]]:
-        similar_filters_by_space = defaultdict(list)
-        for clause in self.get_clauses_by_type(SimilarFilterClause):
-            space_and_similar_filter = clause.evaluate()
-            if space_and_similar_filter is not None:
-                space, similar = space_and_similar_filter
-                similar_filters_by_space[space].append(similar)
-        return dict(similar_filters_by_space)
+    def get_similar_filters_spaces(self) -> list[Space]:
+        evaluation_results = [clause.evaluate() for clause in self.get_clauses_by_type(SimilarFilterClause)]
+        return [result[0] for result in evaluation_results if result is not None]
 
     def get_context_time(self, default: int | Any) -> int:
         if (overridden_now_clause := self.get_clause_by_type(OverriddenNowClause)) is not None:
@@ -451,7 +444,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         }
         if self.get_looks_like_filter() is not None:
             return {param_name: constants.DEFAULT_WEIGHT for param_name in unset_space_by_param_name.keys()}
-        similar_filter_spaces = self.get_similar_filters().keys()
+        similar_filter_spaces = self.get_similar_filters_spaces()
         return {
             param_name: (
                 constants.DEFAULT_WEIGHT if space in similar_filter_spaces else constants.DEFAULT_NOT_AFFECTING_WEIGHT

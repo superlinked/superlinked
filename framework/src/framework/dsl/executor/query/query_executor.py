@@ -162,12 +162,15 @@ class QueryExecutor:
             if vector := self.__get_looks_like_vector(index_node_id, looks_like_clause):
                 add_input(index_node_id, vector, looks_like_clause.get_weight(), True)
         for similar_clause in query_descriptor.get_clauses_by_type(SimilarFilterClause):
-            value = similar_clause.get_value()
-            weight = similar_clause.get_weight()
-            if value is None or not weight:
-                continue
-            node_id = similar_clause.space._get_embedding_node(query_descriptor.schema).node_id
-            add_input(node_id, similar_clause.field_set._generate_space_input(value), weight, False)
+            if (result := similar_clause.evaluate()) is not None:
+                node_id = similar_clause.space._get_embedding_node(query_descriptor.schema).node_id
+                _, weighted_value = result
+                add_input(
+                    node_id,
+                    similar_clause.field_set._generate_space_input(weighted_value.item),
+                    weighted_value.weight,
+                    False,
+                )
 
         return inputs
 
