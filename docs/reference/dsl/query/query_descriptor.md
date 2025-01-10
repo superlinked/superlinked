@@ -83,7 +83,7 @@ Classes
     `get_selected_fields(self) ‑> Sequence[superlinked.framework.common.schema.schema_object.SchemaField]`
     :
 
-    `get_similar_filters(self) ‑> dict[superlinked.framework.dsl.space.space.Space, list[superlinked.framework.dsl.query.predicate.binary_predicate.EvaluatedBinaryPredicate[superlinked.framework.dsl.query.predicate.binary_predicate.SimilarPredicate]]]`
+    `get_similar_filters_spaces(self) ‑> list[superlinked.framework.dsl.space.space.Space]`
     :
 
     `get_weighted_clauses(self) ‑> list[superlinked.framework.dsl.query.query_clause.WeightedQueryClause]`

@@ -246,8 +246,8 @@ Classes
     `get_value(self) ‑> list[str]`
     :
 
-`SimilarFilterClause(value_param: Param | Evaluated[Param], weight_param: Param | Evaluated[Param], field_set: SpaceFieldSet, schema_field: SchemaField)`
-:   SimilarFilterClause(value_param: 'Param | Evaluated[Param]', weight_param: 'Param | Evaluated[Param]', field_set: 'SpaceFieldSet', schema_field: 'SchemaField')
+`SimilarFilterClause(value_param: Param | Evaluated[Param], weight_param: Param | Evaluated[Param], field_set: SpaceFieldSet)`
+:   SimilarFilterClause(value_param: 'Param | Evaluated[Param]', weight_param: 'Param | Evaluated[Param]', field_set: 'SpaceFieldSet')
 
     ### Ancestors (in MRO)
 
@@ -260,9 +260,6 @@ Classes
     ### Class variables
 
     `field_set: superlinked.framework.dsl.space.space_field_set.SpaceFieldSet`
-    :
-
-    `schema_field: superlinked.framework.common.schema.schema_object.SchemaField`
     :
 
     ### Instance variables
@@ -278,7 +275,7 @@ Classes
 
     ### Methods
 
-    `evaluate(self) ‑> tuple[superlinked.framework.dsl.space.space.Space, superlinked.framework.dsl.query.predicate.binary_predicate.EvaluatedBinaryPredicate[superlinked.framework.dsl.query.predicate.binary_predicate.SimilarPredicate]] | None`
+    `evaluate(self) ‑> tuple[superlinked.framework.dsl.space.space.Space, superlinked.framework.common.interface.weighted.Weighted[float | int | str | superlinked.framework.common.data_types.Vector | list[float] | list[str] | superlinked.framework.common.schema.blob_information.BlobInformation]] | None`
     :
 
     `get_allowed_values(self, param: Param | Evaluated[Param]) ‑> set[collections.abc.Sequence[str] | collections.abc.Sequence[float] | PIL.Image.Image | str | int | float | bool | None | tuple[str | None, str | None]]`

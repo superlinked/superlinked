@@ -32,6 +32,9 @@ Classes
     `field_names_text: Sequence[str]`
     :
 
+    `fields_id: str`
+    :
+
     `input_type: type[~SIT]`
     :
 
