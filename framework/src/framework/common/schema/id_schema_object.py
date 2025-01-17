@@ -33,7 +33,7 @@ class IdField(SchemaField[str]):
     """
 
     def __init__(self, schema_obj: SchemaObjectT, id_field_name: str) -> None:
-        super().__init__(id_field_name, schema_obj, str)
+        super().__init__(id_field_name, schema_obj, str, nullable=False)
 
 
 class IdSchemaObject(SchemaObject, ABC):

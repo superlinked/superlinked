@@ -33,14 +33,13 @@ NumberT = TypeVar("NumberT", int, float)
 class NumberEmbedding(InvertibleEmbedding[NumberT, NumberEmbeddingConfig]):
     def __init__(self, embedding_config: NumberEmbeddingConfig) -> None:
         super().__init__(embedding_config)
-        self._default_vector = self._config.default_vector
         self._circle_size_in_rad = math.pi / 2
         self._value_when_out_of_bounds = [0.0, 0.0, self._config.negative_filter]
 
     @property
     @override
     def default_vector(self) -> Vector:
-        return self._default_vector
+        return self._config.default_vector
 
     @property
     @override

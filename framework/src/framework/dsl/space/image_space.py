@@ -114,14 +114,6 @@ class ImageSpace(Space[Vector, ImageData]):
         )
         self._model = model
 
-    def _get_described_blob(self, image: Blob | DescribedBlob) -> DescribedBlob:
-        if isinstance(image, DescribedBlob):
-            if image.description.schema_obj != image.blob.schema_obj:
-                raise InvalidSpaceParamException("ImageSpace image and description field must be in the same schema.")
-            return image
-        description = String(DEFAULT_DESCRIPTION_FIELD_PREFIX + image.name, image.schema_obj)
-        return DescribedBlob(image, description)
-
     def __validate_field_schemas(self, images: Blob | DescribedBlob | Sequence[Blob | DescribedBlob]) -> None:
         if any(
             image.description.schema_obj != image.blob.schema_obj

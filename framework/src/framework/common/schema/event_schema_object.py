@@ -27,10 +27,12 @@ from superlinked.framework.common.schema.exception import (
     InvalidSchemaTypeException,
 )
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
+from superlinked.framework.common.schema.schema_field_descriptor import (
+    SchemaFieldDescriptor,
+)
 from superlinked.framework.common.schema.schema_object import (
     ConcreteSchemaField,
     SchemaField,
-    SchemaFieldDescriptor,
     SchemaObjectT,
 )
 
@@ -49,7 +51,7 @@ class SchemaReference(SchemaField[str], HasMultiplier, Generic[RST]):
         schema_obj: EventSchemaObject,
         referenced_schema: type[RST],
     ) -> None:
-        SchemaField.__init__(self, name, schema_obj, str)
+        SchemaField.__init__(self, name, schema_obj, str, nullable=False)
         HasMultiplier.__init__(self)
         if not issubclass(referenced_schema, IdSchemaObject):
             raise InvalidSchemaTypeException(
@@ -98,7 +100,7 @@ class CreatedAtField(SchemaField[int]):
     """
 
     def __init__(self, schema_obj: SchemaObjectT, created_at_field_name: str) -> None:
-        super().__init__(created_at_field_name, schema_obj, int)
+        super().__init__(created_at_field_name, schema_obj, int, nullable=False)
 
 
 class EventSchemaObject(IdSchemaObject, ABC):
@@ -123,14 +125,14 @@ class EventSchemaObject(IdSchemaObject, ABC):
     @override
     def _init_field(self, field_descriptor: SchemaFieldDescriptor) -> SchemaField:
         if field_descriptor.type_ == SchemaReference:
-            if len(field_descriptor.type_args) != 1:
+            if len(field_descriptor.arg_types) != 1:
                 raise InvalidAttributeException(
                     (
-                        f"Badly annotated SchemaReference ({field_descriptor.type_args}). ",
+                        f"Badly annotated SchemaReference ({field_descriptor.arg_types}). ",
                         "SchemaReference should be annotated with the referred schema object type.",
                     )
                 )
-            value: SchemaReference = SchemaReference(field_descriptor.name, self, field_descriptor.type_args[0])
+            value: SchemaReference = SchemaReference(field_descriptor.name, self, field_descriptor.arg_types[0])
             setattr(self, field_descriptor.name, value)
             return value
         return super()._init_field(field_descriptor)

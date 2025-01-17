@@ -22,10 +22,10 @@ from superlinked.framework.common.schema.event_schema_object import (
 )
 from superlinked.framework.common.schema.schema import T
 from superlinked.framework.common.schema.schema_factory import SchemaFactory
-from superlinked.framework.common.schema.schema_object import (
-    SchemaField,
+from superlinked.framework.common.schema.schema_field_descriptor import (
     SchemaFieldDescriptor,
 )
+from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.schema.schema_type import SchemaType
 
 # Exclude from documentation.
@@ -50,7 +50,7 @@ class EventSchema(EventSchemaObject):
     _schema_field_descriptors: list[SchemaFieldDescriptor]
 
     def __new__(cls) -> Self:
-        schema_information = SchemaFactory._calculate_schema_information(cls, SchemaType.EVENT_SCHEMA)
+        schema_information = SchemaFactory.calculate_schema_information(cls, SchemaType.EVENT_SCHEMA)
         instance = super().__new__(cls)
         instance._id_field_name = schema_information.id_field_name
         instance._created_at_field_name = SchemaFactory.get_field_name_or_raise(cls, CreatedAtField)

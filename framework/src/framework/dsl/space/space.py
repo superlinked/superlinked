@@ -22,7 +22,7 @@ from typing_extensions import override
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.data_types import NodeDataTypes
 from superlinked.framework.common.interface.has_annotation import HasAnnotation
-from superlinked.framework.common.schema.schema_object import SchemaField, SchemaObject
+from superlinked.framework.common.schema.schema_object import SchemaFieldT, SchemaObject
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationInputT,
 )
@@ -37,7 +37,6 @@ from superlinked.framework.dsl.space.exception import InvalidSpaceParamException
 
 # SpaceInputType
 SIT = TypeVar("SIT", bound=NodeDataTypes)
-SpaceSchemaFieldT = TypeVar("SpaceSchemaFieldT", bound=SchemaField)
 PYTHON_MULTILINE_STRING_DELIMITER = "\n        "
 
 
@@ -54,7 +53,7 @@ class Space(
 
     def __init__(
         self,
-        fields: SpaceSchemaFieldT | Sequence[SpaceSchemaFieldT],
+        fields: SchemaFieldT | Sequence[SchemaFieldT],
         type_: type | TypeAlias,
     ) -> None:
         super().__init__()
@@ -63,7 +62,7 @@ class Space(
         self.__validate_fields(field_list)
         self._field_set = set(field_list)
 
-    def __validate_fields(self, field_list: Sequence[SpaceSchemaFieldT]) -> None:
+    def __validate_fields(self, field_list: Sequence[SchemaFieldT]) -> None:
         if not self._allow_empty_fields and not field_list:
             raise InvalidSpaceParamException(f"{self.__class__.__name__} field input must not be empty.")
         schema_list = [field.schema_obj for field in field_list]

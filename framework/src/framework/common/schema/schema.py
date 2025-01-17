@@ -20,10 +20,10 @@ from typing_extensions import Self, override
 from superlinked.framework.common.schema.general_type import T
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_factory import SchemaFactory
-from superlinked.framework.common.schema.schema_object import (
-    SchemaField,
+from superlinked.framework.common.schema.schema_field_descriptor import (
     SchemaFieldDescriptor,
 )
+from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.schema.schema_type import SchemaType
 
 # Exclude from documentation.
@@ -58,7 +58,7 @@ class Schema(IdSchemaObject):
     _schema_field_descriptors: list[SchemaFieldDescriptor]
 
     def __new__(cls) -> Self:
-        schema_information = SchemaFactory._calculate_schema_information(cls, SchemaType.SCHEMA)
+        schema_information = SchemaFactory.calculate_schema_information(cls, SchemaType.SCHEMA)
         instance = super().__new__(cls)
         instance._id_field_name = schema_information.id_field_name
         instance._schema_field_descriptors = schema_information.schema_field_descriptors

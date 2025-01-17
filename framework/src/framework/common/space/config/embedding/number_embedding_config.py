@@ -78,6 +78,7 @@ class NumberEmbeddingConfig(EmbeddingConfig[float]):
         return 3
 
     @property
+    @override
     def default_vector(self) -> Vector:
         if self.mode == Mode.SIMILAR:
             default_values = [0.0, 0.0, 0.0]

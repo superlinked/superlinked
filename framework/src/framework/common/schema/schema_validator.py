@@ -14,7 +14,7 @@
 
 import inspect
 
-from beartype.typing import get_args
+from beartype.typing import Sequence, get_args
 
 from superlinked.framework.common.schema.event_schema_object import (
     CreatedAtField,
@@ -27,9 +27,11 @@ from superlinked.framework.common.schema.exception import (
 )
 from superlinked.framework.common.schema.general_type import T
 from superlinked.framework.common.schema.id_schema_object import IdField
+from superlinked.framework.common.schema.schema_field_descriptor import (
+    SchemaFieldDescriptor,
+)
 from superlinked.framework.common.schema.schema_object import ConcreteSchemaField
 from superlinked.framework.common.schema.schema_type import SchemaType
-from superlinked.framework.common.util.generic_class_util import GenericClassUtil
 
 valid_schema_field_types = {
     SchemaType.SCHEMA: ConcreteSchemaField | IdField,
@@ -41,23 +43,39 @@ class SchemaValidator:
     def __init__(self, schema_type: SchemaType) -> None:
         self.__schema_type = schema_type
 
-    def check_class_attributes(self, cls: type[T]) -> None:
-        for _, type_ in cls.__annotations__.items():
-            type_ = GenericClassUtil.if_not_class_get_origin(type_)
+    def validate_class_attributes(self, schema_field_descriptors: Sequence[SchemaFieldDescriptor]) -> None:
+        self.validate_field_types(schema_field_descriptors)
+        self.validate_id_field(schema_field_descriptors)
+        self.validate_created_at_field(schema_field_descriptors)
+        if self.__schema_type == SchemaType.EVENT_SCHEMA and (
+            optional_fields := [descriptor.name for descriptor in schema_field_descriptors if descriptor.nullable]
+        ):
+            raise InvalidAttributeException(f"An event schema cannot have optional attributes, got {optional_fields}")
+
+    def validate_field_types(self, descriptors: Sequence[SchemaFieldDescriptor]) -> None:
+        if wrong_annotation_types := [
+            descriptor.type_.__name__
+            for descriptor in descriptors
             if not (
                 issubclass(
-                    type_,
+                    descriptor.type_,
                     get_args(valid_schema_field_types[self.__schema_type]),
                 )
-            ):
-                raise InvalidAttributeException(
-                    (
-                        f"{'An event' if self.__schema_type == SchemaType.EVENT_SCHEMA else 'A'} ",
-                        f"schema cannot have non-SchemaField attributes, got {type_.__name__}",
-                    )
+            )
+        ]:
+            raise InvalidAttributeException(
+                (
+                    f"{'An event' if self.__schema_type == SchemaType.EVENT_SCHEMA else 'A'} ",
+                    f"schema cannot have non-SchemaField attributes, got {wrong_annotation_types}",
                 )
-        self.validate_id_field(cls)
-        self.validate_created_at_field(cls)
+            )
+
+    def validate_id_field(self, descriptors: Sequence[SchemaFieldDescriptor]) -> None:
+        self._validate_mandatory_single_field(descriptors, IdField, "id")
+
+    def validate_created_at_field(self, descriptors: Sequence[SchemaFieldDescriptor]) -> None:
+        if self.__schema_type == SchemaType.EVENT_SCHEMA:
+            self._validate_mandatory_single_field(descriptors, CreatedAtField, "created_at")
 
     def check_unannotated_members(self, cls: type[T]) -> None:
         base_members = dir(type("base_members", (object,), {}))
@@ -71,18 +89,15 @@ class SchemaValidator:
                     )
                 )
 
-    def __validate_field_single(self, cls: type[T], field_type: type, field_name: str) -> None:
+    def _validate_mandatory_single_field(
+        self, descriptors: Sequence[SchemaFieldDescriptor], field_type: type, field_name: str
+    ) -> None:
         field_names = [
-            name
-            for name, type_ in cls.__annotations__.items()
-            if inspect.isclass(type_) and issubclass(type_, field_type)
+            descriptor.name
+            for descriptor in descriptors
+            if inspect.isclass(descriptor.type_)
+            and issubclass(descriptor.type_, field_type)
+            and not descriptor.nullable
         ]
         if len(field_names) != 1:
             raise FieldException(f"A schema must have exactly 1 {field_name}, got {len(field_names)} ({field_names}).")
-
-    def validate_id_field(self, cls: type[T]) -> None:
-        self.__validate_field_single(cls, IdField, "id")
-
-    def validate_created_at_field(self, cls: type[T]) -> None:
-        if self.__schema_type == SchemaType.EVENT_SCHEMA:
-            self.__validate_field_single(cls, CreatedAtField, "created_at")
