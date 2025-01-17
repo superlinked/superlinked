@@ -4,7 +4,7 @@ Module superlinked.framework.common.schema.schema_object
 Classes
 -------
 
-`Blob(name: str, schema_obj: SchemaObjectT)`
+`Blob(name: str, schema_obj: SchemaObjectT, nullable: bool)`
 :   Field of a schema that represents a local/remote file path or an utf-8 encoded bytes string.
     
     e.g.: `ImageSpace` expects a blob field as an input.
@@ -27,7 +27,7 @@ Classes
     `description: superlinked.framework.common.schema.schema_object.String`
     :
 
-`Float(name: str, schema_obj: SchemaObjectT)`
+`Float(name: str, schema_obj: SchemaObjectT, nullable: bool)`
 :   Field of a schema that represents a float.
 
     ### Ancestors (in MRO)
@@ -38,7 +38,7 @@ Classes
     * abc.ABC
     * typing.Generic
 
-`FloatList(name: str, schema_obj: SchemaObjectT)`
+`FloatList(name: str, schema_obj: SchemaObjectT, nullable: bool)`
 :   Field of a schema that represents a vector.
 
     ### Ancestors (in MRO)
@@ -53,7 +53,7 @@ Classes
     `parse(self, value: list[float]) ‑> list[float]`
     :
 
-`Integer(name: str, schema_obj: SchemaObjectT)`
+`Integer(name: str, schema_obj: SchemaObjectT, nullable: bool)`
 :   Field of a schema that represents an integer.
 
     ### Ancestors (in MRO)
@@ -64,7 +64,7 @@ Classes
     * abc.ABC
     * typing.Generic
 
-`Number(name: str, schema_obj: SchemaObjectT, type_: type[SFT])`
+`Number(name: str, schema_obj: SchemaObjectT, type_: type[SFT], nullable: bool)`
 :   Field of a schema that represents a union of Float and Integer.
     
     e.g.: `NumberSpace` expects a Number field as an input.
@@ -81,7 +81,7 @@ Classes
     * superlinked.framework.common.schema.schema_object.Float
     * superlinked.framework.common.schema.schema_object.Integer
 
-`SchemaField(name: str, schema_obj: SchemaObjectT, type_: type[SFT])`
+`SchemaField(name: str, schema_obj: SchemaObjectT, type_: type[SFT], nullable: bool)`
 :   A SchemaField is a generic field of your `@schema` decorated class.
     
     `SchemaField`s are the basic building block for inputs that will be referenced in an embedding space.
@@ -125,7 +125,7 @@ Classes
     `schema_fields: Sequence[SchemaField]`
     :
 
-`String(name: str, schema_obj: SchemaObjectT)`
+`String(name: str, schema_obj: SchemaObjectT, nullable: bool)`
 :   Field of a schema that represents a string value.
     
     e.g.: `TextEmbeddingSpace` expects a String field as an input.
@@ -137,7 +137,7 @@ Classes
     * abc.ABC
     * typing.Generic
 
-`StringList(name: str, schema_obj: SchemaObjectT)`
+`StringList(name: str, schema_obj: SchemaObjectT, nullable: bool)`
 :   Field of a schema that represents a list of strings.
 
     ### Ancestors (in MRO)
@@ -152,7 +152,7 @@ Classes
     `parse(self, value: list[str]) ‑> list[str]`
     :
 
-`Timestamp(name: str, schema_obj: SchemaObjectT)`
+`Timestamp(name: str, schema_obj: SchemaObjectT, nullable: bool)`
 :   Field of a schema that represents a unix timestamp.
     
     e.g.: `RecencySpace` expects a Timestamp field as an input.
