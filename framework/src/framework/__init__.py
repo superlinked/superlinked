@@ -43,6 +43,7 @@ try:
 except ImportError:
     pass
 from superlinked.evaluation.vector_sampler import VectorSampler
+from superlinked.framework.blob.blob_handler_factory import BlobHandlerConfig
 from superlinked.framework.common.dag.context import CONTEXT_COMMON, CONTEXT_COMMON_NOW
 from superlinked.framework.common.dag.period_time import PeriodTime
 from superlinked.framework.common.nlq.open_ai import OpenAIClientConfig
@@ -193,8 +194,8 @@ __all__ = [
     "LogarithmicScale",
     # misc
     "SuperlinkedRegistry",
+    "BlobHandlerConfig",
 ]
-
 
 from superlinked.framework.common.superlinked_logging import (
     SuperlinkedLoggerConfigurator,

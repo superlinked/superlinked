@@ -23,7 +23,10 @@ import structlog
 from beartype.typing import Any, Callable, cast
 from PIL.Image import Image
 
-from superlinked.framework.blob.blob_handler_factory import BlobHandlerFactory
+from superlinked.framework.blob.blob_handler_factory import (
+    BlobHandlerConfig,
+    BlobHandlerFactory,
+)
 from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.settings import Settings
 
@@ -31,7 +34,7 @@ logger = structlog.getLogger()
 
 
 class BlobLoader:
-    def __init__(self, allow_bytes: bool) -> None:
+    def __init__(self, allow_bytes: bool, blob_handler_config: BlobHandlerConfig | None = None) -> None:
         self.allow_bytes = allow_bytes
         self._scheme_to_load_function: dict[str, Callable[[str], bytes]] = {
             "file": BlobLoader.load_from_local,
@@ -39,7 +42,7 @@ class BlobLoader:
             "http": BlobLoader.load_from_url,
             "https": BlobLoader.load_from_url,
         }
-        if handler := BlobHandlerFactory.create_blob_handler():
+        if handler := BlobHandlerFactory.create_blob_handler(blob_handler_config):
             self._scheme_to_load_function[handler.get_supported_cloud_storage_scheme()] = handler.download
 
     def load(self, blob_like_input: str | Image | None | Any) -> BlobInformation:
