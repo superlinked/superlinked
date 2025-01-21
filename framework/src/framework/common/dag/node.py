@@ -32,7 +32,7 @@ NodeDataT = TypeVar("NodeDataT", bound=NodeDataTypes)
 NT = TypeVar("NT", bound="Node")
 
 
-class Node(Generic[NodeDataT], ABC):
+class Node(Generic[NodeDataT], ABC):  # pylint: disable=too-many-instance-attributes #FAI-3022
     _instances: dict[str, Node] = {}
 
     def __new__(cls, *args: Any, **kwargs: Any) -> Self:
@@ -44,13 +44,14 @@ class Node(Generic[NodeDataT], ABC):
         cls._instances[node_id] = instance
         return instance
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments #FAI-3022
         self,
         node_data_type: type[NodeDataT],
         parents: Sequence[Node],
         schemas: set[SchemaObject] | None = None,
         dag_effects: set[DagEffect] | None = None,
         persistence_params: PersistenceParams | None = None,
+        non_nullable_parents: frozenset[Node] | None = None,
     ) -> None:
         self._node_data_type = node_data_type
         self._node_id: str | None = None
@@ -63,6 +64,7 @@ class Node(Generic[NodeDataT], ABC):
             {dag_effect for parent in parents for dag_effect in parent.dag_effects} if parents else set()
         )
         self._persistence_params = persistence_params or PersistenceParams()
+        self.non_nullable_parents = non_nullable_parents or frozenset()
         for parent in self.parents:
             parent._append_child(self)
 

@@ -21,3 +21,7 @@ class ChunkException(DagEvaluationException):
 
 class ValueNotProvidedException(Exception):
     pass
+
+
+class ParentResultException(Exception):
+    pass

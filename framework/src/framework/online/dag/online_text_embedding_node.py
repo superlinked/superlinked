@@ -28,10 +28,7 @@ from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
 )
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
-from superlinked.framework.online.dag.evaluation_result import (
-    EvaluationResult,
-    SingleEvaluationResult,
-)
+from superlinked.framework.online.dag.evaluation_result import SingleEvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
 
 
@@ -58,16 +55,8 @@ class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasL
         return self._embedding_transformation
 
     @override
-    def evaluate_self(
-        self,
-        parsed_schemas: list[ParsedSchema],
-        context: ExecutionContext,
-    ) -> list[EvaluationResult[Vector]]:
-        return super().evaluate_self(parsed_schemas, context)
-
-    @override
     def get_fallback_result(self, parsed_schema: ParsedSchema) -> Vector:
-        stored_result = self.load_stored_result(parsed_schema.id_, parsed_schema.schema)
+        stored_result = self.load_stored_result(parsed_schema.schema, parsed_schema.id_)
         if stored_result is not None:
             return stored_result
         return Vector.init_zero_vector(self.node.length)
@@ -75,7 +64,7 @@ class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasL
     @override
     def _evaluate_singles(
         self,
-        parent_results: list[dict[OnlineNode, SingleEvaluationResult[str]]],
+        parent_results: Sequence[dict[OnlineNode, SingleEvaluationResult[str]]],
         context: ExecutionContext,
     ) -> Sequence[Vector | None]:
         none_indices = [i for i, parent_result in enumerate(parent_results) if not parent_result]

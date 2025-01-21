@@ -34,6 +34,7 @@ class IndexNode(Node[Vector], HasLength):
             persistence_params=PersistenceParams(
                 persist_evaluation_result=True, persistence_type=PersistenceType.VECTOR
             ),
+            non_nullable_parents=frozenset(parents),
         )
         self.__length = cast(HasLength, self.parents[0]).length
 

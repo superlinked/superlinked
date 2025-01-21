@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from beartype.typing import cast
+from beartype.typing import Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.chunking_node import ChunkingNode
@@ -57,23 +57,23 @@ class OnlineChunkingNode(OnlineNode[ChunkingNode, str]):
     @override
     def evaluate_self(
         self,
-        parsed_schemas: list[ParsedSchema],
+        parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
-    ) -> list[EvaluationResult[str]]:
+    ) -> list[EvaluationResult[str] | None]:
         return [self.evaluate_self_single(schema, context) for schema in parsed_schemas]
 
     def evaluate_self_single(
         self,
         parsed_schema: ParsedSchema,
         context: ExecutionContext,
-    ) -> EvaluationResult[str]:
-        input_: EvaluationResult[str] = cast(OnlineNode[Node[str], str], self.parents[0]).evaluate_next_single(
-            parsed_schema, context
-        )
-        if len(input_.chunks) > 0:
+    ) -> EvaluationResult[str] | None:
+        parent_result = self.evaluate_parent(self.parents[0], [parsed_schema], context)[0]
+        if parent_result is None:
+            return None
+        if len(parent_result.chunks) > 0:
             # We can just log a warning and proceed with input_.main.
             raise ChunkException(f"{self.class_name} cannot have a chunked input.")
-        input_value = input_.main.value
+        input_value = parent_result.main.value
         chunk_inputs = self.__chunk(
             input_value,
             self.node.chunk_size,

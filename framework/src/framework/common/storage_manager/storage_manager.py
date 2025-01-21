@@ -261,6 +261,26 @@ class StorageManager:
             raise InvalidSchemaException(f"The root schema of `schema_fields` must be an {IdSchemaObject.__name__}")
         return schema
 
+    def read_node_results(
+        self,
+        schemas_with_object_ids: Sequence[tuple[SchemaObject, str]],
+        node_id: str,
+        result_type: type[ResultTypeT],
+    ) -> list[ResultTypeT | None]:
+        entity_ids = [
+            self._entity_builder.compose_entity_id(schema._schema_name, object_id)
+            for schema, object_id in schemas_with_object_ids
+        ]
+        result_field = self._entity_builder.compose_field(node_id, result_type)
+        fields = [result_field]
+        entities = [self._entity_builder.compose_entity(entity_id, fields) for entity_id in entity_ids]
+        entity_data = self._vdb_connector.read_entities(entities)
+
+        def cast_value_if_not_none(field_data: FieldData | None) -> ResultTypeT | None:
+            return cast(ResultTypeT, field_data.value) if field_data else None
+
+        return [cast_value_if_not_none(ed.field_data.get(result_field.name)) for ed in entity_data]
+
     def read_node_result(
         self,
         schema: SchemaObject,
@@ -268,20 +288,7 @@ class StorageManager:
         node_id: str,
         result_type: type[ResultTypeT],
     ) -> ResultTypeT | None:
-        entity_id = self._entity_builder.compose_entity_id(schema._schema_name, object_id)
-        result_field = self._entity_builder.compose_field(node_id, result_type)
-        fields = [result_field]
-        entity = self._entity_builder.compose_entity(entity_id, fields)
-        entity_data = self._vdb_connector.read_entities([entity])[0]
-        result_value = next(
-            (
-                cast(ResultTypeT, field_data.value)
-                for field_data in entity_data.field_data.values()
-                if field_data.name == result_field.name
-            ),
-            None,
-        )
-        return result_value
+        return self.read_node_results([(schema, object_id)], node_id, result_type)[0]
 
     def read_node_data(
         self,

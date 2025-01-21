@@ -34,7 +34,7 @@ class ComparisonFilterNode(Node[bool]):
     ) -> None:
         if parent.schema_field != comparison_operation._operand:
             raise InitializationException(f"{self.class_name}'s parent and operand must be the same.")
-        super().__init__(bool, [parent])
+        super().__init__(bool, [parent], non_nullable_parents=frozenset([parent]))
         if dag_effects is not None:
             self.dag_effects = dag_effects
         self.comparison_operation = comparison_operation

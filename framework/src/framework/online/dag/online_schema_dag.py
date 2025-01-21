@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import cast
+from beartype.typing import Sequence, cast
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.exception import (
@@ -58,9 +58,9 @@ class OnlineSchemaDag:
 
     def evaluate(
         self,
-        parsed_schemas: list[ParsedSchema],
+        parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
-    ) -> list[EvaluationResult[Vector]]:
+    ) -> list[EvaluationResult[Vector] | None]:
         return self.leaf_node.evaluate_next(parsed_schemas, context)
 
     def __validate(self, schema: SchemaObject, nodes: list[OnlineNode]) -> None:

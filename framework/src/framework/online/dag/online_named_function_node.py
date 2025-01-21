@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from beartype.typing import cast
+from beartype.typing import Sequence, cast
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
@@ -47,9 +47,9 @@ class OnlineNamedFunctionNode(OnlineNode[NamedFunctionNode[NodeDataT], NodeDataT
     @override
     def evaluate_self(
         self,
-        parsed_schemas: list[ParsedSchema],
+        parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
-    ) -> list[EvaluationResult[NodeDataT]]:
+    ) -> list[EvaluationResult[NodeDataT] | None]:
         result = EvaluationResult(self._get_single_evaluation_result(self._evaluate_single(context)))
         return [result] * len(parsed_schemas)
 

@@ -49,9 +49,9 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
     @override
     def _evaluate_singles(
         self,
-        parent_results: list[dict[OnlineNode, SingleEvaluationResult]],
+        parent_results: Sequence[dict[OnlineNode, SingleEvaluationResult]],
         context: ExecutionContext,
-    ) -> Sequence[Vector | None]:
+    ) -> list[Vector | None]:
         self._check_evaluation_inputs(parent_results)
         vector_and_nodes_list: list[list[tuple[Vector, OnlineNode]]] = [
             [(result.value, parent) for parent, result in parent_result.items()] for parent_result in parent_results
@@ -72,7 +72,7 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
 
     def _check_evaluation_inputs(
         self,
-        parent_results: list[dict[OnlineNode, SingleEvaluationResult]],
+        parent_results: Sequence[dict[OnlineNode, SingleEvaluationResult]],
     ) -> None:
         if any(
             result

@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from beartype.typing import Generic
+from beartype.typing import Generic, Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
@@ -48,9 +48,9 @@ class OnlineSchemaFieldNode(Generic[SFT], OnlineNode[SchemaFieldNode, SFT]):
     @override
     def evaluate_self(
         self,
-        parsed_schemas: list[ParsedSchema],
+        parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
-    ) -> list[EvaluationResult[SFT]]:
+    ) -> list[EvaluationResult[SFT] | None]:
         return [self.evaluate_self_single(schema) for schema in parsed_schemas]
 
     def evaluate_self_single(
@@ -71,7 +71,7 @@ class OnlineSchemaFieldNode(Generic[SFT], OnlineNode[SchemaFieldNode, SFT]):
         self,
         parsed_schema: ParsedSchema,
     ) -> SFT:
-        stored_result = self.load_stored_result(parsed_schema.id_, parsed_schema.schema)
+        stored_result = self.load_stored_result(parsed_schema.schema, parsed_schema.id_)
         if stored_result:
             return stored_result
         field_name = ".".join(

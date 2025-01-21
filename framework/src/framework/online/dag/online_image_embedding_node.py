@@ -73,9 +73,9 @@ class OnlineImageEmbeddingNode(OnlineNode[ImageEmbeddingNode, Vector], HasLength
     @override
     def evaluate_self(
         self,
-        parsed_schemas: list[ParsedSchema],
+        parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
-    ) -> list[EvaluationResult[Vector]]:
+    ) -> list[EvaluationResult[Vector] | None]:
         image_data_list = [self._get_image_data(parsed_schema) for parsed_schema in parsed_schemas]
         embedded_images = self.embedding_transformation.transform(image_data_list, context)
 

@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import math
 
-from beartype.typing import Sequence
+from beartype.typing import Sequence, cast
 from typing_extensions import override
 
 from superlinked.framework.common.const import constants
@@ -75,7 +75,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
                 f"{self.class_name} cannot have more than 1 parents to aggregate, got {len(inputs_to_aggregate)}"
             )
         self._input_to_aggregate = inputs_to_aggregate[0] if len(inputs_to_aggregate) > 0 else None
-        self.weighted_filter_parents = {
+        self.weighted_filter_parents: dict[OnlineNode, float] = {
             parent: self.__get_parent_weight(parent)
             for parent in self.parents
             if isinstance(parent, OnlineComparisonFilterNode)
@@ -95,9 +95,9 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
     @override
     def evaluate_self(
         self,
-        parsed_schemas: list[ParsedSchema],
+        parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
-    ) -> list[EvaluationResult[Vector]]:
+    ) -> list[EvaluationResult[Vector] | None]:
         return [self.evaluate_self_single(schema, context) for schema in parsed_schemas]
 
     def evaluate_self_single(
@@ -106,7 +106,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         context: ExecutionContext,
     ) -> EvaluationResult[Vector]:
         self.__check_schema_validity(parsed_schema.schema)
-        stored_result = self.load_stored_result(parsed_schema.id_, parsed_schema.schema) or Vector.empty_vector()
+        stored_result = self.load_stored_result(parsed_schema.schema, parsed_schema.id_) or Vector.empty_vector()
         input_to_aggregate = self._input_to_aggregate
         if (
             not isinstance(parsed_schema, ParsedSchemaWithEvent)
@@ -152,7 +152,8 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         input_to_aggregate: OnlineNode,
     ) -> Vector:
         affecting_parsed_schema = self._map_event_schema_to_affecting_schema(event_parsed_schema)
-        affecting_vector = input_to_aggregate.evaluate_next_single(affecting_parsed_schema, context).main.value
+        parent_result = self.evaluate_parent(input_to_aggregate, [affecting_parsed_schema], context)[0]
+        affecting_vector = cast(EvaluationResult, parent_result).main.value
 
         if not isinstance(affecting_vector, Vector):
             raise DagEvaluationException(
@@ -173,12 +174,10 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         self,
         event_parsed_schema: EventParsedSchema,
         context: ExecutionContext,
-    ) -> Sequence[float]:
-        return [
-            weight
-            for filter_parent, weight in self.weighted_filter_parents.items()
-            if filter_parent.evaluate_next_single(event_parsed_schema, context).main.value
-        ]
+    ) -> list[float]:
+        filter_parents = list(self.weighted_filter_parents.keys())
+        parent_results = self.evaluate_parents(filter_parents, [event_parsed_schema], context)[0]
+        return [self.weighted_filter_parents[parent] for parent, result in parent_results.items() if result.main.value]
 
     def _map_event_schema_to_affecting_schema(self, event_parsed_schema: EventParsedSchema) -> ParsedSchema:
         return next(

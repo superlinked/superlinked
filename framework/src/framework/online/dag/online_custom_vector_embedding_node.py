@@ -14,12 +14,11 @@
 
 from __future__ import annotations
 
-from beartype.typing import cast
+from beartype.typing import Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.custom_node import CustomVectorEmbeddingNode
-from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import ValidationException
 from superlinked.framework.common.interface.has_length import HasLength
@@ -57,30 +56,31 @@ class OnlineCustomVectorEmbeddingNode(OnlineNode[CustomVectorEmbeddingNode, Vect
     @override
     def evaluate_self(
         self,
-        parsed_schemas: list[ParsedSchema],
+        parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
-    ) -> list[EvaluationResult[Vector]]:
-        return [self.evaluate_self_single(schema, context) for schema in parsed_schemas]
-
-    def evaluate_self_single(
-        self,
-        parsed_schema: ParsedSchema,
-        context: ExecutionContext,
-    ) -> EvaluationResult[Vector]:
+    ) -> list[EvaluationResult[Vector] | None]:
         if len(self.parents) == 0:
-            result = self.load_stored_result(parsed_schema.id_, parsed_schema.schema)
-            if result is None:
-                result = Vector.init_zero_vector(self.node.length)
+            results = self.load_stored_results_with_default(
+                [(parsed_schema.schema, parsed_schema.id_) for parsed_schema in parsed_schemas],
+                Vector.init_zero_vector(self.node.length),
+            )
         else:
-            input_: EvaluationResult[list[float]] = cast(
-                OnlineNode[Node[Vector], list[float]], self.parents[0]
-            ).evaluate_next_single(parsed_schema, context)
-            input_value = input_.main.value
-            self._validate_input_value(input_value)
-            result = self.embedding_transformation.transform(Vector(input_value), context)
-        return EvaluationResult(self._get_single_evaluation_result(result))
+            parent_results = self.evaluate_parent(self.parents[0], parsed_schemas, context)
+            results = [self._evaluate_parent_result(parent_result, context) for parent_result in parent_results]
+        return [self._wrap_in_evaluation_result(result) for result in results]
 
-    def _validate_input_value(self, input_value: list[float]) -> None:
+    def _evaluate_parent_result(
+        self,
+        parent_result: EvaluationResult | None,
+        context: ExecutionContext,
+    ) -> Vector:
+        if parent_result is None:
+            return Vector.init_zero_vector(self.node.length)
+        input_value = parent_result.main.value
+        self._validate_input_value(input_value)
+        return self.embedding_transformation.transform(Vector(input_value), context)
+
+    def _validate_input_value(self, input_value: Sequence[float]) -> None:
         if len(input_value) != self.length:
             raise ValidationException(
                 f"{self.class_name} can only process `Vector` inputs"

@@ -63,7 +63,7 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
         return mandatory_field_names_by_schema
 
     def update(self, messages: Sequence[ParsedSchema]) -> None:
-        regular_msgs: list[ParsedSchema] = []
+        regular_msgs = list[ParsedSchema]()
         for message in messages:
             self._validate_mandatory_fields_are_present(message)
         for message in messages:

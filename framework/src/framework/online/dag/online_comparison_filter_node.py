@@ -43,7 +43,7 @@ class OnlineComparisonFilterNode(DefaultOnlineNode[ComparisonFilterNode, bool]):
     @override
     def _evaluate_singles(
         self,
-        parent_results: list[dict[OnlineNode, SingleEvaluationResult]],
+        parent_results: Sequence[dict[OnlineNode, SingleEvaluationResult]],
         context: ExecutionContext,
     ) -> Sequence[bool | None]:
         return [self._evaluate_single(parent_result) for parent_result in parent_results]

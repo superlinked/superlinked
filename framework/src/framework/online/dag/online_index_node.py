@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from beartype.typing import cast
+from beartype.typing import Sequence, cast
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
@@ -34,7 +34,7 @@ class OnlineIndexNode(OnlineNode[IndexNode, Vector], HasLength):
     def __init__(
         self,
         node: IndexNode,
-        parents: list[OnlineNode[Node[Vector], Vector]],
+        parents: Sequence[OnlineNode[Node[Vector], Vector]],
         storage_manager: StorageManager,
     ) -> None:
         super().__init__(node, parents, storage_manager)
@@ -51,7 +51,7 @@ class OnlineIndexNode(OnlineNode[IndexNode, Vector], HasLength):
             )
         return active_parents[0]
 
-    def __get_parent_for_parsed_schemas(self, parsed_schemas: list[ParsedSchema]) -> OnlineNode:
+    def __get_parent_for_parsed_schemas(self, parsed_schemas: Sequence[ParsedSchema]) -> OnlineNode:
         active_parents = set(self.get_parent_for_schema(parsed_schema.schema) for parsed_schema in parsed_schemas)
         if len(active_parents) != 1:
             raise ParentCountException(
@@ -62,11 +62,11 @@ class OnlineIndexNode(OnlineNode[IndexNode, Vector], HasLength):
     @override
     def evaluate_self(
         self,
-        parsed_schemas: list[ParsedSchema],
+        parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
-    ) -> list[EvaluationResult[Vector]]:
+    ) -> list[EvaluationResult[Vector] | None]:
         parent: OnlineNode = self.__get_parent_for_parsed_schemas(parsed_schemas)
-        parent_results: list[EvaluationResult[Vector]] = parent.evaluate_next(parsed_schemas, context)
+        parent_results = cast(list[EvaluationResult], self.evaluate_parent(parent, parsed_schemas, context))
         return [
             EvaluationResult(
                 self._get_single_evaluation_result(parent_result.main.value),

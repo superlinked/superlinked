@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+from beartype.typing import Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.constant_node import ConstantNode
@@ -43,9 +44,9 @@ class OnlineConstantNode(OnlineNode[ConstantNode[NodeDataT], NodeDataT]):
     @override
     def evaluate_self(
         self,
-        parsed_schemas: list[ParsedSchema],
+        parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
-    ) -> list[EvaluationResult[NodeDataT]]:
+    ) -> list[EvaluationResult[NodeDataT] | None]:
         result = EvaluationResult(self._get_single_evaluation_result(self._evaluate_single()))
         return [result] * len(parsed_schemas)
 

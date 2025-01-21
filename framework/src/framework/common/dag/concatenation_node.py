@@ -42,6 +42,7 @@ class ConcatenationNode(Node[Vector], HasLength):
             Vector,
             parents,
             persistence_params=PersistenceParams(persist_parent_evaluation_result=True),
+            non_nullable_parents=frozenset(parents),
         )
         self.__validate_parents()
         self.default_weight = default_weight

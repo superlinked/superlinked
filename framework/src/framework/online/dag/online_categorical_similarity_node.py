@@ -14,14 +14,13 @@
 
 from __future__ import annotations
 
-from beartype.typing import cast
+from beartype.typing import Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.categorical_similarity_node import (
     CategoricalSimilarityNode,
 )
 from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
@@ -58,26 +57,26 @@ class OnlineCategoricalSimilarityNode(OnlineNode[CategoricalSimilarityNode, Vect
     @override
     def evaluate_self(
         self,
-        parsed_schemas: list[ParsedSchema],
+        parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
-    ) -> list[EvaluationResult[Vector]]:
-        return [self.evaluate_self_single(schema, context) for schema in parsed_schemas]
-
-    def evaluate_self_single(
-        self,
-        parsed_schema: ParsedSchema,
-        context: ExecutionContext,
-    ) -> EvaluationResult[Vector]:
+    ) -> list[EvaluationResult[Vector] | None]:
         if len(self.parents) == 0:
-            result = self.load_stored_result(parsed_schema.id_, parsed_schema.schema)
-            if result is None:
-                result = Vector.init_zero_vector(self.node.length)
-        else:
-            input_: str | list[str] = (
-                cast(OnlineNode[Node[str | list[str]], str | list[str]], self.parents[0])
-                .evaluate_next_single(parsed_schema, context)
-                .main.value
+            results = self.load_stored_results_with_default(
+                [(parsed_schema.schema, parsed_schema.id_) for parsed_schema in parsed_schemas],
+                Vector.init_zero_vector(self.node.length),
             )
-            categories = input_ if isinstance(input_, list) else [input_]
-            result = self.embedding_transformation.transform(categories, context)
-        return EvaluationResult(self._get_single_evaluation_result(result))
+        else:
+            parent_results = self.evaluate_parent(self.parents[0], parsed_schemas, context)
+            results = [self._evaluate_parent_result(parent_result, context) for parent_result in parent_results]
+        return [self._wrap_in_evaluation_result(result) for result in results]
+
+    def _evaluate_parent_result(
+        self,
+        parent_result: EvaluationResult | None,
+        context: ExecutionContext,
+    ) -> Vector:
+        if parent_result is None:
+            return Vector.init_zero_vector(self.node.length)
+        input_ = parent_result.main.value
+        categories = input_ if isinstance(input_, list) else [input_]
+        return self.embedding_transformation.transform(categories, context)

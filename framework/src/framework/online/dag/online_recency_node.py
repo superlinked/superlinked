@@ -21,17 +21,13 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.recency_node import RecencyNode
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.interface.has_length import HasLength
-from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.transform.transform import Step
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
 )
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
-from superlinked.framework.online.dag.evaluation_result import (
-    EvaluationResult,
-    SingleEvaluationResult,
-)
+from superlinked.framework.online.dag.evaluation_result import SingleEvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
 
 DAY_IN_SECONDS: int = 24 * 60 * 60
@@ -59,17 +55,9 @@ class OnlineRecencyNode(DefaultOnlineNode[RecencyNode, Vector], HasLength):
         return self._embedding_transformation
 
     @override
-    def evaluate_self(
-        self,
-        parsed_schemas: list[ParsedSchema],
-        context: ExecutionContext,
-    ) -> list[EvaluationResult[Vector]]:
-        return super().evaluate_self(parsed_schemas, context)
-
-    @override
     def _evaluate_singles(
         self,
-        parent_results: list[dict[OnlineNode, SingleEvaluationResult]],
+        parent_results: Sequence[dict[OnlineNode, SingleEvaluationResult]],
         context: ExecutionContext,
     ) -> Sequence[Vector | None]:
         return [self._evaluate_single(parent_result, context) for parent_result in parent_results]
