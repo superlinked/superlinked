@@ -95,4 +95,4 @@ save_tree(directory_tree, 'dsl', 2)
 
 new_references_to_write.append(f'\n')
 
-replace_content_between_headers('docs/SUMMARY.md', '## Reference', '## Tutorials', new_references_to_write)
+replace_content_between_headers('docs/SUMMARY.md', '## Reference', '## Recipes', new_references_to_write)

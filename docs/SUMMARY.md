@@ -135,6 +135,11 @@
     * [Interactive](reference/dsl/executor/interactive/index.md)
       * [Interactive Executor](reference/dsl/executor/interactive/interactive_executor.md)
 
+## Recipes
+* [Overview](recipes/overview.md)
+* [Multi-Modal Semantic Search](recipes/multi-modal-semantic-search.md)
+  * [Hotel Search](recipes/hotel-search.md)
+
 ## Tutorials
 * [Overview](use-cases/overview.md)
 * [Semantic Search - News](use-cases/semantic-search-news.md)
