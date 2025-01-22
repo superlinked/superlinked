@@ -85,7 +85,7 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
 
     def __init__(
         self,
-        category_input: StringList | String | list[String | StringList],
+        category_input: String | StringList | None | list[String | StringList | None],
         categories: list[str],
         negative_filter: float = 0.0,
         uncategorized_as_category: bool = True,
@@ -113,16 +113,14 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
             InvalidSchemaException: If a schema object does not have a corresponding node in the similarity space,
             indicating a configuration or implementation error.
         """
+        non_none_category_input: list[String | StringList] = self._fields_to_non_none_sequence(category_input)
         # TODO FAI-2843 this type ignore is not needed but linting is flaky in CI
         super().__init__(
-            category_input,
+            non_none_category_input,
             String | StringList,  # type: ignore[misc] # interface supports only one type
         )
         TypeValidator.validate_list_item_type(categories, str, "categories")
-        self.__category = SpaceFieldSet[list[str]](
-            self,
-            set(category_input if isinstance(category_input, list) else [category_input]),
-        )
+        self.__category = SpaceFieldSet[list[str]](self, set(non_none_category_input))
         self._embedding_config = CategoricalSimilarityEmbeddingConfig(
             list[str],
             categories=categories,
@@ -137,7 +135,7 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
                 transformation_config=self.transformation_config,
                 fields_for_identification=self.__category.fields,
             )
-            for single_category in (category_input if isinstance(category_input, list) else [category_input])
+            for single_category in non_none_category_input
         }
         self.__schema_node_map: dict[SchemaObject, EmbeddingNode[Vector, list[str]]] = {
             schema_field.schema_obj: node for schema_field, node in unchecked_category_node_map.items()

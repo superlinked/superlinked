@@ -76,7 +76,7 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        number: Number | list[Number],
+        number: Number | None | list[Number | None],
         min_value: float | int,
         max_value: float | int,
         mode: Mode,
@@ -106,6 +106,7 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
             negative_filter (float): This is a value that will be set for everything that is equal or
                 lower than the min_value. It can be a float. It defaults to 0 (No effect)
         """
+        non_none_number = self._fields_to_non_none_sequence(number)
         self._embedding_config = NumberEmbeddingConfig(
             float,
             float(min_value),
@@ -114,8 +115,8 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
             scale,
             negative_filter,
         )
-        super().__init__(number, Number)
-        number_fields = number if isinstance(number, list) else [number]
+        super().__init__(non_none_number, Number)
+        number_fields = non_none_number
         self.number = SpaceFieldSet[float](self, set(number_fields))
         self._aggregation_config_type_by_mode = self.__init_aggregation_config_type_by_mode()
         self._transformation_config = self._init_transformation_config(self._embedding_config, aggregation_mode)

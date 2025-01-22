@@ -14,7 +14,7 @@
 
 from pathlib import Path
 
-from beartype.typing import cast
+from beartype.typing import Sequence, cast
 from typing_extensions import override
 
 from superlinked.framework.common.dag.chunking_node import ChunkingNode
@@ -58,7 +58,7 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
 
     def __init__(
         self,
-        text: TextInput | list[TextInput],
+        text: TextInput | None | Sequence[TextInput | None],
         model: str,
         cache_size: int = DEFAULT_CACHE_SIZE,
         model_cache_dir: Path | None = None,
@@ -75,7 +75,7 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
             model_cache_dir (Path | None, optional): Directory to cache downloaded models.
                 If None, uses the default cache directory. Defaults to None.
         """
-        unchecked_texts = text if isinstance(text, list) else [text]
+        unchecked_texts: list[ChunkingNode | String] = self._fields_to_non_none_sequence(text)
         text_fields = [self._get_root(unchecked_text) for unchecked_text in unchecked_texts]
         super().__init__(text_fields, String)
         self.text = SpaceFieldSet[str](self, set(text_fields))

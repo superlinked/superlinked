@@ -83,7 +83,7 @@ class RecencySpace(Space[int, int], HasSpaceFieldSet):  # pylint: disable=too-ma
 
     def __init__(
         self,
-        timestamp: Timestamp | list[Timestamp],
+        timestamp: Timestamp | None | Sequence[Timestamp | None],
         time_period_hour_offset: timedelta = timedelta(hours=0),
         period_time_list: list[PeriodTime] | PeriodTime | None = None,
         aggregation_mode: InputAggregationMode = InputAggregationMode.INPUT_AVERAGE,
@@ -105,9 +105,10 @@ class RecencySpace(Space[int, int], HasSpaceFieldSet):  # pylint: disable=too-ma
             negative_filter (float): The recency score of items that are older than the oldest period time.
                 Defaults to 0.0.
         """
-        super().__init__(timestamp, Timestamp)
+        non_none_timestamp = self._fields_to_non_none_sequence(timestamp)
+        super().__init__(non_none_timestamp, Timestamp)
         self._aggregation_config_type_by_mode = self.__init_aggregation_config_type_by_mode()
-        self.timestamp = SpaceFieldSet[int](self, set(timestamp if isinstance(timestamp, list) else [timestamp]))
+        self.timestamp = SpaceFieldSet[int](self, set(non_none_timestamp))
         recency_periods: list[PeriodTime] = (
             period_time_list
             if isinstance(period_time_list, list)

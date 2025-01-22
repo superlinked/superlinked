@@ -76,7 +76,7 @@ class ImageSpace(Space[Vector, ImageData]):
 
     def __init__(
         self,
-        image: Blob | DescribedBlob | Sequence[Blob | DescribedBlob],
+        image: Blob | DescribedBlob | None | Sequence[Blob | DescribedBlob | None],
         model: str = "clip-ViT-B-32",
         model_handler: ModelHandler = ModelHandler.SENTENCE_TRANSFORMERS,
         model_cache_dir: Path | None = None,
@@ -99,8 +99,9 @@ class ImageSpace(Space[Vector, ImageData]):
             InvalidSpaceParamException: If the image and description fields are not
                 from the same schema.
         """
-        self.__validate_field_schemas(image)
-        image_fields, description_fields = self._split_images_from_descriptions(image)
+        non_none_image: list[Blob | DescribedBlob] = self._fields_to_non_none_sequence(image)
+        self.__validate_field_schemas(non_none_image)
+        image_fields, description_fields = self._split_images_from_descriptions(non_none_image)
         super().__init__(image_fields, Blob)
         length = ImageEmbedding.init_manager(model_handler, model, model_cache_dir).calculate_length()
         self.image = ImageSpaceFieldSet(self, set(image_fields))
@@ -123,9 +124,8 @@ class ImageSpace(Space[Vector, ImageData]):
             raise InvalidSpaceParamException("ImageSpace image and description field must be in the same schema.")
 
     def _split_images_from_descriptions(
-        self, images: Blob | DescribedBlob | Sequence[Blob | DescribedBlob]
+        self, images: Sequence[Blob | DescribedBlob]
     ) -> tuple[list[Blob], list[String | None]]:
-        images = images if isinstance(images, Sequence) else [images]
         blobs, descriptions = zip(
             *[
                 (image.blob, image.description) if isinstance(image, DescribedBlob) else (image, None)

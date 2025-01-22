@@ -19,10 +19,17 @@ from abc import abstractmethod
 from beartype.typing import Generic, Sequence, TypeAlias, TypeVar
 from typing_extensions import override
 
+from superlinked.framework.common.dag.chunking_node import ChunkingNode
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.data_types import NodeDataTypes
 from superlinked.framework.common.interface.has_annotation import HasAnnotation
-from superlinked.framework.common.schema.schema_object import SchemaFieldT, SchemaObject
+from superlinked.framework.common.schema.schema_object import (
+    ConcreteSchemaField,
+    DescribedBlob,
+    Number,
+    SchemaField,
+    SchemaObject,
+)
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationInputT,
 )
@@ -39,6 +46,11 @@ from superlinked.framework.dsl.space.exception import InvalidSpaceParamException
 SIT = TypeVar("SIT", bound=NodeDataTypes)
 PYTHON_MULTILINE_STRING_DELIMITER = "\n        "
 
+SpaceFieldT = TypeVar(
+    "SpaceFieldT",
+    bound=ChunkingNode | ConcreteSchemaField | DescribedBlob | Number,
+)
+
 
 class Space(
     HasTransformationConfig[AggregationInputT, EmbeddingInputT],
@@ -51,18 +63,13 @@ class Space(
     This class defines the interface for a space in the context of the application.
     """
 
-    def __init__(
-        self,
-        fields: SchemaFieldT | Sequence[SchemaFieldT],
-        type_: type | TypeAlias,
-    ) -> None:
+    def __init__(self, fields: Sequence[SchemaField], type_: type | TypeAlias) -> None:
         super().__init__()
-        field_list = fields if isinstance(fields, Sequence) else [fields]
-        TypeValidator.validate_list_item_type(field_list, type_, "field_list")
-        self.__validate_fields(field_list)
-        self._field_set = set(field_list)
+        TypeValidator.validate_list_item_type(fields, type_, "field_list")
+        self.__validate_fields(fields)
+        self._field_set = set(fields)
 
-    def __validate_fields(self, field_list: Sequence[SchemaFieldT]) -> None:
+    def __validate_fields(self, field_list: Sequence[SchemaField]) -> None:
         if not self._allow_empty_fields and not field_list:
             raise InvalidSpaceParamException(f"{self.__class__.__name__} field input must not be empty.")
         schema_list = [field.schema_obj for field in field_list]
@@ -70,6 +77,12 @@ class Space(
             raise InvalidSpaceParamException(
                 f"Duplicates schemas in the same space are not allowed. Duplicates: {duplicates}"
             )
+
+    def _fields_to_non_none_sequence(
+        self, fields: SpaceFieldT | None | Sequence[SpaceFieldT | None]
+    ) -> list[SpaceFieldT]:
+        fields = fields if isinstance(fields, Sequence) else [fields]
+        return [field for field in fields if field]
 
     @property
     @override

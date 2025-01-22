@@ -56,24 +56,19 @@ class OnlineSchemaFieldNode(Generic[SFT], OnlineNode[SchemaFieldNode, SFT]):
     def evaluate_self_single(
         self,
         parsed_schema: ParsedSchema,
-    ) -> EvaluationResult[SFT]:
+    ) -> EvaluationResult[SFT] | None:
         parsed_nodes: list[ParsedSchemaField] = [
             field for field in parsed_schema.fields if field.schema_field == self.node.schema_field
         ]
-        result: SFT
+        result: SFT | None
         if parsed_nodes:
             result = parsed_nodes[0].value
         else:
-            result = self.__get_default_result(parsed_schema)
-        return EvaluationResult(self._get_single_evaluation_result(result))
-
-    def __get_default_result(
-        self,
-        parsed_schema: ParsedSchema,
-    ) -> SFT:
-        stored_result = self.load_stored_result(parsed_schema.schema, parsed_schema.id_)
-        if stored_result:
-            return stored_result
+            result = self.load_stored_result(parsed_schema.schema, parsed_schema.id_)
+        if result is not None:
+            return EvaluationResult(self._get_single_evaluation_result(result))
+        if self.node.schema_field.nullable:
+            return None
         field_name = ".".join(
             [
                 self.node.schema_field.schema_obj._schema_name,
