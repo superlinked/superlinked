@@ -118,8 +118,7 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
         for non_nullable_parent in self.non_nullable_parents.intersection(parents_with_results):
             if parents_result[non_nullable_parent] is None:
                 raise ParentResultException(
-                    f"{type(self).__name__} received None result from a non-nullable "
-                    + f"parent {non_nullable_parent.node_id}."
+                    f"{type(self).__name__} won't accept None from parent {non_nullable_parent.node_id}."
                 )
         return {parent: result for parent, result in parents_result.items() if result is not None}
 

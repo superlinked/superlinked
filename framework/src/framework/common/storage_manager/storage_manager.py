@@ -272,8 +272,7 @@ class StorageManager:
             for schema, object_id in schemas_with_object_ids
         ]
         result_field = self._entity_builder.compose_field(node_id, result_type)
-        fields = [result_field]
-        entities = [self._entity_builder.compose_entity(entity_id, fields) for entity_id in entity_ids]
+        entities = [self._entity_builder.compose_entity(entity_id, [result_field]) for entity_id in entity_ids]
         entity_data = self._vdb_connector.read_entities(entities)
 
         def cast_value_if_not_none(field_data: FieldData | None) -> ResultTypeT | None:
@@ -288,7 +287,7 @@ class StorageManager:
         node_id: str,
         result_type: type[ResultTypeT],
     ) -> ResultTypeT | None:
-        return self.read_node_results([(schema, object_id)], node_id, result_type)[0]
+        return next(iter(self.read_node_results([(schema, object_id)], node_id, result_type)))
 
     def read_node_data(
         self,

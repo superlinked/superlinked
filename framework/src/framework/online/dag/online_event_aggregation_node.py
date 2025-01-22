@@ -152,7 +152,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         input_to_aggregate: OnlineNode,
     ) -> Vector:
         affecting_parsed_schema = self._map_event_schema_to_affecting_schema(event_parsed_schema)
-        parent_result = self.evaluate_parent(input_to_aggregate, [affecting_parsed_schema], context)[0]
+        parent_result = next(iter(self.evaluate_parent(input_to_aggregate, [affecting_parsed_schema], context)))
         affecting_vector = cast(EvaluationResult, parent_result).main.value
 
         if not isinstance(affecting_vector, Vector):
