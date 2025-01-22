@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.space.number_space
 Classes
 -------
 
-`NumberSpace(number: superlinked.framework.common.schema.schema_object.Number | list[superlinked.framework.common.schema.schema_object.Number], min_value: float | int, max_value: float | int, mode: superlinked.framework.common.space.config.embedding.number_embedding_config.Mode, scale: superlinked.framework.common.space.config.embedding.number_embedding_config.Scale = LinearScale(), aggregation_mode: superlinked.framework.dsl.space.input_aggregation_mode.InputAggregationMode = InputAggregationMode.INPUT_AVERAGE, negative_filter: float = 0.0)`
+`NumberSpace(number: superlinked.framework.common.schema.schema_object.Number | None | list[superlinked.framework.common.schema.schema_object.Number | None], min_value: float | int, max_value: float | int, mode: superlinked.framework.common.space.config.embedding.number_embedding_config.Mode, scale: superlinked.framework.common.space.config.embedding.number_embedding_config.Scale = LinearScale(), aggregation_mode: superlinked.framework.dsl.space.input_aggregation_mode.InputAggregationMode = InputAggregationMode.INPUT_AVERAGE, negative_filter: float = 0.0)`
 :   NumberSpace is used to encode numerical values within a specified range.
     The range is defined by the min_value and max_value parameters.
     The preference can be controlled by the mode parameter.

@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.space.categorical_similarity_space
 Classes
 -------
 
-`CategoricalSimilaritySpace(category_input: superlinked.framework.common.schema.schema_object.StringList | superlinked.framework.common.schema.schema_object.String | list[superlinked.framework.common.schema.schema_object.String | superlinked.framework.common.schema.schema_object.StringList], categories: list[str], negative_filter: float = 0.0, uncategorized_as_category: bool = True)`
+`CategoricalSimilaritySpace(category_input: superlinked.framework.common.schema.schema_object.String | superlinked.framework.common.schema.schema_object.StringList | None | list[superlinked.framework.common.schema.schema_object.String | superlinked.framework.common.schema.schema_object.StringList | None], categories: list[str], negative_filter: float = 0.0, uncategorized_as_category: bool = True)`
 :   Represents a space for encoding categorical similarity.
     
     A CategoricalSimilaritySpace is designed to measure the similarity between items that

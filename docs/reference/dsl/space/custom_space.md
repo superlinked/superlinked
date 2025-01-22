@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.space.custom_space
 Classes
 -------
 
-`CustomSpace(vector: superlinked.framework.common.schema.schema_object.FloatList | list[superlinked.framework.common.schema.schema_object.FloatList], length: int, description: str | None = None)`
+`CustomSpace(vector: superlinked.framework.common.schema.schema_object.FloatList | None | collections.abc.Sequence[superlinked.framework.common.schema.schema_object.FloatList | None], length: int, description: str | None = None)`
 :   CustomSpace is the instrument of ingesting your own vectors into Superlinked.
     This way you can use your own vectors right away. What you need to know: (you can use numbering too)
     - vectors need to have the same length
