@@ -472,11 +472,6 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
     def replace_clauses(self, clauses: Sequence[QueryClause]) -> QueryDescriptor:
         return QueryDescriptor(self.index, self.schema, clauses)
 
-    def calculate_value_by_param_name(self) -> dict[str, Any]:
-        value_by_param_name = {clause.value_param_name: clause.get_value() for clause in self.clauses}
-        weight_by_param_name = {clause.weight_param_name: clause.get_weight() for clause in self.get_weighted_clauses()}
-        return {**value_by_param_name, **weight_by_param_name}
-
     def get_weighted_clauses(self) -> list[WeightedQueryClause]:
         return [clause for clause in self.clauses if isinstance(clause, WeightedQueryClause)]
 

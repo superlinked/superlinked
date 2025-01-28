@@ -24,6 +24,12 @@ from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.app.app import App
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.query.query_mixin import QueryMixin
+from superlinked.framework.dsl.query.query_result_converter.default_query_result_converter import (
+    DefaultQueryResultConverter,
+)
+from superlinked.framework.dsl.query.query_result_converter.query_result_converter import (
+    QueryResultConverter,
+)
 from superlinked.framework.dsl.storage.vector_database import VectorDatabase
 from superlinked.framework.online.online_dag_evaluator import OnlineDagEvaluator
 from superlinked.framework.online.source.online_data_processor import (
@@ -56,6 +62,7 @@ class OnlineApp(App[OnlineSourceT], Generic[OnlineSourceT], QueryMixin):
         init_search_indices: bool,
         queue: Queue | None = None,
         blob_handler: BlobHandler | None = None,
+        query_result_converter: QueryResultConverter | None = None,
     ) -> None:
         """
         Initialize the OnlineApp with the given sources, indices, vector database, and execution context.
@@ -72,6 +79,7 @@ class OnlineApp(App[OnlineSourceT], Generic[OnlineSourceT], QueryMixin):
         self._data_processors: list[OnlineDataProcessor] = []
 
         self.setup_query_execution(self._indices)
+        self.setup_query_result_converter(query_result_converter or DefaultQueryResultConverter())
         self.__setup_sources()
         if queue is not None:
             self.__register_queue_to_sources(queue)

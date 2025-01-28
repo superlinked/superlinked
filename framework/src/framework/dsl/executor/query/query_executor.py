@@ -29,7 +29,6 @@ from superlinked.framework.common.dag.context import (
 from superlinked.framework.common.data_types import NodeDataTypes, Vector
 from superlinked.framework.common.exception import QueryException
 from superlinked.framework.common.interface.weighted import Weighted
-from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.storage_manager.knn_search_params import (
     KNNSearchParams,
 )
@@ -47,7 +46,12 @@ from superlinked.framework.dsl.query.query_param_value_setter import (
     QueryParamValueSetter,
 )
 from superlinked.framework.dsl.query.query_vector_factory import QueryVectorFactory
-from superlinked.framework.dsl.query.result import Result, ResultEntry
+from superlinked.framework.dsl.query.result import (
+    QueryResult,
+    ResultEntry,
+    ResultEntryMetadata,
+    ResultMetadata,
+)
 from superlinked.framework.query.query_node_input import QueryNodeInput
 
 logger = structlog.getLogger()
@@ -77,7 +81,7 @@ class QueryExecutor:
         self.query_vector_factory = query_vector_factory
         self._logger = logger.bind(schema=self._query_descriptor.schema._schema_name)
 
-    def query(self, **params: ParamInputType) -> Result:
+    def query(self, **params: ParamInputType) -> QueryResult:
         """
         Execute a query with keyword parameters.
 
@@ -91,9 +95,9 @@ class QueryExecutor:
             QueryException: If the query index is not amongst the executor's indices.
         """
         self.__check_executor_has_index()
-        query_descriptor = QueryParamValueSetter.set_values(self._query_descriptor, params)
+        query_descriptor: QueryDescriptor = QueryParamValueSetter.set_values(self._query_descriptor, params)
         knn_search_params = self._produce_knn_search_params(query_descriptor)
-        entities: Sequence[SearchResultItem] = self._knn_search(knn_search_params, query_descriptor)
+        entities = self._knn_search(knn_search_params, query_descriptor)
         self._logger.info(
             "executed query",
             n_results=len(entities),
@@ -102,11 +106,29 @@ class QueryExecutor:
             pii_knn_params=params,
             pii_query_vector=partial(str, knn_search_params.vector),
         )
-        return Result(
-            self._map_entities_to_result_entries(query_descriptor.schema, entities),
-            query_descriptor,
-            knn_search_params.vector,
+        metadata = ResultMetadata(
+            schema_name=query_descriptor.schema._schema_name,
+            search_vector=[float(x) for x in knn_search_params.vector.value.tolist()],
+            search_params=self._map_search_params(query_descriptor),
         )
+        return QueryResult(entries=self._map_entities(entities), metadata=metadata)
+
+    def _map_entities(self, entities: Sequence[SearchResultItem]) -> list[ResultEntry]:
+        return [
+            ResultEntry(
+                id=entity.header.origin_id or entity.header.object_id,
+                fields={field.schema_field.name: field.value for field in entity.fields},
+                metadata=ResultEntryMetadata(score=entity.score),
+            )
+            for entity in entities
+        ]
+
+    def _map_search_params(self, query_descriptor: QueryDescriptor) -> dict[str, Any]:
+        value_by_param_name = {clause.value_param_name: clause.get_value() for clause in query_descriptor.clauses}
+        weight_by_param_name = {
+            clause.weight_param_name: clause.get_weight() for clause in query_descriptor.get_weighted_clauses()
+        }
+        return {**value_by_param_name, **weight_by_param_name}
 
     def _produce_knn_search_params(self, query_descriptor: QueryDescriptor) -> KNNSearchParams:
         limit = query_descriptor.get_limit()
@@ -196,26 +218,6 @@ class QueryExecutor:
         return self.app.storage_manager.knn_search(
             query_descriptor.index._node, query_descriptor.schema, knn_search_params
         )
-
-    def _map_entities_to_result_entries(
-        self, schema: IdSchemaObject, result_items: Sequence[SearchResultItem]
-    ) -> Sequence[ResultEntry]:
-        object_ids = list({entity.header.origin_id or entity.header.object_id for entity in result_items})
-
-        object_jsons = self.app.storage_manager.read_object_jsons(schema, object_ids)
-
-        if missing_ids := [id_ for id_ in object_ids if id_ not in object_jsons]:
-            raise QueryException(
-                f"Unable to find {schema._schema_name} objects in storage with the following IDs: {missing_ids}"
-            )
-
-        return [ResultEntry(item, self.__get_object_json_by_id(object_jsons, item)) for item in result_items]
-
-    def __get_object_json_by_id(self, object_jsons: dict, search_result_item: SearchResultItem) -> dict:
-        object_id = search_result_item.header.origin_id or search_result_item.header.object_id
-        if object_json := object_jsons.get(object_id):
-            return object_json
-        raise QueryException(f"No object json found in VDB for item: {search_result_item.header}")
 
     def __check_executor_has_index(self) -> None:
         if self._query_descriptor.index not in self.app._indices:

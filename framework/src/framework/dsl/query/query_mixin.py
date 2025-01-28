@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from beartype.typing import Any, Sequence
 
 from superlinked.framework.common.exception import QueryException
@@ -20,8 +19,11 @@ from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.executor.query.query_executor import QueryExecutor
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.query.query_descriptor import QueryDescriptor
+from superlinked.framework.dsl.query.query_result_converter.query_result_converter import (
+    QueryResultConverter,
+)
 from superlinked.framework.dsl.query.query_vector_factory import QueryVectorFactory
-from superlinked.framework.dsl.query.result import Result
+from superlinked.framework.dsl.query.result import QueryResult
 
 
 @TypeValidator.wrap
@@ -43,7 +45,16 @@ class QueryMixin:
         """
         self._query_vector_factory_by_index = {index: QueryVectorFactory(index._dag) for index in indices}
 
-    def query(self, query_descriptor: QueryDescriptor, **params: Any) -> Result:
+    def setup_query_result_converter(self, query_result_converter: QueryResultConverter) -> None:
+        """
+        Set up the query result converter to be used for converting the query results.
+
+        Args:
+            query_result_converter (QueryResultConverter): The query result converter instance.
+        """
+        self._query_result_converter = query_result_converter
+
+    def query(self, query_descriptor: QueryDescriptor, **params: Any) -> QueryResult:
         """
         Execute a query using the provided QueryDescriptor and additional parameters.
 
@@ -59,7 +70,10 @@ class QueryMixin:
         """
         if query_vector_factory := self._query_vector_factory_by_index.get(query_descriptor.index):
             # 'self' is an App instance; MyPy can't infer the inheriting class. See [FAI-2085].
-            return QueryExecutor(self, query_descriptor, query_vector_factory).query(**params)  # type: ignore
+            query_result: QueryResult = QueryExecutor(
+                self, query_descriptor, query_vector_factory  # type: ignore
+            ).query(**params)
+            return self._query_result_converter.convert(query_result)
 
         raise QueryException(
             (

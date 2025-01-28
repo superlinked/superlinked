@@ -21,7 +21,7 @@ from superlinked.framework.dsl.executor.rest.rest_configuration import (
     RestQuery,
 )
 from superlinked.framework.dsl.query.query_mixin import QueryMixin
-from superlinked.framework.dsl.query.result import Result
+from superlinked.framework.dsl.query.result import QueryResult
 from superlinked.framework.dsl.source.rest_source import RestSource
 
 REST = TypeVar("REST", RestSource, RestQuery)
@@ -59,7 +59,7 @@ class RestHandler:
         source = self.__path_to_source_map[path]
         source.put([input_schema])
 
-    def _query_handler(self, query_descriptor: dict, path: str) -> Result:
+    def _query_handler(self, query_descriptor: dict, path: str) -> QueryResult:
         query = self.__path_to_query_map[path].query_descriptor
         return self.__query_mixin.query(query, **query_descriptor)
 

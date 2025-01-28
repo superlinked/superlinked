@@ -42,6 +42,7 @@ try:
     )
 except ImportError:
     pass
+from superlinked.evaluation.pandas_converter import PandasConverter
 from superlinked.evaluation.vector_sampler import VectorSampler
 from superlinked.framework.blob.blob_handler_factory import BlobHandlerConfig
 from superlinked.framework.common.dag.context import CONTEXT_COMMON, CONTEXT_COMMON_NOW
@@ -89,7 +90,7 @@ from superlinked.framework.dsl.index.effect import Effect
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.query.param import Param
 from superlinked.framework.dsl.query.query import Query
-from superlinked.framework.dsl.query.result import Result
+from superlinked.framework.dsl.query.result import QueryResult
 from superlinked.framework.dsl.registry.superlinked_registry import SuperlinkedRegistry
 from superlinked.framework.dsl.source.data_loader_source import (
     DataFormat,
@@ -116,6 +117,7 @@ from superlinked.framework.dsl.storage.in_memory_vector_database import (
 
 __all__ = [
     # Evaluation
+    "PandasConverter",
     "RecencyPlotter",
     "VectorSampler",
     # Framework Common recency
@@ -175,7 +177,7 @@ __all__ = [
     "Param",
     "Query",
     "RestQuery",
-    "Result",
+    "QueryResult",
     # DSL Space
     "CategoricalSimilaritySpace",
     "CustomSpace",

@@ -25,6 +25,9 @@ from superlinked.framework.dsl.executor.rest.rest_configuration import (
 )
 from superlinked.framework.dsl.executor.rest.rest_handler import RestHandler
 from superlinked.framework.dsl.index.index import Index
+from superlinked.framework.dsl.query.query_result_converter.serializable_query_result_converter import (
+    SerializableQueryResultConverter,
+)
 from superlinked.framework.dsl.source.data_loader_source import DataLoaderSource
 from superlinked.framework.dsl.source.rest_source import RestSource
 from superlinked.framework.dsl.storage.vector_database import VectorDatabase
@@ -70,6 +73,7 @@ class RestApp(OnlineApp[RestSource | DataLoaderSource]):
             Settings().INIT_SEARCH_INDICES,
             queue,
             blob_handler,
+            SerializableQueryResultConverter(),
         )
         self._endpoint_configuration = endpoint_configuration
         self._queries = queries
