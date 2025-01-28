@@ -19,7 +19,7 @@ Classes
     `calculate_query_node_inputs_by_node_id(self, query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor) ‑> dict[str, list[superlinked.framework.query.query_node_input.QueryNodeInput]]`
     :
 
-    `query(self, **params: collections.abc.Sequence[str] | collections.abc.Sequence[float] | PIL.Image.Image | str | int | float | bool | None | tuple[str | None, str | None]) ‑> superlinked.framework.dsl.query.result.Result`
+    `query(self, **params: collections.abc.Sequence[str] | collections.abc.Sequence[float] | PIL.Image.Image | str | int | float | bool | None | tuple[str | None, str | None]) ‑> superlinked.framework.dsl.query.result.QueryResult`
     :   Execute a query with keyword parameters.
         
         Args:

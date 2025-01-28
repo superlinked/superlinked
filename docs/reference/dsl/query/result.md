@@ -4,64 +4,221 @@ Module superlinked.framework.dsl.query.result
 Classes
 -------
 
-`Result(entries: Sequence[superlinked.framework.dsl.query.result.ResultEntry], query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor, search_vector: superlinked.framework.common.data_types.Vector)`
-:   Represents the outcome of a query operation.
+`QueryResult(**data: Any)`
+:   Usage docs: https://docs.pydantic.dev/2.10/concepts/models/
+    
+    A base class for creating Pydantic models.
+    
     Attributes:
-        entries (Sequence[ResultEntry]): A sequence of result entries, each encapsulating an entity and its data.
-        query_descriptor (QueryDescriptor): The descriptor detailing the query's parameters and structure.
-        search_vector (Vector): The vector used in the search operation.
+        __class_vars__: The names of the class variables defined on the model.
+        __private_attributes__: Metadata about the private attributes of the model.
+        __signature__: The synthesized `__init__` [`Signature`][inspect.Signature] of the model.
+    
+        __pydantic_complete__: Whether model building is completed, or if there are still undefined fields.
+        __pydantic_core_schema__: The core schema of the model.
+        __pydantic_custom_init__: Whether the model has a custom `__init__` function.
+        __pydantic_decorators__: Metadata containing the decorators defined on the model.
+            This replaces `Model.__validators__` and `Model.__root_validators__` from Pydantic V1.
+        __pydantic_generic_metadata__: Metadata for generic models; contains data used for a similar purpose to
+            __args__, __origin__, __parameters__ in typing-module generics. May eventually be replaced by these.
+        __pydantic_parent_namespace__: Parent namespace of the model, used for automatic rebuilding of models.
+        __pydantic_post_init__: The name of the post-init method for the model, if defined.
+        __pydantic_root_model__: Whether the model is a [`RootModel`][pydantic.root_model.RootModel].
+        __pydantic_serializer__: The `pydantic-core` `SchemaSerializer` used to dump instances of the model.
+        __pydantic_validator__: The `pydantic-core` `SchemaValidator` used to validate instances of the model.
+    
+        __pydantic_fields__: A dictionary of field names and their corresponding [`FieldInfo`][pydantic.fields.FieldInfo] objects.
+        __pydantic_computed_fields__: A dictionary of computed field names and their corresponding [`ComputedFieldInfo`][pydantic.fields.ComputedFieldInfo] objects.
+    
+        __pydantic_extra__: A dictionary containing extra values, if [`extra`][pydantic.config.ConfigDict.extra]
+            is set to `'allow'`.
+        __pydantic_fields_set__: The names of fields explicitly set during instantiation.
+        __pydantic_private__: Values of private attributes set on the model instance.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * superlinked.framework.common.util.immutable_model.ImmutableBaseModel
+    * pydantic.main.BaseModel
 
     ### Class variables
 
     `entries: Sequence[superlinked.framework.dsl.query.result.ResultEntry]`
     :
 
-    `query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    `metadata: superlinked.framework.dsl.query.result.ResultMetadata`
     :
 
-    `search_vector: superlinked.framework.common.data_types.Vector`
+    `model_config`
     :
 
-    ### Instance variables
-
-    `entities: list[superlinked.framework.common.storage_manager.search_result_item.SearchResultItem]`
-    :
-
-    `knn_params: dict[str, typing.Any]`
-    :
-
-    `schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject`
-    :
-
-    ### Methods
-
-    `to_pandas(self) ‑> pandas.core.frame.DataFrame`
-    :   Converts the query result entries into a pandas DataFrame.
-        
-        Each row in the DataFrame corresponds to a single entity in the result, with
-        columns representing the fields of the stored objects. An additional score column
-        is present which shows similarity to the query vector.
-        
-        Returns:
-            DataFrame: A pandas DataFrame where each row represents a result entity, and
-                each column corresponds to the fields of the stored objects. Additionally,
-                it contains the above-mentioned score column.
-            ValueError: If both 'similarity_score' and 'superlinked_similarity_score' fields are present.
-
-`ResultEntry(entity: superlinked.framework.common.storage_manager.search_result_item.SearchResultItem, stored_object: dict[str, typing.Any])`
-:   Represents a single entry in a Result, encapsulating the entity and its associated data.
+`ResultEntry(**data: Any)`
+:   Usage docs: https://docs.pydantic.dev/2.10/concepts/models/
+    
+    A base class for creating Pydantic models.
     
     Attributes:
-        entity (SearchResultItem): The entity of the result entry.
-            This is an instance of the SearchResultItem class, which represents a unique entity in the system.
-            It contains header information such as the entity's ID and schema and the queried fields.
-        stored_object (dict[str, Any]): The stored object of the result entry.
-            This is essentially the raw data that was input into the system.
+        __class_vars__: The names of the class variables defined on the model.
+        __private_attributes__: Metadata about the private attributes of the model.
+        __signature__: The synthesized `__init__` [`Signature`][inspect.Signature] of the model.
+    
+        __pydantic_complete__: Whether model building is completed, or if there are still undefined fields.
+        __pydantic_core_schema__: The core schema of the model.
+        __pydantic_custom_init__: Whether the model has a custom `__init__` function.
+        __pydantic_decorators__: Metadata containing the decorators defined on the model.
+            This replaces `Model.__validators__` and `Model.__root_validators__` from Pydantic V1.
+        __pydantic_generic_metadata__: Metadata for generic models; contains data used for a similar purpose to
+            __args__, __origin__, __parameters__ in typing-module generics. May eventually be replaced by these.
+        __pydantic_parent_namespace__: Parent namespace of the model, used for automatic rebuilding of models.
+        __pydantic_post_init__: The name of the post-init method for the model, if defined.
+        __pydantic_root_model__: Whether the model is a [`RootModel`][pydantic.root_model.RootModel].
+        __pydantic_serializer__: The `pydantic-core` `SchemaSerializer` used to dump instances of the model.
+        __pydantic_validator__: The `pydantic-core` `SchemaValidator` used to validate instances of the model.
+    
+        __pydantic_fields__: A dictionary of field names and their corresponding [`FieldInfo`][pydantic.fields.FieldInfo] objects.
+        __pydantic_computed_fields__: A dictionary of computed field names and their corresponding [`ComputedFieldInfo`][pydantic.fields.ComputedFieldInfo] objects.
+    
+        __pydantic_extra__: A dictionary containing extra values, if [`extra`][pydantic.config.ConfigDict.extra]
+            is set to `'allow'`.
+        __pydantic_fields_set__: The names of fields explicitly set during instantiation.
+        __pydantic_private__: Values of private attributes set on the model instance.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * superlinked.framework.common.util.immutable_model.ImmutableBaseModel
+    * pydantic.main.BaseModel
 
     ### Class variables
 
-    `entity: superlinked.framework.common.storage_manager.search_result_item.SearchResultItem`
+    `fields: dict[str, typing.Any]`
     :
 
-    `stored_object: dict[str, typing.Any]`
+    `id: str`
+    :
+
+    `metadata: superlinked.framework.dsl.query.result.ResultEntryMetadata`
+    :
+
+    `model_config`
+    :
+
+`ResultEntryMetadata(**data: Any)`
+:   Usage docs: https://docs.pydantic.dev/2.10/concepts/models/
+    
+    A base class for creating Pydantic models.
+    
+    Attributes:
+        __class_vars__: The names of the class variables defined on the model.
+        __private_attributes__: Metadata about the private attributes of the model.
+        __signature__: The synthesized `__init__` [`Signature`][inspect.Signature] of the model.
+    
+        __pydantic_complete__: Whether model building is completed, or if there are still undefined fields.
+        __pydantic_core_schema__: The core schema of the model.
+        __pydantic_custom_init__: Whether the model has a custom `__init__` function.
+        __pydantic_decorators__: Metadata containing the decorators defined on the model.
+            This replaces `Model.__validators__` and `Model.__root_validators__` from Pydantic V1.
+        __pydantic_generic_metadata__: Metadata for generic models; contains data used for a similar purpose to
+            __args__, __origin__, __parameters__ in typing-module generics. May eventually be replaced by these.
+        __pydantic_parent_namespace__: Parent namespace of the model, used for automatic rebuilding of models.
+        __pydantic_post_init__: The name of the post-init method for the model, if defined.
+        __pydantic_root_model__: Whether the model is a [`RootModel`][pydantic.root_model.RootModel].
+        __pydantic_serializer__: The `pydantic-core` `SchemaSerializer` used to dump instances of the model.
+        __pydantic_validator__: The `pydantic-core` `SchemaValidator` used to validate instances of the model.
+    
+        __pydantic_fields__: A dictionary of field names and their corresponding [`FieldInfo`][pydantic.fields.FieldInfo] objects.
+        __pydantic_computed_fields__: A dictionary of computed field names and their corresponding [`ComputedFieldInfo`][pydantic.fields.ComputedFieldInfo] objects.
+    
+        __pydantic_extra__: A dictionary containing extra values, if [`extra`][pydantic.config.ConfigDict.extra]
+            is set to `'allow'`.
+        __pydantic_fields_set__: The names of fields explicitly set during instantiation.
+        __pydantic_private__: Values of private attributes set on the model instance.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * superlinked.framework.common.util.immutable_model.ImmutableBaseModel
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :
+
+    `score: float`
+    :
+
+`ResultMetadata(**data: Any)`
+:   Usage docs: https://docs.pydantic.dev/2.10/concepts/models/
+    
+    A base class for creating Pydantic models.
+    
+    Attributes:
+        __class_vars__: The names of the class variables defined on the model.
+        __private_attributes__: Metadata about the private attributes of the model.
+        __signature__: The synthesized `__init__` [`Signature`][inspect.Signature] of the model.
+    
+        __pydantic_complete__: Whether model building is completed, or if there are still undefined fields.
+        __pydantic_core_schema__: The core schema of the model.
+        __pydantic_custom_init__: Whether the model has a custom `__init__` function.
+        __pydantic_decorators__: Metadata containing the decorators defined on the model.
+            This replaces `Model.__validators__` and `Model.__root_validators__` from Pydantic V1.
+        __pydantic_generic_metadata__: Metadata for generic models; contains data used for a similar purpose to
+            __args__, __origin__, __parameters__ in typing-module generics. May eventually be replaced by these.
+        __pydantic_parent_namespace__: Parent namespace of the model, used for automatic rebuilding of models.
+        __pydantic_post_init__: The name of the post-init method for the model, if defined.
+        __pydantic_root_model__: Whether the model is a [`RootModel`][pydantic.root_model.RootModel].
+        __pydantic_serializer__: The `pydantic-core` `SchemaSerializer` used to dump instances of the model.
+        __pydantic_validator__: The `pydantic-core` `SchemaValidator` used to validate instances of the model.
+    
+        __pydantic_fields__: A dictionary of field names and their corresponding [`FieldInfo`][pydantic.fields.FieldInfo] objects.
+        __pydantic_computed_fields__: A dictionary of computed field names and their corresponding [`ComputedFieldInfo`][pydantic.fields.ComputedFieldInfo] objects.
+    
+        __pydantic_extra__: A dictionary containing extra values, if [`extra`][pydantic.config.ConfigDict.extra]
+            is set to `'allow'`.
+        __pydantic_fields_set__: The names of fields explicitly set during instantiation.
+        __pydantic_private__: Values of private attributes set on the model instance.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * superlinked.framework.common.util.immutable_model.ImmutableBaseModel
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :
+
+    `schema_name: str | None`
+    :
+
+    `search_params: dict[str, typing.Any]`
+    :
+
+    `search_vector: Sequence[float]`
     :

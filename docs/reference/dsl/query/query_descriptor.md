@@ -26,9 +26,6 @@ Classes
     `append_missing_mandatory_clauses(self) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :
 
-    `calculate_value_by_param_name(self) ‑> dict[str, typing.Any]`
-    :
-
     `filter(self, comparison_operation: superlinked.framework.common.interface.comparison_operand.ComparisonOperation[superlinked.framework.common.schema.schema_object.SchemaField] | superlinked.framework.common.interface.comparison_operand._Or) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :   Add a 'filter' clause to the query. This filters the results from the db
         to only contain items based on the filtering input.

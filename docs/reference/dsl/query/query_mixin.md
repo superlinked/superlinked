@@ -15,7 +15,7 @@ Classes
 
     ### Methods
 
-    `query(self, query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor, **params: Any) ‑> superlinked.framework.dsl.query.result.Result`
+    `query(self, query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor, **params: Any) ‑> superlinked.framework.dsl.query.result.QueryResult`
     :   Execute a query using the provided QueryDescriptor and additional parameters.
         
         Args:
@@ -35,3 +35,9 @@ Classes
         Args:
             indices (Sequence[Index]): A sequence of Index instances to be used for query execution.
             storage_manager (StorageManager): The storage manager instance to be used.
+
+    `setup_query_result_converter(self, query_result_converter: superlinked.framework.dsl.query.query_result_converter.query_result_converter.QueryResultConverter) ‑> None`
+    :   Set up the query result converter to be used for converting the query results.
+        
+        Args:
+            query_result_converter (QueryResultConverter): The query result converter instance.
