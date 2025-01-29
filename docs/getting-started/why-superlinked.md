@@ -49,21 +49,18 @@ Imagine you are building a system that can deal with a query like `“recent new
 **Schema definition**
 ```python
 
-@schema
-class News:
+class News(sl.Schema):
     id: IdField
     created_at: Timestamp
     like_count: Integer
     moderation_score: Float
     content: String
 
-@schema
-class User:
+class User(sl.Schema):
     id: IdField
     interest: String
 
-@event_scehma
-class Event:
+class Event(sl.EventSchema):
     id: IdField
     news: SchemaReference[News]
     user: SchemaReference[User]
@@ -74,10 +71,10 @@ class Event:
 **Encoder definition**
 ```python
 
-recency_space = RecencySpace(timestamp=news.created_at)
-popularity_space = NumberSpace(number=news.like_count, mode=Mode.MAXIMUM)
-trust_space = NumberSpace(number=news.moderation_score, mode=Mode.MAXIMUM)
-semantic_space = TextSimilarity(
+recency_space = sl.RecencySpace(timestamp=news.created_at)
+popularity_space = sl.NumberSpace(number=news.like_count, mode=Mode.MAXIMUM)
+trust_space = sl.NumberSpace(number=news.moderation_score, mode=Mode.MAXIMUM)
+semantic_space = sl.TextSimilarity(
     text=[news.content, user.interest], model="sentence-transformers/all-mpnet-base-v2"
 )
 
@@ -85,9 +82,9 @@ semantic_space = TextSimilarity(
 
 **Define Indexes**
 ```python
-index = Index(
+index = sl.Index(
     spaces=[recency_space, popularity_space, trust_space, semantic_space],
-    effects=[Effect(semantic_space, event.user, 0.8 * event.news)],
+    effects=[sl.Effect(semantic_space, event.user, 0.8 * event.news)],
 )
 
 ```
@@ -98,7 +95,7 @@ You define your queries and parameterize them like this:
 ```python
 
 query = (
-    Query(
+    sl.Query(
         index,
         weights={
             recency_space: Param("recency_weight"),
@@ -118,8 +115,8 @@ query = (
 
 ```python
 
-OnlineExecutor(
-    sources=[RestSource(news), RestSource(user)],
+sl.OnlineExecutor(
+    sources=[sl.RestSource(news), sl.RestSource(user)],
     index=[index],
     query=[query],
     # vector_database = MongoDBVectorDatabase(...),
@@ -153,7 +150,7 @@ curl -X POST \
 #In a notebook like this:
 
 query = (
-    Query(...)
+    sl.Query(...)
     .with_natural_query(Param("recent news about crop yield"))
 )
 

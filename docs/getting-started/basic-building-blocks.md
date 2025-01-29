@@ -31,8 +31,7 @@ Once you’ve parsed data into your notebook via JSON or a pandas dataframe, it�
 To do this, you **use the Schema decorator to annotate your class as a schema** representing your structured data. Schemas translate to searchable entities in the embedding space. To get started, type @schema, and then define the field types to match the different types of data you’ve imported.
 
 ```python
-@schema
-class ParagraphSchema:
+class ParagraphSchema(sl.Schema):
     body: String
     id: IdField
 ```
@@ -53,7 +52,7 @@ You use different Spaces for different data types. For example, [TextSimilarityS
 By prioritizing the creation of smarter vectors up front - and only then creating the index - we can achieve better quality retrieval, without costly and time-consuming reranking and general post-processing work.
 
 ```python
-relevance_space = TextSimilaritySpace(text=paragraph.body, model="Snowflake/snowflake-arctic-embed-s")
+relevance_space = sl.TextSimilaritySpace(text=paragraph.body, model="Snowflake/snowflake-arctic-embed-s")
 ```
 
 ## Indexing
@@ -61,7 +60,7 @@ relevance_space = TextSimilaritySpace(text=paragraph.body, model="Snowflake/snow
 Superlinked’s Index module components enable you to group Spaces into indices that make your queries more efficient.
 
 ```python
-paragraph_index = Index(relevance_space)
+paragraph_index = sl.Index(relevance_space)
 ```
 
 ## Executing your query to your chosen endpoints
@@ -75,7 +74,7 @@ Note that you can wait to fill out the specific Params until later. (You can als
 
 ```python
 query = (
-    Query(paragraph_index)
+    sl.Query(paragraph_index)
     .find(paragraph)
     .similar(relevance_space.text, Param("query_text"))
 )
@@ -86,13 +85,13 @@ Once you’ve defined your schema and built out the structure of your Index and 
 Use **Source** to connect your data to the schema.
 
 ```python
-source: InMemorySource = InMemorySource(paragraph)
+source: InMemorySource = sl.InMemorySource(paragraph)
 ```
 
 Now that you’ve connected data with schema, you use the **Executor** to prepare your code to run. The Executor connects the source data with the index, which describes how each part of the data should be treated within Spaces.
 
 ```python
-executor = InMemoryExecutor(sources=[source], indices=[paragraph_index])
+executor = sl.InMemoryExecutor(sources=[source], indices=[paragraph_index])
 app = executor.run()
 ```
 
