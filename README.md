@@ -51,7 +51,7 @@
 
 If you like what we do, give us a star! ⭐
 
-![](https://cdn.prod.website-files.com/65dce6831bf9f730421e2915/6747222292b95d051720c82e_system-diagram.png)
+![](./docs/.gitbook/assets/sl_diagram.png)
 
 ---
 

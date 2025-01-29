@@ -13,7 +13,7 @@ Superlinked is a Python framework for AI Engineers building <b>high-performance 
 
 If you like what we do, give us a [star](https://github.com/superlinked/superlinked)! ⭐
 
-![Superlinked framework diagram](.gitbook/assets/superlinked_diagram.png)
+![Superlinked framework diagram](.gitbook/assets/sl_diagram.png)
 
 
 ### Discover Superlinked
