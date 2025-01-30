@@ -38,29 +38,29 @@ Let’s walk through how you set this up in Superlinked, using an example where 
 After installing superlinked, you import the requisite modules: library, schema-related classes, index class, text_similarity and number spaces, query constructor, and display config (see cell 2). You then define your schema class and two spaces, and build an index on top of your spaces:
 
 ```python
-@schema
+@sl.schema
 class Paragraph:
-    id: IdField
-    body: String
-    like_count: Integer
+    id: sl.IdField
+    body: sl.String
+    like_count: sl.Integer
 
 paragraph = Paragraph()
 
-body_space = TextSimilaritySpace(
+body_space = sl.TextSimilaritySpace(
     text=paragraph.body, model="sentence-transformers/all-mpnet-base-v2"
 )
-like_space = NumberSpace(
-    number=paragraph.like_count, min_value=0, max_value=100, mode=Mode.MAXIMUM
+like_space = sl.NumberSpace(
+    number=paragraph.like_count, min_value=0, max_value=100, mode=sl.Mode.MAXIMUM
 )
 # indices can be built on top of multiple spaces as simply as:
-paragraph_index = Index([body_space, like_space])
+paragraph_index = sl.Index([body_space, like_space])
 ```
 
 You create an in-memory data source and initialize it with the paragraph schema, initialize the in-memory executor, and add two paragraphs (your dataset), which are inserted into the source.
 
 ```python
-source: InMemorySource = InMemorySource(paragraph)
-executor = InMemoryExecutor(sources=[source], indices=[paragraph_index])
+source: sl.InMemorySource = sl.InMemorySource(paragraph)
+executor = sl.InMemoryExecutor(sources=[source], indices=[paragraph_index])
 app = executor.run()
 
 
@@ -93,6 +93,7 @@ body_query = (
     )
     .find(paragraph)
     .similar(body_space.text, "What makes the AI industry go forward?")
+    .select_all()
 )
 
 like_query = (
@@ -105,14 +106,14 @@ like_query = (
     )
     .find(paragraph)
     .similar(body_space.text, "What makes the AI industry go forward?")
+    .select_all()
 )
 ```
 
 Running the `body_query` …
 ```python
 body_result = app.query(body_query)
-
-body_result.to_pandas()
+sl.PandasConverter.to_pandas(body_result)
 ```
 
 …produces the following result:
@@ -127,8 +128,7 @@ body_result.to_pandas()
 While running the `like_query` …
 ```python
 like_result = app.query(like_query)
-
-like_result.to_pandas()
+sl.PandasConverter.to_pandas(like_result)
 ```
 
 ranks our results oppositely:
@@ -156,15 +156,15 @@ Now that your have your system set up, you can define your queries using dynamic
 
 ```python
 query = (
-    Query(
+    sl.Query(
         paragraph_index,
         weights={
-            body_space: Param("body_space_weight"),
-            like_space: Param("like_space_weight"),
+            body_space: sl.Param("body_space_weight"),
+            like_space: sl.Param("like_space_weight"),
         },
     )
     .find(paragraph)
-    .similar(body_space.text, Param("query_text"))
+    .similar(body_space.text, sl.Param("query_text"))
 )
 ```
 
@@ -178,8 +178,7 @@ body_based_result = app.query(
     body_space_weight=1,
     like_space_weight=0,
 )
-
-body_based_result.to_pandas()
+sl.PandasConverter.to_pandas(body_based_result)
 ```
 
 
@@ -193,8 +192,7 @@ like_based_result = app.query(
     body_space_weight=0,
     like_space_weight=1,
 )
-
-like_based_result.to_pandas()
+sl.PandasConverter.to_pandas(like_based_result)
 ```
 
 

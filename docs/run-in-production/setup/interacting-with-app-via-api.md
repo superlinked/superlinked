@@ -30,11 +30,12 @@ Once you have your application up and running, you can start loading data and qu
         'http://localhost:8080/api/v1/search/query' \
         --header 'Accept: */*' \
         --header 'Content-Type: application/json' \
+        --header 'x-include-metadata: true' \
         --data-raw '{
             "query_text": "your_search_text"
         }'
     ```
-This request will search for entities that match the query text.
+    > **Note**: The `x-include-metadata: true` header will include additional debug information about your query, such as search vector, weights and evaluated NLQ outputs.
 
 ## Load data from file(s)
 

@@ -50,21 +50,21 @@ Imagine you are building a system that can deal with a query like `“recent new
 ```python
 
 class News(sl.Schema):
-    id: IdField
-    created_at: Timestamp
-    like_count: Integer
-    moderation_score: Float
-    content: String
+    id: sl.IdField
+    created_at: sl.Timestamp
+    like_count: sl.Integer
+    moderation_score: sl.Float
+    content: sl.String
 
 class User(sl.Schema):
-    id: IdField
-    interest: String
+    id: sl.IdField
+    interest: sl.String
 
 class Event(sl.EventSchema):
-    id: IdField
-    news: SchemaReference[News]
-    user: SchemaReference[User]
-    event_type: String
+    id: sl.IdField
+    news: sl.SchemaReference[News]
+    user: sl.SchemaReference[User]
+    event_type: sl.String
 
 ```
 
@@ -72,8 +72,8 @@ class Event(sl.EventSchema):
 ```python
 
 recency_space = sl.RecencySpace(timestamp=news.created_at)
-popularity_space = sl.NumberSpace(number=news.like_count, mode=Mode.MAXIMUM)
-trust_space = sl.NumberSpace(number=news.moderation_score, mode=Mode.MAXIMUM)
+popularity_space = sl.NumberSpace(number=news.like_count, mode=sl.Mode.MAXIMUM)
+trust_space = sl.NumberSpace(number=news.moderation_score, mode=sl.Mode.MAXIMUM)
 semantic_space = sl.TextSimilarity(
     text=[news.content, user.interest], model="sentence-transformers/all-mpnet-base-v2"
 )
@@ -98,15 +98,16 @@ query = (
     sl.Query(
         index,
         weights={
-            recency_space: Param("recency_weight"),
-            popularity_space: Param("popularity_weight"),
-            trust_space: Param("trust_weight"),
-            semantic_space: Param("semantic_weight"),
+            recency_space: sl.Param("recency_weight"),
+            popularity_space: sl.Param("popularity_weight"),
+            trust_space: sl.Param("trust_weight"),
+            semantic_space: sl.Param("semantic_weight"),
         },
     )
     .find(news)
-    .similar(semantic_space.text, Param("content_query"))
-    .with_vector(user, Param("user_id"))
+    .similar(semantic_space.text, sl.Param("content_query"))
+    .with_vector(user, sl.Param("user_id"))
+    .select_all()
 )
 
 ```
@@ -115,13 +116,14 @@ query = (
 
 ```python
 
-sl.OnlineExecutor(
+sl.RestExecutor(
     sources=[sl.RestSource(news), sl.RestSource(user)],
     index=[index],
     query=[query],
-    # vector_database = MongoDBVectorDatabase(...),
-    # vector_database = RedisVectorDatabase(...),
-    # vector_database = QdrantVectorDatabase(...),
+    vector_database = sl.InMemoryVectorDatabase()
+    # vector_database = sl.MongoDBVectorDatabase(...),
+    # vector_database = sl.RedisVectorDatabase(...),
+    # vector_database = sl.QdrantVectorDatabase(...),
 )
 
 # SparkExecutor()   <-- Coming soon in Superlinked Cloud

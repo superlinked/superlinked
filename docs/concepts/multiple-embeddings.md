@@ -69,34 +69,34 @@ Once you’ve defined your data types in `@schema`, you embed your data using Sp
 Using our simple two-paragraph dataset above, we proceed as follows:
 
 ```python
-@schema
+@sl.schema
 class Paragraph:
-    id: IdField
-    body: String
-    like_count: Integer
+    id: sl.IdField
+    body: sl.String
+    like_count: sl.Integer
 ```
 
-Once you’ve defined your data types using `@schema`, you embed these using Spaces that fit your data types:
+Once you’ve defined your data types using `@sl.schema`, you embed these using Spaces that fit your data types:
 
 ```python
-body_space = TextSimilaritySpace(
+body_space = sl.TextSimilaritySpace(
     text=paragraph.body, model="sentence-transformers/all-mpnet-base-v2"
 )
-like_space = NumberSpace(
-    number=paragraph.like_count, min_value=0, max_value=100, mode=Mode.MAXIMUM
+like_space = sl.NumberSpace(
+    number=paragraph.like_count, min_value=0, max_value=100, mode=sl.Mode.MAXIMUM
 )
 ```
 
 These Spaces can now be combined into a single index.
 
 ```python
-paragraph_index = Index([body_space, like_space])
+paragraph_index = sl.Index([body_space, like_space])
 ```
 …and queried. 
 
 ```python
 query = (
-    Query(paragraph_index).find(paragraph).similar(body_space.text, Param("query_text"))
+    sl.Query(paragraph_index).find(paragraph).similar(body_space.text, sl.Param("query_text")).select_all()
 )
 result = app.query(
     query,

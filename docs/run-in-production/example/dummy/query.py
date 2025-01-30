@@ -9,4 +9,5 @@ query = (
         text_space.text,
         sl.Param("query_text"),
     )
+    .select_all()
 )

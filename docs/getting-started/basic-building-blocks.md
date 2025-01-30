@@ -32,8 +32,8 @@ To do this, you **use the Schema decorator to annotate your class as a schema** 
 
 ```python
 class ParagraphSchema(sl.Schema):
-    body: String
-    id: IdField
+    body: sl.String
+    id: sl.IdField
 ```
 
 With your Schemas created, you are ready to move on to embedding and querying, which is where Superlinked’s building blocks approach really empowers you. The Superlinked framework is based on the intuition that people doing semantic search can better satisfy the requirements of their use case/s if they can customize how their system handles data and queries. 
@@ -66,9 +66,10 @@ paragraph_index = sl.Index(relevance_space)
 ## Executing your query to your chosen endpoints
 
 Before running your code, you need to structure your query using the following arguments:
-- `Query`: defines the index you want it to search, and you can add Params here (details in our [nothebook](https://github.com/superlinked/superlinked/blob/main/notebook/feature/dynamic_parameters.ipynb)).
+- `Query`: defines the index you want it to search, and you can add Params here (details in our [nothebook](https://github.com/superlinked/superlinked/blob/main/notebook/feature/dynamic_parameters.ipynb))
 - `.find`: tells it what to look for
 - `.similar`: tells it how to identify relevant results (details in [notebook](https://github.com/superlinked/superlinked/blob/main/notebook/feature/basic_building_blocks.ipynb))
+- `.select_all`: returns all the stored fields, without this clause, it will only return the id(s) (details in [notebook]https://github.com/superlinked/superlinked/blob/main/notebook/feature/query_result.ipynb))
 
 Note that you can wait to fill out the specific Params until later. (You can also add a `.with_vector` to search with an embedded vector of a specific element of your data (see details in [notebook](https://github.com/superlinked/superlinked/blob/main/notebook/feature/query_by_object.ipynb))).
 
@@ -77,6 +78,7 @@ query = (
     sl.Query(paragraph_index)
     .find(paragraph)
     .similar(relevance_space.text, Param("query_text"))
+    .select_all()
 )
 ```
 
@@ -85,7 +87,7 @@ Once you’ve defined your schema and built out the structure of your Index and 
 Use **Source** to connect your data to the schema.
 
 ```python
-source: InMemorySource = sl.InMemorySource(paragraph)
+source: sl.InMemorySource = sl.InMemorySource(paragraph)
 ```
 
 Now that you’ve connected data with schema, you use the **Executor** to prepare your code to run. The Executor connects the source data with the index, which describes how each part of the data should be treated within Spaces.
@@ -109,7 +111,7 @@ source.put([{"id": "sunny_day", "body": "Today is a sunny day"}])
 
 ```python
 result = app.query(query, query_text="This is a happy person")
-result.to_pandas()
+sl.PandasConverter.to_pandas(result)
 ```
 
 Here's our result.
@@ -126,7 +128,7 @@ Changing the query text further demonstrates how our system produces results tha
 
 ```python
 result = app.query(query, query_text="This is a happy dog")
-result.to_pandas()
+sl.PandasConverter.to_pandas(result)
 ```
 
 |  | body | id |

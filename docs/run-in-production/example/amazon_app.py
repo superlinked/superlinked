@@ -46,6 +46,7 @@ query = (
     .find(review)
     .similar(relevance_space.text, sl.Param("query_text"))
     .similar(verified_category_space.category, sl.Param("query_verified"))
+    .select_all()
 )
 
 config = sl.DataLoaderConfig(

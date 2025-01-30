@@ -171,10 +171,10 @@ source.put([
 result = app.query(query, natural_query="best toothbrushes", limit=1)
 
 # Examine the extracted parameters from your query
-print(json.dumps(result.knn_params, indent=2))
+print(json.dumps(result.metadata, indent=2))
 
 # The result is the 5-star rated product.
-result.to_pandas()
+sl.PandasConverter.to_pandas(result)
 ```
 
 ## Run in production
