@@ -84,7 +84,9 @@ class OpenClipManager(ModelManager):
     def encode_images(self, images: list[Any], embedding_model: CLIP, preprocess_val: Compose) -> torch.Tensor:
         if not images:
             return torch.Tensor()
-        images_to_process = torch.tensor(np.stack([preprocess_val(image) for image in images]))
+        images_to_process = torch.tensor(
+            np.stack([preprocess_val(image) for image in images]), device=GpuEmbeddingUtil.get_device_type(len(images))
+        )
         return embedding_model.encode_image(images_to_process)
 
 

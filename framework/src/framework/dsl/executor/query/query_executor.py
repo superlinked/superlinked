@@ -16,6 +16,7 @@
 from collections import defaultdict
 from functools import partial
 
+import numpy as np
 import structlog
 from beartype.typing import Any, Sequence, cast
 
@@ -218,6 +219,20 @@ class QueryExecutor:
         return self.app.storage_manager.knn_search(
             query_descriptor.index._node, query_descriptor.schema, knn_search_params
         )
+
+    def _calculate_partial_scores(self, query_vector: Vector, result_vectors: Sequence[Vector]) -> list[list[float]]:
+        lengths = [space.length for space in self._query_descriptor.index._spaces]
+        all_vectors = list(result_vectors) + [query_vector]
+        vectors_parts = [[part.value for part in vector.split(lengths)] for vector in all_vectors]
+        vector_parts_per_space = [
+            np.array([vectors_part[i] for vectors_part in vectors_parts]) for i in range(len(lengths))
+        ]
+        result_count = len(result_vectors)
+        per_space_scores = [
+            list[float](np.dot(vector_parts[:result_count], vector_parts[result_count]))
+            for vector_parts in vector_parts_per_space
+        ]
+        return [[scores[i] for scores in per_space_scores] for i in range(result_count)]
 
     def __check_executor_has_index(self) -> None:
         if self._query_descriptor.index not in self.app._indices:
