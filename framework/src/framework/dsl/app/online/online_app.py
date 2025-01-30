@@ -35,7 +35,6 @@ from superlinked.framework.online.online_dag_evaluator import OnlineDagEvaluator
 from superlinked.framework.online.source.online_data_processor import (
     OnlineDataProcessor,
 )
-from superlinked.framework.online.source.online_object_writer import OnlineObjectWriter
 from superlinked.framework.online.source.types import OnlineSourceT
 from superlinked.framework.queue.interface.queue import Queue
 from superlinked.framework.queue.interface.queue_subscriber import QueueSubscriber
@@ -95,7 +94,6 @@ class OnlineApp(App[OnlineSourceT], Generic[OnlineSourceT], QueryMixin):
         for data_processor, index in zip(self._data_processors, self._indices):
             for source in self.__filter_index_sources(index):
                 source.register(data_processor)
-        self._register_object_writer()
 
     def _create_data_processor(self, index: Index) -> OnlineDataProcessor:
         return OnlineDataProcessor(
@@ -108,11 +106,6 @@ class OnlineApp(App[OnlineSourceT], Generic[OnlineSourceT], QueryMixin):
             self._context,
             index,
         )
-
-    def _register_object_writer(self) -> None:
-        object_writer = OnlineObjectWriter(self.storage_manager)
-        for source in self._sources:
-            source.register(object_writer)
 
     def _init_storage_manager(self) -> StorageManager:
         return StorageManager(self._vector_database._vdb_connector)

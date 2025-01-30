@@ -177,18 +177,6 @@ class StorageManager:
             for filter_ in filters
         ] + [self._entity_builder._admin_fields.schema_id.field == schema._schema_name]
 
-    # TODO FAI-2737 to solve the parameters
-    def write_object_jsons(self, object_jsons: Sequence[tuple[IdSchemaObject, str, dict[str, Any]]]) -> None:
-        entities = [
-            self._entity_builder.compose_entity_data(
-                schema._schema_name,
-                id_,
-                [self._create_field_data_or_raise(data)],
-            )
-            for schema, id_, data in object_jsons
-        ]
-        self._vdb_connector.write_entities(entities)
-
     def write_parsed_schema_fields(self, parsed_schemas: Sequence[ParsedSchema]) -> None:
         entities_to_write = [
             self._entity_builder.compose_entity_data_from_parsed_schema(parsed_schema)
@@ -222,19 +210,6 @@ class StorageManager:
         field_data = list(self._entity_builder._admin_fields.create_header_field_data(entity_id))
         field_data.extend(list(self._entity_builder.compose_field_data_from_node_data(node_id, node_data)))
         self._vdb_connector.write_entities([EntityData(entity_id, {fd.name: fd for fd in field_data})])
-
-    def read_object_jsons(self, schema: SchemaObject, object_ids: Sequence[str]) -> dict[str, dict[str, Any]]:
-        entities = [
-            self._entity_builder.compose_entity(
-                self._entity_builder.compose_entity_id(schema._schema_name, object_id),
-                [self._entity_builder._admin_fields.object_json.field],
-            )
-            for object_id in object_ids
-        ]
-
-        entities_data: Sequence[EntityData] = self._vdb_connector.read_entities(entities)
-
-        return {entity.id_.object_id: self._get_object_json_or_raise(entity) for entity in entities_data}
 
     def read_schema_field_values(self, object_id: str, schema_fields: Sequence[SchemaField]) -> ParsedSchema:
         schema = self._get_schema_of_schema_fields(schema_fields)
@@ -289,6 +264,7 @@ class StorageManager:
     ) -> ResultTypeT | None:
         return next(iter(self.read_node_results([(schema, object_id)], node_id, result_type)))
 
+    # TODO FAI-2737 to solve the parameters
     def read_node_data(
         self,
         schema: SchemaObject,
@@ -364,18 +340,3 @@ class StorageManager:
             )
             for key, type_ in node_data_descriptor.items()
         }
-
-    def _get_object_json_or_raise(self, entity_data: EntityData) -> dict[str, Any]:
-        object_json = self._entity_builder._admin_fields.extract_object_json_field_data(entity_data.field_data)
-        if not object_json:
-            raise ValueError(
-                f"Object JSON not found for schema_id={entity_data.id_.schema_id}, "
-                f"object_id={entity_data.id_.object_id}"
-            )
-        return object_json
-
-    def _create_field_data_or_raise(self, object_data: dict[str, Any]) -> FieldData:
-        field_data = self._entity_builder._admin_fields.create_object_json_field_data(object_data)
-        if not field_data:
-            raise ValueError(f"Failed to create object JSON field data from input: {object_data}")
-        return field_data

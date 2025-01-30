@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from beartype.typing import Any, Sequence, cast
+from beartype.typing import Sequence, cast
 
 from superlinked.framework.common.data_types import PythonTypes
 from superlinked.framework.common.storage.entity.entity_id import EntityId
@@ -57,14 +57,10 @@ class AdminFields:
         self.schema_id = AdminFieldDescriptor(Field(FieldDataType.STRING, StorageNaming.SCHEMA_INDEX_NAME))
         self.object_id = AdminFieldDescriptor(Field(FieldDataType.STRING, StorageNaming.OBJECT_ID_INDEX_NAME))
         self.origin_id = AdminFieldDescriptor(Field(FieldDataType.STRING, StorageNaming.ORIGIN_ID_INDEX_NAME), True)
-        self.object_json = AdminFieldDescriptor(
-            Field(FieldDataType.JSON, StorageNaming.OBJECT_JSON_INDEX_NAME), True, False
-        )
         admin_field_descriptors = [
             self.schema_id,
             self.object_id,
             self.origin_id,
-            self.object_json,
         ]
         admin_fields = [admin_field_descriptor.field for admin_field_descriptor in admin_field_descriptors]
         self.__admin_field_names = [admin_field.name for admin_field in admin_fields]
@@ -94,10 +90,6 @@ class AdminFields:
             }
         )
 
-    def create_object_json_field_data(self, object_json: dict[str, Any]) -> FieldData | None:
-        field_data = self.__create_admin_field_data({self.object_json: object_json})
-        return field_data[0] if field_data else None
-
     def __create_admin_field_data(
         self,
         value_by_admin_field: dict[AdminFieldDescriptor, PythonTypes | dict | None],
@@ -121,6 +113,3 @@ class AdminFields:
         if value is None:
             raise ValueError("None value found for the non-null admin field.")
         return value
-
-    def extract_object_json_field_data(self, field_data: dict[str, FieldData]) -> dict[str, Any] | None:
-        return self.object_json.extract_value(field_data, dict[str, Any])
