@@ -45,7 +45,7 @@
 
 ## Overview
 
-- **WHY**: Improve your vector search relevance by encoding metadata togehter with your unstructured data into vectors.
+- **WHY**: Improve your vector search relevance by encoding metadata together with your unstructured data into vectors.
 - **WHAT**: A framework and a self-hostable REST API server that connects your data, vector database and backend services.
 - **HOW**: Construct custom data & query embedding models from pre-trained encoders from `sentence-transformers`, `open-clip` and custom encoders for numbers, timestamps and categorical data. See the [feature](#features) and [use-case](#use-cases) notebooks below for examples.
 
@@ -181,9 +181,9 @@ sl.PandasConverter.to_pandas(result)
 
 With a single command you can run Superlinked as a REST API Server locally or in your cloud with [Superlinked Server](https://pypi.org/project/superlinked-server). Get data ingestion and query APIs, embedding model inference and deep vector database integrations for free!
 
-Unify your evaluation, ingestion and serving stacks with a single declarative python codebase. Superlinked enables this by letting you define your data schema, vector indexes and the compute DAG that links them all at once and then chose the right executor for the task - in-memory or server.
+Unify your evaluation, ingestion and serving stacks with a single declarative python codebase. Superlinked enables this by letting you define your data schema, vector indexes and the compute DAG that links them all at once and then choose the right executor for the task - in-memory or server.
 
-If your are interested in learning more about running at scale, [Book a demo](https://links.superlinked.com/sl-repo-readme-form) for an early access to our managed cloud.
+If you are interested in learning more about running at scale, [Book a demo](https://links.superlinked.com/sl-repo-readme-form) for early access to our managed cloud.
 
 ### Supported Vector Databases
 
