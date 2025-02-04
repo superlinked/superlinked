@@ -95,15 +95,13 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         index: Index,
         schema: IdSchemaObject,
         clauses: Sequence[QueryClause] | None = None,
+        with_metadata: bool = False,
     ) -> None:
         self.__index = index
         self.__schema = schema
         self.__clauses: Sequence[QueryClause] = clauses if clauses else []
+        self.__with_metadata = with_metadata
         QueryDescriptorValidator.validate(self)
-
-    @property
-    def clauses(self) -> Sequence[QueryClause]:
-        return self.__clauses
 
     @property
     def index(self) -> Index:
@@ -113,6 +111,14 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
     def schema(self) -> IdSchemaObject:
         return self.__schema
 
+    @property
+    def clauses(self) -> Sequence[QueryClause]:
+        return self.__clauses
+
+    @property
+    def with_metadata(self) -> bool:
+        return self.__with_metadata
+
     def space_weights(self, weight_by_space: Mapping[Space, NumericParamType]) -> QueryDescriptor:
         clauses = [SpaceWeightClause(self.__to_param(weight), space) for space, weight in weight_by_space.items()]
         altered_query_descriptor = self.__append_clauses(clauses)
@@ -120,7 +126,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
 
     def override_now(self, now: IntParamType) -> QueryDescriptor:
         clause = OverriddenNowClause(self.__to_param(now))
-        altered_query_descriptor = self.__append_clause(clause)
+        altered_query_descriptor = self.__append_clauses([clause])
         return altered_query_descriptor
 
     def similar(
@@ -154,7 +160,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         value_param = self.__to_param(param)
         weight_param = self.__to_param(weight)
         clause = SimilarFilterClause(value_param, weight_param, field_set)
-        altered_query_descriptor = self.__append_clause(clause)
+        altered_query_descriptor = self.__append_clauses([clause])
         return altered_query_descriptor
 
     def __validate_schema(self, field_set: SpaceFieldSet) -> None:
@@ -173,7 +179,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         """
         param = self.__to_param(limit) if limit is not None else Param.init_default(constants.DEFAULT_LIMIT)
         clause = LimitClause(param)
-        altered_query_descriptor = self.__append_clause(clause)
+        altered_query_descriptor = self.__append_clauses([clause])
         return altered_query_descriptor
 
     def select(self, *fields: SchemaField | str | Param) -> QueryDescriptor:
@@ -197,7 +203,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         """
         param = self.__handle_select_param(list(fields))
         clause = SelectClause(param)
-        altered_query_descriptor = self.__append_clause(clause)
+        altered_query_descriptor = self.__append_clauses([clause])
         return altered_query_descriptor
 
     def __handle_select_param(self, fields: Sequence[SchemaField | str | Param]) -> Param | Evaluated[Param]:
@@ -264,7 +270,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         """
         param = self.__to_param(radius) if radius is not None else Param.init_default()
         clause = RadiusClause(param)
-        return self.__append_clause(clause)
+        return self.__append_clauses([clause])
 
     def with_vector(
         self,
@@ -291,7 +297,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         value_param = self.__to_param(id_param)
         weight_param = self.__to_param(weight)
         clause = LooksLikeFilterClause(value_param, weight_param, schema_obj.id)
-        return self.__append_clause(clause)
+        return self.__append_clauses([clause])
 
     def filter(self, comparison_operation: ComparisonOperation[SchemaField] | _Or) -> QueryDescriptor:
         """
@@ -335,6 +341,17 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         altered_query_descriptor = self.__append_clauses(clauses)
         self.__warn_if_nlq_is_used_without_recommended_param_descriptions(altered_query_descriptor)
         return altered_query_descriptor
+
+    def include_metadata(self) -> QueryDescriptor:
+        """
+        Make per-item metadata to be returned in the query results.
+
+        Current metadata includes space-wise partial scores.
+
+        Returns:
+            Self: The query object itself.
+        """
+        return QueryDescriptor(self.index, self.schema, self.clauses, with_metadata=True)
 
     def nlq_suggestions(self, feedback: str | None = None) -> QuerySuggestionsModel:
         """
@@ -470,16 +487,13 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         return [clause for clause in self.clauses if isinstance(clause, clause_type)]
 
     def replace_clauses(self, clauses: Sequence[QueryClause]) -> QueryDescriptor:
-        return QueryDescriptor(self.index, self.schema, clauses)
+        return QueryDescriptor(self.index, self.schema, clauses, self.with_metadata)
 
     def get_weighted_clauses(self) -> list[WeightedQueryClause]:
         return [clause for clause in self.clauses if isinstance(clause, WeightedQueryClause)]
 
-    def __append_clause(self, clause: QueryClause) -> QueryDescriptor:
-        return self.__append_clauses([clause])
-
     def __append_clauses(self, clauses: Sequence[QueryClause]) -> QueryDescriptor:
-        return QueryDescriptor(self.index, self.schema, list(self.clauses) + list(clauses))
+        return QueryDescriptor(self.index, self.schema, list(self.clauses) + list(clauses), self.with_metadata)
 
     @classmethod
     def __to_param(cls, param_input: Any) -> Param | Evaluated[Param]:

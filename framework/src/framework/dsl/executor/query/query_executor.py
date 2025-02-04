@@ -107,21 +107,35 @@ class QueryExecutor:
             pii_knn_params=params,
             pii_query_vector=partial(str, knn_search_params.vector),
         )
+        query_vector = knn_search_params.vector
         metadata = ResultMetadata(
             schema_name=query_descriptor.schema._schema_name,
-            search_vector=[float(x) for x in knn_search_params.vector.value.tolist()],
+            search_vector=[float(x) for x in query_vector.value.tolist()],
             search_params=self._map_search_params(query_descriptor),
         )
-        return QueryResult(entries=self._map_entities(entities), metadata=metadata)
+        return QueryResult(
+            entries=self._map_entities(entities, query_vector, query_descriptor.with_metadata), metadata=metadata
+        )
 
-    def _map_entities(self, entities: Sequence[SearchResultItem]) -> list[ResultEntry]:
+    def _map_entities(
+        self, entities: Sequence[SearchResultItem], query_vector: Vector, with_partial_scores: bool
+    ) -> list[ResultEntry]:
+        result_vectors = list[Vector]()  # TODO FAI-3114
+        partial_scores = (
+            self._calculate_partial_scores(query_vector, result_vectors)
+            if with_partial_scores
+            else [[]] * len(entities)
+        )
         return [
             ResultEntry(
                 id=entity.header.origin_id or entity.header.object_id,
                 fields={field.schema_field.name: field.value for field in entity.fields},
-                metadata=ResultEntryMetadata(score=entity.score),
+                metadata=ResultEntryMetadata(
+                    score=entity.score,
+                    partial_scores=partial_score,
+                ),
             )
-            for entity in entities
+            for entity, partial_score in zip(entities, partial_scores)
         ]
 
     def _map_search_params(self, query_descriptor: QueryDescriptor) -> dict[str, Any]:
@@ -221,6 +235,8 @@ class QueryExecutor:
         )
 
     def _calculate_partial_scores(self, query_vector: Vector, result_vectors: Sequence[Vector]) -> list[list[float]]:
+        if not result_vectors:
+            return []
         lengths = [space.length for space in self._query_descriptor.index._spaces]
         all_vectors = list(result_vectors) + [query_vector]
         vectors_parts = [[part.value for part in vector.split(lengths)] for vector in all_vectors]
