@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from beartype.typing import Any, Sequence
+from beartype.typing import Any, Mapping, Sequence
 
 from superlinked.framework.common.data_types import NodeDataTypes, PythonTypes
 from superlinked.framework.common.parser.parsed_schema import (
@@ -79,7 +79,7 @@ class EntityBuilder:
     def parse_schema_field_data(
         self,
         schema_field_data: FieldData,
-        schema_field_by_field_name: dict[str, SchemaField],
+        schema_field_by_field_name: Mapping[str, SchemaField],
     ) -> ParsedSchemaField:
         return ParsedSchemaField.from_schema_field(
             schema_field_by_field_name[schema_field_data.name], schema_field_data.value

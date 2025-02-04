@@ -98,7 +98,7 @@ class QueryExecutor:
         self.__check_executor_has_index()
         query_descriptor: QueryDescriptor = QueryParamValueSetter.set_values(self._query_descriptor, params)
         knn_search_params = self._produce_knn_search_params(query_descriptor)
-        entities = self._knn_search(knn_search_params, query_descriptor)
+        entities = self._knn_search(knn_search_params, query_descriptor, query_descriptor.with_metadata)
         self._logger.info(
             "executed query",
             n_results=len(entities),
@@ -120,12 +120,13 @@ class QueryExecutor:
     def _map_entities(
         self, entities: Sequence[SearchResultItem], query_vector: Vector, with_partial_scores: bool
     ) -> list[ResultEntry]:
-        result_vectors = list[Vector]()  # TODO FAI-3114
-        partial_scores = (
-            self._calculate_partial_scores(query_vector, result_vectors)
-            if with_partial_scores
-            else [[]] * len(entities)
-        )
+        if with_partial_scores:
+            result_vectors = [
+                entity.index_vector or Vector.init_zero_vector(query_vector.dimension) for entity in entities
+            ]
+            partial_scores = self._calculate_partial_scores(query_vector, result_vectors)
+        else:
+            partial_scores = [list[float]()] * len(entities)
         return [
             ResultEntry(
                 id=entity.header.origin_id or entity.header.object_id,
@@ -228,10 +229,10 @@ class QueryExecutor:
         return vector
 
     def _knn_search(
-        self, knn_search_params: KNNSearchParams, query_descriptor: QueryDescriptor
+        self, knn_search_params: KNNSearchParams, query_descriptor: QueryDescriptor, should_return_index_vector: bool
     ) -> Sequence[SearchResultItem]:
         return self.app.storage_manager.knn_search(
-            query_descriptor.index._node, query_descriptor.schema, knn_search_params
+            query_descriptor.index._node, query_descriptor.schema, knn_search_params, should_return_index_vector
         )
 
     def _calculate_partial_scores(self, query_vector: Vector, result_vectors: Sequence[Vector]) -> list[list[float]]:

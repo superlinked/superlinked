@@ -16,6 +16,7 @@ from dataclasses import dataclass
 
 from beartype.typing import Sequence
 
+from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.parser.parsed_schema import ParsedSchemaField
 from superlinked.framework.common.storage_manager.header import Header
 
@@ -25,3 +26,4 @@ class SearchResultItem:
     header: Header
     fields: Sequence[ParsedSchemaField]
     score: float
+    index_vector: Vector | None = None

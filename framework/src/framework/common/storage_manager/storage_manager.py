@@ -14,10 +14,10 @@
 
 from dataclasses import dataclass
 
-from beartype.typing import Any, Sequence, TypeVar, cast
+from beartype.typing import Any, Mapping, Sequence, TypeVar, cast
 
 from superlinked.framework.common.dag.index_node import IndexNode
-from superlinked.framework.common.data_types import NodeDataTypes, PythonTypes
+from superlinked.framework.common.data_types import NodeDataTypes, PythonTypes, Vector
 from superlinked.framework.common.exception import InvalidSchemaException
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
@@ -107,6 +107,7 @@ class StorageManager:
         index_node: IndexNode,
         schema: IdSchemaObject,
         knn_search_params: KNNSearchParams,
+        should_return_index_vector: bool = False,
         **params: Any,
     ) -> Sequence[SearchResultItem]:
         self._validate_knn_search_input(schema, knn_search_params.schema_fields_to_return)
@@ -117,6 +118,8 @@ class StorageManager:
         )
         schema_fields_by_fields = self._map_schema_fields_to_fields(knn_search_params.schema_fields_to_return)
         fields_to_return = list(schema_fields_by_fields.keys()) + list(self._entity_builder._admin_fields.header_fields)
+        if should_return_index_vector:
+            fields_to_return.append(self._entity_builder.compose_field(index_node.node_id, Vector))
         search_result: Sequence[ResultEntityData] = self._vdb_connector.knn_search(
             index_name,
             schema._schema_name,
@@ -131,14 +134,8 @@ class StorageManager:
         )
         schema_field_by_field_name = self._create_schema_field_by_field_name(schema_fields_by_fields)
         return [
-            SearchResultItem(
-                self._entity_builder._admin_fields.extract_header(result_entity_data.field_data),
-                [
-                    self._entity_builder.parse_schema_field_data(field_data, schema_field_by_field_name)
-                    for field_data in result_entity_data.field_data.values()
-                    if not self._entity_builder._admin_fields.is_admin_field(field_data)
-                ],
-                result_entity_data.score,
+            self._map_vdb_result_item_to_search_result_item(
+                result_entity_data, schema_field_by_field_name, index_node.node_id
             )
             for result_entity_data in search_result
         ]
@@ -176,6 +173,35 @@ class StorageManager:
             )
             for filter_ in filters
         ] + [self._entity_builder._admin_fields.schema_id.field == schema._schema_name]
+
+    def _map_vdb_result_item_to_search_result_item(
+        self,
+        result_entity_data: ResultEntityData,
+        schema_field_by_field_name: Mapping[str, SchemaField],
+        index_node_id: str,
+    ) -> SearchResultItem:
+        parsed_schema_fields = [
+            self._entity_builder.parse_schema_field_data(field_data, schema_field_by_field_name)
+            for field_data in result_entity_data.field_data.values()
+            if not self._entity_builder._admin_fields.is_admin_field(field_data)
+            and field_data.name in schema_field_by_field_name
+        ]
+        index_vector: Vector | None = None
+        if index_vector_field := next(
+            (
+                field_data
+                for field_name, field_data in result_entity_data.field_data.items()
+                if field_name == index_node_id
+            ),
+            None,
+        ):
+            index_vector = cast(Vector, index_vector_field.value)
+        return SearchResultItem(
+            self._entity_builder._admin_fields.extract_header(result_entity_data.field_data),
+            parsed_schema_fields,
+            result_entity_data.score,
+            index_vector,
+        )
 
     def write_parsed_schema_fields(self, parsed_schemas: Sequence[ParsedSchema]) -> None:
         entities_to_write = [
