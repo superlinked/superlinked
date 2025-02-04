@@ -47,7 +47,7 @@ class QdrantQuery:
     filter_: Filter | None
     limit: int
     score_treshold: float | None
-    with_vector: str | bool
+    with_vector: Sequence[str] | bool
     returned_payload_fields: Sequence[str]
 
 
@@ -74,7 +74,7 @@ class QdrantQueryBuilder:
         filter_ = self._compile_filters(search_params.filters)
         vector_field_name = search_params.vector_field.name
         returned_field_names = [field.name for field in search_params.fields_to_return]
-        with_vector: str | bool = vector_field_name if vector_field_name in returned_field_names else False
+        with_vector: list[str] | bool = [vector_field_name] if vector_field_name in returned_field_names else False
         returned_payload_fields = [field for field in returned_field_names if field != vector_field_name]
         return QdrantQuery(
             search_params.collection_name,
