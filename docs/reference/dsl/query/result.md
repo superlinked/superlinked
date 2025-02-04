@@ -163,6 +163,9 @@ Classes
     `model_config`
     :
 
+    `partial_scores: Sequence[float]`
+    :
+
     `score: float`
     :
 

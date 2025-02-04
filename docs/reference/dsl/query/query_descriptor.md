@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.query.query_descriptor
 Classes
 -------
 
-`QueryDescriptor(index: superlinked.framework.dsl.index.index.Index, schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject, clauses: collections.abc.Sequence[superlinked.framework.dsl.query.query_clause.QueryClause] | None = None)`
+`QueryDescriptor(index: superlinked.framework.dsl.index.index.Index, schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject, clauses: collections.abc.Sequence[superlinked.framework.dsl.query.query_clause.QueryClause] | None = None, with_metadata: bool = False)`
 :   A class representing a query object. Use .with_vector to run queries using a stored
     vector, or use .similar for queries where you supply the query at query-time. Or combine
     them, or even combine multiple .similar to supply different queries for each space in the
@@ -19,6 +19,9 @@ Classes
     :
 
     `schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject`
+    :
+
+    `with_metadata: bool`
     :
 
     ### Methods
@@ -88,6 +91,14 @@ Classes
 
     `get_weights_by_space(self) ‑> dict[superlinked.framework.dsl.space.space.Space, float]`
     :
+
+    `include_metadata(self) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    :   Make per-item metadata to be returned in the query results.
+        
+        Current metadata includes space-wise partial scores.
+        
+        Returns:
+            Self: The query object itself.
 
     `limit(self, limit: int | superlinked.framework.dsl.query.param.Param | None) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :   Set a limit to the number of results returned by the query.
