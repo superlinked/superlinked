@@ -38,3 +38,8 @@ class ConstantNormConfig(NormalizationConfig):
 @dataclass(frozen=True)
 class NoNormConfig(NormalizationConfig):
     pass
+
+
+@dataclass(frozen=True)
+class CategoricalNormConfig(NormalizationConfig):
+    categories_count: int

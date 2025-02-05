@@ -37,7 +37,7 @@ class NormalizationStep(Step[Vector, Vector], ABC):
     ) -> Vector:
         if self._denormalize:
             return self._normalization.denormalize(input_)
-        return self._normalization.normalize(input_)
+        return self._normalization.normalize(input_, context)
 
 
 class MultiNormalizationStep(Step[Sequence[Vector], list[Vector]], ABC):
@@ -54,4 +54,4 @@ class MultiNormalizationStep(Step[Sequence[Vector], list[Vector]], ABC):
     ) -> list[Vector]:
         if self._denormalize:
             return self._normalization.denormalize_multiple(input_)
-        return self._normalization.normalize_multiple(input_)
+        return self._normalization.normalize_multiple(input_, context)

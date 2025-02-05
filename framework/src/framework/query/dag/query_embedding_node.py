@@ -27,6 +27,7 @@ from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationInputT,
 )
+from superlinked.framework.common.transform.transform import Step
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
 )
@@ -36,6 +37,9 @@ from superlinked.framework.query.dag.query_evaluation_data_types import (
     QueryEvaluationResultT,
 )
 from superlinked.framework.query.dag.query_node import QueryNode
+from superlinked.framework.query.dag.transform_vector_to_query_vector import (
+    TransformVectorToQueryVector,
+)
 from superlinked.framework.query.query_node_input import QueryNodeInput
 
 T = TypeVar("T")
@@ -57,9 +61,12 @@ class QueryEmbeddingNode(
         self._multi_embedding_transformation = TransformationFactory.create_multi_embedding_transformation(
             self.node.transformation_config
         )
+        vector_to_query_vector_step: TransformVectorToQueryVector = TransformVectorToQueryVector(
+            self.node.transformation_config.embedding_config
+        )
         self._aggregation_transformation = TransformationFactory.create_aggregation_transformation(
             self.node.transformation_config
-        )
+        ).combine(vector_to_query_vector_step)
 
     @override
     def evaluate(
@@ -74,7 +81,7 @@ class QueryEmbeddingNode(
         )
         if weighted_embeddings:
             return QueryEvaluationResult(
-                self._aggregation_transformation.transform(cast(Sequence[Weighted], weighted_embeddings), context)
+                    self._aggregation_transformation.transform(cast(Sequence[Weighted], weighted_embeddings), context)
             )
         return QueryEvaluationResult(self.node.transformation_config.embedding_config.default_vector)
 

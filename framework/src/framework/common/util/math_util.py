@@ -1,4 +1,4 @@
-# Copyright 2024 Superlinked, Inc.
+# Copyright 2025 Superlinked, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,20 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from attr import dataclass
+from beartype.typing import Sequence
 
 
-@dataclass(frozen=True)
-class Constants:
-    MAX_DAG_DEPTH: int = 20
-    DEFAULT_WEIGHT: float = 1.0
-    DEFAULT_NOT_AFFECTING_WEIGHT: float = 0.0
-    DEFAULT_NOT_AFFECTING_EMBEDDING_VALUE: float = 0.0
-    DEFAULT_LIMIT: int = -1
-    RADIUS_MIN: int = 0
-    RADIUS_MAX: int = 1
-
-
-constants = Constants()
-
-__all__ = ["Constants", "constants"]
+class MathUtil:
+    @staticmethod
+    def get_max_signed_sum(values: Sequence[int | float]) -> float:
+        over_0 = sum(val for val in values if val > 0)
+        below_0 = abs(sum(val for val in values if val < 0))
+        return max(below_0, over_0)

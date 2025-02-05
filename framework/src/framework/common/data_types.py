@@ -68,6 +68,10 @@ class Vector:
         return self.__negative_filter_indices
 
     @property
+    def non_negative_filter_indices(self) -> set[int]:
+        return set(range(self.dimension)) - set(self.negative_filter_indices)
+
+    @property
     def is_empty(self) -> bool:
         return self.dimension == 0
 
@@ -105,7 +109,10 @@ class Vector:
             raise MismatchingDimensionException(
                 f"Cannot aggregate vectors with different dimensions: {self.dimension} != {vector.dimension}"
             )
-        return self.copy_with_new(self.value + vector.value)
+        return self.copy_with_new(
+            self.value + vector.value,
+            negative_filter_indices=self.negative_filter_indices.intersection(vector.negative_filter_indices),
+        )
 
     def __validate_negative_filter_indices(self) -> None:
         if not self.negative_filter_indices:

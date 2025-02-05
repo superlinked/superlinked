@@ -13,23 +13,27 @@
 # limitations under the License.
 
 
+import math
+
 import numpy as np
-from beartype.typing import Sequence
+from beartype.typing import Mapping, Sequence
 from typing_extensions import override
 
+from superlinked.framework.common.const import constants
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import NPArray, Vector
 from superlinked.framework.common.space.config.embedding.categorical_similarity_embedding_config import (
     CategoricalSimilarityEmbeddingConfig,
 )
-from superlinked.framework.common.space.embedding.embedding import Embedding
+from superlinked.framework.common.space.embedding.embedding import InvertibleEmbedding
+from superlinked.framework.common.util.math_util import MathUtil
 
-CATEGORICAL_ENCODING_VALUE: int = 1
 
+class CategoricalSimilarityEmbedding(InvertibleEmbedding[list[str], CategoricalSimilarityEmbeddingConfig]):
 
-class CategoricalSimilarityEmbedding(Embedding[list[str], CategoricalSimilarityEmbeddingConfig]):
     def __init__(self, embedding_config: CategoricalSimilarityEmbeddingConfig) -> None:
         super().__init__(embedding_config)
+        self._other_category_name = "".join(sorted(list(self._config.categories)[:100]) + ["_"])
         self._other_category_index: int | None = self.length - 1 if self._config.uncategorized_as_category else None
         self._category_index_map: dict[str, int] = {elem: i for i, elem in enumerate(self._config.categories)}
         self._default_n_hot_encoding = np.full(self.length, self._config.negative_filter, dtype=np.float64)
@@ -40,13 +44,30 @@ class CategoricalSimilarityEmbedding(Embedding[list[str], CategoricalSimilarityE
         negative_filter_indices = set(i for i in range(self.length) if i not in self._get_category_indices(input_))
         return Vector(n_hot_encoding, negative_filter_indices)
 
+    @override
+    def inverse_embed(self, vector: Vector, context: ExecutionContext) -> list[str]:
+        return [
+            (
+                self._config.categories[i]
+                if len(self._config.categories) > i
+                and vector.value[i] != constants.DEFAULT_NOT_AFFECTING_EMBEDDING_VALUE
+                else self._other_category_name
+            )
+            for i in vector.non_negative_filter_indices
+        ]
+
+    def get_categorical_encoding_value(self, len_category_list: int, is_query: bool) -> float:
+        sqrt_len_config_categories: float = math.sqrt(len(self._config.categories))
+        return sqrt_len_config_categories / (len_category_list or 1.0) if is_query else 1.0 / sqrt_len_config_categories
+
     def _n_hot_encode(self, category_list: Sequence[str], is_query: bool) -> NPArray:
         n_hot_encoding = self._default_n_hot_encoding.copy()
+        categorical_value = self.get_categorical_encoding_value(len(category_list), is_query)
         if is_query:
-            n_hot_encoding.fill(0)
+            n_hot_encoding.fill(constants.DEFAULT_NOT_AFFECTING_EMBEDDING_VALUE)
         category_indices = self._get_category_indices(category_list)
         if category_indices:
-            n_hot_encoding[category_indices] = CATEGORICAL_ENCODING_VALUE
+            n_hot_encoding[category_indices] = categorical_value
         return n_hot_encoding
 
     def _get_category_indices(self, text_input: Sequence[str]) -> list[int]:
@@ -60,6 +81,31 @@ class CategoricalSimilarityEmbedding(Embedding[list[str], CategoricalSimilarityE
 
     def _get_index_for_category(self, category: str) -> int | None:
         return self._category_index_map.get(category, self._other_category_index)
+
+    def _reallocate_vector_values(self, vector: Vector, scaling_factors: Mapping[int, float]) -> Vector:
+        if scaling_factors:
+            new_values: NPArray = vector.value
+            new_values[np.array(list(scaling_factors.keys()))] *= np.array(list(scaling_factors.values()))
+            sum_values = MathUtil.get_max_signed_sum(new_values.tolist())
+            normalizing_factor = sum_values / math.sqrt(len(self._config.categories))
+            return Vector(new_values, vector.negative_filter_indices).normalize(normalizing_factor)
+        return vector
+
+    @override
+    def _to_query_vector(self, input_: Vector, context: ExecutionContext) -> Vector:
+        category_vector_values: dict[int, float] = self._get_scaling_factors_for_vector(input_)
+        raw_vector: Vector = self.embed(self.inverse_embed(input_, context), context)
+        reallocated_vector: Vector = self._reallocate_vector_values(raw_vector, category_vector_values)
+        return reallocated_vector
+
+    def _get_scaling_factors_for_vector(self, vector: Vector) -> dict[int, float]:
+        vector_value: NPArray = vector.value
+        return dict(zip(vector.non_negative_filter_indices, vector_value[list(vector.non_negative_filter_indices)]))
+
+    @property
+    @override
+    def needs_inversion_before_aggregation(self) -> bool:
+        return False
 
     @property
     @override

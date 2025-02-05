@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+import math
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -21,8 +22,11 @@ from beartype.typing import Any, Generic, Sequence, TypeVar
 from scipy import linalg
 from typing_extensions import override
 
+from superlinked.framework.common.const import constants
+from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import NPArray, Vector
 from superlinked.framework.common.space.config.normalization.normalization_config import (
+    CategoricalNormConfig,
     ConstantNormConfig,
     L1NormConfig,
     L2NormConfig,
@@ -37,14 +41,16 @@ class Normalization(Generic[NormalizationConfigT], ABC):
     def __init__(self, config: NormalizationConfigT) -> None:
         self._config = config
 
-    def normalize(self, vector: Vector) -> Vector:
-        return vector.normalize(self.norm(vector.without_negative_filter.value))
+    def normalize(self, vector: Vector, context: ExecutionContext | None = None) -> Vector:
+        return vector.normalize(
+            self.norm(vector.without_negative_filter.value, context.is_query_context if context is not None else False)
+        )
 
-    def normalize_multiple(self, vectors: Sequence[Vector]) -> list[Vector]:
-        return [self.normalize(vector) for vector in vectors]
+    def normalize_multiple(self, vectors: Sequence[Vector], context: ExecutionContext) -> list[Vector]:
+        return [self.normalize(vector, context) for vector in vectors]
 
     @abstractmethod
-    def norm(self, value: NPArray) -> float: ...
+    def norm(self, value: NPArray, is_query: bool = False) -> float: ...
 
     def denormalize(self, vector: Vector) -> Vector:
         if vector.vector_before_normalization is None:
@@ -71,7 +77,7 @@ class L1Norm(Normalization[L1NormConfig]):
         super().__init__(config or L1NormConfig())
 
     @override
-    def norm(self, value: NPArray) -> float:
+    def norm(self, value: NPArray, is_query: bool = False) -> float:
         """Returns the L1 norm (sum of absolute values) of the input array"""
         return np.sum(np.abs(value))
 
@@ -81,7 +87,7 @@ class L2Norm(Normalization[L2NormConfig]):
         super().__init__(config or L2NormConfig())
 
     @override
-    def norm(self, value: NPArray) -> float:
+    def norm(self, value: NPArray, is_query: bool = False) -> float:
         """Must be called with value that has no negative filter"""
         return linalg.norm(value)
 
@@ -96,7 +102,7 @@ class ConstantNorm(Normalization[ConstantNormConfig]):
             raise ValueError("Normalization length cannot be zero.")
 
     @override
-    def norm(self, value: NPArray) -> float:
+    def norm(self, value: NPArray, is_query: bool = False) -> float:
         return self._config.length
 
     @override
@@ -113,5 +119,25 @@ class NoNorm(Normalization[NoNormConfig]):
         super().__init__(config or NoNormConfig())
 
     @override
-    def norm(self, value: NPArray) -> float:
+    def norm(self, value: NPArray, is_query: bool = False) -> float:
         return 1.0
+
+
+class CategoricalNorm(Normalization[CategoricalNormConfig]):
+    def __init__(self, config: CategoricalNormConfig) -> None:
+        super().__init__(config)
+
+    @override
+    def norm(self, value: NPArray, is_query: bool = False) -> float:
+        vector_values_max: float = max(
+            np.max(value[value > 0.0], initial=0.0),
+            abs(np.min(value[value < 0.0], initial=0.0)),
+        )
+        len_implied_categories: int = len(value[value != constants.DEFAULT_NOT_AFFECTING_EMBEDDING_VALUE])
+        sqrt_len_config_categories: float = math.sqrt(self._config.categories_count)
+        expected_max: float = (
+            sqrt_len_config_categories / (len_implied_categories or 1.0)
+            if is_query
+            else 1.0 / sqrt_len_config_categories
+        )
+        return vector_values_max / expected_max

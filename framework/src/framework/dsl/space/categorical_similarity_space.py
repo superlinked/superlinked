@@ -35,7 +35,7 @@ from superlinked.framework.common.space.config.embedding.categorical_similarity_
     CategoricalSimilarityEmbeddingConfig,
 )
 from superlinked.framework.common.space.config.normalization.normalization_config import (
-    L2NormConfig,
+    CategoricalNormConfig,
 )
 from superlinked.framework.common.space.config.transformation_config import (
     TransformationConfig,
@@ -149,10 +149,11 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
         return self.__schema_node_map
 
     def _init_transformation_config(
-        self, embedding_config: CategoricalSimilarityEmbeddingConfig
+        self,
+        embedding_config: CategoricalSimilarityEmbeddingConfig,
     ) -> TransformationConfig[Vector, list[str]]:
         aggregation_config = VectorAggregationConfig(Vector)
-        normalization_config = L2NormConfig()
+        normalization_config = CategoricalNormConfig(len(self._embedding_config.categories))
         return TransformationConfig(normalization_config, aggregation_config, embedding_config)
 
     @override

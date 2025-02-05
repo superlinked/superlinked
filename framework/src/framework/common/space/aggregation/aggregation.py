@@ -32,8 +32,6 @@ from superlinked.framework.common.space.config.aggregation.aggregation_config im
     NumberAggregationInputT,
 )
 
-VALUE_UNAFFECTING_AGGREGATION = 0
-
 
 class Aggregation(ABC, Generic[AggregationInputT]):
     def __init__(self, config: AggregationConfig[AggregationInputT] | None = None) -> None:
@@ -48,6 +46,7 @@ class Aggregation(ABC, Generic[AggregationInputT]):
 
 
 class VectorAggregation(Aggregation[Vector]):
+
     @override
     def aggregate_weighted(
         self,
@@ -60,7 +59,7 @@ class VectorAggregation(Aggregation[Vector]):
             if not weighted.item.is_empty and weighted.weight is not constants.DEFAULT_NOT_AFFECTING_WEIGHT
         ]
         vectors_with_negative_filters_replaced = (
-            weighted.item.replace_negative_filters(VALUE_UNAFFECTING_AGGREGATION) * weighted.weight
+            weighted.item.replace_negative_filters(constants.DEFAULT_NOT_AFFECTING_EMBEDDING_VALUE) * weighted.weight
             for weighted in weighted_vectors
         )
         aggregated_vector = reduce(lambda a, b: a.aggregate(b), vectors_with_negative_filters_replaced)
@@ -77,23 +76,24 @@ class VectorAggregation(Aggregation[Vector]):
             negative_filter_indices={
                 i
                 for i, original_value in enumerate(aggregated_vector.value)
-                if original_value == VALUE_UNAFFECTING_AGGREGATION and i in all_negative_filter_indices
+                if original_value == constants.DEFAULT_NOT_AFFECTING_EMBEDDING_VALUE
+                and i in all_negative_filter_indices
             }
         ).replace_negative_filters(self.__calculate_negative_filter(vectors))
 
-    def __calculate_negative_filter(self, vectors: Sequence[Vector]) -> int:
+    def __calculate_negative_filter(self, vectors: Sequence[Vector]) -> float:
         if negative_filter_values := {
             vector.value[negative_filter_index]
             for vector in vectors
             for negative_filter_index in vector.negative_filter_indices
-            if vector.value[negative_filter_index] != VALUE_UNAFFECTING_AGGREGATION
+            if vector.value[negative_filter_index] != constants.DEFAULT_NOT_AFFECTING_EMBEDDING_VALUE
         }:
             if len(negative_filter_values) > 1:
                 raise NegativeFilterException(
                     f"Cannot aggregate vectors with different negative filter values: {negative_filter_values}."
                 )
             return negative_filter_values.pop()
-        return VALUE_UNAFFECTING_AGGREGATION
+        return constants.DEFAULT_NOT_AFFECTING_EMBEDDING_VALUE
 
 
 class NumberAggregation(Generic[NumberAggregationInputT], Aggregation[NumberAggregationInputT], ABC):

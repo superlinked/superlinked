@@ -16,12 +16,14 @@
 from beartype.typing import Any, Mapping
 
 from superlinked.framework.common.space.config.normalization.normalization_config import (
+    CategoricalNormConfig,
     ConstantNormConfig,
     L2NormConfig,
     NoNormConfig,
     NormalizationConfig,
 )
 from superlinked.framework.common.space.normalization.normalization import (
+    CategoricalNorm,
     ConstantNorm,
     L2Norm,
     NoNorm,
@@ -32,6 +34,7 @@ NORMALIZATION_BY_TYPE: Mapping[type[NormalizationConfig], type[Normalization]] =
     L2NormConfig: L2Norm,
     ConstantNormConfig: ConstantNorm,
     NoNormConfig: NoNorm,
+    CategoricalNormConfig: CategoricalNorm,
 }
 
 

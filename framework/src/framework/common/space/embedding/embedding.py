@@ -51,6 +51,10 @@ class Embedding(HasDefaultVector, Generic[EmbeddingInputT, EmbeddingConfigT], AB
     def __str__(self) -> str:
         return f"{self.__class__.__name__}({self.__dict__ if self.__dict__ else ''})"
 
+    def _to_query_vector(self, input_: Vector, context: ExecutionContext) -> Vector:  # pylint: disable=unused-argument
+        # the pylint ignore is here as the child embeddings do need this argument
+        return input_
+
 
 class InvertibleEmbedding(
     Embedding[EmbeddingInputT, EmbeddingConfigT],

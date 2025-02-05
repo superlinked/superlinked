@@ -59,7 +59,7 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
         weighted_vectors = [
             self._apply_weights_and_concatenate(vector_and_nodes, context) for vector_and_nodes in vector_and_nodes_list
         ]
-        return [self._norm.normalize(vector) for vector in weighted_vectors]
+        return [self._norm.normalize(vector, context) for vector in weighted_vectors]
 
     def _apply_weights_and_concatenate(
         self,
