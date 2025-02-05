@@ -16,6 +16,7 @@ from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
+import structlog
 import torch
 from beartype.typing import Any, Sequence, cast
 from open_clip.factory import create_model_and_transforms, get_tokenizer
@@ -28,6 +29,8 @@ from typing_extensions import override
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.space.embedding.model_manager import ModelManager
 from superlinked.framework.common.util.gpu_embedding_util import GpuEmbeddingUtil
+
+logger = structlog.getLogger(__name__)
 
 
 class OpenClipManager(ModelManager):
@@ -49,6 +52,9 @@ class OpenClipManager(ModelManager):
 
     def _get_embedding_model(self, number_of_inputs: int) -> tuple[CLIP, Compose]:
         device_type = GpuEmbeddingUtil.get_device_type(number_of_inputs)
+        logger.debug(
+            "initialize model", model_name=self._model_name, device_type=device_type, cache_dir=self._model_cache_dir
+        )
         return OpenClipModelCache.initialize_model(self._model_name, device_type, self._model_cache_dir)
 
     def _categorize_inputs(self, inputs: Sequence[str | Image]) -> tuple[list[str], list[Image]]:
@@ -79,14 +85,33 @@ class OpenClipManager(ModelManager):
             return torch.Tensor()
         tokenizer = OpenClipModelCache.initialize_tokenizer(self._model_name)
         texts_tokenized = tokenizer(texts)
+        device = next(embedding_model.parameters()).device
+        if texts_tokenized.device != device:
+            logger.debug(
+                "moved tensor",
+                embedding_type="text",
+                new_device=device,
+                model_name=self._model_name,
+                old_device=texts_tokenized.device,
+            )
+            texts_tokenized = texts_tokenized.to(device)
         return embedding_model.encode_text(texts_tokenized)
 
     def encode_images(self, images: list[Any], embedding_model: CLIP, preprocess_val: Compose) -> torch.Tensor:
         if not images:
             return torch.Tensor()
-        images_to_process = torch.tensor(
-            np.stack([preprocess_val(image) for image in images]), device=GpuEmbeddingUtil.get_device_type(len(images))
-        )
+        device = next(embedding_model.parameters()).device
+        torch.stack([preprocess_val(image) for image in images])
+        images_to_process = torch.tensor(np.stack([preprocess_val(image) for image in images]), device=device)
+        if images_to_process.device != device:
+            logger.debug(
+                "moved tensor",
+                embedding_type="image",
+                new_device=device,
+                model_name=self._model_name,
+                old_device=images_to_process.device,
+            )
+            images_to_process = images_to_process.to(device)
         return embedding_model.encode_image(images_to_process)
 
 
