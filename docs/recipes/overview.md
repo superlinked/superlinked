@@ -62,22 +62,5 @@ Superlinked recipes are standalone applications designed to showcase the powerfu
         Recommendation System
     </td>
   </tr>
-  <tr>
-    <td valign="top">
-      <strong>📚 PDF RAG</strong><br>
-    </td>
-    <td valign="top">
-        <p style="color: gray;">Coming Soon</p>
-    </td>
-    <td valign="top">
-        Search PDF documents with Natural Language Queries, Generate responses based on retrieved information, Conversational follow-up questions
-    </td>
-    <td valign="top">
-          Text
-    </td>
-    <td valign="top">
-        RAG
-    </td>
-  </tr>
 
 </table>
