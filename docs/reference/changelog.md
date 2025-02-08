@@ -5,6 +5,58 @@ icon: clock-rotate-left
 
 # Changelog
 
+## 2024-12-20
+
+- #### Framework: v12.28.1 - v17.8.0
+- #### Server: v14.7.1 - v0.7.3
+- #### Batch: v1.17.0 - v1.33.0
+
+### Added
+- **Simplified Server Startup**: Added support for single command server startup using `python -m superlinked.server`.
+- **NLQ Prompt Suggestions**: Enhanced NLQ with suggestions for better prompting.
+- **Debugging Feature Flag**: Added option to return debugging data for users.
+
+### Changed
+- **Event System Redesign**: Simplified and reshaped the event system across online and batch components.
+- **Batch Index Creation**: Moved index creation to dedicated component instead of server instances.
+- **Dynamic Model Cache**: Implemented dynamic cache directory setting for Hugging Face models.
+- **Query Performance**: Improved query performance from O(n) to O(1) using transactional reading.
+- **NLQ Refactor**: Restructured NLQ implementation for improved performance and quality.
+
+### Fixed
+- **Parameter Validation**: Added exception throwing for invalid query parameters.
+
+### Misc
+- **Code Cleanup**: Removed obsolete server code from repository.
+
+
+
+## 2024-11-20
+
+- #### Framework: v12.23.0 - v12.28.1
+- #### Server: v12.23.0 - v14.7.1
+- #### Batch: v1.15.2 - v1.17.0
+
+### Added
+- **Query Arithmetics**: Completed foundation for multi-modal data representation in single vectors, enabling cohesive interaction between vectors, aggregations, and normalizations.
+- **Qdrant Connector**: Added support for Qdrant as an alternative to MongoDB and Redis.
+- **System Prompts in NLQ**: Added capability for users to customize NLQ translation prompts.
+- **Contains All Filter**: Implemented new filter operation.
+- **Query Vector Exposure**: Added ability to view query vectors in results for improved observability.
+- **NLQ Parameter Constraints**: Added support to constrain Parameters to fixed lists.
+
+### Changed
+- **DSL Improvements**: Added support for single items where lists were previously required.
+- **Parameter Validation**: Enhanced validation for space fields, schema references, and parameter names.
+- **String Parameter Support**: Added support for string parameters in filter, contains, and in operators.
+
+### Fixed
+- **Executor Validation**: Added guardrails for data ingestion without running executor.
+- **User ID Validation**: Improved error handling for invalid user IDs.
+
+
+
+
 ## 2024-11-06
 
 - #### Framework: v12.2.0 - v12.23.0
