@@ -457,7 +457,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         unset_space_by_param_name = {
             clause.value_param.name: clause.space
             for clause in self.get_clauses_by_type(SpaceWeightClause)
-            if not isinstance(clause.value_param, Evaluated)
+            if not isinstance(clause.value_param, Evaluated) and clause.value_param.default is None
         }
         if self.get_looks_like_filter() is not None:
             return {param_name: constants.DEFAULT_WEIGHT for param_name in unset_space_by_param_name.keys()}
