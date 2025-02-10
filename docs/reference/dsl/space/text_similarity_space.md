@@ -36,8 +36,8 @@ Classes
     
     Args:
         text (TextInput | list[TextInput]): The Text input or a list of Text inputs.
-        It is a SchemaFieldObject (String), not a regular python string.
-            model (str): The model used for text similarity.
+            It is a SchemaFieldObject (String), not a regular python string.
+        model (str): The model used for text similarity.
         cache_size (int): The number of embeddings to be stored in an inmemory LRU cache.
             Set it to 0, to disable caching. Defaults to 10000.
         model_cache_dir (Path | None, optional): Directory to cache downloaded models.
