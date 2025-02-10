@@ -29,7 +29,6 @@ QdrantEncodedT = TypeVar("QdrantEncodedT", bound=QdrantEncodedTypes)
 
 class QdrantFieldEncoder:
     def __init__(self) -> None:
-        # TODO FAI-1909
         self._encode_map: dict[FieldDataType, Callable[..., Any]] = {
             FieldDataType.BLOB: self._encode_blob,
             FieldDataType.DOUBLE: self._encode_base_type,

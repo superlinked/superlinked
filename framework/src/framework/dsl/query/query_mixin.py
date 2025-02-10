@@ -69,7 +69,7 @@ class QueryMixin:
             QueryException: If the query index is not found among the executor's indices.
         """
         if query_vector_factory := self._query_vector_factory_by_index.get(query_descriptor.index):
-            # 'self' is an App instance; MyPy can't infer the inheriting class. See [FAI-2085].
+            # 'self' is an App instance; MyPy can't infer the inheriting class.
             query_result: QueryResult = QueryExecutor(
                 self, query_descriptor, query_vector_factory  # type: ignore
             ).query(**params)

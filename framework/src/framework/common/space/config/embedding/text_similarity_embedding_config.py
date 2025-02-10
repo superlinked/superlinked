@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from dataclasses import dataclass
+from pathlib import Path
 
 from typing_extensions import override
 
@@ -24,6 +25,7 @@ from superlinked.framework.common.space.config.embedding.embedding_config import
 @dataclass(frozen=True)
 class TextSimilarityEmbeddingConfig(EmbeddingConfig[str]):
     model_name: str
+    model_cache_dir: Path | None
     cache_size: int
     length_to_use: int
 

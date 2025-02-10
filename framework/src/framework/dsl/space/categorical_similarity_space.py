@@ -114,7 +114,7 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
             indicating a configuration or implementation error.
         """
         non_none_category_input: list[String | StringList] = self._fields_to_non_none_sequence(category_input)
-        # TODO FAI-2843 this type ignore is not needed but linting is flaky in CI
+        # This type ignore is not needed but linting is flaky in CI.
         super().__init__(
             non_none_category_input,
             String | StringList,  # type: ignore[misc] # interface supports only one type

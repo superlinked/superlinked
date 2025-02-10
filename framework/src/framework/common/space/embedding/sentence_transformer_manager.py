@@ -36,7 +36,6 @@ QUERY_PROMPT_NAME = "query"
 
 
 class SentenceTransformerManager(ModelManager):
-
     @override
     def _embed(self, inputs: Sequence[str | Image], context: ExecutionContext) -> list[list[float]] | list[np.ndarray]:
         model = self._get_embedding_model(len(inputs))

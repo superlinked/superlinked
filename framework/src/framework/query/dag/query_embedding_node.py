@@ -27,7 +27,6 @@ from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationInputT,
 )
-from superlinked.framework.common.transform.transform import Step
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
 )
@@ -81,7 +80,7 @@ class QueryEmbeddingNode(
         )
         if weighted_embeddings:
             return QueryEvaluationResult(
-                    self._aggregation_transformation.transform(cast(Sequence[Weighted], weighted_embeddings), context)
+                self._aggregation_transformation.transform(cast(Sequence[Weighted], weighted_embeddings), context)
             )
         return QueryEvaluationResult(self.node.transformation_config.embedding_config.default_vector)
 

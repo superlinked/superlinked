@@ -19,7 +19,7 @@ from pathlib import Path
 from time import sleep
 
 import structlog
-from beartype.typing import Any
+from beartype.typing import Sequence
 from filelock import FileLock
 from huggingface_hub import snapshot_download
 from huggingface_hub.file_download import repo_folder_name
@@ -48,17 +48,23 @@ class SentenceTransformerModelCache:
         model_cache_dir: Path,
     ) -> SentenceTransformer:
         cls._ensure_model_downloaded(model_name, model_cache_dir)
-        common_params: dict[str, Any] = {
-            "model_name_or_path": model_name,
-            "trust_remote_code": True,
-            "device": device,
-            "cache_folder": str(model_cache_dir),
-        }
         try:
-            return SentenceTransformer(**common_params, local_files_only=True)
+            return SentenceTransformer(
+                model_name_or_path=model_name,
+                trust_remote_code=True,
+                device=device,
+                cache_folder=str(model_cache_dir),
+                local_files_only=True,
+            )
         except (OSError, AttributeError, TypeError):
             logger.exception("Failed to use downloaded model, re-downloading.")
-            return SentenceTransformer(**common_params, local_files_only=False)
+            return SentenceTransformer(
+                model_name_or_path=model_name,
+                trust_remote_code=True,
+                device=device,
+                cache_folder=str(model_cache_dir),
+                local_files_only=False,
+            )
 
     @classmethod
     @lru_cache(maxsize=32)
@@ -123,12 +129,12 @@ class SentenceTransformerModelCache:
     def _is_valid_model_directory(cls, directory: Path) -> bool:
         if not directory.exists():
             return False
-        incomplete_downloads = list(directory.glob("*.incomplete"))
+        incomplete_downloads = list[Path](directory.glob("*.incomplete"))
         cls._delete_incomplete_downloads(incomplete_downloads)
         return not incomplete_downloads
 
     @classmethod
-    def _delete_incomplete_downloads(cls, incomplete_downloads: list[Any]) -> None:
+    def _delete_incomplete_downloads(cls, incomplete_downloads: Sequence[Path]) -> None:
         for incomplete_download in incomplete_downloads:
             os.remove(incomplete_download)
 

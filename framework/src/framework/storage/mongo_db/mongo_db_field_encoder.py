@@ -29,7 +29,6 @@ MongoDBEncodedTypes = str | float | int | Sequence[float]
 
 class MongoDBFieldEncoder:
     def __init__(self) -> None:
-        # TODO FAI-1909
         self._encode_map: dict[FieldDataType, Callable[..., Any]] = {
             FieldDataType.BLOB: self._encode_blob,
             FieldDataType.DOUBLE: self._encode_double,

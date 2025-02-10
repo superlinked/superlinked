@@ -66,7 +66,6 @@ class MongoDBQuery:
     def query(self) -> Sequence[dict[str, dict[str, Any]]]:
         return self.__query
 
-    # TODO FAI-1931: use pydantic for `query_parts`!
     def __add_query_part(self, query_part: dict[str, dict[str, Any]]) -> Self:
         if query_part:
             self.__query.append(query_part)

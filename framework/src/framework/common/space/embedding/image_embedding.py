@@ -42,14 +42,21 @@ from superlinked.framework.common.space.embedding.sentence_transformer_manager i
 logger = structlog.getLogger()
 
 
+MANAGER_BY_HANDLER = {
+    ModelHandler.SENTENCE_TRANSFORMERS: SentenceTransformerManager,
+    ModelHandler.OPEN_CLIP: OpenClipManager,
+}
+
+
 class ImageEmbedding(Embedding[ImageData, ImageEmbeddingConfig]):
     def __init__(
         self,
         embedding_config: ImageEmbeddingConfig,
-        model_cache_dir: Path | None = None,
     ) -> None:
         super().__init__(embedding_config)
-        self.manager = ImageEmbedding.init_manager(self._config.model_handler, self._config.model_name, model_cache_dir)
+        self.manager = ImageEmbedding.init_manager(
+            self._config.model_handler, self._config.model_name, self._config.model_cache_dir
+        )
 
     @override
     def embed_multiple(self, inputs: Sequence[ImageData], context: ExecutionContext) -> list[Vector]:
@@ -78,12 +85,6 @@ class ImageEmbedding(Embedding[ImageData, ImageEmbeddingConfig]):
 
     @classmethod
     def init_manager(cls, model_handler: ModelHandler, model_name: str, model_cache_dir: Path | None) -> ModelManager:
-        manager_by_handler = {
-            ModelHandler.SENTENCE_TRANSFORMERS: SentenceTransformerManager,
-            ModelHandler.OPEN_CLIP: OpenClipManager,
-        }
-        try:
-            manager_type = manager_by_handler[model_handler]
-        except KeyError as e:
-            raise ValueError(f"Unsupported model handler: {model_handler}") from e
-        return manager_type(model_name, model_cache_dir)
+        if manager_type := MANAGER_BY_HANDLER.get(model_handler):
+            return manager_type(model_name, model_cache_dir)
+        raise ValueError(f"Unsupported model handler: {model_handler}")

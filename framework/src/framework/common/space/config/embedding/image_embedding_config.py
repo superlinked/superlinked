@@ -14,6 +14,7 @@
 
 from dataclasses import dataclass
 from enum import Enum
+from pathlib import Path
 
 from typing_extensions import override
 
@@ -31,6 +32,7 @@ class ModelHandler(Enum):
 @dataclass(frozen=True)
 class ImageEmbeddingConfig(EmbeddingConfig[ImageData]):
     model_name: str
+    model_cache_dir: Path | None
     model_handler: ModelHandler
     length_to_use: int
 

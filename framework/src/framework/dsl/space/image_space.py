@@ -109,7 +109,7 @@ class ImageSpace(Space[Vector, ImageData]):
             self, set(description for description in description_fields if description is not None)
         )
         self._all_fields = self.image.fields | self.description.fields
-        self._transformation_config = self._init_transformation_config(model, length, model_handler)
+        self._transformation_config = self._init_transformation_config(model, model_cache_dir, model_handler, length)
         self.__embedding_node_by_schema = self._init_embedding_node_by_schema(
             image_fields, description_fields, self._all_fields, self.transformation_config
         )
@@ -168,11 +168,12 @@ class ImageSpace(Space[Vector, ImageData]):
         return False
 
     def _init_transformation_config(
-        self, model: str, length: int, model_handler: ModelHandler
+        self, model: str, model_cache_dir: Path | None, model_handler: ModelHandler, length: int
     ) -> TransformationConfig[Vector, ImageData]:
         embedding_config = ImageEmbeddingConfig(
             ImageData,
             model,
+            model_cache_dir,
             model_handler,
             length,
         )

@@ -68,8 +68,8 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
 
         Args:
             text (TextInput | list[TextInput]): The Text input or a list of Text inputs.
-            It is a SchemaFieldObject (String), not a regular python string.
-                model (str): The model used for text similarity.
+                It is a SchemaFieldObject (String), not a regular python string.
+            model (str): The model used for text similarity.
             cache_size (int): The number of embeddings to be stored in an inmemory LRU cache.
                 Set it to 0, to disable caching. Defaults to 10000.
             model_cache_dir (Path | None, optional): Directory to cache downloaded models.
@@ -80,7 +80,7 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
         super().__init__(text_fields, String)
         self.text = SpaceFieldSet[str](self, set(text_fields))
         length = SentenceTransformerManager(model, model_cache_dir).calculate_length()
-        self._transformation_config = self._init_transformation_config(model, cache_size, length)
+        self._transformation_config = self._init_transformation_config(model, model_cache_dir, cache_size, length)
         self._schema_node_map: dict[SchemaObject, EmbeddingNode[Vector, str]] = {
             self._get_root(unchecked_text).schema_obj: self._generate_embedding_node(
                 unchecked_text, self._transformation_config
@@ -144,9 +144,9 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
         return False
 
     def _init_transformation_config(
-        self, model: str, cache_size: int, length: int
+        self, model: str, model_cache_dir: Path | None, cache_size: int, length: int
     ) -> TransformationConfig[Vector, str]:
-        embedding_config = TextSimilarityEmbeddingConfig(str, model, cache_size, length)
+        embedding_config = TextSimilarityEmbeddingConfig(str, model, model_cache_dir, cache_size, length)
         aggregation_config = VectorAggregationConfig(Vector)
         normalization_config = L2NormConfig()
         return TransformationConfig(normalization_config, aggregation_config, embedding_config)
