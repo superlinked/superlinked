@@ -16,7 +16,7 @@
 from dataclasses import dataclass
 
 from beartype.typing import Sequence, cast
-from qdrant_client.models import Condition, FieldCondition, Filter
+from qdrant_client.models import Condition, Filter
 
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.interface.comparison_operand import (
@@ -92,12 +92,37 @@ class QdrantQueryBuilder:
     ) -> Filter | None:
         if not filters:
             return None
-        # Mutable lists!
-        must_filters = list[FieldCondition]()
-        must_not_filters = list[FieldCondition]()
-        for filter_ in filters:
-            qdrant_filter = FILTER_BY_OP_TYPE[filter_._op]
-            # Extends lists!
-            qdrant_filter.extend_filters(filter_, self._encoder, must_filters, must_not_filters)
-        # casting is needed as Filter only accepts `Condition` type but it also works with FieldCondition
-        return Filter(must=cast(list[Condition], must_filters), must_not=cast(list[Condition], must_not_filters))
+
+        grouped_filters = ComparisonOperation._group_filters_by_group_key(filters)
+        compiled_filters = [
+            self._compile_filter_for_group(group_key, group_filters)
+            for group_key, group_filters in grouped_filters.items()
+        ]
+        return Filter(must=compiled_filters)
+
+    def _compile_filter_for_group(self, group_key: int | None, filters: Sequence[ComparisonOperation]) -> Condition:
+        conditions = [self._create_clause_condition(filter_) for filter_ in filters]
+        return cast(
+            Condition,
+            Filter(
+                must=conditions if group_key is None else [],
+                should=conditions if group_key is not None else [],
+            ),
+        )
+
+    def _create_clause_condition(self, filter_: ComparisonOperation[Field]) -> Condition:
+        qdrant_filter = FILTER_BY_OP_TYPE[filter_._op]
+        field_conditions = qdrant_filter.to_field_conditions(filter_, self._encoder)
+
+        return cast(
+            Condition,
+            Filter(
+                must=self._get_typed_conditions(field_conditions, qdrant_filter, ClauseType.MUST),
+                must_not=self._get_typed_conditions(field_conditions, qdrant_filter, ClauseType.MUST_NOT),
+            ),
+        )
+
+    def _get_typed_conditions(
+        self, conditions: Sequence[Condition], filter_: QdrantFilter, target_type: ClauseType
+    ) -> list[Condition]:
+        return list(conditions) if filter_.clause_type == target_type else []

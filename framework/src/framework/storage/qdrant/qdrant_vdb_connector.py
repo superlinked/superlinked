@@ -217,8 +217,16 @@ class QdrantVDBConnector(VDBConnector):
         )
         return [
             self._get_result_entity_data_from_point(point, vdb_knn_search_params.fields_to_return)
-            for point in result.points
+            for point in self._calculate_sorted_result_points(result.points)
         ]
+
+    def _calculate_sorted_result_points(self, scored_points: Sequence[ScoredPoint]) -> list[ScoredPoint]:
+        """Sort by score descending, then by id ascending"""
+        result_points = list(scored_points)
+        result_points.sort(
+            key=lambda point: (-point.score, point.payload.get(ID_PAYLOAD_FIELD_NAME) if point.payload else None)
+        )
+        return result_points
 
     def _get_result_entity_data_from_point(
         self, point: ScoredPoint, fields_to_return: Sequence[Field]

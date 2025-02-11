@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Sequence
+from beartype.typing import Any, Sequence
 
 
 class MathUtil:
@@ -21,3 +21,9 @@ class MathUtil:
         over_0 = sum(val for val in values if val > 0)
         below_0 = abs(sum(val for val in values if val < 0))
         return max(below_0, over_0)
+
+    @staticmethod
+    def convert_float_typed_integers_to_int(value: float | Any) -> int | Any:
+        if isinstance(value, float) and value.is_integer():
+            return int(value)
+        return value

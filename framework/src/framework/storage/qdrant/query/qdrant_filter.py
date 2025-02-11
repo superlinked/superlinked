@@ -29,6 +29,8 @@ from superlinked.framework.common.interface.comparison_operation_type import (
 )
 from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.field.field_data import FieldData
+from superlinked.framework.common.storage.field.field_data_type import FieldDataType
+from superlinked.framework.common.util.math_util import MathUtil
 from superlinked.framework.storage.qdrant.qdrant_field_encoder import QdrantFieldEncoder
 
 
@@ -40,21 +42,6 @@ class ClauseType(Enum):
 @dataclass(frozen=True)
 class QdrantFilter(ABC):
     clause_type: ClauseType
-
-    def extend_filters(
-        self,
-        filter_: ComparisonOperation[Field],
-        encoder: QdrantFieldEncoder,
-        must_filters: list[FieldCondition],
-        must_not_filters: list[FieldCondition],
-    ) -> None:
-        filters_to_extend: list[FieldCondition]
-        match self.clause_type:
-            case ClauseType.MUST:
-                filters_to_extend = must_filters
-            case ClauseType.MUST_NOT:
-                filters_to_extend = must_not_filters
-        filters_to_extend.extend(self.to_field_conditions(filter_, encoder))
 
     @abstractmethod
     def to_field_conditions(
@@ -84,14 +71,13 @@ class MatchValueFilter(QdrantFilter):
     def _encode_match_value_filter(
         self, filter_: ComparisonOperation[Field], encoder: QdrantFieldEncoder
     ) -> MatchValue:
-        if not isinstance(filter_._other, MatchValueFilter.valid_types):
+        other = MathUtil.convert_float_typed_integers_to_int(filter_._other)
+        if not isinstance(other, MatchValueFilter.valid_types):
             raise ValueError(
                 f"Qdrant only supports {self.valid_types_string(MatchValueFilter.valid_types)} "
-                + f"{MatchValue.__name__}, got {type(filter_._other)}"
+                + f"{MatchValue.__name__}, got {type(other)}"
             )
-        return MatchValue(
-            value=encoder.encode_field(FieldData.from_field(cast(Field, filter_._operand), filter_._other))
-        )
+        return MatchValue(value=encoder.encode_field(FieldData.from_field(cast(Field, filter_._operand), other)))
 
 
 @dataclass(frozen=True)
@@ -110,15 +96,23 @@ class MatchAnyFilter(QdrantFilter):
         ]
 
     def _encode_match_any_filter(self, filter_: ComparisonOperation[Field], encoder: QdrantFieldEncoder) -> MatchAny:
-        other = filter_._other if isinstance(filter_._other, list) else [filter_._other]
-        if invalid_any := [type(o).__name__ for o in other if not isinstance(other, MatchAnyFilter.valid_types)]:
+        unconverted_others = filter_._other if isinstance(filter_._other, list) else [filter_._other]
+        others = [MathUtil.convert_float_typed_integers_to_int(other) for other in unconverted_others]
+        if invalid_any := [
+            type(other).__name__ for other in others if not isinstance(other, MatchAnyFilter.valid_types)
+        ]:
             raise ValueError(
                 f"Qdrant only supports {self.valid_types_string(MatchAnyFilter.valid_types)} "
                 + f"{MatchAny.__name__}, got {invalid_any}"
             )
-        return MatchAny(
-            any=[encoder.encode_field(FieldData.from_field(cast(Field, filter_._operand), o)) for o in other]
-        )
+        field = cast(Field, filter_._operand)
+        filter_values = [encoder.encode_field(self._create_field_data(field, other)) for other in others]
+        return MatchAny(any=filter_values)
+
+    def _create_field_data(self, field: Field, value: object) -> FieldData:
+        if field.data_type == FieldDataType.STRING_LIST:
+            return FieldData(FieldDataType.STRING, field.name, value)
+        return FieldData.from_field(field, value)
 
 
 @dataclass(frozen=True)
