@@ -219,8 +219,8 @@ If your system's host machine is equipped with a GPU, this documentation provide
 
 To enable GPU acceleration in Superlinked, configure the `GPU_EMBEDDING_THRESHOLD` environment variable. This variable determines when GPU embedding is activated based on batch size:
 
-- Default value: 0 (GPU embedding disabled)
-- Enable GPU value: 1
-- Behavior: When ingesting data via data load, if the number of elements exceeds the threshold, GPU will be used instead of CPU
+- **0 (Default)** : GPU embedding is disabled. All embeddings will be processed using the CPU.
+- **1** : Forces GPU embedding, regardless of batch size.
+- **2 to 99999** : Uses CPU for embedding if the batch size is below the specified value; otherwise, GPU is used. This allows for faster processing of small batches, where the CPU may be more efficient.
 
 Note: GPU acceleration is most effective for large batches of text or image embeddings. For other data types or smaller batches, CPU processing may be more efficient. Consider your specific use case and data characteristics when configuring this threshold.
