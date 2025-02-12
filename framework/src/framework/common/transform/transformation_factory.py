@@ -75,14 +75,14 @@ class BaseTransformations(Generic[AggregationInputT, EmbeddingInputT]):
 class TransformationFactory:
     @staticmethod
     def create_normalization_transformation(
-        transformation_config: TransformationConfig[AggregationInputT, EmbeddingInputT]
+        transformation_config: TransformationConfig[AggregationInputT, EmbeddingInputT],
     ) -> NormalizationStep:
         normalization = NormalizationFactory.create_normalization(transformation_config.normalization_config)
         return NormalizationStep(normalization)
 
     @staticmethod
     def create_embedding_transformation(
-        transformation_config: TransformationConfig[AggregationInputT, EmbeddingInputT]
+        transformation_config: TransformationConfig[AggregationInputT, EmbeddingInputT],
     ) -> Step[EmbeddingInputT, Vector]:
         embedding = EmbeddingFactory.create_embedding(transformation_config.embedding_config)
         normalization = NormalizationFactory.create_normalization(transformation_config.normalization_config)
@@ -90,7 +90,7 @@ class TransformationFactory:
 
     @staticmethod
     def create_multi_embedding_transformation(
-        transformation_config: TransformationConfig[AggregationInputT, EmbeddingInputT]
+        transformation_config: TransformationConfig[AggregationInputT, EmbeddingInputT],
     ) -> Step[Sequence[EmbeddingInputT], list[Vector]]:
         embedding = EmbeddingFactory.create_embedding(transformation_config.embedding_config)
         normalization = NormalizationFactory.create_normalization(transformation_config.normalization_config)
@@ -152,7 +152,7 @@ class TransformationFactory:
 
     @staticmethod
     def __create_base_transformations(
-        transformation_config: TransformationConfig[AggregationInputT, EmbeddingInputT]
+        transformation_config: TransformationConfig[AggregationInputT, EmbeddingInputT],
     ) -> BaseTransformations[AggregationInputT, EmbeddingInputT]:
         normalization = NormalizationFactory.create_normalization(transformation_config.normalization_config)
         aggregation = AggregationFactory.create_aggregation(transformation_config.aggregation_config)

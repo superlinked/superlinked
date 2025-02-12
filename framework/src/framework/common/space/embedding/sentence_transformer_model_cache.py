@@ -22,6 +22,7 @@ import structlog
 from beartype.typing import Sequence
 from filelock import FileLock
 from huggingface_hub import snapshot_download
+from huggingface_hub.errors import LocalEntryNotFoundError
 from huggingface_hub.file_download import repo_folder_name
 from sentence_transformers import SentenceTransformer
 
@@ -104,10 +105,11 @@ class SentenceTransformerModelCache:
                         cache_dir=cache_folder,
                     )
                     return
-            except TimeoutError:
+            except (TimeoutError, LocalEntryNotFoundError) as e:
                 logger.warning(
                     f"Attempt {attempt + 1}/{max_retries}: Timeout acquiring lock"
                     f" for downloading {model_name}, retrying in {retry_delay} seconds..."
+                    f" Error: {str(e)}"
                 )
                 sleep(retry_delay)
 

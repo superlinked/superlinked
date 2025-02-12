@@ -67,7 +67,7 @@ class QueryParamModelBuilder:
         match param:
             case Evaluated():
                 return param.value
-            case _ if (default_value := query_clause.get_param(param).default):
+            case _ if default_value := query_clause.get_param(param).default:
                 return Field(default=default_value)
             case _:
                 return Field()
