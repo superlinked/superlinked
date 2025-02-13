@@ -29,13 +29,27 @@ class ComparisonOperationType(Enum):
     CONTAINS_ALL = "contain_all_of"
 
 
+COMPARABLE_COMPARISON_OPERATION_TYPES = [
+    ComparisonOperationType.GREATER_THAN,
+    ComparisonOperationType.LESS_THAN,
+    ComparisonOperationType.GREATER_EQUAL,
+    ComparisonOperationType.LESS_EQUAL,
+]
+
 ITERABLE_COMPARISON_OPERATION_TYPES = [
     ComparisonOperationType.IN,
     ComparisonOperationType.NOT_IN,
 ]
 
-LIST_TYPE_COMPATIBLE_TYPES = ITERABLE_COMPARISON_OPERATION_TYPES + [
+CONTAINS_COMPARISON_OPERATION_TYPES = [
     ComparisonOperationType.CONTAINS,
     ComparisonOperationType.NOT_CONTAINS,
     ComparisonOperationType.CONTAINS_ALL,
 ]
+
+EQUALITY_COMPARISON_OPERATION_TYPES = [
+    ComparisonOperationType.EQUAL,
+    ComparisonOperationType.NOT_EQUAL,
+] + ITERABLE_COMPARISON_OPERATION_TYPES
+
+LIST_TYPE_COMPATIBLE_TYPES = CONTAINS_COMPARISON_OPERATION_TYPES + ITERABLE_COMPARISON_OPERATION_TYPES

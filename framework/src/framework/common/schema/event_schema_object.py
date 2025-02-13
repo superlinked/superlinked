@@ -17,10 +17,13 @@ from __future__ import annotations
 from abc import ABC
 from types import UnionType
 
-from beartype.typing import Generic, TypeVar, cast
+from beartype.typing import Generic, Sequence, TypeVar, cast
 from typing_extensions import override
 
 from superlinked.framework.common.exception import InitializationException
+from superlinked.framework.common.interface.comparison_operation_type import (
+    ComparisonOperationType,
+)
 from superlinked.framework.common.interface.has_multiplier import HasMultiplier
 from superlinked.framework.common.schema.exception import (
     InvalidAttributeException,
@@ -58,6 +61,11 @@ class SchemaReference(SchemaField[str], HasMultiplier, Generic[RST]):
                 f"referenced_schema ({referenced_schema}) is not a subclass of IdSchemaObject"
             )
         self.__referenced_schema: type[IdSchemaObject] = referenced_schema
+
+    @property
+    @override
+    def supported_comparison_operation_types(self) -> Sequence[ComparisonOperationType]:
+        return []
 
     def __str__(self) -> str:
         return (
@@ -101,6 +109,11 @@ class CreatedAtField(SchemaField[int]):
 
     def __init__(self, schema_obj: SchemaObjectT, created_at_field_name: str) -> None:
         super().__init__(created_at_field_name, schema_obj, int, nullable=False)
+
+    @property
+    @override
+    def supported_comparison_operation_types(self) -> Sequence[ComparisonOperationType]:
+        return []
 
 
 class EventSchemaObject(IdSchemaObject, ABC):

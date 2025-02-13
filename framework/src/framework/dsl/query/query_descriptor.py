@@ -328,6 +328,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
             comparison_operation.operations if isinstance(comparison_operation, _Or) else [comparison_operation]
         )
         for operation in comparison_operations:
+            QueryFilterValidator.validate_operation_is_supported(operation)
             QueryFilterValidator.validate_operation_operand_type(operation, allow_param=True)
         clauses = [
             HardFilterClause(

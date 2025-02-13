@@ -22,6 +22,12 @@ from typing_extensions import override
 
 from superlinked.framework.common.data_types import PythonTypes
 from superlinked.framework.common.interface.comparison_operand import ComparisonOperand
+from superlinked.framework.common.interface.comparison_operation_type import (
+    COMPARABLE_COMPARISON_OPERATION_TYPES,
+    CONTAINS_COMPARISON_OPERATION_TYPES,
+    EQUALITY_COMPARISON_OPERATION_TYPES,
+    ComparisonOperationType,
+)
 from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.schema.exception import FieldException
 from superlinked.framework.common.schema.schema_field_descriptor import (
@@ -121,6 +127,10 @@ class SchemaField(ComparisonOperand, Generic[SFT]):
             f"(name={self.name}, type={self.type_}, schema_object_name={self.schema_obj._schema_name})"
         )
 
+    @property
+    @abstractmethod
+    def supported_comparison_operation_types(self) -> Sequence[ComparisonOperationType]: ...
+
     @staticmethod
     def _built_in_equal(left_operand: ComparisonOperand[SchemaField], right_operand: object) -> bool:
         if isinstance(left_operand, SchemaField) and isinstance(right_operand, SchemaField):
@@ -150,6 +160,11 @@ class String(SchemaField[str]):
             raise TypeError(f"Operand must be of type {Blob.__name__}")
         return DescribedBlob(blob=other, description=self)
 
+    @property
+    @override
+    def supported_comparison_operation_types(self) -> Sequence[ComparisonOperationType]:
+        return EQUALITY_COMPARISON_OPERATION_TYPES
+
 
 class Timestamp(SchemaField[int]):
     """
@@ -160,6 +175,11 @@ class Timestamp(SchemaField[int]):
 
     def __init__(self, name: str, schema_obj: SchemaObjectT, nullable: bool) -> None:
         super().__init__(name, schema_obj, int, nullable)
+
+    @property
+    @override
+    def supported_comparison_operation_types(self) -> Sequence[ComparisonOperationType]:
+        return EQUALITY_COMPARISON_OPERATION_TYPES + COMPARABLE_COMPARISON_OPERATION_TYPES
 
 
 class Blob(SchemaField[BlobInformation]):
@@ -176,6 +196,11 @@ class Blob(SchemaField[BlobInformation]):
         if not isinstance(other, String):
             raise TypeError(f"Operand must be of type {String.__name__}")
         return DescribedBlob(blob=self, description=other)
+
+    @property
+    @override
+    def supported_comparison_operation_types(self) -> Sequence[ComparisonOperationType]:
+        return []
 
 
 NSFT = TypeVar("NSFT", float, int)
@@ -197,6 +222,11 @@ class Float(Number[float]):
     def __init__(self, name: str, schema_obj: SchemaObjectT, nullable: bool) -> None:
         super().__init__(name, schema_obj, float, nullable)
 
+    @property
+    @override
+    def supported_comparison_operation_types(self) -> Sequence[ComparisonOperationType]:
+        return COMPARABLE_COMPARISON_OPERATION_TYPES
+
 
 class Integer(Number[int]):
     """
@@ -205,6 +235,11 @@ class Integer(Number[int]):
 
     def __init__(self, name: str, schema_obj: SchemaObjectT, nullable: bool) -> None:
         super().__init__(name, schema_obj, int, nullable)
+
+    @property
+    @override
+    def supported_comparison_operation_types(self) -> Sequence[ComparisonOperationType]:
+        return EQUALITY_COMPARISON_OPERATION_TYPES + COMPARABLE_COMPARISON_OPERATION_TYPES
 
 
 class FloatList(SchemaField[list[float]]):
@@ -219,6 +254,11 @@ class FloatList(SchemaField[list[float]]):
     def parse(self, value: list[float]) -> list[float]:
         return value if isinstance(value, list) else [cast(float, value)]
 
+    @property
+    @override
+    def supported_comparison_operation_types(self) -> Sequence[ComparisonOperationType]:
+        return []
+
 
 class StringList(SchemaField[list[str]]):
     """
@@ -231,6 +271,11 @@ class StringList(SchemaField[list[str]]):
     @override
     def parse(self, value: list[str]) -> list[str]:
         return value if isinstance(value, list) else [cast(str, value)]
+
+    @property
+    @override
+    def supported_comparison_operation_types(self) -> Sequence[ComparisonOperationType]:
+        return CONTAINS_COMPARISON_OPERATION_TYPES
 
 
 @dataclass(frozen=True)

@@ -22,6 +22,7 @@ from superlinked.framework.common.interface.comparison_operand import (
 from superlinked.framework.common.interface.comparison_operation_type import (
     LIST_TYPE_COMPATIBLE_TYPES,
 )
+from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.util.generic_class_util import GenericClassUtil
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.query.param import Param
@@ -36,6 +37,14 @@ class QueryFilterValidator:
             QueryFilterValidator._validate_list_type(comparison_operation, expected_type, allow_param)
         else:
             QueryFilterValidator._validate_single_type(comparison_operation, expected_type, allow_param)
+
+    @staticmethod
+    def validate_operation_is_supported(comparison_operation: ComparisonOperation[SchemaField]) -> None:
+        field = comparison_operation._operand
+        if not isinstance(field, SchemaField):
+            raise QueryException("ComparisonOperation operand must be a SchemaField")
+        if comparison_operation._op not in field.supported_comparison_operation_types:
+            raise QueryException(f"Field {field.name} doesn't support {comparison_operation._op.value} operation.")
 
     @staticmethod
     def _validate_list_type(comparison_operation: ComparisonOperation, expected_type: Any, allow_param: bool) -> None:

@@ -15,8 +15,12 @@
 from abc import ABC
 from types import UnionType
 
-from beartype.typing import TypeVar, cast
+from beartype.typing import Sequence, TypeVar, cast
+from typing_extensions import override
 
+from superlinked.framework.common.interface.comparison_operation_type import (
+    ComparisonOperationType,
+)
 from superlinked.framework.common.schema.schema_object import (
     ConcreteSchemaField,
     SchemaField,
@@ -34,6 +38,11 @@ class IdField(SchemaField[str]):
 
     def __init__(self, schema_obj: SchemaObjectT, id_field_name: str) -> None:
         super().__init__(id_field_name, schema_obj, str, nullable=False)
+
+    @property
+    @override
+    def supported_comparison_operation_types(self) -> Sequence[ComparisonOperationType]:
+        return []
 
 
 class IdSchemaObject(SchemaObject, ABC):
