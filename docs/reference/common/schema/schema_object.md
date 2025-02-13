@@ -16,6 +16,11 @@ Classes
     * abc.ABC
     * typing.Generic
 
+    ### Instance variables
+
+    `supported_comparison_operation_types: Sequence[ComparisonOperationType]`
+    :
+
 `DescribedBlob(blob: Blob, description: String)`
 :   DescribedBlob(blob: 'Blob', description: 'String')
 
@@ -38,6 +43,11 @@ Classes
     * abc.ABC
     * typing.Generic
 
+    ### Instance variables
+
+    `supported_comparison_operation_types: Sequence[ComparisonOperationType]`
+    :
+
 `FloatList(name: str, schema_obj: SchemaObjectT, nullable: bool)`
 :   Field of a schema that represents a vector.
 
@@ -47,6 +57,11 @@ Classes
     * superlinked.framework.common.interface.comparison_operand.ComparisonOperand
     * abc.ABC
     * typing.Generic
+
+    ### Instance variables
+
+    `supported_comparison_operation_types: Sequence[ComparisonOperationType]`
+    :
 
     ### Methods
 
@@ -63,6 +78,11 @@ Classes
     * superlinked.framework.common.interface.comparison_operand.ComparisonOperand
     * abc.ABC
     * typing.Generic
+
+    ### Instance variables
+
+    `supported_comparison_operation_types: Sequence[ComparisonOperationType]`
+    :
 
 `Number(name: str, schema_obj: SchemaObjectT, type_: type[SFT], nullable: bool)`
 :   Field of a schema that represents a union of Float and Integer.
@@ -106,6 +126,11 @@ Classes
     * superlinked.framework.common.schema.schema_object.StringList
     * superlinked.framework.common.schema.schema_object.Timestamp
 
+    ### Instance variables
+
+    `supported_comparison_operation_types: Sequence[ComparisonOperationType]`
+    :
+
     ### Methods
 
     `parse(self, value: SFT) ‑> ~SFT`
@@ -137,6 +162,11 @@ Classes
     * abc.ABC
     * typing.Generic
 
+    ### Instance variables
+
+    `supported_comparison_operation_types: Sequence[ComparisonOperationType]`
+    :
+
 `StringList(name: str, schema_obj: SchemaObjectT, nullable: bool)`
 :   Field of a schema that represents a list of strings.
 
@@ -146,6 +176,11 @@ Classes
     * superlinked.framework.common.interface.comparison_operand.ComparisonOperand
     * abc.ABC
     * typing.Generic
+
+    ### Instance variables
+
+    `supported_comparison_operation_types: Sequence[ComparisonOperationType]`
+    :
 
     ### Methods
 
@@ -163,3 +198,8 @@ Classes
     * superlinked.framework.common.interface.comparison_operand.ComparisonOperand
     * abc.ABC
     * typing.Generic
+
+    ### Instance variables
+
+    `supported_comparison_operation_types: Sequence[ComparisonOperationType]`
+    :

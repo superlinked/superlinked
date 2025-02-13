@@ -9,5 +9,8 @@ Classes
 
     ### Static methods
 
+    `validate_operation_is_supported(comparison_operation: superlinked.framework.common.interface.comparison_operand.ComparisonOperation[superlinked.framework.common.schema.schema_object.SchemaField]) ‑> None`
+    :
+
     `validate_operation_operand_type(comparison_operation: superlinked.framework.common.interface.comparison_operand.ComparisonOperation, allow_param: bool) ‑> None`
     :

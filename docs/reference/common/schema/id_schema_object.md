@@ -14,6 +14,11 @@ Classes
     * abc.ABC
     * typing.Generic
 
+    ### Instance variables
+
+    `supported_comparison_operation_types: Sequence[superlinked.framework.common.interface.comparison_operation_type.ComparisonOperationType]`
+    :
+
 `IdSchemaObject(base_cls: type, id_field_name: str)`
 :   Schema object with required ID field.
 
