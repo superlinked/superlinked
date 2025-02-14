@@ -406,7 +406,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
 
     def get_selected_fields(self) -> Sequence[SchemaField]:
         field_names = self.get_mandatory_clause_by_type(SelectClause).evaluate()
-        return self.schema._get_fields_by_names(field_names)
+        return self._get_selected_fields_by_names(field_names)
 
     def get_hard_filters(self) -> list[ComparisonOperation[SchemaField]]:
         return [
@@ -495,6 +495,12 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
 
     def __append_clauses(self, clauses: Sequence[QueryClause]) -> QueryDescriptor:
         return QueryDescriptor(self.index, self.schema, list(self.clauses) + list(clauses), self.with_metadata)
+
+    def _get_selected_fields_by_names(self, field_names: Sequence[str]) -> list[SchemaField]:
+        """We filter out the id field as it is always returned."""
+        id_field_name = self.schema.id.name
+        filtered_field_names = [name for name in field_names if name != id_field_name]
+        return self.schema._get_fields_by_names(filtered_field_names)
 
     @classmethod
     def __to_param(cls, param_input: Any) -> Param | Evaluated[Param]:
@@ -614,7 +620,9 @@ class QueryDescriptorValidator:
         if clause is None:
             return
         field_names = clause.get_value()
-        query_descriptor.schema._get_fields_by_names(field_names)  # this also validates
+        if query_descriptor.schema.id.name in field_names:
+            logger.info("The id field is automatically included - no need to specify it in the select clause.")
+        query_descriptor._get_selected_fields_by_names(field_names)  # this also validates
 
     @staticmethod
     def __validate_overridden_now_clause(query_descriptor: QueryDescriptor) -> None:
