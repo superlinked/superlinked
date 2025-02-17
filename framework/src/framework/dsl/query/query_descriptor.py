@@ -330,6 +330,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         for operation in comparison_operations:
             QueryFilterValidator.validate_operation_is_supported(operation)
             QueryFilterValidator.validate_operation_operand_type(operation, allow_param=True)
+            QueryFilterValidator.validate_operation_field_is_part_of_schema(operation, self.__schema)
         clauses = [
             HardFilterClause(
                 self.__to_param(operation._other),
