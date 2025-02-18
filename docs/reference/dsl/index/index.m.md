@@ -33,6 +33,11 @@ Classes
     Raises:
         InitializationException: If no spaces are provided.
 
+    ### Instance variables
+
+    `schemas: Sequence[superlinked.framework.common.schema.schema_object.SchemaObject]`
+    :
+
     ### Methods
 
     `has_schema(self, schema: superlinked.framework.common.schema.schema_object.SchemaObject) ‑> bool`
