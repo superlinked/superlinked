@@ -51,13 +51,14 @@ class InteractiveSource(OnlineSource[IdSchemaObjectT, SourceTypeT], Generic[IdSc
         Raises:
             InitializationException: If the schema is not an instance of SchemaObject.
         """
+        if not isinstance(schema, IdSchemaObject):
+            raise InitializationException(f"Parameter `schema` is of invalid type: {schema.__class__.__name__}")
+
         super().__init__(
             schema,
             cast(DataParser[IdSchemaObjectT, SourceTypeT], parser or JsonParser(schema)),
         )
         self.__can_accept_data = False
-        if not isinstance(schema, IdSchemaObject):
-            raise InitializationException(f"Parameter `schema` is of invalid type: {schema.__class__.__name__}")
 
     def allow_data_ingestion(self) -> None:
         self.__can_accept_data = True

@@ -110,6 +110,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
         self.__fields = self.__init_fields(fields)
         effects_with_schema = self.__init_effects_with_schema(effects, self.__spaces)
         self.__effect_schemas = self.__init_effect_schemas(effects_with_schema)
+        self.__schemas = list(set(self.__space_schemas).union(set(self.__effect_schemas)))
         self.__node = self.__init_index_node(self.__spaces, effects_with_schema, event_modifier)
         self.__dag_effects = self.__init_dag_effects(effects_with_schema)
         self.__dag = self.__init_dag(self.__node, self.__dag_effects)
@@ -122,6 +123,10 @@ class Index:  # pylint: disable=too-many-instance-attributes
             field_types=[field.__class__.__name__ for field in self._fields],
         )
         self._logger.info("initialized index")
+
+    @property
+    def schemas(self) -> Sequence[SchemaObject]:
+        return self.__schemas
 
     @property
     def _spaces(self) -> Sequence[Space]:
@@ -181,7 +186,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
         Returns:
             bool: True if the index has the schema, False otherwise.
         """
-        return schema in set(self.__space_schemas).union(set(self.__effect_schemas))
+        return schema in self.__schemas
 
     def __init_spaces(self, spaces: Space | list[Space]) -> list[Space]:
         if not isinstance(spaces, Sequence):
