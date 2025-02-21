@@ -11,7 +11,7 @@ icon: bullseye-arrow
 3. Combine your embeddings into a queryable [Index](../reference/dsl/index/index.md).
 4. Define your search with dynamic parameters and weights as a [Query](../reference/dsl/query/query.md).
 5. Load your data using a [Source](../reference/dsl/source/index.md).
-6. Define your transformations with a [Parser](../reference/common/parser) (e.g.: from [`pd.DataFrame`](../reference/common/parser/dataframe_parser.md)). 
+6. Define your transformations with a [Parser](https://docs.superlinked.com/reference/components/parser) (e.g.: from [`pd.DataFrame`](../reference/common/parser/dataframe_parser.md)). 
 7. Run your configuration with an [Executor](../reference/dsl/executor/in_memory/in_memory_executor.md).
 
 
