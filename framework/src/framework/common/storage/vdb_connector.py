@@ -36,6 +36,7 @@ from superlinked.framework.common.storage.search_index.search_algorithm import (
 from superlinked.framework.common.storage.search_index.vector_component_precision import (
     VectorComponentPrecision,
 )
+from superlinked.framework.common.util.execution_timer import time_execution
 from superlinked.framework.storage.in_memory.object_serializer import ObjectSerializer
 
 
@@ -122,6 +123,7 @@ class VDBConnector(ABC):
     def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
         pass
 
+    @time_execution
     def knn_search(
         self,
         index_name: str,

@@ -30,6 +30,7 @@ from superlinked.framework.common.settings import Settings
 from superlinked.framework.common.space.embedding.model_manager import (
     SENTENCE_TRANSFORMERS_ORG_NAME,
 )
+from superlinked.framework.common.util.execution_timer import time_execution
 from superlinked.framework.common.util.gpu_embedding_util import CPU_DEVICE_TYPE
 
 logger = structlog.getLogger()
@@ -42,6 +43,7 @@ CONFIG_FILE_PATH = "{model_folder}/snapshots/{snapshot}/config.json"
 class SentenceTransformerModelCache:
     @classmethod
     @lru_cache(maxsize=10)
+    @time_execution
     def initialize_model(
         cls,
         model_name: str,

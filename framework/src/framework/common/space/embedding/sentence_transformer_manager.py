@@ -16,6 +16,7 @@
 import numpy as np
 import structlog
 from beartype.typing import Sequence
+from numpy import ndarray
 from PIL.Image import Image
 from sentence_transformers import SentenceTransformer
 from typing_extensions import override
@@ -27,9 +28,11 @@ from superlinked.framework.common.space.embedding.model_manager import ModelMana
 from superlinked.framework.common.space.embedding.sentence_transformer_model_cache import (
     SentenceTransformerModelCache,
 )
+from superlinked.framework.common.util.execution_timer import time_execution
 from superlinked.framework.common.util.gpu_embedding_util import GpuEmbeddingUtil
 
 logger = structlog.getLogger()
+
 
 SENTENCE_TRANSFORMER_PROMPT_NAME_KWARG_KEY = "prompt_name"
 QUERY_PROMPT_NAME = "query"
@@ -37,14 +40,12 @@ QUERY_PROMPT_NAME = "query"
 
 class SentenceTransformerManager(ModelManager):
     @override
+    @time_execution
     def _embed(self, inputs: Sequence[str | Image], context: ExecutionContext) -> list[list[float]] | list[np.ndarray]:
         model = self._get_embedding_model(len(inputs))
         prompt_name = self._calculate_prompt_name(model, context)
         try:
-            embeddings = model.encode(
-                list(inputs),  # type: ignore[arg-type] # it also accepts Image
-                prompt_name=prompt_name,
-            )
+            embeddings = self._encode(inputs, model, prompt_name)
         except RuntimeError as e:
             if "The size of tensor a" in str(e) and "must match the size of tensor b" in str(e):
                 longest_input_len = max(len(str(x)) if isinstance(x, str) else 0 for x in inputs)
@@ -55,6 +56,13 @@ class SentenceTransformerManager(ModelManager):
                 ) from e
             raise e
         return embeddings.tolist()
+
+    @time_execution
+    def _encode(self, inputs: Sequence[str | Image], model: SentenceTransformer, prompt_name: str | None) -> ndarray:
+        return model.encode(
+            list(inputs),  # type: ignore[arg-type] # it also accepts Image
+            prompt_name=prompt_name,
+        )
 
     def embed_text(self, inputs: Sequence[str], context: ExecutionContext) -> list[Vector]:
         if not inputs:
@@ -67,7 +75,8 @@ class SentenceTransformerManager(ModelManager):
 
     def _get_embedding_model(self, number_of_inputs: int) -> SentenceTransformer:
         device_type = GpuEmbeddingUtil.get_device_type(number_of_inputs)
-        return SentenceTransformerModelCache.initialize_model(self._model_name, device_type, self._model_cache_dir)
+        model = SentenceTransformerModelCache.initialize_model(self._model_name, device_type, self._model_cache_dir)
+        return model
 
     def _calculate_prompt_name(self, model: SentenceTransformer, context: ExecutionContext) -> str | None:
         return (

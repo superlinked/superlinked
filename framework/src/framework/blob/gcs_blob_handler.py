@@ -23,8 +23,10 @@ from typing_extensions import override
 
 from superlinked.framework.blob.blob_handler import BlobHandler
 from superlinked.framework.blob.blob_metadata import BlobMetadata
+from superlinked.framework.common.util.execution_timer import time_execution
 
 logger = structlog.getLogger()
+
 
 SUPPORTED_SCHEME = "gs"
 
@@ -43,6 +45,7 @@ class GcsBlobHandler(BlobHandler):
         future.add_done_callback(lambda f: self._task_done_callback(f, object_key, data))
 
     @override
+    @time_execution
     def download(self, object_key: str) -> bytes:
         try:
             bucket_name, object_full_path = self._parse_gcs_path(object_key)

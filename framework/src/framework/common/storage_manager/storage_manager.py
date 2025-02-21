@@ -57,6 +57,7 @@ from superlinked.framework.common.storage_manager.search_result_item import (
     SearchResultItem,
 )
 from superlinked.framework.common.storage_manager.storage_naming import StorageNaming
+from superlinked.framework.common.util.execution_timer import time_execution
 
 ResultTypeT = TypeVar("ResultTypeT")
 # NodeDataValueType
@@ -82,6 +83,7 @@ class StorageManager:
     def close_connection(self) -> None:
         self._vdb_connector.close_connection()
 
+    @time_execution
     def init_search_indices(
         self,
         params_list: Sequence[SearchIndexParams],
@@ -203,6 +205,7 @@ class StorageManager:
             index_vector,
         )
 
+    @time_execution
     def write_parsed_schema_fields(self, parsed_schemas: Sequence[ParsedSchema]) -> None:
         entities_to_write = [
             self._entity_builder.compose_entity_data_from_parsed_schema(parsed_schema)
@@ -210,6 +213,7 @@ class StorageManager:
         ]
         self._vdb_connector.write_entities(entities_to_write)
 
+    @time_execution
     def write_node_result(
         self,
         schema: SchemaObject,
@@ -225,6 +229,7 @@ class StorageManager:
             field_data.append(result_field_data)
         self._vdb_connector.write_entities([EntityData(entity_id, {fd.name: fd for fd in field_data})])
 
+    @time_execution
     def write_node_data(
         self,
         schema: SchemaObject,
@@ -237,6 +242,7 @@ class StorageManager:
         field_data.extend(list(self._entity_builder.compose_field_data_from_node_data(node_id, node_data)))
         self._vdb_connector.write_entities([EntityData(entity_id, {fd.name: fd for fd in field_data})])
 
+    @time_execution
     def read_schema_field_values(self, object_id: str, schema_fields: Sequence[SchemaField]) -> ParsedSchema:
         schema = self._get_schema_of_schema_fields(schema_fields)
         entity_id = self._entity_builder.compose_entity_id(schema._schema_name, object_id)
@@ -262,6 +268,7 @@ class StorageManager:
             raise InvalidSchemaException(f"The root schema of `schema_fields` must be an {IdSchemaObject.__name__}")
         return schema
 
+    @time_execution
     def read_node_results(
         self,
         schemas_with_object_ids: Sequence[tuple[SchemaObject, str]],
@@ -291,6 +298,7 @@ class StorageManager:
         return next(iter(self.read_node_results([(schema, object_id)], node_id, result_type)))
 
     # TODO FAI-2737 to solve the parameters
+    @time_execution
     def read_node_data(
         self,
         schema: SchemaObject,

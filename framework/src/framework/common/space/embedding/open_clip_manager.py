@@ -28,6 +28,7 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.space.embedding.model_manager import ModelManager
+from superlinked.framework.common.util.execution_timer import time_execution
 from superlinked.framework.common.util.gpu_embedding_util import GpuEmbeddingUtil
 
 logger = structlog.getLogger(__name__)
@@ -40,6 +41,7 @@ class OpenClipManager(ModelManager):
         return len(self.encode_texts([""], embedding_model)[0])
 
     @override
+    @time_execution
     def _embed(self, inputs: Sequence[str | Image], context: ExecutionContext) -> list[list[float]] | list[np.ndarray]:
         embedding_model, preprocess_val = self._get_embedding_model(len(inputs))
         text_inputs, image_inputs = self._categorize_inputs(inputs)
@@ -55,7 +57,8 @@ class OpenClipManager(ModelManager):
         logger.debug(
             "initialize model", model_name=self._model_name, device_type=device_type, cache_dir=self._model_cache_dir
         )
-        return OpenClipModelCache.initialize_model(self._model_name, device_type, self._model_cache_dir)
+        model = OpenClipModelCache.initialize_model(self._model_name, device_type, self._model_cache_dir)
+        return model
 
     def _categorize_inputs(self, inputs: Sequence[str | Image]) -> tuple[list[str], list[Image]]:
         text_inputs = [inp for inp in inputs if isinstance(inp, str)]
@@ -80,6 +83,7 @@ class OpenClipManager(ModelManager):
     def _normalize_encoding(self, encoding: torch.Tensor) -> torch.Tensor:
         return encoding / encoding.norm(dim=-1, keepdim=True)
 
+    @time_execution
     def encode_texts(self, texts: list[str], embedding_model: CLIP) -> torch.Tensor:
         if not texts:
             return torch.Tensor()
@@ -97,6 +101,7 @@ class OpenClipManager(ModelManager):
             texts_tokenized = texts_tokenized.to(device)
         return embedding_model.encode_text(texts_tokenized)
 
+    @time_execution
     def encode_images(self, images: list[Any], embedding_model: CLIP, preprocess_val: Compose) -> torch.Tensor:
         if not images:
             return torch.Tensor()
@@ -118,6 +123,7 @@ class OpenClipManager(ModelManager):
 class OpenClipModelCache:
     @staticmethod
     @lru_cache(maxsize=10)
+    @time_execution
     def initialize_model(model_name: str, device: str, cache_dir: Path) -> tuple[CLIP, Compose]:
         model, _, preprocess_val = cast(
             tuple[CLIP, Any, Compose],

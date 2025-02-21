@@ -18,6 +18,7 @@ from pydantic import BaseModel
 
 from superlinked.framework.common.exception import QueryException
 from superlinked.framework.common.nlq.open_ai import OpenAIClient, OpenAIClientConfig
+from superlinked.framework.common.util.execution_timer import time_execution
 from superlinked.framework.dsl.query.nlq.nlq_clause_collector import NLQClauseCollector
 from superlinked.framework.dsl.query.nlq.param_filler.query_param_model_builder import (
     QueryParamModelBuilder,
@@ -78,6 +79,7 @@ class NLQHandler:
         return QuerySuggestionsModel(**result)
 
     @classmethod
+    @time_execution
     def _execute_query(
         cls,
         query: str,
@@ -87,6 +89,7 @@ class NLQHandler:
     ) -> dict[str, Any]:
         try:
             client = OpenAIClient(client_config)
-            return client.query(query, instructor_prompt, model_class)
+            result = client.query(query, instructor_prompt, model_class)
+            return result
         except Exception as e:
             raise QueryException(f"Error executing natural language query: {str(e)}") from e
