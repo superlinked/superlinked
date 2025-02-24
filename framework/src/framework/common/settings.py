@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     GPU_EMBEDDING_THRESHOLD: int = 0
     DISABLE_RICH_TRACEBACK: bool = False
     ENABLE_PROFILING: bool = False
+    SUPERLINKED_EXECUTION_TIMER_INTERVAL_MS: int = 10
     SUPERLINKED_EXECUTION_TIMER_FILE_PATH: str | None = None  # path for profiling output json
     SUPERLINKED_LOG_LEVEL: int | str | None = None
     SUPERLINKED_LOG_AS_JSON: bool = False

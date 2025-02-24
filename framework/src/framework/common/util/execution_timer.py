@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import atexit
 import inspect
 import json
 import os
 import time
 from collections import defaultdict
 from functools import wraps
-from threading import Lock
+from threading import Lock, Thread
 
 from asgi_correlation_id.context import correlation_id
 from beartype.typing import Any, Callable
@@ -41,31 +42,28 @@ class ExecutionTimer:
         if not self.__dict__.get("_initialized", False):
             self.output_path = output_path
             self.lock = Lock()
-            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            self._data: dict[str, dict[str, list[dict[str, float | None]]]] = defaultdict(
+                lambda: defaultdict(list)
+            )  # In-memory data store
+            dir_path = os.path.dirname(output_path) or "."
+            os.makedirs(dir_path, exist_ok=True)
+            self._flush_interval = Settings().SUPERLINKED_EXECUTION_TIMER_INTERVAL_MS
+            self._flush_thread = Thread(target=self._flush_periodically, daemon=True)
+            self._flush_thread.start()
             self.__dict__["_initialized"] = True
+            atexit.register(self.flush)
 
     def start(self, function_id: str) -> None:
         process_id = self._get_process_id()
+        current_time = time.time() * 1000
         with self.lock:
-            data = self._read_from_file()
-            if process_id not in data:
-                data[process_id] = {}
-            if function_id not in data[process_id]:
-                data[process_id][function_id] = []
-
-            data[process_id][function_id].append({"start": time.time() * 1000, "end": None})
-            self._write_to_file(data)
+            self._data[process_id][function_id].append({"start": current_time, "end": None})
 
     def stop(self, function_id: str) -> None:
         process_id = self._get_process_id()
         current_time = time.time() * 1000
-
         with self.lock:
-            data = self._read_from_file()
-            if process_id not in data or function_id not in data[process_id]:
-                return
-
-            records = data[process_id][function_id]
+            records = self._data[process_id][function_id]
             if not records:
                 return
 
@@ -73,12 +71,22 @@ class ExecutionTimer:
             if last_record["end"] is None:
                 last_record["end"] = current_time
                 self._update_statistics(records)
-                self._write_to_file(data)
 
     @classmethod
-    def reset(cls) -> None:
-        """Reset all timer instances"""
-        cls._instances = {}
+    def flush(cls) -> None:
+        """Flush the in-memory data to the output file immediately for all ExecutionTimer instances."""
+        for instance in cls._instances.values():
+            if hasattr(instance, "lock"):
+                with instance.lock:
+                    existing_data = instance._read_from_file()
+                    merged_data = instance._merge_data(existing_data, instance._data)
+                    instance._write_to_file(merged_data)
+                    instance._data = defaultdict(lambda: defaultdict(list))  # Reset in-memory data
+
+    def _flush_periodically(self) -> None:
+        while True:
+            time.sleep(self._flush_interval)
+            self.flush()
 
     def _update_statistics(self, records: list[dict]) -> None:
         completed_records = [r for r in records if r["end"] is not None]
@@ -99,19 +107,18 @@ class ExecutionTimer:
             return {}
 
     def _write_to_file(self, data: dict) -> None:
-        existing_data = {}
-        if os.path.exists(self.output_path):
-            try:
-                with open(self.output_path, "r", encoding="utf-8") as f:
-                    content = f.read().strip()
-                    if content:  # Only try to load if file is not empty
-                        existing_data = json.load(f)
-            except json.JSONDecodeError:
-                pass
-
-        merged_data = {**existing_data, **data}
         with open(self.output_path, "w", encoding="utf-8") as f:
-            json.dump(merged_data, f, indent=2)
+            json.dump(data, f, indent=2)
+
+    def _merge_data(self, existing_data: dict, new_data: dict) -> dict:
+        for process_id, functions in new_data.items():
+            if process_id not in existing_data:
+                existing_data[process_id] = {}
+            for function_id, records in functions.items():
+                if function_id not in existing_data[process_id]:
+                    existing_data[process_id][function_id] = []
+                existing_data[process_id][function_id].extend(records)
+        return existing_data
 
     def _get_process_id(self) -> str:
         return correlation_id.get() or "not_in_a_request"
@@ -183,6 +190,11 @@ class NullExecutionTimer(ExecutionTimer):
 
     @override
     def stop(self, function_id: str) -> None:
+        pass
+
+    @override
+    @classmethod
+    def flush(cls) -> None:
         pass
 
 
