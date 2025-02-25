@@ -14,16 +14,13 @@
 
 import numpy as np
 from beartype.typing import Any, Sequence, cast
-from scipy import linalg
 
 from superlinked.framework.common.data_types import NPArray, Vector
-from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.storage_manager.header import Header
 from superlinked.framework.dsl.executor.in_memory.in_memory_executor import InMemoryApp
 from superlinked.framework.dsl.index.index import Index
-from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.storage.in_memory.in_memory_vdb import InMemoryVDB
 
 
@@ -95,43 +92,11 @@ class VectorSampler:
         """
         self.__app = app
 
-    @staticmethod
-    def apply_weights_on_vectors(
-        vector: Vector,
-        schema: SchemaObject,
-        spaces: Sequence[Space],
-        weight_dict: dict[Space, float],
-    ) -> Vector:
-        if isinstance(spaces, Space):
-            spaces = [spaces]
-
-        vector_value: np.ndarray = vector.replace_negative_filters(0).value
-        if linalg.norm(vector_value) == 0:
-            return vector
-
-        lengths = np.array(
-            [
-                node.length
-                for node in [space._get_embedding_node(schema) for space in spaces]
-                if isinstance(node, HasLength)
-            ]
-        )
-        weights = [weight_dict.get(space, 1) for space in spaces]
-        vector_slices = np.split(vector_value, list(lengths.cumsum()))
-        weighted_vector_values = np.concatenate(
-            [vector_slice * weight for vector_slice, weight in zip(vector_slices, weights)]
-        )
-        normalized_vector_values = weighted_vector_values / linalg.norm(weighted_vector_values)
-        vector.value[vector.non_negative_filter_mask] = normalized_vector_values[vector.non_negative_filter_mask]
-
-        return vector
-
     def get_vectors_by_ids(
         self,
         id_: str | list[str],
         index: Index,
         schema: IdSchemaObject,
-        weight_dict: dict[Space, float] | None = None,
         readable_id_: str | list[str] | None = None,
     ) -> VectorCollection:
         """
@@ -141,8 +106,6 @@ class VectorSampler:
             id_ (str) | list(str): The id(s) of the entity(ies).
             index (Index): The index in which the entity is stored.
             schema (IdSchemaObject): The schema of the entity.
-            weight_dict (dict[Space, float]): Dictionary containing weights per spaces.
-                Defaults to uniform unit weights.
             readable_id_ (str) | list(str): The readable id of the entity(ies). For chunks, it is constructed from the
                 origin_id (entity from which it originates from) and the chunk id. Defaults to using the ids.
 
@@ -173,17 +136,7 @@ class VectorSampler:
                     f"No vector found for {schema._schema_name} with id {identification} in the given index."
                 )
 
-            weighted_vector = (
-                self.apply_weights_on_vectors(
-                    vector,
-                    schema,
-                    index._spaces,
-                    weight_dict,
-                )
-                if weight_dict
-                else vector
-            )
-            entity_vectors.append(np.array(weighted_vector.value))
+            entity_vectors.append(np.array(vector.value))
             entity_ids.append(readable_id)
 
         return VectorCollection(entity_ids, np.array(entity_vectors))
@@ -192,7 +145,6 @@ class VectorSampler:
         self,
         index: Index,
         schema: IdSchemaObject,
-        weight_dict: dict[Space, float] | None = None,
         include_chunks: bool = False,
     ) -> VectorCollection:
         """
@@ -217,7 +169,7 @@ class VectorSampler:
         if include_chunks:
             entity_ids: list[str] = [header.object_id for header in headers]
             readable_ids: list[str] = [self.human_readable_id_for_chunks(header) for header in headers]
-            return self.get_vectors_by_ids(entity_ids, index, schema, weight_dict, readable_ids)
+            return self.get_vectors_by_ids(entity_ids, index, schema, readable_ids)
 
         entity_ids = list({self.__get_id_for_standalone_entity_origin_id_for_chunk(header) for header in headers})
         return self.get_vectors_by_ids(entity_ids, index, schema)
