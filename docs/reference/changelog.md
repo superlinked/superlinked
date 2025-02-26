@@ -5,6 +5,32 @@ icon: clock-rotate-left
 
 # Changelog
 
+## 2025-02-24
+
+- #### Framework: v17.8.0 - v19.13.0
+- #### Server: v0.7.3 - v1.5.0
+- #### Batch: v1.33.0 - v1.59.1
+
+### Breaking Changes
+- **Query Results Restructure (v19.0.0)**: Query results have been restructured to provide more detailed information, including partial scores per space. Check [this](https://github.com/superlinked/superlinked/blob/main/notebook/feature/query_result.ipynb) notebook for example query structure.
+- **Text Similarity Space Updates (v18.0.0)**: TextSimilaritySpace now defaults to query mode for supported models.
+- **Server Query Structure (v1.0.0)**: Updated to align with new framework query result structure from v18.0.0.
+
+### Added
+- **Embedding Cache**: Implemented recalculation cache providing 30x speed-up on 1M datasets with optimized LLM usage.
+- **Partial Scores**: Added per-space partial scores to query results for improved explainability.
+- **Field Selection**: Introduced options to select specific return fields (`select_all()`, `select(...)`, `select_fields=...`) for improved query latency.
+- **Acceptance Testing**: Added internal tool for validating end-to-end user flows.
+
+### Changed
+- **Storage Optimization**: Removed unnecessary object storage in VDB to improve latency and storage efficiency.
+- **Example Updates**: Updated all examples to use simplified superlinked imports.
+
+### Fixed
+- Various improvements to the storage layer of the framework supporting pilot project requirements.
+
+
+
 ## 2024-12-20
 
 - #### Framework: v12.28.1 - v17.8.0
