@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from beartype.typing import Any
 
@@ -22,4 +22,4 @@ from superlinked.framework.queue.queue_type import QueueType
 @dataclass(frozen=True)
 class QueueConfig:
     queue_type: QueueType
-    kwargs: dict[str, Any] = {}
+    kwargs: dict[str, Any] = field(default_factory=dict)

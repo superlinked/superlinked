@@ -184,20 +184,24 @@ class QdrantVDBConnector(VDBConnector):
             with_vectors=vector_fields or False,
             with_payload=payload_fields or False,
         )
-        entity_by_id = {entity.id_: entity for entity in entities}
-        return [self._get_entity_data_from_point(point, entity_by_id) for point in points]
+        points_by_entity_id = {
+            self._entity_id_from_payload(payload): point
+            for point in points
+            if (payload := self._check_and_get_payload(point))
+        }
+        return [self._get_entity_data_from_point(entity, points_by_entity_id.get(entity.id_)) for entity in entities]
 
-    def _get_entity_data_from_point(self, point: Record, entity_by_id: dict[EntityId, Entity]) -> EntityData:
+    def _get_entity_data_from_point(self, entity: Entity, point: Record | None) -> EntityData:
+        if point is None:
+            return EntityData(entity.id_, {})
         payload_fields = self._check_and_get_payload(point)
         vector_fields = self._check_and_get_vectors(point)
         all_fields_to_return = payload_fields | vector_fields
-        id_ = self._entity_id_from_payload(payload_fields)
-        fields = entity_by_id[id_].fields
         return EntityData(
-            id_,
+            entity.id_,
             {
                 field.name: self._encoder.decode_field(field, all_fields_to_return.get(field.name))
-                for field in fields.values()
+                for field in entity.fields.values()
             },
         )
 
@@ -250,7 +254,7 @@ class QdrantVDBConnector(VDBConnector):
             return {}
         if not isinstance(point.vector, dict) or any(v for v in point.vector.values() if not isinstance(v, list)):
             raise ValueError(f"Retrieved point's payload is invalid: {[point.payload]}")
-        return cast(dict[str, list[float]], point.payload)
+        return cast(dict[str, list[float]], point.vector)
 
     def _check_and_get_payload(self, point: Record | ScoredPoint) -> dict[str, Any]:
         if point.payload is None or not isinstance(point.payload, dict):
