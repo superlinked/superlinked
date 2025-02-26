@@ -56,8 +56,6 @@ class DataFrameParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, pd.D
         data_copy = data.copy()
         schema_cols: dict[str, SchemaField] = self._get_column_name_to_schema_field_mapping()
         self._ensure_id(data_copy)
-        if self._is_event_data_parser:
-            self.__ensure_created_at(data_copy)
 
         data_copy[self._id_name] = data_copy[self._id_name].astype(str)
         self._convert_columns_to_type(data_copy, schema_cols, Timestamp)
@@ -68,7 +66,10 @@ class DataFrameParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, pd.D
             data_copy[blob_cols] = data_copy[blob_cols].apply(lambda col: col.map(self.blob_loader.load))
 
         if self._is_event_data_parser:
+            self.__ensure_created_at(data_copy)
             data_copy[self._created_at_name] = data_copy[self._created_at_name].astype(int)
+            self.__ensure_created_at_type(data_copy)
+
         schema_data = cast(pd.DataFrame, data_copy[list(schema_cols.keys())])
         records = cast(list[dict[str, Any]], schema_data.to_dict(orient="records"))
         return [self.__create_parsed_schema(record, schema_cols) for record in records]
@@ -146,6 +147,8 @@ class DataFrameParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, pd.D
                 f"No {self._created_at_name} column in supplied in event dataframe. "
                 f"Create a created_at column with the specified name."
             )
+
+    def __ensure_created_at_type(self, data: pd.DataFrame) -> None:
         if any(
             not self._is_created_at_value_valid(_created_at_val)
             for _created_at_val in data[self._created_at_name].tolist()
