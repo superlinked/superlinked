@@ -45,3 +45,11 @@ class GenericClassUtil:
     @staticmethod
     def get_single_generic_type(object_: Any) -> Any:
         return GenericClassUtil.get_generic_types(object_)[0]
+
+    @staticmethod
+    def get_single_generic_type_extended(object_: Any) -> Any:
+        expected_type = GenericClassUtil.get_single_generic_type(object_)
+        # Allow integers to be used for float fields since they can be safely converted
+        if expected_type is float:
+            expected_type = float | int
+        return expected_type

@@ -381,7 +381,7 @@ class HardFilterClause(QueryClause[ComparisonOperation[SchemaField] | None], Has
     @property
     @override
     def value_accepted_type(self) -> type:
-        return GenericClassUtil.get_single_generic_type(self.operand)
+        return GenericClassUtil.get_single_generic_type_extended(self.operand)
 
 
 @dataclass(frozen=True)

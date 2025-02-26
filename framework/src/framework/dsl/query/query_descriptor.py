@@ -588,7 +588,7 @@ class QueryDescriptorValidator:
             raise InvalidSchemaException(
                 f"'with_vector': {type(clause.schema_field.schema_obj).__name__} is not a schema."
             )
-        expected_type = GenericClassUtil.get_single_generic_type(clause.schema_field)
+        expected_type = GenericClassUtil.get_single_generic_type_extended(clause.schema_field)
         if (value := clause.get_value()) is not None and not isinstance(value, expected_type):
             raise QueryException(
                 f"Unsupported with_vector operand type: {type(value).__name__}, expected {expected_type.__name__}."

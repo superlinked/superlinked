@@ -33,7 +33,7 @@ class QueryFilterValidator:
 
     @staticmethod
     def validate_operation_operand_type(comparison_operation: ComparisonOperation, allow_param: bool) -> None:
-        expected_type = GenericClassUtil.get_single_generic_type(comparison_operation._operand)
+        expected_type = GenericClassUtil.get_single_generic_type_extended(comparison_operation._operand)
         if comparison_operation._op in LIST_TYPE_COMPATIBLE_TYPES:
             QueryFilterValidator._validate_list_type(comparison_operation, expected_type, allow_param)
         else:
