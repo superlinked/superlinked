@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from beartype.typing import Any, Mapping, Sequence, TypeVar, cast
 
 from superlinked.framework.common.dag.index_node import IndexNode
-from superlinked.framework.common.data_types import NodeDataTypes, PythonTypes, Vector
+from superlinked.framework.common.data_types import PythonTypes, Vector
 from superlinked.framework.common.exception import InvalidSchemaException
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
@@ -53,6 +53,7 @@ from superlinked.framework.common.storage_manager.entity_builder import EntityBu
 from superlinked.framework.common.storage_manager.knn_search_params import (
     KNNSearchParams,
 )
+from superlinked.framework.common.storage_manager.node_result_data import NodeResultData
 from superlinked.framework.common.storage_manager.search_result_item import (
     SearchResultItem,
 )
@@ -214,20 +215,11 @@ class StorageManager:
         self._vdb_connector.write_entities(entities_to_write)
 
     @time_execution
-    def write_node_result(
-        self,
-        schema: SchemaObject,
-        object_id: str,
-        node_id: str,
-        result: NodeDataTypes,
-        origin_id: str | None = None,
-    ) -> None:
-        entity_id = self._entity_builder.compose_entity_id(schema._schema_name, object_id)
-        field_data = list(self._entity_builder._admin_fields.create_header_field_data(entity_id, origin_id))
-        if result is not None:
-            result_field_data = self._entity_builder.compose_field_data(node_id, result)
-            field_data.append(result_field_data)
-        self._vdb_connector.write_entities([EntityData(entity_id, {fd.name: fd for fd in field_data})])
+    def write_node_results(self, node_datas: Sequence[NodeResultData]) -> None:
+        entities_to_write = [
+            self._entity_builder.compose_entity_data_from_node_result(node_data) for node_data in node_datas
+        ]
+        self._vdb_connector.write_entities(entities_to_write)
 
     @time_execution
     def write_node_data(

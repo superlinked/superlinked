@@ -15,7 +15,6 @@
 from __future__ import annotations
 
 from abc import ABC, ABCMeta, abstractmethod
-from functools import partial
 
 import structlog
 from beartype.typing import Generic, Mapping, Sequence
@@ -26,6 +25,7 @@ from superlinked.framework.common.dag.node import NT, Node, NodeDataT
 from superlinked.framework.common.exception import DagEvaluationException
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.schema_object import SchemaObject
+from superlinked.framework.common.storage_manager.node_result_data import NodeResultData
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.online.dag.evaluation_result import (
     EvaluationResult,
@@ -84,9 +84,7 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
     ) -> list[EvaluationResult[NodeDataT] | None]:
         results = self.evaluate_self(parsed_schemas, context)
         if self.node.persist_evaluation_result:
-            for i, result in enumerate(results):
-                if result is not None:
-                    self.persist(result, parsed_schemas[i])
+            self.persist(results, parsed_schemas)
         return results
 
     def evaluate_next_single(
@@ -132,28 +130,34 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
 
     def persist(
         self,
-        result: EvaluationResult[NodeDataT],
-        parsed_schema: ParsedSchema,
+        results: Sequence[EvaluationResult[NodeDataT] | None],
+        parsed_schemas: Sequence[ParsedSchema],
     ) -> None:
-        self.storage_manager.write_node_result(
-            parsed_schema.schema,
-            parsed_schema.id_,
-            result.main.node_id,
-            result.main.value,
-        )
-        for chunk in result.chunks:
-            self.storage_manager.write_node_result(
-                parsed_schema.schema,
-                chunk.object_id,
-                chunk.node_id,
-                chunk.value,
-                parsed_schema.id_,
-            )
+        node_datas = [
+            data
+            for i, result in enumerate(results)
+            if result is not None
+            for data in [
+                NodeResultData(
+                    parsed_schemas[i].schema._schema_name, parsed_schemas[i].id_, result.main.node_id, result.main.value
+                ),
+                *[
+                    NodeResultData(
+                        parsed_schemas[i].schema._schema_name,
+                        chunk.object_id,
+                        chunk.node_id,
+                        chunk.value,
+                        parsed_schemas[i].id_,
+                    )
+                    for chunk in result.chunks
+                ],
+            ]
+        ]
+        self.storage_manager.write_node_results(node_datas)
         logger.debug(
             "stored online node data",
-            schema=parsed_schema.schema._schema_name,
-            pii_main_result=partial(str, result.main.value),
-            pii_chunk_result=lambda: [str(chunk.value) for chunk in result.chunks],
+            schemas=lambda: {parsed_schema.schema._schema_name for parsed_schema in parsed_schemas},
+            n_results=len(node_datas),
         )
 
     def load_stored_results(

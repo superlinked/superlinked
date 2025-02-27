@@ -73,7 +73,7 @@ class VDBConnector(ABC):
         if self._app_id is None:
             raise InitializationException(
                 "app id wasn't initialized properly by calling "
-                + "by either initializing the vdb onnector with a set of index configs "
+                + "by either initializing the vdb connector with a set of index configs "
                 + "or calling init_search_index_configs with them."
             )
         return self._app_id

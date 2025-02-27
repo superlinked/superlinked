@@ -29,6 +29,7 @@ from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.field.field_data import FieldData
 from superlinked.framework.common.storage.field_type_converter import FieldTypeConverter
 from superlinked.framework.common.storage_manager.admin_fields import AdminFields
+from superlinked.framework.common.storage_manager.node_result_data import NodeResultData
 from superlinked.framework.common.storage_manager.storage_naming import StorageNaming
 
 
@@ -61,9 +62,10 @@ class EntityBuilder:
         schema_id: str,
         object_id: str,
         field_data: Sequence[FieldData],
+        origin_id: str | None = None,
     ) -> EntityData:
         entity_id = self.compose_entity_id(schema_id, object_id)
-        admin_field_data = list(self._admin_fields.create_header_field_data(entity_id))
+        admin_field_data = list(self._admin_fields.create_header_field_data(entity_id, origin_id))
         return EntityData(entity_id, {fd.name: fd for fd in (list(field_data) + admin_field_data)})
 
     def compose_entity_data_from_parsed_schema(self, parsed_schema: ParsedSchema) -> EntityData:
@@ -75,6 +77,10 @@ class EntityBuilder:
                 for parsed_schema_field in parsed_schema.fields
             ],
         )
+
+    def compose_entity_data_from_node_result(self, node_data: NodeResultData) -> EntityData:
+        field_data = [self.compose_field_data(node_data.node_id, node_data.result)] if node_data.result else []
+        return self.compose_entity_data(node_data.schema_id, node_data.object_id, field_data, node_data.origin_id)
 
     def parse_schema_field_data(
         self,
