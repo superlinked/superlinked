@@ -224,3 +224,18 @@ To enable GPU acceleration in Superlinked, configure the `GPU_EMBEDDING_THRESHOL
 - **2 to 99999** : Uses CPU for embedding if the batch size is below the specified value; otherwise, GPU is used. This allows for faster processing of small batches, where the CPU may be more efficient.
 
 Note: GPU acceleration is most effective for large batches of text or image embeddings. For other data types or smaller batches, CPU processing may be more efficient. Consider your specific use case and data characteristics when configuring this threshold.
+
+### Environment variables
+
+The Superlinked Server accepts the following environment variables ([see this recipe](https://github.com/superlinked/superlinked-recipes/tree/main/projects/hotel-search) for inspiration on how to set these):
+| Variable    | Type | Explanation | Default Value |
+| -------- | ------- | ------- | ------- |
+| APP_MODULE_PATH  | str | Path to server code files. | "superlinked_app" |
+| DISABLE_RECENCY_SPACE | Bool     | Server will explicitly reject RecencySpace in an index (see above for more RecencySpace information). | True |
+| EXPOSE_PII | bool     |  - | False |
+| JSON_LOG_FILE | str     | Filename for the JSON log file produced by the server. | None |
+| LOG_AS_JSON | str     | Produce a log in JSON format (avoids query truncation). | False |
+| LOG_LEVEL | str     | https://docs.python.org/3/library/logging.html#logging-levels | "INFO" |
+| PERSISTENCE_FOLDER_PATH | str     | - | "in_memory_vdb" |
+| SERVER_HOST | str     | IP address of the server. | "0.0.0.0" |
+| SERVER_PORT | int     | Port of the server. | 8080 |
