@@ -24,6 +24,7 @@ from filelock import FileLock
 from huggingface_hub import snapshot_download
 from huggingface_hub.errors import LocalEntryNotFoundError
 from huggingface_hub.file_download import repo_folder_name
+from requests.exceptions import ReadTimeout
 from sentence_transformers import SentenceTransformer
 
 from superlinked.framework.common.settings import Settings
@@ -107,7 +108,7 @@ class SentenceTransformerModelCache:
                         cache_dir=cache_folder,
                     )
                     return
-            except (TimeoutError, LocalEntryNotFoundError) as e:
+            except (ReadTimeout, TimeoutError, LocalEntryNotFoundError) as e:
                 logger.warning(
                     f"Attempt {attempt + 1}/{max_retries}: Timeout acquiring lock"
                     f" for downloading {model_name}, retrying in {retry_delay} seconds..."
