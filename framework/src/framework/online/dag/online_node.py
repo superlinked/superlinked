@@ -27,6 +27,7 @@ from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.storage_manager.node_result_data import NodeResultData
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
+from superlinked.framework.online.dag.concurrent_executor import ConcurrentExecutor
 from superlinked.framework.online.dag.evaluation_result import (
     EvaluationResult,
     SingleEvaluationResult,
@@ -103,11 +104,19 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
     def evaluate_parents(
         self, parents: Sequence[OnlineNode], parsed_schemas: Sequence[ParsedSchema], context: ExecutionContext
     ) -> list[dict[OnlineNode, EvaluationResult]]:
-        inverse_parent_results = {parent: parent.evaluate_next(parsed_schemas, context) for parent in parents}
+        inverse_parent_results = self._evaluate_parents_concurrently(parents, parsed_schemas, context)
         parents_results = [
             {parent: inverse_parent_results[parent][i] for parent in parents} for i in range(len(parsed_schemas))
         ]
         return [self._validate_parents_result(parents_result) for parents_result in parents_results]
+
+    def _evaluate_parents_concurrently(
+        self, parents: Sequence[OnlineNode], parsed_schemas: Sequence[ParsedSchema], context: ExecutionContext
+    ) -> dict[OnlineNode, list[EvaluationResult | None]]:
+        parent_results = ConcurrentExecutor().execute(
+            lambda parent: parent.evaluate_next(parsed_schemas, context), [(parent,) for parent in parents]
+        )
+        return dict(zip(parents, parent_results))
 
     def _validate_parents_result(
         self, parents_result: Mapping[OnlineNode, EvaluationResult | None]

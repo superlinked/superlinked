@@ -21,6 +21,7 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import NT
+from superlinked.framework.online.dag.concurrent_executor import ConcurrentExecutor
 from superlinked.framework.query.dag.exception import QueryEvaluationException
 from superlinked.framework.query.dag.query_evaluation_data_types import (
     QueryEvaluationResult,
@@ -60,8 +61,10 @@ class QueryNodeWithParent(QueryNode[NT, QueryEvaluationResultT], Generic[NT, Que
 
     def _evaluate_parents(
         self, inputs: Mapping[str, Sequence[QueryNodeInput]], context: ExecutionContext
-    ) -> list[QueryEvaluationResult]:
-        return [parent.evaluate_with_validation(inputs, context) for parent in self.parents]
+    ) -> Sequence[QueryEvaluationResult]:
+        return ConcurrentExecutor().execute(
+            lambda parent: parent.evaluate_with_validation(inputs, context), [(parent,) for parent in self.parents]
+        )
 
     def _validate_parent_results(self, parent_results: Sequence[QueryEvaluationResult]) -> None:
         if len(parent_results) != len(self.parents):
