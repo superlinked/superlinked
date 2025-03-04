@@ -18,12 +18,12 @@ from urllib.parse import urlparse
 
 import structlog
 from beartype.typing import Any
-from google.cloud import storage
 from typing_extensions import override
 
 from superlinked.framework.blob.blob_handler import BlobHandler
 from superlinked.framework.blob.blob_metadata import BlobMetadata
 from superlinked.framework.common.util.execution_timer import time_execution
+from superlinked.framework.common.util.gcs_utils import GCSFileOps
 
 logger = structlog.getLogger()
 
@@ -35,7 +35,9 @@ class GcsBlobHandler(BlobHandler):
     def __init__(self, bucket: str) -> None:
         super().__init__()
         self.__bucket_name = bucket
-        self.__client = storage.Client()
+
+        self.__client = GCSFileOps().storage_client
+
         self._executor = ThreadPoolExecutor()
         self._logger = logger.bind(bucket=self.__bucket_name)
 

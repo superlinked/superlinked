@@ -37,6 +37,11 @@ logger = structlog.getLogger()
 SENTENCE_TRANSFORMER_PROMPT_NAME_KWARG_KEY = "prompt_name"
 QUERY_PROMPT_NAME = "query"
 
+EXCEEDED_LENGTH_EXCEPTION_PREDICATE_BY_EXCEPTION_TYPE = {
+    RuntimeError: lambda e: "The size of tensor a" in str(e) and "must match the size of tensor b" in str(e),
+    ValueError: lambda e: str(e).startswith("Sequence length must be less than max_position_embeddings"),
+}
+
 
 class SentenceTransformerManager(ModelManager):
     @override
@@ -46,15 +51,9 @@ class SentenceTransformerManager(ModelManager):
         prompt_name = self._calculate_prompt_name(model, context)
         try:
             embeddings = self._encode(inputs, model, prompt_name)
-        except RuntimeError as e:
-            if "The size of tensor a" in str(e) and "must match the size of tensor b" in str(e):
-                longest_input_len = max(len(str(x)) if isinstance(x, str) else 0 for x in inputs)
-                raise EmbeddingException(
-                    f"Model {self._model_name} failed to encode inputs - input was too long. "
-                    "Try shortening the input text.\n"
-                    f"Longest input length: {longest_input_len} chars"
-                ) from e
-            raise e
+        except (RuntimeError, ValueError) as e:
+            longest_input_len = max(len(str(x)) if isinstance(x, str) else 0 for x in inputs)
+            self.__handle_exceeded_length_exception(e, longest_input_len)
         return embeddings.tolist()
 
     @time_execution
@@ -63,6 +62,17 @@ class SentenceTransformerManager(ModelManager):
             list(inputs),  # type: ignore[arg-type] # it also accepts Image
             prompt_name=prompt_name,
         )
+
+    def __handle_exceeded_length_exception(self, exception: RuntimeError | ValueError, longest_input_len: int) -> None:
+        if (predicate := EXCEEDED_LENGTH_EXCEPTION_PREDICATE_BY_EXCEPTION_TYPE.get(type(exception))) and predicate(
+            exception
+        ):
+            raise EmbeddingException(
+                f"Model {self._model_name} failed to encode inputs - input was too long. "
+                "Try shortening the input text.\n"
+                f"Longest input length: {longest_input_len} chars"
+            ) from exception
+        raise exception
 
     def embed_text(self, inputs: Sequence[str], context: ExecutionContext) -> list[Vector]:
         if not inputs:
