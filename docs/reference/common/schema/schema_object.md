@@ -118,7 +118,7 @@ Classes
 
     * superlinked.framework.common.schema.event_schema_object.CreatedAtField
     * superlinked.framework.common.schema.event_schema_object.SchemaReference
-    * superlinked.framework.common.schema.id_schema_object.IdField
+    * superlinked.framework.common.schema.id_field.IdField
     * superlinked.framework.common.schema.schema_object.Blob
     * superlinked.framework.common.schema.schema_object.FloatList
     * superlinked.framework.common.schema.schema_object.Number
