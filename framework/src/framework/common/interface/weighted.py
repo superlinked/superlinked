@@ -28,3 +28,6 @@ class Weighted(Generic[WeightedItemT]):
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(item={self.item}, weight={self.weight})"
+
+    def __repr__(self) -> str:
+        return self.__str__()

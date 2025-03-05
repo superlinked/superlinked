@@ -82,6 +82,7 @@ class QueryEmbeddingNode(
             return QueryEvaluationResult(
                 self._aggregation_transformation.transform(cast(Sequence[Weighted], weighted_embeddings), context)
             )
+
         return QueryEvaluationResult(self.node.transformation_config.embedding_config.default_vector)
 
     @abstractmethod
@@ -102,9 +103,11 @@ class QueryEmbeddingNode(
         simple_inputs = [input_ for input_ in pre_processed_node_inputs if not input_.to_invert]
         weighted_input_items = [node_input.value for node_input in simple_inputs]
         inputs_to_be_inverted = [input_.value for input_ in pre_processed_node_inputs if input_.to_invert]
-        return self._validate_and_cast_items(weighted_input_items, self._input_type), self._validate_and_cast_items(
-            inputs_to_be_inverted, Vector
+        weighted_node_inputs = self._post_process_node_inputs(
+            self._validate_and_cast_items(weighted_input_items, self._input_type)
         )
+        weighted_node_input_vectors = self._validate_and_cast_items(inputs_to_be_inverted, Vector)
+        return weighted_node_inputs, weighted_node_input_vectors
 
     def _validate_and_cast_parent_results(self, parent_results: Sequence[QueryEvaluationResult]) -> list[Weighted]:
         single_items = QueryEmbeddingNode._flat_parent_result_values(parent_results)
@@ -156,3 +159,7 @@ class QueryEmbeddingNode(
             else:
                 single_items.append(parent_result.value)
         return single_items
+
+    def _post_process_node_inputs(self, node_inputs: Sequence[Weighted]) -> list[Weighted]:
+        """QueryCategoricalSimilarityNode overrides this"""
+        return list(node_inputs)

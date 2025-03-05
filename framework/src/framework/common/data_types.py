@@ -56,6 +56,10 @@ class Vector:
         return self.__dimension
 
     @property
+    def positive_values(self) -> NPArray:
+        return self.value[self.value > 0]
+
+    @property
     def vector_before_normalization(self) -> Vector | None:
         return self.__vector_before_normalization
 
@@ -250,6 +254,9 @@ class Vector:
         return np.array_str(  # type: ignore # numpy stub is missing for mypy-pylance
             self.value, precision=NP_PRINT_PRECISION, suppress_small=True
         )
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
     @classmethod
     def init_zero_vector(cls, length: int) -> Vector:

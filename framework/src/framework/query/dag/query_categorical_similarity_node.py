@@ -46,3 +46,21 @@ class QueryCategoricalSimilarityNode(QueryEmbeddingOrphanNode[Vector, Categorica
             Weighted([node_input.value.item], node_input.value.weight),
             node_input.to_invert,
         )
+
+    @override
+    def _post_process_node_inputs(self, node_inputs: Sequence[Weighted]) -> list[Weighted]:
+        """
+        The function is used on query inputs in order to achieve the following:
+        .similar(['A'], 1.0).similar(['B'], 1.0) := .similar(['A', 'B'], 1.0)
+        """
+        node_inputs = super()._post_process_node_inputs(node_inputs)
+        return self._flatten_weighted_node_inputs(node_inputs)
+
+    def _flatten_weighted_node_inputs(self, weighted_inputs: Sequence[Weighted]) -> list[Weighted]:
+        result = []
+        for weighted_input in weighted_inputs:
+            result.extend(self._create_individual_weighted_node_input(weighted_input))
+        return result
+
+    def _create_individual_weighted_node_input(self, weighted_input: Weighted) -> list[Weighted]:
+        return [Weighted(item=[item_element], weight=weighted_input.weight) for item_element in weighted_input.item]
