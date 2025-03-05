@@ -29,6 +29,7 @@ from superlinked.framework.common.schema.schema_object import (
 )
 
 IdSchemaObjectT = TypeVar("IdSchemaObjectT", bound="IdSchemaObject")
+ID_FIELD_NAME = "id"
 
 
 class IdField(SchemaField[str]):
@@ -53,6 +54,8 @@ class IdSchemaObject(SchemaObject, ABC):
     def __init__(self, base_cls: type, id_field_name: str) -> None:
         super().__init__(base_cls)
         self.__id = IdField(self, id_field_name)
+        if id_field_name != ID_FIELD_NAME:
+            setattr(self, id_field_name, self.__id)
 
     @property
     def id(self) -> IdField:

@@ -41,6 +41,7 @@ from superlinked.framework.common.schema.schema_object import (
 
 # Referenced schema type
 RST = TypeVar("RST")
+CREATED_AT_FIELD_NAME = "created_at"
 
 
 class SchemaReference(SchemaField[str], HasMultiplier, Generic[RST]):
@@ -130,6 +131,8 @@ class EventSchemaObject(IdSchemaObject, ABC):
     ) -> None:
         super().__init__(base_cls, id_field_name)
         self.__created_at = CreatedAtField(self, created_at_field_name)
+        if created_at_field_name != CREATED_AT_FIELD_NAME:
+            setattr(self, created_at_field_name, self.__created_at)
 
     @property
     def created_at(self) -> CreatedAtField:

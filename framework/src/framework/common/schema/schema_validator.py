@@ -17,6 +17,7 @@ import inspect
 from beartype.typing import Sequence, get_args
 
 from superlinked.framework.common.schema.event_schema_object import (
+    CREATED_AT_FIELD_NAME,
     CreatedAtField,
     SchemaReference,
 )
@@ -26,7 +27,7 @@ from superlinked.framework.common.schema.exception import (
     InvalidMemberException,
 )
 from superlinked.framework.common.schema.general_type import T
-from superlinked.framework.common.schema.id_schema_object import IdField
+from superlinked.framework.common.schema.id_schema_object import ID_FIELD_NAME, IdField
 from superlinked.framework.common.schema.schema_field_descriptor import (
     SchemaFieldDescriptor,
 )
@@ -71,11 +72,11 @@ class SchemaValidator:
             )
 
     def validate_id_field(self, descriptors: Sequence[SchemaFieldDescriptor]) -> None:
-        self._validate_mandatory_single_field(descriptors, IdField, "id")
+        self._validate_mandatory_single_field(descriptors, IdField, ID_FIELD_NAME)
 
     def validate_created_at_field(self, descriptors: Sequence[SchemaFieldDescriptor]) -> None:
         if self.__schema_type == SchemaType.EVENT_SCHEMA:
-            self._validate_mandatory_single_field(descriptors, CreatedAtField, "created_at")
+            self._validate_mandatory_single_field(descriptors, CreatedAtField, CREATED_AT_FIELD_NAME)
 
     def check_unannotated_members(self, cls: type[T]) -> None:
         base_members = dir(type("base_members", (object,), {}))
@@ -101,3 +102,8 @@ class SchemaValidator:
         ]
         if len(field_names) != 1:
             raise FieldException(f"A schema must have exactly 1 {field_name}, got {len(field_names)} ({field_names}).")
+        if field_name not in field_names and any(
+            descriptor.name for descriptor in descriptors if descriptor.name == field_name
+        ):
+            field_type_name = field_type.__name__
+            raise FieldException(f"A schema cannot have a non-{field_type_name} named '{field_name}'.")
