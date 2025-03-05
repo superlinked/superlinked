@@ -41,14 +41,13 @@ DistanceMetricMap = {
 class RedisFieldDescriptorCompiler:
     @staticmethod
     def compile_descriptors(
-        vector_field_descriptor: VectorIndexFieldDescriptor,
         field_descriptors: Sequence[IndexFieldDescriptor],
     ) -> Sequence[RedisField]:
         return [
             field
             for field in [
                 RedisFieldDescriptorCompiler._compile_descriptor(field_descriptor)
-                for field_descriptor in ([vector_field_descriptor] + list(field_descriptors))
+                for field_descriptor in field_descriptors
             ]
             if field is not None
         ]

@@ -69,7 +69,10 @@ class Search(ABC, Generic[SearchParamsT, QuertT, KNNReturnT]):
     ) -> None:
         if not filters:
             return
-        if unindexed_filters := [
-            filter_ for filter_ in filters if cast(Field, filter_._operand).name not in index_config.indexed_field_names
+        filter_field_names = [cast(Field, filter_._operand).name for filter_ in filters]
+        if unindexed_filter_field_names := [
+            filter_field_name
+            for filter_field_name in filter_field_names
+            if filter_field_name not in index_config.indexed_field_names
         ]:
-            raise ValidationException(f"Unindexed filters found: {unindexed_filters}")
+            raise ValidationException(f"Unindexed fields with filter found: {unindexed_filter_field_names}")

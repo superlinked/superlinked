@@ -24,7 +24,8 @@ from superlinked.framework.common.schema.event_schema_object import (
 )
 from superlinked.framework.common.schema.exception import InvalidAttributeException
 from superlinked.framework.common.schema.general_type import T
-from superlinked.framework.common.schema.id_schema_object import IdField, IdSchemaObject
+from superlinked.framework.common.schema.id_field import IdField
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_field_descriptor import (
     SchemaFieldDescriptor,
 )

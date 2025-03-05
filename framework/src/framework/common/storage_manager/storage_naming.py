@@ -13,6 +13,7 @@
 # limitations under the License.
 
 
+from superlinked.framework.common.schema.id_field import IdField
 from superlinked.framework.common.schema.schema_object import SchemaField
 
 
@@ -28,6 +29,8 @@ class StorageNaming:
         return f"{StorageNaming.INDEX_PREFIX}{node_id}"
 
     def generate_field_name_from_schema_field(self, schema_field: SchemaField) -> str:
+        if isinstance(schema_field, IdField):
+            return StorageNaming.OBJECT_ID_INDEX_NAME
         return f"{StorageNaming.SCHEMA_FIELD_PREFIX}{schema_field.schema_obj._schema_name}_{schema_field.name}"
 
     def generate_node_data_field_name(self, node_id: str, node_data_key: str) -> str:

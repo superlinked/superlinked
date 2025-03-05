@@ -15,35 +15,16 @@
 from abc import ABC
 from types import UnionType
 
-from beartype.typing import Sequence, TypeVar, cast
-from typing_extensions import override
+from beartype.typing import TypeVar, cast
 
-from superlinked.framework.common.interface.comparison_operation_type import (
-    ComparisonOperationType,
-)
+from superlinked.framework.common.schema.id_field import IdField
 from superlinked.framework.common.schema.schema_object import (
     ConcreteSchemaField,
-    SchemaField,
     SchemaObject,
-    SchemaObjectT,
 )
 
 IdSchemaObjectT = TypeVar("IdSchemaObjectT", bound="IdSchemaObject")
 ID_FIELD_NAME = "id"
-
-
-class IdField(SchemaField[str]):
-    """
-    A class representing an ID field in a schema object.
-    """
-
-    def __init__(self, schema_obj: SchemaObjectT, id_field_name: str) -> None:
-        super().__init__(id_field_name, schema_obj, str, nullable=False)
-
-    @property
-    @override
-    def supported_comparison_operation_types(self) -> Sequence[ComparisonOperationType]:
-        return []
 
 
 class IdSchemaObject(SchemaObject, ABC):

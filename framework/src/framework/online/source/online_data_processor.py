@@ -27,6 +27,7 @@ from superlinked.framework.common.parser.parsed_schema import (
     ParsedSchema,
     ParsedSchemaWithEvent,
 )
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.dsl.index.index import Index
@@ -58,8 +59,14 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
 
     def _init_mandatory_field_names_by_schema(self, index: Index) -> defaultdict[SchemaObject, list[str]]:
         mandatory_field_names_by_schema: defaultdict[SchemaObject, list[str]] = defaultdict(list)
+        id_field_names_by_schema: dict[SchemaObject, str] = {
+            schema: schema.id.name for schema in index.schemas if isinstance(schema, IdSchemaObject)
+        }
         for field in index._fields:
-            mandatory_field_names_by_schema[field.schema_obj].append(field.name)
+            field_name = field.name
+            field_schema = field.schema_obj
+            if id_field_names_by_schema.get(field_schema) != field_name:
+                mandatory_field_names_by_schema[field_schema].append(field_name)
         return mandatory_field_names_by_schema
 
     def update(self, messages: Sequence[ParsedSchema]) -> None:

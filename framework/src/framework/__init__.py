@@ -55,7 +55,7 @@ from superlinked.framework.common.schema.event_schema_object import (
     CreatedAtField,
     SchemaReference,
 )
-from superlinked.framework.common.schema.id_schema_object import IdField
+from superlinked.framework.common.schema.id_field import IdField
 from superlinked.framework.common.schema.schema import Schema, schema
 from superlinked.framework.common.schema.schema_object import (
     Blob,

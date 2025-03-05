@@ -16,6 +16,7 @@ from beartype.typing import Any, Sequence, cast
 
 from superlinked.framework.common.data_types import NodeDataTypes, Vector
 from superlinked.framework.common.schema.blob_information import BlobInformation
+from superlinked.framework.common.schema.id_field import IdField
 from superlinked.framework.common.schema.image_data import ImageData
 from superlinked.framework.common.schema.schema_object import (
     Blob,
@@ -31,7 +32,7 @@ from superlinked.framework.common.schema.schema_object import (
 from superlinked.framework.common.storage.field.field_data_type import FieldDataType
 from superlinked.framework.common.util.generic_class_util import GenericClassUtil
 
-FIELD_DATA_TYPE_BY_SCHEMA_FIELD_TYPE: dict[type[ConcreteSchemaField], FieldDataType] = {
+FIELD_DATA_TYPE_BY_SCHEMA_FIELD_TYPE: dict[type[ConcreteSchemaField | IdField], FieldDataType] = {
     Blob: FieldDataType.BLOB,
     FloatList: FieldDataType.FLOAT_LIST,
     StringList: FieldDataType.STRING_LIST,
@@ -39,6 +40,7 @@ FIELD_DATA_TYPE_BY_SCHEMA_FIELD_TYPE: dict[type[ConcreteSchemaField], FieldDataT
     Integer: FieldDataType.INT,
     String: FieldDataType.STRING,
     Timestamp: FieldDataType.INT,
+    IdField: FieldDataType.STRING,
 }
 
 FIELD_DATA_TYPE_BY_NODE_DATA_TYPE: dict[type[NodeDataTypes | dict], FieldDataType] = {

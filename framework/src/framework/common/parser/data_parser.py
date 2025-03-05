@@ -32,9 +32,8 @@ from superlinked.framework.common.schema.exception import SchemaMismatchExceptio
 from superlinked.framework.common.schema.id_schema_object import (
     IdSchemaObject,
     IdSchemaObjectT,
-    SchemaField,
 )
-from superlinked.framework.common.schema.schema_object import SFT, Blob
+from superlinked.framework.common.schema.schema_object import SFT, Blob, SchemaField
 from superlinked.framework.common.source.types import SourceTypeT
 
 

@@ -32,11 +32,13 @@ from superlinked.framework.common.schema.event_schema_object import (
     EventSchemaObject,
     SchemaReference,
 )
-from superlinked.framework.common.schema.id_schema_object import (
-    IdSchemaObjectT,
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObjectT
+from superlinked.framework.common.schema.schema_object import (
+    Blob,
     SchemaField,
+    String,
+    Timestamp,
 )
-from superlinked.framework.common.schema.schema_object import Blob, String, Timestamp
 
 
 class DataFrameParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, pd.DataFrame]):
