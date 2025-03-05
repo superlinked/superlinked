@@ -14,7 +14,6 @@
 
 
 from beartype.typing import Any, cast
-from redis import Redis
 from typing_extensions import override
 
 from superlinked.framework.common.storage.index_config import IndexConfig
@@ -27,10 +26,11 @@ from superlinked.framework.storage.redis.query.redis_query_builder import (
     RedisQueryBuilder,
 )
 from superlinked.framework.storage.redis.redis_field_encoder import RedisFieldEncoder
+from superlinked.framework.storage.redis.redis_vdb_client import RedisVDBClient
 
 
 class RedisSearch(Search[VDBKNNSearchParams, RedisQuery, dict[bytes, Any]]):
-    def __init__(self, client: Redis, encoder: RedisFieldEncoder) -> None:
+    def __init__(self, client: RedisVDBClient, encoder: RedisFieldEncoder) -> None:
         super().__init__()
         self._client = client
         self._query_builder = RedisQueryBuilder(encoder)
@@ -45,5 +45,5 @@ class RedisSearch(Search[VDBKNNSearchParams, RedisQuery, dict[bytes, Any]]):
         index_config: IndexConfig,
         query: RedisQuery,
     ) -> dict[bytes, Any]:
-        result = self._client.ft(index_config.index_name).search(query.query, query_params=query.query_params)
+        result = self._client.client.ft(index_config.index_name).search(query.query, query_params=query.query_params)
         return cast(dict[bytes, Any], result)

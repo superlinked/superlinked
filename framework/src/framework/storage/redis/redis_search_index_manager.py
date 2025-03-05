@@ -13,8 +13,6 @@
 # limitations under the License.
 
 
-import redis
-import redis.client
 from beartype.typing import Sequence, cast
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from typing_extensions import override
@@ -30,12 +28,13 @@ from superlinked.framework.storage.redis.redis_field_descriptor_compiler import 
     RedisFieldDescriptorCompiler,
 )
 from superlinked.framework.storage.redis.redis_field_encoder import RedisFieldEncoder
+from superlinked.framework.storage.redis.redis_vdb_client import RedisVDBClient
 
 
 class RedisSearchIndexManager(DynamicSearchIndexManager):
     def __init__(
         self,
-        client: redis.Redis,
+        client: RedisVDBClient,
         encoder: RedisFieldEncoder,
         index_configs: Sequence[IndexConfig] | None = None,
     ) -> None:
@@ -43,8 +42,8 @@ class RedisSearchIndexManager(DynamicSearchIndexManager):
         self._client = client
         self._encoder = encoder
 
-    @override
     @property
+    @override
     def supported_vector_indexing(self) -> Sequence[SearchAlgorithm]:
         return [SearchAlgorithm.FLAT, SearchAlgorithm.HNSW]
 
@@ -52,7 +51,7 @@ class RedisSearchIndexManager(DynamicSearchIndexManager):
     def _list_search_index_names_from_vdb(self, collection_name: str) -> Sequence[str]:
         return list(
             self._encoder._decode_string(cast(bytes, index_name))
-            for index_name in self._client.execute_command("FT._LIST")
+            for index_name in self._client.client.execute_command("FT._LIST")
         )
 
     @override
@@ -61,7 +60,7 @@ class RedisSearchIndexManager(DynamicSearchIndexManager):
         fields = RedisFieldDescriptorCompiler.compile_descriptors(
             index_config.vector_field_descriptor, index_config.field_descriptors
         )
-        self._client.ft(index_config.index_name).create_index(
+        self._client.client.ft(index_config.index_name).create_index(
             list(fields),
             definition=index_def,
             stopwords=[],  # otherwise queries will not work with words like "no" or "a"
@@ -69,5 +68,5 @@ class RedisSearchIndexManager(DynamicSearchIndexManager):
 
     @override
     def drop_search_index(self, index_name: str, collection_name: str) -> None:
-        self._client.ft(index_name).dropindex()
+        self._client.client.ft(index_name).dropindex()
         self._index_configs.pop(index_name, None)

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import redis
 from beartype.typing import Any, Sequence
 from typing_extensions import override
 
@@ -41,12 +40,13 @@ from superlinked.framework.storage.redis.redis_search import RedisSearch
 from superlinked.framework.storage.redis.redis_search_index_manager import (
     RedisSearchIndexManager,
 )
+from superlinked.framework.storage.redis.redis_vdb_client import RedisVDBClient
 
 
 class RedisVDBConnector(VDBConnector):
     def __init__(self, connection_params: RedisConnectionParams, vdb_settings: VDBSettings) -> None:
         super().__init__()
-        self._client: redis.Redis = redis.from_url(connection_params.connection_string, protocol=3)
+        self._client = RedisVDBClient(connection_params.connection_string)
         self._encoder = RedisFieldEncoder()
         self.__search_index_manager = RedisSearchIndexManager(self._client, self._encoder)
         self._search = RedisSearch(self._client, self._encoder)
@@ -54,7 +54,7 @@ class RedisVDBConnector(VDBConnector):
 
     @override
     def close_connection(self) -> None:
-        self._client.close()
+        self._client.client.close()
 
     @property
     @override
@@ -69,7 +69,7 @@ class RedisVDBConnector(VDBConnector):
     @override
     def write_entities(self, entity_data: Sequence[EntityData]) -> None:
         if entity_data:
-            _pipeline = self._client.pipeline(transaction=False)
+            _pipeline = self._client.client.pipeline(transaction=False)
             for ed in entity_data:
                 if ed.field_data:
                     _pipeline.hset(
@@ -86,7 +86,7 @@ class RedisVDBConnector(VDBConnector):
         if not valid_entities:
             return []
 
-        pipeline = self._client.pipeline(transaction=False)
+        pipeline = self._client.client.pipeline(transaction=False)
 
         for entity in valid_entities:
             pipeline.hmget(
