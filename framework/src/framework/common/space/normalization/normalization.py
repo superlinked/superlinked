@@ -22,7 +22,6 @@ from beartype.typing import Any, Generic, Sequence, TypeVar
 from scipy import linalg
 from typing_extensions import override
 
-from superlinked.framework.common.const import constants
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import NPArray, Vector
 from superlinked.framework.common.space.config.normalization.normalization_config import (
@@ -33,6 +32,7 @@ from superlinked.framework.common.space.config.normalization.normalization_confi
     NoNormConfig,
     NormalizationConfig,
 )
+from superlinked.framework.common.util.collection_util import CollectionUtil
 
 NormalizationConfigT = TypeVar("NormalizationConfigT", bound=NormalizationConfig)
 
@@ -130,7 +130,7 @@ class CategoricalNorm(Normalization[CategoricalNormConfig]):
     @override
     def norm(self, value: NPArray, is_query: bool = False) -> float:
         vector_values_max: float = float(np.max(value, initial=0.0))
-        len_implied_categories: int = len(value[value > constants.DEFAULT_NOT_AFFECTING_EMBEDDING_VALUE])
+        len_implied_categories: int = len(CollectionUtil.get_positive_values_ndarray(value))
         sqrt_len_config_categories: float = math.sqrt(self._config.categories_count)
         expected_max: float = (
             sqrt_len_config_categories / (len_implied_categories or 1.0)

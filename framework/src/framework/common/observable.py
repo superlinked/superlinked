@@ -17,7 +17,7 @@ from abc import ABC, abstractmethod
 from beartype.typing import Generic, Sequence, TypeVar, cast
 from typing_extensions import override
 
-from superlinked.framework.common.util.collection_util import chunk_list
+from superlinked.framework.common.util.collection_util import CollectionUtil
 
 PublishedMessageT = TypeVar("PublishedMessageT")
 
@@ -61,14 +61,14 @@ class TransformerPublisher(Generic[ReceivedMessageT, PublishedMessageT]):
             Sequence[ReceivedMessageT],
             ([messages] if not isinstance(messages, Sequence) or isinstance(messages, str) else messages),
         )
-        for batch in chunk_list(data=messages, chunk_size=self._chunk_size):
+        for batch in CollectionUtil.chunk_list(data=messages, chunk_size=self._chunk_size):
             for pre_transform_subscriber in self._pre_transform_subscribers:
                 pre_transform_subscriber.update(batch)
 
         transformed_messages = [
             transformed_message for message in messages for transformed_message in self.transform(message)
         ]
-        for transformed_batch in chunk_list(data=transformed_messages, chunk_size=self._chunk_size):
+        for transformed_batch in CollectionUtil.chunk_list(data=transformed_messages, chunk_size=self._chunk_size):
             for subscriber in self._subscribers:
                 subscriber.update(transformed_batch)
 

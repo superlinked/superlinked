@@ -26,6 +26,7 @@ from superlinked.framework.common.space.config.embedding.categorical_similarity_
     CategoricalSimilarityEmbeddingConfig,
 )
 from superlinked.framework.common.space.embedding.embedding import InvertibleEmbedding
+from superlinked.framework.common.util.collection_util import CollectionUtil
 
 
 class CategoricalSimilarityEmbedding(InvertibleEmbedding[list[str], CategoricalSimilarityEmbeddingConfig]):
@@ -86,7 +87,7 @@ class CategoricalSimilarityEmbedding(InvertibleEmbedding[list[str], CategoricalS
             new_values: NPArray = vector.value
             new_values[np.array(list(scaling_factors.keys()))] *= np.array(list(scaling_factors.values()))
             new_vector = Vector(new_values, vector.negative_filter_indices)
-            sum_values = sum(new_vector.positive_values)
+            sum_values = sum(CollectionUtil.get_positive_values_ndarray(new_vector.value))
             normalizing_factor = sum_values / math.sqrt(len(self._config.categories))
             return new_vector.normalize(normalizing_factor)
         return vector

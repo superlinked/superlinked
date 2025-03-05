@@ -56,10 +56,6 @@ class Vector:
         return self.__dimension
 
     @property
-    def positive_values(self) -> NPArray:
-        return self.value[self.value > 0]
-
-    @property
     def vector_before_normalization(self) -> Vector | None:
         return self.__vector_before_normalization
 

@@ -14,8 +14,17 @@
 
 from beartype.typing import Iterator, Sequence, TypeVar
 
+from superlinked.framework.common.const import constants
+from superlinked.framework.common.data_types import NPArray
+
 T = TypeVar("T")
 
 
-def chunk_list(data: Sequence[T], chunk_size: int) -> Iterator[list[T]]:
-    return (list(data[i : i + chunk_size]) for i in range(0, len(data), chunk_size))
+class CollectionUtil:
+    @staticmethod
+    def chunk_list(data: Sequence[T], chunk_size: int) -> Iterator[list[T]]:
+        return (list(data[i : i + chunk_size]) for i in range(0, len(data), chunk_size))
+
+    @staticmethod
+    def get_positive_values_ndarray(value: NPArray) -> NPArray:
+        return value[value > constants.DEFAULT_NOT_AFFECTING_EMBEDDING_VALUE]
