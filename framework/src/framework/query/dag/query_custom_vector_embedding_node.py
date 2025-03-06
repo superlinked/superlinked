@@ -19,12 +19,14 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.custom_node import CustomVectorEmbeddingNode
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.query.dag.query_embedding_orphan_node import (
     QueryEmbeddingOrphanNode,
 )
 from superlinked.framework.query.dag.query_node import QueryNode
-from superlinked.framework.query.query_node_input import QueryNodeInput
+from superlinked.framework.query.query_node_input import (
+    QueryNodeInput,
+    QueryNodeInputValue,
+)
 
 
 class QueryCustomVectorEmbeddingNode(QueryEmbeddingOrphanNode[Vector, CustomVectorEmbeddingNode, Vector]):
@@ -41,7 +43,7 @@ class QueryCustomVectorEmbeddingNode(QueryEmbeddingOrphanNode[Vector, CustomVect
             result = node_input
         elif isinstance(node_input.value.item, list):
             result = QueryNodeInput(
-                Weighted(Vector(node_input.value.item), node_input.value.weight),
+                QueryNodeInputValue(Vector(node_input.value.item), node_input.value.weight),
                 node_input.to_invert,
             )
         else:

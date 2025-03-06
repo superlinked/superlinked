@@ -19,13 +19,14 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import NT
-from superlinked.framework.common.data_types import NodeDataTypes
-from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.query.dag.query_evaluation_data_types import (
     QueryEvaluationResultT,
 )
 from superlinked.framework.query.dag.query_node_with_parent import QueryNodeWithParent
-from superlinked.framework.query.query_node_input import QueryNodeInput
+from superlinked.framework.query.query_node_input import (
+    QueryNodeInput,
+    QueryNodeInputValue,
+)
 
 
 class InvertIfAddressedQueryNode(
@@ -45,5 +46,5 @@ class InvertIfAddressedQueryNode(
         return new_inputs
 
     @abstractmethod
-    def invert_and_readdress(self, node_inputs: Sequence[Weighted[NodeDataTypes]]) -> dict[str, list[QueryNodeInput]]:
+    def invert_and_readdress(self, node_inputs: Sequence[QueryNodeInputValue]) -> dict[str, list[QueryNodeInput]]:
         pass

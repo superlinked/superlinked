@@ -13,8 +13,9 @@
 # limitations under the License.
 
 import inspect
+from types import UnionType
 
-from beartype.typing import Any, Sequence, cast, get_args, get_origin
+from beartype.typing import Any, cast, get_args, get_origin
 
 from superlinked.framework.common.schema.general_type import T
 
@@ -30,25 +31,29 @@ class GenericClassUtil:
         return cast(type, get_origin(type_))
 
     @staticmethod
-    def get_generic_types(object_: Any) -> Sequence[Any]:
+    def get_generic_types_of_class(type_: type) -> tuple[type, ...]:
         generic_base_class = next(
             filter(
                 lambda base_class: bool(get_args(base_class)),
-                getattr(object_.__class__, "__orig_bases__", []),
+                getattr(type_, "__orig_bases__", []),
             ),
             None,
         )
         if not generic_base_class:
-            raise ValueError(f"{object_.__class__.__name__} does not have a Generic base class.")
+            raise ValueError(f"{type_.__name__} does not have a Generic base class.")
         return get_args(generic_base_class)
 
     @staticmethod
-    def get_single_generic_type(object_: Any) -> Any:
+    def get_generic_types(object_: Any) -> tuple[type, ...]:
+        return GenericClassUtil.get_generic_types_of_class(object_.__class__)
+
+    @staticmethod
+    def get_single_generic_type(object_: Any) -> type:
         return GenericClassUtil.get_generic_types(object_)[0]
 
     @staticmethod
     def get_single_generic_type_extended(object_: Any) -> Any:
-        expected_type = GenericClassUtil.get_single_generic_type(object_)
+        expected_type: type | UnionType = GenericClassUtil.get_single_generic_type(object_)
         # Allow integers to be used for float fields since they can be safely converted
         if expected_type is float:
             expected_type = float | int

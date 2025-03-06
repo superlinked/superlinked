@@ -52,8 +52,7 @@ class SentenceTransformerManager(ModelManager):
         try:
             embeddings = self._encode(inputs, model, prompt_name)
         except (RuntimeError, ValueError) as e:
-            longest_input_len = max(len(str(x)) if isinstance(x, str) else 0 for x in inputs)
-            self.__handle_exceeded_length_exception(e, longest_input_len)
+            self.__handle_exceeded_length_exception(e, inputs)
         return embeddings.tolist()
 
     @time_execution
@@ -63,10 +62,13 @@ class SentenceTransformerManager(ModelManager):
             prompt_name=prompt_name,
         )
 
-    def __handle_exceeded_length_exception(self, exception: RuntimeError | ValueError, longest_input_len: int) -> None:
+    def __handle_exceeded_length_exception(
+        self, exception: RuntimeError | ValueError, inputs: Sequence[str | Image]
+    ) -> None:
         if (predicate := EXCEEDED_LENGTH_EXCEPTION_PREDICATE_BY_EXCEPTION_TYPE.get(type(exception))) and predicate(
             exception
         ):
+            longest_input_len = max(len(str(x)) if isinstance(x, str) else 0 for x in inputs)
             raise EmbeddingException(
                 f"Model {self._model_name} failed to encode inputs - input was too long. "
                 "Try shortening the input text.\n"

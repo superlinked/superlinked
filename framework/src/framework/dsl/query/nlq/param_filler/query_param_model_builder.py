@@ -13,61 +13,64 @@
 # limitations under the License.
 
 
-from beartype.typing import Any, Optional
+from beartype.typing import Any, Union
 from pydantic import BaseModel, Field, create_model
 
 from superlinked.framework.common.interface.evaluated import Evaluated
+from superlinked.framework.dsl.query.nlq.exception import NLQException
 from superlinked.framework.dsl.query.nlq.nlq_clause_collector import NLQClauseCollector
 from superlinked.framework.dsl.query.nlq.param_filler.query_param_model_validator import (
     QueryParamModelValidator,
 )
-from superlinked.framework.dsl.query.param import Param
-from superlinked.framework.dsl.query.query_clause import (
-    HardFilterClause,
-    QueryClause,
-    WeightedQueryClause,
-)
+from superlinked.framework.dsl.query.query_clause import QueryClause
+from superlinked.framework.dsl.query.typed_param import TypedParam
 
 QUERY_MODEL_NAME = "QueryModel"
 VALIDATORS_ARG_NAME = "__validators__"
 VALIDATOR_NAME = "__validator__"
 
+VALID_NLQ_TYPES = [float, int, str, list[float], list[int], list[str]]
+
 
 class QueryParamModelBuilder:
-
     @classmethod
     def build(cls, clause_collector: NLQClauseCollector) -> type[BaseModel]:
         field_kwargs: dict[str, Any] = cls._calculate_field_kwargs(clause_collector)
         validation_kwargs = {VALIDATORS_ARG_NAME: {VALIDATOR_NAME: QueryParamModelValidator.build(clause_collector)}}
-        pydantic_kwargs = {**field_kwargs, **validation_kwargs}
+        pydantic_kwargs = field_kwargs | validation_kwargs
         model = create_model(QUERY_MODEL_NAME, **pydantic_kwargs)
         return model
 
     @classmethod
     def _calculate_field_kwargs(cls, clause_collector: NLQClauseCollector) -> dict[str, tuple[Any, Any]]:
         return {
-            query_clause.get_param(param).name: (
-                cls._calculate_type(query_clause, param),
-                cls._calculate_field(query_clause, param),
+            QueryClause.get_param(param).name: (
+                cls._calculate_type(param, query_clause.is_type_mandatory_in_nlq),
+                cls._calculate_field(param),
             )
             for query_clause in clause_collector.clauses
             for param in query_clause.params
         }
 
     @classmethod
-    def _calculate_type(cls, query_clause: QueryClause, param: Param | Evaluated[Param]) -> Any:
-        if isinstance(query_clause, WeightedQueryClause) and query_clause.weight_param == param:
-            return query_clause.weight_accepted_type
-        if isinstance(query_clause, HardFilterClause):
-            return Optional[query_clause.value_accepted_type]
-        return query_clause.value_accepted_type
+    def _calculate_type(cls, param: TypedParam | Evaluated[TypedParam], is_type_mandatory: bool) -> Any:
+        param_types = QueryClause.get_typed_param(param).valid_param_value_types
+        nlq_types = [
+            param_type.original_type for param_type in param_types if param_type.original_type in VALID_NLQ_TYPES
+        ]
+        if not nlq_types:
+            raise NLQException(
+                f"Param type suppported by NLQ cannot be found for param: {QueryClause.get_param(param).name}"
+            )
+        types = Union[tuple(nlq_types)] if len(nlq_types) > 1 else nlq_types[0]
+        return types if is_type_mandatory else types | None
 
     @classmethod
-    def _calculate_field(cls, query_clause: QueryClause, param: Param | Evaluated[Param]) -> Any:
+    def _calculate_field(cls, param: TypedParam | Evaluated[TypedParam]) -> Any:
         match param:
             case Evaluated():
                 return param.value
-            case _ if default_value := query_clause.get_param(param).default:
+            case _ if (default_value := QueryClause.get_param(param).default) is not None:
                 return Field(default=default_value)
             case _:
                 return Field()

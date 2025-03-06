@@ -29,7 +29,7 @@ from superlinked.framework.common.dag.context import (
 )
 from superlinked.framework.common.data_types import NodeDataTypes, Vector
 from superlinked.framework.common.exception import QueryException
-from superlinked.framework.common.interface.weighted import Weighted
+from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.storage_manager.knn_search_params import (
     KNNSearchParams,
 )
@@ -54,7 +54,10 @@ from superlinked.framework.dsl.query.result import (
     ResultEntryMetadata,
     ResultMetadata,
 )
-from superlinked.framework.query.query_node_input import QueryNodeInput
+from superlinked.framework.query.query_node_input import (
+    QueryNodeInput,
+    QueryNodeInputValue,
+)
 
 logger = structlog.getLogger()
 
@@ -142,11 +145,11 @@ class QueryExecutor:
         ]
 
     def _map_search_params(self, query_descriptor: QueryDescriptor) -> dict[str, Any]:
-        value_by_param_name = {clause.value_param_name: clause.get_value() for clause in query_descriptor.clauses}
-        weight_by_param_name = {
-            clause.weight_param_name: clause.get_weight() for clause in query_descriptor.get_weighted_clauses()
+        return {
+            item: value
+            for clause in query_descriptor.clauses
+            for item, value in clause.get_param_value_by_param_name().items()
         }
-        return {**value_by_param_name, **weight_by_param_name}
 
     @time_execution
     def _produce_knn_search_params(self, query_descriptor: QueryDescriptor) -> KNNSearchParams:
@@ -182,26 +185,27 @@ class QueryExecutor:
     def calculate_query_node_inputs_by_node_id(
         self, query_descriptor: QueryDescriptor
     ) -> dict[str, list[QueryNodeInput]]:
-        inputs: defaultdict = defaultdict(list)
+        inputs: defaultdict[str, list[QueryNodeInput]] = defaultdict(list)
 
         def add_input(
             node_id: str,
             value: Any,
-            weight: float,
+            weight: float | dict[str, float],
             to_invert: bool,
         ) -> None:
             inputs[node_id].append(
                 QueryNodeInput(
-                    Weighted(cast(NodeDataTypes, value), weight),
+                    QueryNodeInputValue(cast(NodeDataTypes, value), weight),
                     to_invert,
                 )
             )
 
         looks_like_clause = query_descriptor.get_clause_by_type(LooksLikeFilterClause)
-        if looks_like_clause and looks_like_clause.evaluate():
+        if looks_like_clause and (evaluation := looks_like_clause.evaluate()):
+            object_id, weight = evaluation
             index_node_id = query_descriptor.index._node_id
-            if vector := self.__get_looks_like_vector(index_node_id, looks_like_clause):
-                add_input(index_node_id, vector, looks_like_clause.get_weight(), True)
+            vector = self.__get_looks_like_vector(index_node_id, looks_like_clause.schema_field.schema_obj, object_id)
+            add_input(index_node_id, vector, weight, True)
         for similar_clause in query_descriptor.get_clauses_by_type(SimilarFilterClause):
             if (result := similar_clause.evaluate()) is not None:
                 node_id = similar_clause.space._get_embedding_node(query_descriptor.schema).node_id
@@ -218,15 +222,10 @@ class QueryExecutor:
     def __get_looks_like_vector(
         self,
         index_node_id: str,
-        looks_like_clause: LooksLikeFilterClause,
+        schema_obj: SchemaObject,
+        object_id: str,
     ) -> Vector:
-        object_id = str(looks_like_clause.get_value())
-        vector: Vector | None = self.app._storage_manager.read_node_result(
-            looks_like_clause.schema_field.schema_obj,
-            object_id,
-            index_node_id,
-            Vector,
-        )
+        vector: Vector | None = self.app._storage_manager.read_node_result(schema_obj, object_id, index_node_id, Vector)
         if vector is None:
             raise QueryException(f"Entity not found object_id: {object_id} node_id: {index_node_id}")
         return vector

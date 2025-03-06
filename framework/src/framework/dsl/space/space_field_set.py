@@ -19,6 +19,7 @@ from beartype.typing import Any, Generic, Sequence, cast
 from superlinked.framework.common.data_types import PythonTypes
 from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.util.generic_class_util import GenericClassUtil
+from superlinked.framework.common.util.lazy_property import lazy_property
 from superlinked.framework.dsl.space.space import SIT, Space
 
 
@@ -33,11 +34,18 @@ class SpaceFieldSet(Generic[SIT]):
 
     space: Space
     fields: set[SchemaField]
+    allowed_param_types: Sequence[type] | None = None
 
     def __post_init__(self) -> None:
         self._schema_field_map = {field.schema_obj: field for field in self.fields}
         self._input_type: type[SIT] = GenericClassUtil.get_generic_types(self.space)[1]
         self._fields_id = self.__generate_fields_id(self.fields)
+
+    @lazy_property
+    def validated_allowed_param_types(self) -> Sequence[type]:
+        if self.allowed_param_types is None:
+            return [self.input_type]
+        return self.allowed_param_types
 
     @property
     def input_type(self) -> type[SIT]:

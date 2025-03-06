@@ -26,7 +26,10 @@ from superlinked.framework.query.dag.query_embedding_orphan_node import (
     QueryEmbeddingOrphanNode,
 )
 from superlinked.framework.query.dag.query_node import QueryNode
-from superlinked.framework.query.query_node_input import QueryNodeInput
+from superlinked.framework.query.query_node_input import (
+    QueryNodeInput,
+    QueryNodeInputValue,
+)
 
 
 class QueryCategoricalSimilarityNode(QueryEmbeddingOrphanNode[Vector, CategoricalSimilarityNode, list[str]]):
@@ -43,7 +46,7 @@ class QueryCategoricalSimilarityNode(QueryEmbeddingOrphanNode[Vector, Categorica
         if isinstance(node_input.value.item, list):
             return node_input
         return QueryNodeInput(
-            Weighted([node_input.value.item], node_input.value.weight),
+            QueryNodeInputValue([node_input.value.item], node_input.value.weight),
             node_input.to_invert,
         )
 

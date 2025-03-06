@@ -12,20 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from dataclasses import dataclass
-
-from beartype.typing import Generic
-
-from superlinked.framework.common.dag.node import NodeDataT
+from superlinked.framework.common.exception import QueryException
 
 
-@dataclass(frozen=True)
-class QueryNodeInputValue(Generic[NodeDataT]):
-    item: NodeDataT
-    weight: float | dict[str, float]
-
-
-@dataclass(frozen=True)
-class QueryNodeInput(Generic[NodeDataT]):
-    value: QueryNodeInputValue[NodeDataT]
-    to_invert: bool
+class NLQException(QueryException):
+    pass

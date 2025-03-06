@@ -30,7 +30,6 @@ QueryClauseT = TypeVar("QueryClauseT", bound=QueryClause)
 
 
 class NLQClauseCollector:
-
     def __init__(self, query_clauses: Sequence[QueryClause]) -> None:
         self._clauses = self._filter_for_nlq_compatible_clauses(query_clauses)
         self._clauses_by_type: Mapping[type[QueryClause], list[QueryClause]] = {

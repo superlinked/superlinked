@@ -18,7 +18,7 @@ from superlinked.framework.dsl.query.nlq.nlq_clause_collector import NLQClauseCo
 from superlinked.framework.dsl.query.param import ParamInputType
 from superlinked.framework.dsl.query.query_clause import (
     LooksLikeFilterClause,
-    SimilarFilterClause,
+    QueryClause,
     SpaceWeightClause,
 )
 from superlinked.framework.dsl.space.space import Space
@@ -27,51 +27,52 @@ from superlinked.framework.dsl.space.space import Space
 class QueryParamModelValidatorInfo:
     def __init__(self, clause_collector: NLQClauseCollector) -> None:
         self._space_weight_param_name_by_space = self._extract_space_weight_param_name_by_space(clause_collector)
-        self._similar_and_space_weight_param_names = self._extract_similar_and_space_weight_param_names(
-            clause_collector, self._space_weight_param_name_by_space
+        self._space_param_name_and_space_weight_param_names = (
+            self._extract_space_param_name_and_space_weight_param_names(
+                clause_collector, self._space_weight_param_name_by_space
+            )
         )
         self._allowed_values_by_param = self._extract_allowed_values(clause_collector)
         looks_like_clause = next(iter(clause_collector.get_clauses_by_type(LooksLikeFilterClause)), None)
-        self._with_vector_weight_param = looks_like_clause.weight_param_name if looks_like_clause else None
+        self._weight_param_names = looks_like_clause.weight_param_names if looks_like_clause else None
 
     @property
     def space_weight_param_name_by_space(self) -> Mapping[Space, str]:
         return self._space_weight_param_name_by_space
 
     @property
-    def similar_and_space_weight_param_names(self) -> Sequence[tuple[str, str]]:
-        return self._similar_and_space_weight_param_names
+    def space_param_name_and_space_weight_param_names(self) -> Sequence[tuple[str, str]]:
+        return self._space_param_name_and_space_weight_param_names
 
     @property
     def allowed_values_by_param(self) -> Mapping[str, set[ParamInputType]]:
         return self._allowed_values_by_param
 
     @property
-    def with_vector_weight_param(self) -> str | None:
-        return self._with_vector_weight_param
+    def weight_param_names(self) -> list[str] | None:
+        return self._weight_param_names
 
     def _extract_space_weight_param_name_by_space(self, clause_collector: NLQClauseCollector) -> dict[Space, str]:
         return {
             clause.space: clause.value_param_name for clause in clause_collector.get_clauses_by_type(SpaceWeightClause)
         }
 
-    def _extract_similar_and_space_weight_param_names(
+    def _extract_space_param_name_and_space_weight_param_names(
         self,
         clause_collector: NLQClauseCollector,
         space_weight_param_name_by_space: dict[Space, str],
     ) -> list[tuple[str, str]]:
+        spaces = space_weight_param_name_by_space.keys()
         return [
-            (
-                clause.weight_param_name,
-                space_weight_param_name_by_space[clause.space],
-            )
-            for clause in clause_collector.get_clauses_by_type(SimilarFilterClause)
-            if clause.space in space_weight_param_name_by_space
+            (space_param_name, space_weight_param_name_by_space[space])
+            for clause in clause_collector.clauses
+            for space, space_param_name in clause.get_param_name_by_space().items()
+            if space in spaces
         ]
 
     def _extract_allowed_values(self, clause_collector: NLQClauseCollector) -> dict[str, set[ParamInputType]]:
         return {
-            clause.get_param(param).name: allowed_values
+            QueryClause.get_param(param).name: allowed_values
             for clause in clause_collector.clauses
             for param in clause.params
             if (allowed_values := clause.get_allowed_values(param))

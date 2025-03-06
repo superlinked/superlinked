@@ -18,7 +18,6 @@ from __future__ import annotations
 from beartype.typing import Any, Sequence, TypeAlias, TypeVar
 from PIL.Image import Image
 
-from superlinked.framework.common.interface.evaluated import Evaluated
 from superlinked.framework.common.util.type_validator import TypeValidator
 
 UNSET_PARAM_NAME = "__UNSET_PARAM_NAME_"
@@ -60,25 +59,22 @@ class Param:
         self.name = name
         self.description = description
         self.default = default
-        self.options = self._init_options(options)
+        self.options = self.__init_options(self.name, options)
         if self.default is not None:
             self._validate_value_allowed(self.default)
 
-    def _init_options(self, options: Sequence[ParamInputType] | None) -> set[ParamInputType] | None:
-        if options is None:
-            return None
-        if any(TypeValidator.is_sequence_safe(option) for option in options):
+    def __init_options(self, name: str, options: Sequence[ParamInputType] | None) -> set[ParamInputType]:
+        if options and any(TypeValidator.is_sequence_safe(option) for option in options):
             raise ValueError(
-                f"Sequence option item is not allowed for parameter {self.name}. " "Each option must be a single value."
+                f"Sequence option item is not allowed for parameter {name}. " "Each option must be a single value."
             )
-        return set(options)
+        return set(options) if options else set()
 
     def _validate_value_allowed(self, value: Any) -> None:
         if not self.options:
             return
         if TypeValidator.is_sequence_safe(value):
-            if not set(value).issubset(self.options):
-                invalid_values = [v for v in value if v not in self.options]
+            if invalid_values := set(value).difference(self.options):
                 raise ValueError(
                     f"Values {invalid_values} are not allowed for parameter {self.name}. "
                     f"Allowed values are: {self.options}"
@@ -88,17 +84,9 @@ class Param:
                 f"Value {value} is not allowed for parameter {self.name}. " f"Allowed values are: {self.options}"
             )
 
-    def to_evaluated(self, value: Any) -> Evaluated[Param]:
-        self._validate_value_allowed(value)
-        return Evaluated(self, value)
-
-    @staticmethod
-    def init_evaluated(value: Any) -> Evaluated[Param]:
-        return Evaluated(Param.init_default(), value)
-
     @staticmethod
     def init_default(default: ParamInputType | None = None) -> Param:
-        return Param(UNSET_PARAM_NAME, None, default)
+        return Param(UNSET_PARAM_NAME, default=default)
 
 
 ParamInputType: TypeAlias = (

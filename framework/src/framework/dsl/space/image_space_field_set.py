@@ -47,7 +47,6 @@ class ImageSpaceFieldSet(SpaceFieldSet[ImageData]):
 
 @dataclass
 class ImageDescriptionSpaceFieldSet(SpaceFieldSet[ImageData]):
-
     @property
     @override
     def input_type(self) -> type:

@@ -20,6 +20,7 @@ import structlog
 from beartype.typing import Any, Sequence, Type, cast
 
 from superlinked.framework.common.const import constants
+from superlinked.framework.common.data_types import PythonTypes
 from superlinked.framework.common.exception import (
     InvalidSchemaException,
     QueryException,
@@ -47,13 +48,8 @@ from superlinked.framework.dsl.query.param import (
     IntParamType,
     NumericParamType,
     Param,
-    ParamInputType,
     ParamType,
     StringParamType,
-)
-from superlinked.framework.dsl.query.predicate.binary_predicate import (
-    EvaluatedBinaryPredicate,
-    LooksLikePredicate,
 )
 from superlinked.framework.dsl.query.query_clause import (
     HardFilterClause,
@@ -68,9 +64,9 @@ from superlinked.framework.dsl.query.query_clause import (
     SelectClause,
     SimilarFilterClause,
     SpaceWeightClause,
-    WeightedQueryClause,
 )
 from superlinked.framework.dsl.query.query_filter_validator import QueryFilterValidator
+from superlinked.framework.dsl.query.typed_param import TypedParam
 from superlinked.framework.dsl.space.categorical_similarity_space import (
     CategoricalSimilaritySpace,
 )
@@ -81,7 +77,6 @@ from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 logger = structlog.getLogger()
 
 
-@TypeValidator.wrap
 class QueryDescriptor:  # pylint: disable=too-many-public-methods
     """
     A class representing a query object. Use .with_vector to run queries using a stored
@@ -90,6 +85,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
     Index.
     """
 
+    @TypeValidator.wrap
     def __init__(
         self,
         index: Index,
@@ -119,16 +115,19 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
     def with_metadata(self) -> bool:
         return self.__with_metadata
 
+    @TypeValidator.wrap
     def space_weights(self, weight_by_space: Mapping[Space, NumericParamType]) -> QueryDescriptor:
-        clauses = [SpaceWeightClause(self.__to_param(weight), space) for space, weight in weight_by_space.items()]
+        clauses = [SpaceWeightClause.from_param(weight, space) for space, weight in weight_by_space.items()]
         altered_query_descriptor = self.__append_clauses(clauses)
         return altered_query_descriptor
 
+    @TypeValidator.wrap
     def override_now(self, now: IntParamType) -> QueryDescriptor:
-        clause = OverriddenNowClause(self.__to_param(now))
+        clause = OverriddenNowClause.from_param(now)
         altered_query_descriptor = self.__append_clauses([clause])
         return altered_query_descriptor
 
+    @TypeValidator.wrap
     def similar(
         self,
         space_field_set: HasSpaceFieldSet | SpaceFieldSet,
@@ -157,9 +156,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
             space_field_set.space_field_set if isinstance(space_field_set, HasSpaceFieldSet) else space_field_set
         )
         self.__validate_schema(field_set)
-        value_param = self.__to_param(param)
-        weight_param = self.__to_param(weight)
-        clause = SimilarFilterClause(value_param, weight_param, field_set)
+        clause = SimilarFilterClause.from_param(field_set, param, weight)
         altered_query_descriptor = self.__append_clauses([clause])
         return altered_query_descriptor
 
@@ -167,6 +164,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         if self.schema not in field_set.space._embedding_node_by_schema:
             raise InvalidSchemaException(f"'find' ({type(self.schema)}) is not in similarity field's schema types.")
 
+    @TypeValidator.wrap
     def limit(self, limit: IntParamType | None) -> QueryDescriptor:
         """
         Set a limit to the number of results returned by the query.
@@ -177,11 +175,11 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         Returns:
             Self: The query object itself.
         """
-        param = self.__to_param(limit) if limit is not None else Param.init_default(constants.DEFAULT_LIMIT)
-        clause = LimitClause(param)
+        clause = LimitClause.from_param(limit or constants.DEFAULT_LIMIT)
         altered_query_descriptor = self.__append_clauses([clause])
         return altered_query_descriptor
 
+    @TypeValidator.wrap
     def select(self, *fields: SchemaField | str | Param) -> QueryDescriptor:
         """
         Select specific fields from the schema to be returned in the query results.
@@ -202,20 +200,20 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
             FieldException: If any of the schema fields are not part of the schema.
         """
         param = self.__handle_select_param(list(fields))
-        clause = SelectClause(param)
+        clause = SelectClause.from_param(param)
         altered_query_descriptor = self.__append_clauses([clause])
         return altered_query_descriptor
 
-    def __handle_select_param(self, fields: Sequence[SchemaField | str | Param]) -> Param | Evaluated[Param]:
+    def __handle_select_param(self, fields: Sequence[SchemaField | str | Param]) -> Param | list[str]:
         if len(fields) == 0:
-            return Param.init_evaluated([])
+            return []
         if len(fields) == 1 and isinstance(fields[0], Param):
             return fields[0]
         if any(isinstance(item, Param) for item in fields):
             raise QueryException("Query select clause can only contain either a single Param or non-Param fields.")
-        field_names = [field.name if isinstance(field, SchemaField) else field for field in fields]
-        return self.__to_param(field_names)
+        return [field.name if isinstance(field, SchemaField) else cast(str, field) for field in fields]
 
+    @TypeValidator.wrap
     def select_all(self) -> QueryDescriptor:
         """
         Select all fields from the schema to be returned in the query results.
@@ -225,6 +223,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         """
         return self.select(*self.__schema.schema_fields)
 
+    @TypeValidator.wrap
     def with_natural_query(
         self,
         natural_query: StringParamType,
@@ -241,14 +240,14 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         Returns:
             Self: The query object itself.
         """
-        param = self.__to_param(natural_query)
-        clauses: list[QueryClause] = [NLQClause(param, client_config)]
+        clauses: list[QueryClause] = [NLQClause.from_param(natural_query, client_config)]
         if system_prompt:
-            clauses.append(NLQSystemPromptClause(self.__to_param(system_prompt)))
+            clauses.append(NLQSystemPromptClause.from_param(system_prompt))
         altered_query_descriptor = self.__append_clauses(clauses)
         self.__warn_if_nlq_is_used_without_recommended_param_descriptions(altered_query_descriptor)
         return altered_query_descriptor
 
+    @TypeValidator.wrap
     def radius(self, radius: NumericParamType | None) -> QueryDescriptor:
         """
         Set a radius for the search in the query. The radius is a float value that
@@ -268,15 +267,15 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         Raises:
             ValueError: If the radius is not between 0 and 1.
         """
-        param = self.__to_param(radius) if radius is not None else Param.init_default()
-        clause = RadiusClause(param)
+        clause = RadiusClause.from_param(radius)
         return self.__append_clauses([clause])
 
+    @TypeValidator.wrap
     def with_vector(
         self,
         schema_obj: IdSchemaObject,
-        id_param: ParamType,
-        weight: NumericParamType = constants.DEFAULT_WEIGHT,
+        id_param: StringParamType,
+        weight: NumericParamType | Mapping[Space, NumericParamType] = constants.DEFAULT_WEIGHT,
     ) -> QueryDescriptor:
         """
         Add a 'with_vector' clause to the query. This fetches an object with id_param
@@ -286,20 +285,20 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         vector).
 
         Args:
-            weight (NumericParamType): Weight attributed to the vector retrieved via this clause in the aggregated
-                query.
-            schema_obj (SchemaObject | T): The schema object the vector is originating from.
-            id_param (ParamType): The ID parameter. Eventually it is the ID of the vector to be used in the query.
+            schema_obj (IdSchemaObject): The schema object the vector is originating from.
+            id_param (StringParamType): The ID parameter. Eventually it is the ID of the vector to be used in the query.
+            weight (NumericParamType | Mapping[Space, NumericParamType]): Weight attributed to the vector
+                retrieved via this clause in the aggregated query. Can be fine-tuned with space-wise weighting,
+                but resolving missing per-space weights with NLQ is not supported.
 
         Returns:
             Self: The query object itself.
         """
-        value_param = self.__to_param(id_param)
-        weight_param = self.__to_param(weight)
-        clause = LooksLikeFilterClause(value_param, weight_param, schema_obj.id)
+        clause = LooksLikeFilterClause.from_param(schema_obj.id, id_param, weight)
         return self.__append_clauses([clause])
 
-    def filter(self, comparison_operation: ComparisonOperation[SchemaField] | _Or) -> QueryDescriptor:
+    @TypeValidator.wrap
+    def filter(self, comparison_operation: ComparisonOperation[SchemaField] | _Or[SchemaField]) -> QueryDescriptor:
         """
         Add a 'filter' clause to the query. This filters the results from the db
         to only contain items based on the filtering input.
@@ -324,26 +323,20 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         Returns:
             Self: The query object itself.
         """
-        comparison_operations = (
-            comparison_operation.operations if isinstance(comparison_operation, _Or) else [comparison_operation]
+        comparison_operations = cast(
+            list[ComparisonOperation[SchemaField]],
+            comparison_operation.operations if isinstance(comparison_operation, _Or) else [comparison_operation],
         )
         for operation in comparison_operations:
             QueryFilterValidator.validate_operation_is_supported(operation)
             QueryFilterValidator.validate_operation_operand_type(operation, allow_param=True)
             QueryFilterValidator.validate_operation_field_is_part_of_schema(operation, self.__schema)
-        clauses = [
-            HardFilterClause(
-                self.__to_param(operation._other),
-                operation._op,
-                cast(SchemaField, operation._operand),
-                operation._group_key,
-            )
-            for operation in comparison_operations
-        ]
+        clauses = [HardFilterClause.from_param(operation) for operation in comparison_operations]
         altered_query_descriptor = self.__append_clauses(clauses)
         self.__warn_if_nlq_is_used_without_recommended_param_descriptions(altered_query_descriptor)
         return altered_query_descriptor
 
+    @TypeValidator.wrap
     def include_metadata(self) -> QueryDescriptor:
         """
         Make per-item metadata to be returned in the query results.
@@ -355,6 +348,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         """
         return QueryDescriptor(self.index, self.schema, self.clauses, with_metadata=True)
 
+    @TypeValidator.wrap
     def nlq_suggestions(self, feedback: str | None = None) -> QuerySuggestionsModel:
         """
         Get suggestions for improving the natural language query parameters.
@@ -419,17 +413,6 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
     def get_weights_by_space(self) -> dict[Space, float]:
         return dict(clause.evaluate() for clause in self.get_clauses_by_type(SpaceWeightClause))
 
-    def get_looks_like_filter(
-        self,
-    ) -> EvaluatedBinaryPredicate[LooksLikePredicate] | None:
-        looks_like_clause = self.get_clause_by_type(LooksLikeFilterClause)
-        looks_like_filter = looks_like_clause.evaluate() if looks_like_clause is not None else None
-        return looks_like_filter
-
-    def get_similar_filters_spaces(self) -> list[Space]:
-        evaluation_results = [clause.evaluate() for clause in self.get_clauses_by_type(SimilarFilterClause)]
-        return [result[0] for result in evaluation_results if result is not None]
-
     def get_context_time(self, default: int | Any) -> int:
         if (overridden_now_clause := self.get_clause_by_type(OverriddenNowClause)) is not None:
             context_time = overridden_now_clause.evaluate()
@@ -442,13 +425,13 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
     def append_missing_mandatory_clauses(self) -> QueryDescriptor:
         clauses: list[QueryClause] = []
         if self.get_clause_by_type(LimitClause) is None:
-            clauses.append(LimitClause(Param.init_evaluated(constants.DEFAULT_LIMIT)))
+            clauses.append(LimitClause(TypedParam.init_evaluated([int], constants.DEFAULT_LIMIT)))
         if self.get_clause_by_type(RadiusClause) is None:
-            clauses.append(RadiusClause(Param.init_evaluated(None)))
+            clauses.append(RadiusClause(TypedParam.init_evaluated([type(None)], None)))
         if self.get_clause_by_type(SelectClause) is None:
-            clauses.append(SelectClause(Param.init_evaluated([])))
+            clauses.append(SelectClause(TypedParam.init_evaluated([list[str]], [])))
         missing_spaces = self._calculate_missing_spaces()
-        clauses.extend(SpaceWeightClause(Param.init_default(), space) for space in missing_spaces)
+        clauses.extend(SpaceWeightClause(TypedParam.init_default([float]), space) for space in missing_spaces)
         return self.__append_clauses(clauses)
 
     def _calculate_missing_spaces(self) -> list[Space]:
@@ -457,19 +440,27 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
 
     def get_param_value_to_set_for_unset_space_weight_clauses(self) -> dict[str, float]:
         unset_space_by_param_name = {
-            clause.value_param.name: clause.space
+            clause.value_param.param.name: clause.space
             for clause in self.get_clauses_by_type(SpaceWeightClause)
-            if not isinstance(clause.value_param, Evaluated) and clause.value_param.default is None
+            if not isinstance(clause.value_param, Evaluated)
+            and clause.value_param.param.default in [constants.DEFAULT_NOT_AFFECTING_WEIGHT, None]
         }
         if self.get_looks_like_filter() is not None:
             return {param_name: constants.DEFAULT_WEIGHT for param_name in unset_space_by_param_name.keys()}
-        similar_filter_spaces = self.get_similar_filters_spaces()
+        similar_filter_spaces = self.__get_similar_filters_spaces()
         return {
             param_name: (
                 constants.DEFAULT_WEIGHT if space in similar_filter_spaces else constants.DEFAULT_NOT_AFFECTING_WEIGHT
             )
             for param_name, space in unset_space_by_param_name.items()
         }
+
+    def get_looks_like_filter(
+        self,
+    ) -> tuple[PythonTypes, float | dict[str, float]] | None:
+        looks_like_clause = self.get_clause_by_type(LooksLikeFilterClause)
+        looks_like_filter = looks_like_clause.evaluate() if looks_like_clause is not None else None
+        return looks_like_filter
 
     def get_clause_by_type(self, clause_type: Type[QueryClauseT]) -> QueryClauseT | None:
         clauses = self.get_clauses_by_type(clause_type)
@@ -491,8 +482,9 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
     def replace_clauses(self, clauses: Sequence[QueryClause]) -> QueryDescriptor:
         return QueryDescriptor(self.index, self.schema, clauses, self.with_metadata)
 
-    def get_weighted_clauses(self) -> list[WeightedQueryClause]:
-        return [clause for clause in self.clauses if isinstance(clause, WeightedQueryClause)]
+    def __get_similar_filters_spaces(self) -> list[Space]:
+        evaluation_results = [clause.evaluate() for clause in self.get_clauses_by_type(SimilarFilterClause)]
+        return [result[0] for result in evaluation_results if result is not None]
 
     def __append_clauses(self, clauses: Sequence[QueryClause]) -> QueryDescriptor:
         return QueryDescriptor(self.index, self.schema, list(self.clauses) + list(clauses), self.with_metadata)
@@ -502,13 +494,6 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         id_field_name = self.schema.id.name
         filtered_field_names = [name for name in field_names if name != id_field_name]
         return self.schema._get_fields_by_names(filtered_field_names)
-
-    @classmethod
-    def __to_param(cls, param_input: Any) -> Param | Evaluated[Param]:
-        param_input = cast(ParamInputType, param_input)
-        if not isinstance(param_input, Param):
-            param_input = Param.init_evaluated(param_input)
-        return param_input
 
     @classmethod
     def __warn_if_nlq_is_used_without_recommended_param_descriptions(cls, query_descriptor: QueryDescriptor) -> None:
@@ -546,7 +531,6 @@ class QueryDescriptorValidator:
         QueryDescriptorValidator.__validate_radius_clause(query_descriptor)
         QueryDescriptorValidator.__validate_select_clause(query_descriptor)
         QueryDescriptorValidator.__validate_overridden_now_clause(query_descriptor)
-        QueryDescriptorValidator.__validate_weighted_clauses(query_descriptor)
 
     @staticmethod
     def __validate_schema(query_descriptor: QueryDescriptor) -> None:
@@ -628,11 +612,3 @@ class QueryDescriptorValidator:
     @staticmethod
     def __validate_overridden_now_clause(query_descriptor: QueryDescriptor) -> None:
         query_descriptor.get_clause_by_type(OverriddenNowClause)
-
-    @staticmethod
-    def __validate_weighted_clauses(query_descriptor: QueryDescriptor) -> None:
-        clauses = [clause for clause in query_descriptor.clauses if isinstance(clause, WeightedQueryClause)]
-        for clause in clauses:
-            weight = clause.get_param_value(clause.weight_param)
-            if weight is not None and not isinstance(weight, (int, float)):
-                raise QueryException(f"Query clause weight should be numeric, got {type(weight).__name__}")

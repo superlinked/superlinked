@@ -32,7 +32,6 @@ UNAFFECTING_VALUES = [constants.DEFAULT_NOT_AFFECTING_WEIGHT, None]
 
 
 class QueryParamModelValidator:
-
     @classmethod
     def build(cls, clause_collector: NLQClauseCollector) -> PydanticDescriptorProxy[ModelValidatorDecoratorInfo]:
         validator_info = QueryParamModelValidatorInfo(clause_collector)
@@ -48,11 +47,11 @@ class QueryParamModelValidator:
                 model_dict: dict[str, Any] = model.model_dump()
                 cls._validate_with_vector_weights(
                     model_dict,
-                    validator_info.with_vector_weight_param,
+                    validator_info.weight_param_names,
                     validator_info.space_weight_param_name_by_space,
                 )
                 cls._validate_allowed_values(model_dict, validator_info.allowed_values_by_param)
-                cls._validate_similar_weights(model_dict, validator_info.similar_and_space_weight_param_names)
+                cls._validate_similar_weights(model_dict, validator_info.space_param_name_and_space_weight_param_names)
             return model
 
         return validate
@@ -61,16 +60,16 @@ class QueryParamModelValidator:
     def _validate_similar_weights(
         cls,
         model_dict: dict[str, Any],
-        similar_and_space_weight_param_names: Sequence[tuple[str, str]],
+        space_param_name_and_space_weight_param_names: Sequence[tuple[str, str]],
     ) -> None:
         """Validate that space weights are filled when similar weights are present."""
-        for similar_w_name, space_w_name in similar_and_space_weight_param_names:
+        for space_param_name, space_w_name in space_param_name_and_space_weight_param_names:
             if (
-                model_dict.get(similar_w_name) not in UNAFFECTING_VALUES
+                model_dict.get(space_param_name) not in UNAFFECTING_VALUES
                 and model_dict.get(space_w_name) in UNAFFECTING_VALUES
             ):
                 raise ValueError(
-                    f"If {similar_w_name} is not {constants.DEFAULT_NOT_AFFECTING_WEIGHT}/None,"
+                    f"If {space_param_name} is not {constants.DEFAULT_NOT_AFFECTING_WEIGHT}/None,"
                     f" then set a positive value for the following field: {space_w_name}."
                 )
 
@@ -78,16 +77,15 @@ class QueryParamModelValidator:
     def _validate_with_vector_weights(
         cls,
         model_dict: dict[str, Any],
-        with_vector_weight_param: str | None,
+        weight_param_names: list[str] | None,
         space_weight_param_name_by_space: Mapping[Space, str],
     ) -> None:
         """Validate that space weights are filled when with_vector weights are present."""
-        if not with_vector_weight_param:
+        if not weight_param_names:
             return
-        with_vector_weight = model_dict.get(with_vector_weight_param)
-        if with_vector_weight in UNAFFECTING_VALUES:
+        weights = [model_dict.get(weight_param) for weight_param in weight_param_names]
+        if all(weight in UNAFFECTING_VALUES for weight in weights):
             return
-
         unaffecting_space_weight_param_names = [
             param_name
             for param_name in space_weight_param_name_by_space.values()
@@ -96,7 +94,7 @@ class QueryParamModelValidator:
         if unaffecting_space_weight_param_names:
             none_space_weight_params_text = ", ".join(sorted(unaffecting_space_weight_param_names))
             raise ValueError(
-                f"If {with_vector_weight_param} is not {constants.DEFAULT_NOT_AFFECTING_WEIGHT}/None,"
+                f"If either of {weight_param_names} is not {constants.DEFAULT_NOT_AFFECTING_WEIGHT}/None,"
                 f" then set a positive value for the following fields: {none_space_weight_params_text}."
             )
 
@@ -112,7 +110,7 @@ class QueryParamModelValidator:
             if returned_value is None:
                 continue
             if TypeValidator.is_sequence_safe(returned_value):
-                if not all(value in allowed_values or value is None for value in returned_value):
+                if any(value is not None and value not in allowed_values for value in returned_value):
                     raise ValueError(
                         f"The field {param_name} can only contain None or a subset of: "
                         f"{cls._format_allowed_values(allowed_values)}."

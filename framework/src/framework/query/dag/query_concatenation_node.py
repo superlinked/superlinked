@@ -25,7 +25,6 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import NodeDataTypes, Vector
 from superlinked.framework.common.interface.has_length import HasLength
-from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.space.config.normalization.normalization_config import (
     ConstantNormConfig,
 )
@@ -41,7 +40,10 @@ from superlinked.framework.query.dag.query_evaluation_data_types import (
     QueryEvaluationResult,
 )
 from superlinked.framework.query.dag.query_node import QueryNode
-from superlinked.framework.query.query_node_input import QueryNodeInput
+from superlinked.framework.query.query_node_input import (
+    QueryNodeInput,
+    QueryNodeInputValue,
+)
 
 
 class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vector]):
@@ -58,17 +60,19 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
         return ConstantNorm(self.node.create_normalization_config([1.0] * len(self.node.parents)))
 
     @override
-    def invert_and_readdress(self, node_inputs: Sequence[Weighted[NodeDataTypes]]) -> dict[str, list[QueryNodeInput]]:
+    def invert_and_readdress(
+        self, node_inputs: Sequence[QueryNodeInputValue[NodeDataTypes]]
+    ) -> dict[str, list[QueryNodeInput]]:
         # All of the inputs are vectors having the same dimension as the CN.
         self._validate_inputs_to_be_inverted(node_inputs)
         # Each vector (outer list item) has the same number of
         # parts (inner list items) as the number of parents.
-        split_weighted_vectors: list[list[Weighted[Vector]]] = [
-            self._split_weighted_vector(cast(Weighted[Vector], node_input)) for node_input in node_inputs
+        split_weighted_vectors: list[list[QueryNodeInputValue[Vector]]] = [
+            self._split_weighted_vector(cast(QueryNodeInputValue[Vector], node_input)) for node_input in node_inputs
         ]
         return self._address_split_weighted_vectors(split_weighted_vectors)
 
-    def _validate_inputs_to_be_inverted(self, node_inputs: Sequence[Weighted[NodeDataTypes]]) -> None:
+    def _validate_inputs_to_be_inverted(self, node_inputs: Sequence[QueryNodeInputValue]) -> None:
         if any(invalid_inputs := [node_input for node_input in node_inputs if not isinstance(node_input.item, Vector)]):
             raise QueryEvaluationException(
                 "The inputs that need to be inverted must be " + f"vectors, got {invalid_inputs}"
@@ -85,15 +89,17 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
                 + f"as the concatenation node, got {invalid_inputs_lengths}"
             )
 
-    def _split_weighted_vector(self, weighted_vector: Weighted[Vector]) -> list[Weighted[Vector]]:
+    def _split_weighted_vector(self, weighted_vector: QueryNodeInputValue[Vector]) -> list[QueryNodeInputValue[Vector]]:
         vector = weighted_vector.item
         parents_without_duplicates = list(dict.fromkeys(self.parents))
         lengths = [cast(HasLength, parent.node).length for parent in parents_without_duplicates]
         vectors = vector.split(lengths)
-        return [Weighted(self._denormalizer.denormalize(vector), weighted_vector.weight) for vector in vectors]
+        return [
+            QueryNodeInputValue(self._denormalizer.denormalize(vector), weighted_vector.weight) for vector in vectors
+        ]
 
     def _address_split_weighted_vectors(
-        self, split_weighted_vectors: Sequence[Sequence[Weighted[Vector]]]
+        self, split_weighted_vectors: Sequence[Sequence[QueryNodeInputValue[Vector]]]
     ) -> dict[str, list[QueryNodeInput]]:
         return {
             parent.node_id: [

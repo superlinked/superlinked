@@ -39,7 +39,10 @@ from superlinked.framework.query.dag.query_node import QueryNode
 from superlinked.framework.query.dag.transform_vector_to_query_vector import (
     TransformVectorToQueryVector,
 )
-from superlinked.framework.query.query_node_input import QueryNodeInput
+from superlinked.framework.query.query_node_input import (
+    QueryNodeInput,
+    QueryNodeInputValue,
+)
 
 T = TypeVar("T")
 
@@ -119,9 +122,14 @@ class QueryEmbeddingNode(
 
     def _validate_and_cast_items(
         self,
-        weighted_items: Sequence[Weighted],
+        weighted_items: Sequence[QueryNodeInputValue | Weighted],
         input_type: type[T],
     ) -> list[Weighted[T]]:
+        def get_item_weight(weight: float | dict[str, float]) -> float:
+            if isinstance(weight, float):
+                return weight
+            return weight[self.node_id]
+
         if wrong_types := [
             type(weighted_item.item).__name__
             for weighted_item in weighted_items
@@ -130,6 +138,9 @@ class QueryEmbeddingNode(
             raise QueryEvaluationException(
                 f"{type(self).__name__} can only evaluate {input_type.__name__}, " + f"got {wrong_types}."
             )
+        weighted_items = [
+            Weighted(weighted_item.item, get_item_weight(weighted_item.weight)) for weighted_item in weighted_items
+        ]
         return cast(list[Weighted[T]], weighted_items)
 
     def _embed_inputs(

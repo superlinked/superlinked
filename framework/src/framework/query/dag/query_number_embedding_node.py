@@ -20,7 +20,6 @@ from typing_extensions import override
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.number_embedding_node import NumberEmbeddingNode
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.space.config.embedding.number_embedding_config import (
     Mode,
     NumberEmbeddingConfig,
@@ -32,7 +31,10 @@ from superlinked.framework.query.dag.query_evaluation_data_types import (
     QueryEvaluationResult,
 )
 from superlinked.framework.query.dag.query_node import QueryNode
-from superlinked.framework.query.query_node_input import QueryNodeInput
+from superlinked.framework.query.query_node_input import (
+    QueryNodeInput,
+    QueryNodeInputValue,
+)
 
 
 class QueryNumberEmbeddingNode(QueryEmbeddingOrphanNode[float, NumberEmbeddingNode, float]):
@@ -49,7 +51,7 @@ class QueryNumberEmbeddingNode(QueryEmbeddingOrphanNode[float, NumberEmbeddingNo
         if isinstance(node_input.value.item, float):
             return node_input
         return QueryNodeInput(
-            Weighted(float(node_input.value.item), node_input.value.weight),
+            QueryNodeInputValue(float(node_input.value.item), node_input.value.weight),
             node_input.to_invert,
         )
 

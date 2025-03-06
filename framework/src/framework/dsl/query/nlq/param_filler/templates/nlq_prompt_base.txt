@@ -135,7 +135,7 @@ _User Query:_ "I really want to watch comedy movies, specifically from the 90s, 
 {% endfor %}
 {% endfor %}
 {% endif %}
-{% if looks_like_clause %}
+{% if looks_like_clause and looks_like_clause.annotation %}
 
 **Fields affecting all spaces:**
 {{ looks_like_clause.annotation }}

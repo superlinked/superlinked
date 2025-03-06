@@ -69,7 +69,7 @@ class CustomSpace(Space[Vector, Vector], HasSpaceFieldSet):
         """
         non_none_vector = self._fields_to_non_none_sequence(vector)
         super().__init__(non_none_vector, FloatList)
-        self.vector = SpaceFieldSet[list[float]](self, set(non_none_vector))
+        self.vector = SpaceFieldSet[list[float]](self, set(non_none_vector), allowed_param_types=[list[float]])
         self._transformation_config = self._init_transformation_config(length)
         self._schema_node_map = self._calculate_schema_node_map(self._transformation_config)
         self._description = description

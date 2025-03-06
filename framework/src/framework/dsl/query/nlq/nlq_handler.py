@@ -36,7 +36,6 @@ from superlinked.framework.dsl.query.query_clause import QueryClause
 
 
 class NLQHandler:
-
     @classmethod
     def fill_params(
         cls,

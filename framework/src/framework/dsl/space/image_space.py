@@ -16,6 +16,7 @@ from pathlib import Path
 
 import structlog
 from beartype.typing import Sequence
+from PIL.Image import Image
 from typing_extensions import override
 
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
@@ -104,9 +105,11 @@ class ImageSpace(Space[Vector, ImageData]):
         image_fields, description_fields = self._split_images_from_descriptions(non_none_image)
         super().__init__(image_fields, Blob)
         length = ImageEmbedding.init_manager(model_handler, model, model_cache_dir).calculate_length()
-        self.image = ImageSpaceFieldSet(self, set(image_fields))
+        self.image = ImageSpaceFieldSet(self, set(image_fields), allowed_param_types=[str, Image])
         self.description = ImageDescriptionSpaceFieldSet(
-            self, set(description for description in description_fields if description is not None)
+            self,
+            set(description for description in description_fields if description is not None),
+            allowed_param_types=[str],
         )
         self._all_fields = self.image.fields | self.description.fields
         self._transformation_config = self._init_transformation_config(model, model_cache_dir, model_handler, length)
