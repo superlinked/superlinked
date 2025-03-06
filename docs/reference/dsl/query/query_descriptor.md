@@ -12,13 +12,13 @@ Classes
 
     ### Instance variables
 
-    `clauses: Sequence[superlinked.framework.dsl.query.query_clause.QueryClause]`
+    `clauses: Sequence[QueryClause]`
     :
 
-    `index: superlinked.framework.dsl.index.index.Index`
+    `index: Index`
     :
 
-    `schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject`
+    `schema: IdSchemaObject`
     :
 
     `with_metadata: bool`
@@ -29,7 +29,7 @@ Classes
     `append_missing_mandatory_clauses(self) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :
 
-    `filter(self, comparison_operation: superlinked.framework.common.interface.comparison_operand.ComparisonOperation[superlinked.framework.common.schema.schema_object.SchemaField] | superlinked.framework.common.interface.comparison_operand._Or) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    `filter(self, comparison_operation: superlinked.framework.common.interface.comparison_operand.ComparisonOperation[superlinked.framework.common.schema.schema_object.SchemaField] | superlinked.framework.common.interface.comparison_operand._Or[superlinked.framework.common.schema.schema_object.SchemaField]) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :   Add a 'filter' clause to the query. This filters the results from the db
         to only contain items based on the filtering input.
         E.g:
@@ -53,13 +53,13 @@ Classes
         Returns:
             Self: The query object itself.
 
-    `get_clause_by_type(self, clause_type: type[~QueryClauseT]) ‑> ~QueryClauseT | None`
+    `get_clause_by_type(self, clause_type: Type[QueryClauseT]) ‑> ~QueryClauseT | None`
     :
 
-    `get_clauses_by_type(self, clause_type: type[~QueryClauseT]) ‑> list[~QueryClauseT]`
+    `get_clauses_by_type(self, clause_type: Type[QueryClauseT]) ‑> list[~QueryClauseT]`
     :
 
-    `get_context_time(self, default: int | typing.Any) ‑> int`
+    `get_context_time(self, default: int | Any) ‑> int`
     :
 
     `get_hard_filters(self) ‑> list[superlinked.framework.common.interface.comparison_operand.ComparisonOperation[superlinked.framework.common.schema.schema_object.SchemaField]]`
@@ -68,10 +68,10 @@ Classes
     `get_limit(self) ‑> int`
     :
 
-    `get_looks_like_filter(self) ‑> superlinked.framework.dsl.query.predicate.binary_predicate.EvaluatedBinaryPredicate[superlinked.framework.dsl.query.predicate.binary_predicate.LooksLikePredicate] | None`
+    `get_looks_like_filter(self) ‑> tuple[float | int | str | superlinked.framework.common.data_types.Vector | list[float] | list[str] | superlinked.framework.common.schema.blob_information.BlobInformation, float | dict[str, float]] | None`
     :
 
-    `get_mandatory_clause_by_type(self, clause_type: type[~QueryClauseT]) ‑> ~QueryClauseT`
+    `get_mandatory_clause_by_type(self, clause_type: Type[QueryClauseT]) ‑> ~QueryClauseT`
     :
 
     `get_param_value_to_set_for_unset_space_weight_clauses(self) ‑> dict[str, float]`
@@ -81,12 +81,6 @@ Classes
     :
 
     `get_selected_fields(self) ‑> Sequence[superlinked.framework.common.schema.schema_object.SchemaField]`
-    :
-
-    `get_similar_filters_spaces(self) ‑> list[superlinked.framework.dsl.space.space.Space]`
-    :
-
-    `get_weighted_clauses(self) ‑> list[superlinked.framework.dsl.query.query_clause.WeightedQueryClause]`
     :
 
     `get_weights_by_space(self) ‑> dict[superlinked.framework.dsl.space.space.Space, float]`
@@ -159,7 +153,7 @@ Classes
         Raises:
             ValueError: If the radius is not between 0 and 1.
 
-    `replace_clauses(self, clauses: Sequence[superlinked.framework.dsl.query.query_clause.QueryClause]) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    `replace_clauses(self, clauses: Sequence[QueryClause]) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :
 
     `select(self, *fields: superlinked.framework.common.schema.schema_object.SchemaField | str | superlinked.framework.dsl.query.param.Param) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
@@ -217,7 +211,7 @@ Classes
         Returns:
             Self: The query object itself.
 
-    `with_vector(self, schema_obj: superlinked.framework.common.schema.id_schema_object.IdSchemaObject, id_param: collections.abc.Sequence[str] | collections.abc.Sequence[float] | PIL.Image.Image | str | int | float | bool | None | tuple[str | None, str | None] | superlinked.framework.dsl.query.param.Param, weight: float | int | superlinked.framework.dsl.query.param.Param = 1.0) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    `with_vector(self, schema_obj: superlinked.framework.common.schema.id_schema_object.IdSchemaObject, id_param: str | superlinked.framework.dsl.query.param.Param, weight: float | int | superlinked.framework.dsl.query.param.Param | collections.abc.Mapping[superlinked.framework.dsl.space.space.Space, float | int | superlinked.framework.dsl.query.param.Param] = 1.0) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :   Add a 'with_vector' clause to the query. This fetches an object with id_param
         from the db and uses the vector of that item for search purposes. Weighting
         happens at the space level (and if there is also a .similar query present,
@@ -225,10 +219,11 @@ Classes
         vector).
         
         Args:
-            weight (NumericParamType): Weight attributed to the vector retrieved via this clause in the aggregated
-                query.
-            schema_obj (SchemaObject | T): The schema object the vector is originating from.
-            id_param (ParamType): The ID parameter. Eventually it is the ID of the vector to be used in the query.
+            schema_obj (IdSchemaObject): The schema object the vector is originating from.
+            id_param (StringParamType): The ID parameter. Eventually it is the ID of the vector to be used in the query.
+            weight (NumericParamType | Mapping[Space, NumericParamType]): Weight attributed to the vector
+                retrieved via this clause in the aggregated query. Can be fine-tuned with space-wise weighting,
+                but resolving missing per-space weights with NLQ is not supported.
         
         Returns:
             Self: The query object itself.

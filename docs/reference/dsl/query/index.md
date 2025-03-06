@@ -7,7 +7,6 @@ Sub-modules
 -----------
 * superlinked.framework.dsl.query.nlq
 * superlinked.framework.dsl.query.param
-* superlinked.framework.dsl.query.predicate
 * superlinked.framework.dsl.query.query
 * superlinked.framework.dsl.query.query_clause
 * superlinked.framework.dsl.query.query_descriptor
@@ -18,3 +17,4 @@ Sub-modules
 * superlinked.framework.dsl.query.query_vector_factory
 * superlinked.framework.dsl.query.query_weighting
 * superlinked.framework.dsl.query.result
+* superlinked.framework.dsl.query.typed_param

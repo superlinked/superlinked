@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.space.space_field_set
 Classes
 -------
 
-`SpaceFieldSet(space: superlinked.framework.dsl.space.space.Space, fields: set[superlinked.framework.common.schema.schema_object.SchemaField])`
+`SpaceFieldSet(space: superlinked.framework.dsl.space.space.Space, fields: set[superlinked.framework.common.schema.schema_object.SchemaField], allowed_param_types: collections.abc.Sequence[type] | None = None)`
 :   A class representing a set of fields in a space.
     Attributes:
         space (Space): The space.
@@ -21,6 +21,9 @@ Classes
 
     ### Class variables
 
+    `allowed_param_types: collections.abc.Sequence[type] | None`
+    :
+
     `fields: set[superlinked.framework.common.schema.schema_object.SchemaField]`
     :
 
@@ -36,6 +39,9 @@ Classes
     :
 
     `input_type: type[~SIT]`
+    :
+
+    `validated_allowed_param_types: Sequence[type]`
     :
 
     ### Methods

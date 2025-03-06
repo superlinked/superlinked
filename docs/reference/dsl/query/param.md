@@ -31,11 +31,3 @@ Classes
 
     `init_default(default: ParamInputType | None = None) ‑> superlinked.framework.dsl.query.param.Param`
     :
-
-    `init_evaluated(value: Any) ‑> superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.param.Param]`
-    :
-
-    ### Methods
-
-    `to_evaluated(self, value: Any) ‑> superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.param.Param]`
-    :

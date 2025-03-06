@@ -4,8 +4,8 @@ Module superlinked.framework.dsl.query.query_clause
 Classes
 -------
 
-`HardFilterClause(value_param: Param | Evaluated[Param], op: ComparisonOperationType, operand: SchemaField, group_key: int | None)`
-:   HardFilterClause(value_param: 'Param | Evaluated[Param]', op: 'ComparisonOperationType', operand: 'SchemaField', group_key: 'int | None')
+`HardFilterClause(value_param: TypedParam | Evaluated[TypedParam], op: ComparisonOperationType, operand: SchemaField, group_key: int | None)`
+:   HardFilterClause(value_param: 'TypedParam | Evaluated[TypedParam]', op: 'ComparisonOperationType', operand: 'SchemaField', group_key: 'int | None')
 
     ### Ancestors (in MRO)
 
@@ -25,12 +25,17 @@ Classes
     `operand: superlinked.framework.common.schema.schema_object.SchemaField`
     :
 
+    ### Static methods
+
+    `from_param(operation: ComparisonOperation[SchemaField]) ‑> superlinked.framework.dsl.query.query_clause.HardFilterClause`
+    :
+
     ### Instance variables
 
     `annotation: str`
     :
 
-    `value_accepted_type: type`
+    `is_type_mandatory_in_nlq: bool`
     :
 
     ### Methods
@@ -41,13 +46,18 @@ Classes
     `get_default_value_param_name(self) ‑> str`
     :
 
-`LimitClause(value_param: Param | Evaluated[Param])`
-:   LimitClause(value_param: 'Param | Evaluated[Param]')
+`LimitClause(value_param: TypedParam | Evaluated[TypedParam])`
+:   LimitClause(value_param: 'TypedParam | Evaluated[TypedParam]')
 
     ### Ancestors (in MRO)
 
     * superlinked.framework.dsl.query.query_clause.QueryClause
     * typing.Generic
+
+    ### Static methods
+
+    `from_param(limit: IntParamType) ‑> superlinked.framework.dsl.query.query_clause.LimitClause`
+    :
 
     ### Methods
 
@@ -60,12 +70,11 @@ Classes
     `get_value(self) ‑> int`
     :
 
-`LooksLikeFilterClause(value_param: Param | Evaluated[Param], weight_param: Param | Evaluated[Param], schema_field: SchemaField)`
-:   LooksLikeFilterClause(value_param: 'Param | Evaluated[Param]', weight_param: 'Param | Evaluated[Param]', schema_field: 'SchemaField')
+`LooksLikeFilterClause(value_param: TypedParam | Evaluated[TypedParam], schema_field: SchemaField, weight_param: TypedParam | Evaluated[TypedParam] | dict[Space, TypedParam | Evaluated[TypedParam]])`
+:   LooksLikeFilterClause(value_param: 'TypedParam | Evaluated[TypedParam]', schema_field: 'SchemaField', weight_param: 'TypedParam | Evaluated[TypedParam] | dict[Space, TypedParam | Evaluated[TypedParam]]')
 
     ### Ancestors (in MRO)
 
-    * superlinked.framework.dsl.query.query_clause.WeightedQueryClause
     * superlinked.framework.dsl.query.query_clause.QueryClause
     * typing.Generic
     * superlinked.framework.common.interface.has_annotation.HasAnnotation
@@ -76,17 +85,28 @@ Classes
     `schema_field: superlinked.framework.common.schema.schema_object.SchemaField`
     :
 
+    `weight_param: superlinked.framework.dsl.query.typed_param.TypedParam | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.typed_param.TypedParam] | dict[superlinked.framework.dsl.space.space.Space, superlinked.framework.dsl.query.typed_param.TypedParam | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.typed_param.TypedParam]]`
+    :
+
+    ### Static methods
+
+    `from_param(id_: IdField, id_param: StringParamType, weight: NumericParamType | Mapping[Space, NumericParamType]) ‑> superlinked.framework.dsl.query.query_clause.LooksLikeFilterClause`
+    :
+
     ### Instance variables
 
     `annotation: str`
     :
 
-    `value_accepted_type: type`
+    `params: Sequence[TypedParam | Evaluated[TypedParam]]`
+    :
+
+    `weight_param_names: list[str]`
     :
 
     ### Methods
 
-    `evaluate(self) ‑> superlinked.framework.dsl.query.predicate.binary_predicate.EvaluatedBinaryPredicate[superlinked.framework.dsl.query.predicate.binary_predicate.LooksLikePredicate] | None`
+    `evaluate(self) ‑> tuple[str, float | dict[str, float]] | None`
     :
 
     `get_default_value_param_name(self) ‑> str`
@@ -95,8 +115,14 @@ Classes
     `get_default_weight_param_name(self) ‑> str`
     :
 
-`NLQClause(value_param: Param | Evaluated[Param], client_config: OpenAIClientConfig)`
-:   NLQClause(value_param: 'Param | Evaluated[Param]', client_config: 'OpenAIClientConfig')
+    `get_param_value_by_param_name(self) ‑> dict[str, float | int | str | superlinked.framework.common.data_types.Vector | list[float] | list[str] | superlinked.framework.common.schema.blob_information.BlobInformation | None]`
+    :
+
+    `set_defaults_for_nlq(self) ‑> Self`
+    :
+
+`NLQClause(value_param: TypedParam | Evaluated[TypedParam], client_config: OpenAIClientConfig)`
+:   NLQClause(value_param: 'TypedParam | Evaluated[TypedParam]', client_config: 'OpenAIClientConfig')
 
     ### Ancestors (in MRO)
 
@@ -108,21 +134,10 @@ Classes
     `client_config: superlinked.framework.common.nlq.open_ai.OpenAIClientConfig`
     :
 
-    ### Methods
+    ### Static methods
 
-    `evaluate(self) ‑> str | None`
+    `from_param(natural_query: StringParamType, client_config: OpenAIClientConfig) ‑> superlinked.framework.dsl.query.query_clause.NLQClause`
     :
-
-    `get_default_value_param_name(self) ‑> str`
-    :
-
-`NLQSystemPromptClause(value_param: Param | Evaluated[Param])`
-:   NLQSystemPromptClause(value_param: 'Param | Evaluated[Param]')
-
-    ### Ancestors (in MRO)
-
-    * superlinked.framework.dsl.query.query_clause.QueryClause
-    * typing.Generic
 
     ### Methods
 
@@ -132,13 +147,39 @@ Classes
     `get_default_value_param_name(self) ‑> str`
     :
 
-`OverriddenNowClause(value_param: Param | Evaluated[Param])`
-:   OverriddenNowClause(value_param: 'Param | Evaluated[Param]')
+`NLQSystemPromptClause(value_param: TypedParam | Evaluated[TypedParam])`
+:   NLQSystemPromptClause(value_param: 'TypedParam | Evaluated[TypedParam]')
 
     ### Ancestors (in MRO)
 
     * superlinked.framework.dsl.query.query_clause.QueryClause
     * typing.Generic
+
+    ### Static methods
+
+    `from_param(system_prompt: StringParamType) ‑> superlinked.framework.dsl.query.query_clause.NLQSystemPromptClause`
+    :
+
+    ### Methods
+
+    `evaluate(self) ‑> str | None`
+    :
+
+    `get_default_value_param_name(self) ‑> str`
+    :
+
+`OverriddenNowClause(value_param: TypedParam | Evaluated[TypedParam])`
+:   OverriddenNowClause(value_param: 'TypedParam | Evaluated[TypedParam]')
+
+    ### Ancestors (in MRO)
+
+    * superlinked.framework.dsl.query.query_clause.QueryClause
+    * typing.Generic
+
+    ### Static methods
+
+    `from_param(now: IntParamType) ‑> superlinked.framework.dsl.query.query_clause.OverriddenNowClause`
+    :
 
     ### Methods
 
@@ -148,8 +189,8 @@ Classes
     `get_default_value_param_name(self) ‑> str`
     :
 
-`QueryClause(value_param: Param | Evaluated[Param])`
-:   QueryClause(value_param: 'Param | Evaluated[Param]')
+`QueryClause(value_param: TypedParam | Evaluated[TypedParam])`
+:   QueryClause(value_param: 'TypedParam | Evaluated[TypedParam]')
 
     ### Ancestors (in MRO)
 
@@ -159,33 +200,40 @@ Classes
 
     * superlinked.framework.dsl.query.query_clause.HardFilterClause
     * superlinked.framework.dsl.query.query_clause.LimitClause
+    * superlinked.framework.dsl.query.query_clause.LooksLikeFilterClause
     * superlinked.framework.dsl.query.query_clause.NLQClause
     * superlinked.framework.dsl.query.query_clause.NLQSystemPromptClause
     * superlinked.framework.dsl.query.query_clause.OverriddenNowClause
     * superlinked.framework.dsl.query.query_clause.RadiusClause
     * superlinked.framework.dsl.query.query_clause.SelectClause
+    * superlinked.framework.dsl.query.query_clause.SimilarFilterClause
     * superlinked.framework.dsl.query.query_clause.SpaceWeightClause
-    * superlinked.framework.dsl.query.query_clause.WeightedQueryClause
 
     ### Class variables
 
-    `value_param: superlinked.framework.dsl.query.param.Param | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.param.Param]`
+    `value_param: superlinked.framework.dsl.query.typed_param.TypedParam | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.typed_param.TypedParam]`
     :
 
     ### Static methods
 
-    `get_param(param: Param | Evaluated[Param]) ‑> superlinked.framework.dsl.query.param.Param`
+    `get_param(typed_param: TypedParam | Evaluated[TypedParam]) ‑> superlinked.framework.dsl.query.param.Param`
     :
 
-    `get_param_value(param: Param | Evaluated[Param]) ‑> collections.abc.Sequence[str] | collections.abc.Sequence[float] | PIL.Image.Image | str | int | float | bool | None | tuple[str | None, str | None]`
+    `get_param_value(param: TypedParam | Evaluated[TypedParam]) ‑> collections.abc.Sequence[str] | collections.abc.Sequence[float] | PIL.Image.Image | str | int | float | bool | None | tuple[str | None, str | None]`
+    :
+
+    `get_typed_param(typed_param: TypedParam | Evaluated[TypedParam]) ‑> superlinked.framework.dsl.query.typed_param.TypedParam`
+    :
+
+    `get_value_by_param_name(param: TypedParam | Evaluated[TypedParam]) ‑> dict[str, collections.abc.Sequence[str] | collections.abc.Sequence[float] | PIL.Image.Image | str | int | float | bool | None | tuple[str | None, str | None]]`
     :
 
     ### Instance variables
 
-    `params: Sequence[Param | Evaluated[Param]]`
+    `is_type_mandatory_in_nlq: bool`
     :
 
-    `value_accepted_type: type`
+    `params: Sequence[TypedParam | Evaluated[TypedParam]]`
     :
 
     `value_param_name: str`
@@ -193,28 +241,42 @@ Classes
 
     ### Methods
 
-    `alter_value(self, params: Mapping[str, ParamInputType], is_override_set: bool) ‑> Self`
+    `alter_param_values(self, params_values: Mapping[str, ParamInputType], is_override_set: bool) ‑> Self`
     :
 
     `evaluate(self) ‑> ~EvaluatedQueryT`
     :
 
-    `get_allowed_values(self, param: Param | Evaluated[Param]) ‑> set[collections.abc.Sequence[str] | collections.abc.Sequence[float] | PIL.Image.Image | str | int | float | bool | None | tuple[str | None, str | None]]`
+    `get_allowed_values(self, param: TypedParam | Evaluated[TypedParam]) ‑> set[collections.abc.Sequence[str] | collections.abc.Sequence[float] | PIL.Image.Image | str | int | float | bool | None | tuple[str | None, str | None]]`
     :
 
     `get_default_value_param_name(self) ‑> str`
     :
 
+    `get_param_name_by_space(self) ‑> dict[superlinked.framework.dsl.space.space.Space, str]`
+    :
+
+    `get_param_value_by_param_name(self) ‑> dict[str, float | int | str | superlinked.framework.common.data_types.Vector | list[float] | list[str] | superlinked.framework.common.schema.blob_information.BlobInformation | None]`
+    :
+
     `get_value(self) ‑> float | int | str | superlinked.framework.common.data_types.Vector | list[float] | list[str] | superlinked.framework.common.schema.blob_information.BlobInformation | None`
     :
 
-`RadiusClause(value_param: Param | Evaluated[Param])`
-:   RadiusClause(value_param: 'Param | Evaluated[Param]')
+    `set_defaults_for_nlq(self) ‑> Self`
+    :
+
+`RadiusClause(value_param: TypedParam | Evaluated[TypedParam])`
+:   RadiusClause(value_param: 'TypedParam | Evaluated[TypedParam]')
 
     ### Ancestors (in MRO)
 
     * superlinked.framework.dsl.query.query_clause.QueryClause
     * typing.Generic
+
+    ### Static methods
+
+    `from_param(radius: NumericParamType | None) ‑> superlinked.framework.dsl.query.query_clause.RadiusClause`
+    :
 
     ### Methods
 
@@ -227,13 +289,18 @@ Classes
     `get_value(self) ‑> float | None`
     :
 
-`SelectClause(value_param: Param | Evaluated[Param])`
-:   SelectClause(value_param: 'Param | Evaluated[Param]')
+`SelectClause(value_param: TypedParam | Evaluated[TypedParam])`
+:   SelectClause(value_param: 'TypedParam | Evaluated[TypedParam]')
 
     ### Ancestors (in MRO)
 
     * superlinked.framework.dsl.query.query_clause.QueryClause
     * typing.Generic
+
+    ### Static methods
+
+    `from_param(param: Param | Sequence[str]) ‑> superlinked.framework.dsl.query.query_clause.SelectClause`
+    :
 
     ### Methods
 
@@ -246,12 +313,11 @@ Classes
     `get_value(self) ‑> list[str]`
     :
 
-`SimilarFilterClause(value_param: Param | Evaluated[Param], weight_param: Param | Evaluated[Param], field_set: SpaceFieldSet)`
-:   SimilarFilterClause(value_param: 'Param | Evaluated[Param]', weight_param: 'Param | Evaluated[Param]', field_set: 'SpaceFieldSet')
+`SimilarFilterClause(value_param: TypedParam | Evaluated[TypedParam], weight_param: TypedParam | Evaluated[TypedParam], field_set: SpaceFieldSet)`
+:   SimilarFilterClause(value_param: 'TypedParam | Evaluated[TypedParam]', weight_param: 'TypedParam | Evaluated[TypedParam]', field_set: 'SpaceFieldSet')
 
     ### Ancestors (in MRO)
 
-    * superlinked.framework.dsl.query.query_clause.WeightedQueryClause
     * superlinked.framework.dsl.query.query_clause.QueryClause
     * typing.Generic
     * superlinked.framework.common.interface.has_annotation.HasAnnotation
@@ -262,15 +328,23 @@ Classes
     `field_set: superlinked.framework.dsl.space.space_field_set.SpaceFieldSet`
     :
 
+    `weight_param: superlinked.framework.dsl.query.typed_param.TypedParam | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.typed_param.TypedParam]`
+    :
+
+    ### Static methods
+
+    `from_param(field_set: SpaceFieldSet, param: ParamType, weight: NumericParamType) ‑> superlinked.framework.dsl.query.query_clause.SimilarFilterClause`
+    :
+
     ### Instance variables
 
     `annotation: str`
     :
 
-    `space: Space`
+    `params: Sequence[TypedParam | Evaluated[TypedParam]]`
     :
 
-    `value_accepted_type: type`
+    `space: Space`
     :
 
     ### Methods
@@ -278,17 +352,20 @@ Classes
     `evaluate(self) ‑> tuple[superlinked.framework.dsl.space.space.Space, superlinked.framework.common.interface.weighted.Weighted[float | int | str | superlinked.framework.common.data_types.Vector | list[float] | list[str] | superlinked.framework.common.schema.blob_information.BlobInformation]] | None`
     :
 
-    `get_allowed_values(self, param: Param | Evaluated[Param]) ‑> set[collections.abc.Sequence[str] | collections.abc.Sequence[float] | PIL.Image.Image | str | int | float | bool | None | tuple[str | None, str | None]]`
+    `get_allowed_values(self, param: TypedParam | Evaluated[TypedParam]) ‑> set[collections.abc.Sequence[str] | collections.abc.Sequence[float] | PIL.Image.Image | str | int | float | bool | None | tuple[str | None, str | None]]`
     :
 
     `get_default_value_param_name(self) ‑> str`
     :
 
-    `get_default_weight_param_name(self) ‑> str`
+    `get_param_name_by_space(self) ‑> dict[superlinked.framework.dsl.space.space.Space, str]`
     :
 
-`SpaceWeightClause(value_param: Param | Evaluated[Param], space: Space)`
-:   SpaceWeightClause(value_param: 'Param | Evaluated[Param]', space: 'Space')
+    `get_param_value_by_param_name(self) ‑> dict[str, float | int | str | superlinked.framework.common.data_types.Vector | list[float] | list[str] | superlinked.framework.common.schema.blob_information.BlobInformation | None]`
+    :
+
+`SpaceWeightClause(value_param: TypedParam | Evaluated[TypedParam], space: Space)`
+:   SpaceWeightClause(value_param: 'TypedParam | Evaluated[TypedParam]', space: 'Space')
 
     ### Ancestors (in MRO)
 
@@ -302,12 +379,14 @@ Classes
     `space: superlinked.framework.dsl.space.space.Space`
     :
 
+    ### Static methods
+
+    `from_param(weight: NumericParamType, space: Space) ‑> superlinked.framework.dsl.query.query_clause.SpaceWeightClause`
+    :
+
     ### Instance variables
 
     `annotation: str`
-    :
-
-    `value_accepted_type: type`
     :
 
     ### Methods
@@ -319,44 +398,4 @@ Classes
     :
 
     `get_value(self) ‑> float`
-    :
-
-`WeightedQueryClause(value_param: Param | Evaluated[Param], weight_param: Param | Evaluated[Param])`
-:   WeightedQueryClause(value_param: 'Param | Evaluated[Param]', weight_param: 'Param | Evaluated[Param]')
-
-    ### Ancestors (in MRO)
-
-    * superlinked.framework.dsl.query.query_clause.QueryClause
-    * typing.Generic
-
-    ### Descendants
-
-    * superlinked.framework.dsl.query.query_clause.LooksLikeFilterClause
-    * superlinked.framework.dsl.query.query_clause.SimilarFilterClause
-
-    ### Class variables
-
-    `weight_param: superlinked.framework.dsl.query.param.Param | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.param.Param]`
-    :
-
-    ### Instance variables
-
-    `params: Sequence[Param | Evaluated[Param]]`
-    :
-
-    `weight_accepted_type: type`
-    :
-
-    `weight_param_name: str`
-    :
-
-    ### Methods
-
-    `alter_weight(self, params: Mapping[str, ParamInputType], is_override_set: bool) ‑> Self`
-    :
-
-    `get_default_weight_param_name(self) ‑> str`
-    :
-
-    `get_weight(self) ‑> float`
     :
