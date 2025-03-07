@@ -78,6 +78,10 @@ class NumberEmbeddingConfig(EmbeddingConfig[float]):
         return 3
 
     @property
+    def negative_filter_indices(self) -> frozenset:
+        return frozenset({2})
+
+    @property
     @override
     def default_vector(self) -> Vector:
         if self.mode == Mode.SIMILAR:
@@ -88,7 +92,7 @@ class NumberEmbeddingConfig(EmbeddingConfig[float]):
             default_values = [1.0, 0.0, 1.0]
         else:
             raise ValueError(f"Unsupported mode: {self.mode}")
-        return Vector(default_values)
+        return Vector(default_values, self.negative_filter_indices)
 
     def should_return_default(self, context: ExecutionContext) -> bool:
         return context.is_query_context and self.mode in {
