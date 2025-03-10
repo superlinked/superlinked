@@ -34,6 +34,5 @@ class SchemaFieldNode(Generic[SFT], Node[SFT]):
     def _get_node_id_parameters(self) -> dict[str, Any]:
         return {
             "schema_field": self.schema_field,
-            "schemas": self.schemas,
             "dag_effects": self.dag_effects,
         }

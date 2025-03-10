@@ -15,6 +15,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
+from beartype.typing import Any
 from typing_extensions import override
 
 from superlinked.framework.common.space.config.embedding.embedding_config import (
@@ -37,3 +38,9 @@ class TextSimilarityEmbeddingConfig(EmbeddingConfig[str]):
     @override
     def length(self) -> int:
         return self.length_to_use
+
+    @override
+    def _get_embedding_config_parameters(self) -> dict[str, Any]:
+        return {
+            "model_name": self.model_name,
+        }

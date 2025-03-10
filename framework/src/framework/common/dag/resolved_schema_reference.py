@@ -26,6 +26,6 @@ class ResolvedSchemaReference:
 
     def __str__(self) -> str:
         return (
-            f"{self.__class__.__name__}(schema={self.schema}, multiplier={self.multiplier}, "
+            f"{self.__class__.__name__}(schema={self.schema._schema_name}, multiplier={self.multiplier}, "
             f"reference_field={self.reference_field})"
         )

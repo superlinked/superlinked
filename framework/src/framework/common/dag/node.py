@@ -109,11 +109,15 @@ class Node(Generic[NodeDataT], ABC):  # pylint: disable=too-many-instance-attrib
         return f"{self.class_name}({members})"
 
     def _generate_node_id(self) -> str:
+        to_hash = self._calculate_node_id_hash_input()
+        return hashlib.sha3_256(to_hash.encode()).hexdigest()[:16]
+
+    def _calculate_node_id_hash_input(self) -> str:
         to_hash = " | ".join(
             [StringUtil.sort_and_serialize(self._get_node_id_parameters())]
             + [parent.node_id for parent in self.parents]
         )
-        return hashlib.sha3_256(to_hash.encode()).hexdigest()[:16]
+        return to_hash
 
     def project_parents_to_schema(self, schema: SchemaObject) -> Sequence[Node]:
         if schema in self.schemas:

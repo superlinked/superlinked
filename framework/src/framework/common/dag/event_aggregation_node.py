@@ -100,9 +100,8 @@ class EventAggregationNode(
     def _get_node_id_parameters(self) -> dict[str, Any]:
         filters = [{"node_id": filter_.item.node_id, "weight": filter_.weight} for filter_ in self.filters]
         return {
-            "dag_effects": self.dag_effects,
-            "schemas": self.schemas,
-            "event_schema": self.event_schema,
+            "schemas": {schema._schema_name for schema in self.schemas},
+            "event_schema": self.event_schema._schema_name,
             "affected_schema": self.affected_schema,
             "affecting_schema": self.affecting_schema,
             "filters": filters,

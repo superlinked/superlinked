@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
+from beartype.typing import Any
 from typing_extensions import override
 
 from superlinked.framework.common.schema.image_data import ImageData
@@ -40,3 +41,9 @@ class ImageEmbeddingConfig(EmbeddingConfig[ImageData]):
     @override
     def length(self) -> int:
         return self.length_to_use
+
+    @override
+    def _get_embedding_config_parameters(self) -> dict[str, Any]:
+        return {
+            "model_name": self.model_name,
+        }

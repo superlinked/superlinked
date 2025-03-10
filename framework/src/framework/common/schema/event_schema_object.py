@@ -61,7 +61,7 @@ class SchemaReference(SchemaField[str], HasMultiplier, Generic[RST]):
             raise InvalidSchemaTypeException(
                 f"referenced_schema ({referenced_schema}) is not a subclass of IdSchemaObject"
             )
-        self.__referenced_schema: type[IdSchemaObject] = referenced_schema
+        self.__referenced_schema = referenced_schema
 
     @property
     @override
@@ -69,9 +69,10 @@ class SchemaReference(SchemaField[str], HasMultiplier, Generic[RST]):
         return []
 
     def __str__(self) -> str:
+
         return (
-            f"{self.__class__.__name__}(name={self.name}, schema_obj={self.schema_obj}, "
-            f"referenced_schema={self._referenced_schema})"
+            f"{type(self).__name__}(name={self.name}, schema_obj={self.schema_obj._schema_name}, "
+            f"referenced_schema={self.__referenced_schema.__name__})"
         )
 
     @property

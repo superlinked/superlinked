@@ -74,8 +74,8 @@ class SchemaObject:
         return self._schema_fields
 
     def __str__(self) -> str:
-        schema_fields = ", ".join([f"(name={field.name}, type={field.type_})" for field in self.schema_fields])
-        return f"{self.__class__.__name__}(schema_name={self._schema_name}, schema_fields=[{schema_fields}])"
+        schema_fields = ", ".join([f"(name={field.name}, type={field.type_.__name__})" for field in self.schema_fields])
+        return f"{type(self).__name__}(schema_name={self._schema_name}, schema_fields=[{schema_fields}])"
 
     def _init_field(self: SchemaObjectT, field_descriptor: SchemaFieldDescriptor) -> SchemaField:
         value = field_descriptor.type_(field_descriptor.name, self, field_descriptor.nullable)
@@ -123,8 +123,8 @@ class SchemaField(ComparisonOperand, Generic[SFT]):
 
     def __str__(self) -> str:
         return (
-            f"{self.__class__.__name__}"
-            f"(name={self.name}, type={self.type_}, schema_object_name={self.schema_obj._schema_name})"
+            f"{type(self).__name__}"
+            f"(name={self.name}, type={self.type_.__name__}, schema_object_name={self.schema_obj._schema_name})"
         )
 
     @property

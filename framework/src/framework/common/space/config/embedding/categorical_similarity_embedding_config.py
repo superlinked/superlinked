@@ -14,7 +14,7 @@
 
 from dataclasses import dataclass
 
-from beartype.typing import Sequence
+from beartype.typing import Any, Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.space.config.embedding.embedding_config import (
@@ -32,6 +32,14 @@ class CategoricalSimilarityEmbeddingConfig(EmbeddingConfig[list[str]]):
     @override
     def length(self) -> int:
         return len(self.categories) + 1
+
+    @override
+    def _get_embedding_config_parameters(self) -> dict[str, Any]:
+        return {
+            "transformation_config": set(self.categories),
+            "uncategorized_as_category": self.uncategorized_as_category,
+            "negative_filter": self.negative_filter,
+        }
 
     @override
     def __hash__(self) -> int:

@@ -31,6 +31,13 @@ class PeriodTime:
     period_time: timedelta = field(init=True)
     weight: float = field(default=constants.DEFAULT_WEIGHT, init=True)
 
+    def __lt__(self, other: "PeriodTime") -> bool:
+        if not isinstance(other, PeriodTime):
+            return NotImplemented
+        if self.period_time != other.period_time:
+            return self.period_time < other.period_time
+        return self.weight < other.weight
+
     def __post_init__(self) -> None:
         """
         Validate the PeriodTime after initialization.

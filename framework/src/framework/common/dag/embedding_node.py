@@ -14,7 +14,6 @@
 
 
 import hashlib
-from dataclasses import asdict
 
 from beartype.typing import Any, Generic, Sequence, TypeVar
 from typing_extensions import override
@@ -79,7 +78,7 @@ class EmbeddingNode(
     @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
         return {
-            "transformation_config": asdict(self.transformation_config),
+            "transformation_config": self.transformation_config,
             "identifier": self._identifier,
         }
 

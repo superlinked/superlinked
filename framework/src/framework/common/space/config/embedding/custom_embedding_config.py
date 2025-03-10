@@ -14,6 +14,7 @@
 
 from dataclasses import dataclass
 
+from beartype.typing import Any
 from typing_extensions import override
 
 from superlinked.framework.common.data_types import Vector
@@ -34,3 +35,9 @@ class CustomEmbeddingConfig(EmbeddingConfig[Vector]):
     @override
     def length(self) -> int:
         return self.vector_length
+
+    @override
+    def _get_embedding_config_parameters(self) -> dict[str, Any]:
+        return {
+            "vector_length": self.vector_length,
+        }

@@ -26,4 +26,4 @@ class ConstantNode(Generic[NodeDataT], Node[NodeDataT]):
 
     @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
-        return {"schemas": self.schemas, "value": str(self.value)}
+        return {"value": self.value}

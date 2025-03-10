@@ -42,9 +42,9 @@ class EffectModifier:
 
     def __str__(self) -> str:
         return (
-            f"{self.__class__.__name__}({self.max_age_delta=},"
-            f"{self.max_count=}, "
-            f"{self.temperature=})"
-            f"{self.event_influence=})"
-            f"{self.time_decay_floor=})"
+            f"{type(self).__name__}(max_age_delta={self.max_age_delta}, "
+            f"max_count={self.max_count}, "
+            f"temperature={self.temperature}, "
+            f"event_influence={self.event_influence}, "
+            f"time_decay_floor={self.time_decay_floor})"
         )

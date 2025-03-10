@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 
 import structlog
-from beartype.typing import Sequence
+from beartype.typing import Any, Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.period_time import PeriodTime
@@ -76,6 +76,14 @@ class RecencyEmbeddingConfig(EmbeddingConfig[int]):
     def length(self) -> int:
         # a sin-cos pair for every period_time plus a dimension for negative filter or 0
         return len(self.period_time_list) * 2 + 1
+
+    @override
+    def _get_embedding_config_parameters(self) -> dict[str, Any]:
+        return {
+            "period_time_list": set(self.period_time_list),
+            "time_period_hour_offset": self.time_period_hour_offset,
+            "negative_filter": self.negative_filter,
+        }
 
     @override
     def __hash__(self) -> int:

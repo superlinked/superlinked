@@ -43,3 +43,11 @@ class TransformationConfig(HasLength, Generic[AggregationInputT, EmbeddingInputT
     @override
     def length(self) -> int:
         return self.embedding_config.length
+
+    def __str__(self) -> str:
+        return (
+            f"{type(self).__name__}("
+            f"normalization_config={self.normalization_config}, "
+            f"aggregation_config={self.aggregation_config}, "
+            f"embedding_config={self.embedding_config})"
+        )

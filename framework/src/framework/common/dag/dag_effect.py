@@ -32,7 +32,7 @@ class DagEffect:
         return (
             f"{self.__class__.__name__}(resolved_affected_schema_reference={self.resolved_affected_schema_reference}, "
             f"resolved_affecting_schema_reference={self.resolved_affecting_schema_reference}, "
-            f"event_schema={self.event_schema})"
+            f"event_schema={self.event_schema._schema_name})"
         )
 
     def is_same_effect_except_for_multiplier(self, other: Any) -> bool:

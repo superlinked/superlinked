@@ -26,6 +26,9 @@ AggregationInputT = TypeVar("AggregationInputT")
 class AggregationConfig(ABC, Generic[AggregationInputT]):
     aggregation_input_type: type[AggregationInputT]
 
+    def __str__(self) -> str:
+        return f"{type(self).__name__}(aggregation_input_type={self.aggregation_input_type.__name__})"
+
 
 AggregationConfigT = TypeVar("AggregationConfigT", bound=AggregationConfig)
 NumberAggregationInputT = TypeVar("NumberAggregationInputT", float, int)

@@ -25,4 +25,4 @@ class SchemaObjectReference:
         self.reference_field = reference_field
 
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}(schema={self.schema}, reference_field={self.reference_field})"
+        return f"{self.__class__.__name__}(schema={self.schema._schema_name}, reference_field={self.reference_field})"

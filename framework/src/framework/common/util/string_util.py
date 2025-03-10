@@ -28,6 +28,8 @@ class StringUtil:
             if isinstance(input_data, (set, list, tuple, frozenset)):
                 values = ", ".join([get_string_recursively(element) for element in sorted(input_data, key=str)])
                 return f"[{values}]"
+            if isinstance(input_data, type):
+                return input_data.__name__
             return str(input_data)
 
         return get_string_recursively(dict_to_serialize, outermost=True)

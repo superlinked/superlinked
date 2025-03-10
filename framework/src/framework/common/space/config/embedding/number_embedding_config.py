@@ -15,6 +15,7 @@
 from dataclasses import dataclass
 from enum import Enum
 
+from beartype.typing import Any
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
@@ -76,6 +77,16 @@ class NumberEmbeddingConfig(EmbeddingConfig[float]):
     @override
     def length(self) -> int:
         return 3
+
+    @override
+    def _get_embedding_config_parameters(self) -> dict[str, Any]:
+        return {
+            "min_value": self.min_value,
+            "max_value": self.max_value,
+            "mode": self.mode,
+            "scale": self.scale,
+            "negative_filter": self.negative_filter,
+        }
 
     @property
     def negative_filter_indices(self) -> frozenset:

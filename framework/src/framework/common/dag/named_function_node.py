@@ -34,7 +34,5 @@ class NamedFunctionNode(Node[NodeDataT]):
     @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
         return {
-            "schemas": self.schemas,
             "named_function": self.named_function,
-            "return_type": self.return_type,
         }
