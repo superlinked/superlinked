@@ -91,7 +91,8 @@ class RedisFieldEncoder:
         return str.encode(", ".join(string_list), "utf-8")
 
     def _decode_string_list(self, string_list: bytes) -> list[str]:
-        return string_list.decode("utf-8").split(", ")
+        decoded = string_list.decode("utf-8")
+        return decoded.split(", ") if decoded else []
 
     def _encode_vector(self, vector: Vector) -> bytes:
         np_vector: np.ndarray
