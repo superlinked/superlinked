@@ -18,6 +18,7 @@ from urllib.parse import urlparse
 
 import structlog
 from beartype.typing import Any
+from google.cloud import storage
 from typing_extensions import override
 
 from superlinked.framework.blob.blob_handler import BlobHandler
@@ -35,11 +36,13 @@ class GcsBlobHandler(BlobHandler):
     def __init__(self, bucket: str) -> None:
         super().__init__()
         self.__bucket_name = bucket
-
-        self.__client = GCSFileOps().storage_client
-
         self._executor = ThreadPoolExecutor()
         self._logger = logger.bind(bucket=self.__bucket_name)
+
+    @property
+    def __client(self) -> storage.Client:
+        """Used for lazy init. Returns a singleton client."""
+        return GCSFileOps().storage_client
 
     @override
     def upload(self, object_key: str, data: bytes, metadata: BlobMetadata | None = None) -> None:
