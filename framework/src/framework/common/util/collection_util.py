@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Iterator, Sequence, TypeVar
+from beartype.typing import Any, Iterator, Sequence, TypeVar
 
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.data_types import NPArray
@@ -28,3 +28,7 @@ class CollectionUtil:
     @staticmethod
     def get_positive_values_ndarray(value: NPArray) -> NPArray:
         return value[value > constants.DEFAULT_NOT_AFFECTING_EMBEDDING_VALUE]
+
+    @staticmethod
+    def convert_single_item_to_list(value: Any) -> list[Any]:
+        return value if isinstance(value, list) else [value]

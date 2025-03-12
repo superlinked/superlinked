@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 from beartype.typing import Any, Generic, cast
 
@@ -30,14 +31,11 @@ from superlinked.framework.common.parser.parsed_schema import (
 )
 from superlinked.framework.common.schema.event_schema_object import (
     EventSchemaObject,
-    SchemaReference,
 )
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObjectT
 from superlinked.framework.common.schema.schema_object import (
     Blob,
     SchemaField,
-    String,
-    Timestamp,
 )
 
 
@@ -60,9 +58,7 @@ class DataFrameParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, pd.D
         self._ensure_id(data_copy)
 
         data_copy[self._id_name] = data_copy[self._id_name].astype(str)
-        self._convert_columns_to_type(data_copy, schema_cols, Timestamp)
-        self._convert_columns_to_type(data_copy, schema_cols, String)
-        self._convert_columns_to_type(data_copy, schema_cols, SchemaReference)
+        self._convert_columns_to_type(data_copy, schema_cols)
 
         if blob_cols := [key for key, value in schema_cols.items() if isinstance(value, Blob)]:
             data_copy[blob_cols] = data_copy[blob_cols].apply(lambda col: col.map(self.blob_loader.load))
@@ -93,9 +89,14 @@ class DataFrameParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, pd.D
             )
         return ParsedSchema(self._schema, id_, other_fields)
 
+    @staticmethod
+    def _check_value_is_null(value: Any) -> bool:
+        return value is not None and not pd.isnull(value)
+
     def _field_has_non_null_value(self, value: Any) -> bool:
-        values_to_check = value if isinstance(value, list) else [value]
-        return not value or not all(pd.isnull(v) for v in values_to_check)
+        if isinstance(value, (list, np.ndarray)):
+            return len(value) == 0 or any(self._check_value_is_null(v) for v in value)
+        return self._check_value_is_null(value)
 
     def _marshal(
         self,
@@ -171,8 +172,9 @@ class DataFrameParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, pd.D
         self,
         data: pd.DataFrame,
         schema_cols: dict[str, SchemaField],
-        schema_field_type: type[SchemaField],
     ) -> None:
         for column_name, schema_field in schema_cols.items():
-            if isinstance(schema_field, schema_field_type):
-                data[column_name] = data[column_name].astype(schema_field.type_)
+            # pylint: disable=W0640
+            data[column_name] = data[column_name].apply(
+                lambda x: schema_field.as_type(x) if self._field_has_non_null_value(x) else None
+            )

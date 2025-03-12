@@ -17,7 +17,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from dataclasses import dataclass
 
-from beartype.typing import Generic, Sequence, TypeVar, cast
+from beartype.typing import Any, Generic, Sequence, TypeVar, cast
 from typing_extensions import override
 
 from superlinked.framework.common.data_types import PythonTypes
@@ -33,6 +33,7 @@ from superlinked.framework.common.schema.exception import FieldException
 from superlinked.framework.common.schema.schema_field_descriptor import (
     SchemaFieldDescriptor,
 )
+from superlinked.framework.common.util.collection_util import CollectionUtil
 
 # Exclude from documentation.
 # A better approach would be to separate this file into atomic objects,
@@ -127,6 +128,9 @@ class SchemaField(ComparisonOperand, Generic[SFT]):
             f"(name={self.name}, type={self.type_.__name__}, schema_object_name={self.schema_obj._schema_name})"
         )
 
+    def as_type(self, value: Any) -> SFT:
+        return cast(SFT, self.type_(value))
+
     @property
     @abstractmethod
     def supported_comparison_operation_types(self) -> Sequence[ComparisonOperationType]: ...
@@ -181,6 +185,12 @@ class Timestamp(SchemaField[int]):
     def supported_comparison_operation_types(self) -> Sequence[ComparisonOperationType]:
         return EQUALITY_COMPARISON_OPERATION_TYPES + COMPARABLE_COMPARISON_OPERATION_TYPES
 
+    @override
+    def as_type(self, value: Any) -> int:
+        if isinstance(value, int):
+            return value
+        return int(value.timestamp())
+
 
 class Blob(SchemaField[BlobInformation]):
     """
@@ -201,6 +211,11 @@ class Blob(SchemaField[BlobInformation]):
     @override
     def supported_comparison_operation_types(self) -> Sequence[ComparisonOperationType]:
         return []
+
+    @override
+    def as_type(self, value: Any) -> BlobInformation:
+        # FAB-3256
+        return cast(BlobInformation, value)
 
 
 NSFT = TypeVar("NSFT", float, int)
@@ -259,6 +274,10 @@ class FloatList(SchemaField[list[float]]):
     def supported_comparison_operation_types(self) -> Sequence[ComparisonOperationType]:
         return []
 
+    @override
+    def as_type(self, value: Any) -> list[float]:
+        return [float(val) for val in CollectionUtil.convert_single_item_to_list(value)]
+
 
 class StringList(SchemaField[list[str]]):
     """
@@ -276,6 +295,10 @@ class StringList(SchemaField[list[str]]):
     @override
     def supported_comparison_operation_types(self) -> Sequence[ComparisonOperationType]:
         return CONTAINS_COMPARISON_OPERATION_TYPES
+
+    @override
+    def as_type(self, value: Any) -> list[str]:
+        return [str(val) for val in CollectionUtil.convert_single_item_to_list(value)]
 
 
 @dataclass(frozen=True)

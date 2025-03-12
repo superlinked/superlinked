@@ -17,7 +17,7 @@ from __future__ import annotations
 from abc import ABC
 from types import UnionType
 
-from beartype.typing import Generic, Sequence, TypeVar, cast
+from beartype.typing import Any, Generic, Sequence, TypeVar, cast
 from typing_extensions import override
 
 from superlinked.framework.common.exception import InitializationException
@@ -116,6 +116,12 @@ class CreatedAtField(SchemaField[int]):
     @override
     def supported_comparison_operation_types(self) -> Sequence[ComparisonOperationType]:
         return []
+
+    @override
+    def as_type(self, value: Any) -> int:
+        if isinstance(value, int):
+            return value
+        return int(value.timestamp())
 
 
 class EventSchemaObject(IdSchemaObject, ABC):
