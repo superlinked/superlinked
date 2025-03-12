@@ -21,6 +21,11 @@ Classes
     `supported_comparison_operation_types: Sequence[ComparisonOperationType]`
     :
 
+    ### Methods
+
+    `as_type(self, value: Any) ‑> superlinked.framework.common.schema.blob_information.BlobInformation`
+    :
+
 `DescribedBlob(blob: Blob, description: String)`
 :   DescribedBlob(blob: 'Blob', description: 'String')
 
@@ -64,6 +69,9 @@ Classes
     :
 
     ### Methods
+
+    `as_type(self, value: Any) ‑> list[float]`
+    :
 
     `parse(self, value: list[float]) ‑> list[float]`
     :
@@ -133,6 +141,9 @@ Classes
 
     ### Methods
 
+    `as_type(self, value: Any) ‑> ~SFT`
+    :
+
     `parse(self, value: SFT) ‑> ~SFT`
     :
 
@@ -184,6 +195,9 @@ Classes
 
     ### Methods
 
+    `as_type(self, value: Any) ‑> list[str]`
+    :
+
     `parse(self, value: list[str]) ‑> list[str]`
     :
 
@@ -202,4 +216,9 @@ Classes
     ### Instance variables
 
     `supported_comparison_operation_types: Sequence[ComparisonOperationType]`
+    :
+
+    ### Methods
+
+    `as_type(self, value: Any) ‑> int`
     :

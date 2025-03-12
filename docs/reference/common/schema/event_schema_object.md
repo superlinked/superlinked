@@ -19,6 +19,11 @@ Classes
     `supported_comparison_operation_types: Sequence[ComparisonOperationType]`
     :
 
+    ### Methods
+
+    `as_type(self, value: Any) ‑> int`
+    :
+
 `EventSchemaObject(base_cls: type, id_field_name: str, created_at_field_name: str)`
 :   Custom decorated event schema class.
     Event schemas can be used to reference other schema and to define interactions between schemas.
