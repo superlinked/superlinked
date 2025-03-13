@@ -135,18 +135,20 @@ _User Query:_ "I really want to watch comedy movies, specifically from the 90s, 
 {% endfor %}
 {% endfor %}
 {% endif %}
-{% if looks_like_clause and looks_like_clause.annotation %}
+{% if space_affecting_annotations %}
 
 **Fields affecting all spaces:**
-{{ looks_like_clause.annotation }}
+{% for nlq_annotation in space_affecting_annotations %}
+{{ nlq_annotation.annotation }}
+{% endfor %}
 {% endif %}
-{% if hard_filter_clauses %}
+{% if exact_value_required_annotations %}
 
 **Fields requiring Exact Values:**
 - **Logic**: Multiple conditions combined with `AND`.
 - **Usage**: Filters results to include only exact matches.
-{% for hard_filter_clause in hard_filter_clauses %}
-{{ hard_filter_clause.annotation }}
+{% for nlq_annotation in exact_value_required_annotations %}
+{{ nlq_annotation.annotation }}
 {% endfor %}
 {% endif %}
 {% if system_prompt %}

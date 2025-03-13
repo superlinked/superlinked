@@ -46,7 +46,7 @@ class QueryVectorFactory:
         self,
         index_node_id: str,
         query_node_inputs_by_node_id: Mapping[str, Sequence[QueryNodeInput]],
-        global_space_weight_map: dict[Space, float],
+        global_space_weight_map: Mapping[Space, float],
         schema: IdSchemaObject,
         context_base: ExecutionContext,
     ) -> Vector:
@@ -75,6 +75,6 @@ class QueryVectorFactory:
 
     @staticmethod
     def __get_node_id_weight_map_from_space_weight_map(
-        schema: IdSchemaObject, space_weight_map: dict[Space, float]
+        schema: IdSchemaObject, space_weight_map: Mapping[Space, float]
     ) -> dict[str, float]:
         return {space._get_embedding_node(schema).node_id: weight for space, weight in space_weight_map.items()}

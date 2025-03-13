@@ -13,12 +13,11 @@
 # limitations under the License.
 
 
-from collections import defaultdict
-from functools import partial
+from functools import partial, reduce
 
 import numpy as np
 import structlog
-from beartype.typing import Any, Sequence, cast
+from beartype.typing import Any, Sequence
 
 from superlinked.framework.common.dag.context import (
     CONTEXT_COMMON,
@@ -27,9 +26,8 @@ from superlinked.framework.common.dag.context import (
     ExecutionEnvironment,
     NowStrategy,
 )
-from superlinked.framework.common.data_types import NodeDataTypes, Vector
+from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import QueryException
-from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.storage_manager.knn_search_params import (
     KNNSearchParams,
 )
@@ -38,11 +36,11 @@ from superlinked.framework.common.storage_manager.search_result_item import (
 )
 from superlinked.framework.common.util.execution_timer import time_execution
 from superlinked.framework.dsl.executor.executor import App
-from superlinked.framework.dsl.query.param import ParamInputType
-from superlinked.framework.dsl.query.query_clause import (
-    LooksLikeFilterClause,
-    SimilarFilterClause,
+from superlinked.framework.dsl.query.clause_params import (
+    KNNSearchClauseParams,
+    QueryVectorClauseParams,
 )
+from superlinked.framework.dsl.query.param import ParamInputType
 from superlinked.framework.dsl.query.query_descriptor import QueryDescriptor
 from superlinked.framework.dsl.query.query_param_value_setter import (
     QueryParamValueSetter,
@@ -53,10 +51,6 @@ from superlinked.framework.dsl.query.result import (
     ResultEntry,
     ResultEntryMetadata,
     ResultMetadata,
-)
-from superlinked.framework.query.query_node_input import (
-    QueryNodeInput,
-    QueryNodeInputValue,
 )
 
 logger = structlog.getLogger()
@@ -87,7 +81,7 @@ class QueryExecutor:
         self._logger = logger.bind(schema=self._query_descriptor.schema._schema_name)
 
     @time_execution
-    def query(self, **params: ParamInputType) -> QueryResult:
+    def query(self, **params: ParamInputType | None) -> QueryResult:
         """
         Execute a query with keyword parameters.
 
@@ -156,82 +150,40 @@ class QueryExecutor:
 
     @time_execution
     def _produce_knn_search_params(self, query_descriptor: QueryDescriptor) -> KNNSearchParams:
-        limit = query_descriptor.get_limit()
-        radius = query_descriptor.get_radius()
-        schema_fields_to_return = query_descriptor.get_selected_fields()
-        hard_filters = query_descriptor.get_hard_filters()
         query_vector = self._produce_query_vector(query_descriptor)
-        return KNNSearchParams(query_vector, limit, hard_filters, schema_fields_to_return, radius)
+        partial_knn_search_params = reduce(
+            lambda params, clause: clause.get_altered_knn_search_params(params),
+            query_descriptor.clauses,
+            KNNSearchClauseParams(),
+        )
+        return KNNSearchParams.from_clause_params(query_vector, partial_knn_search_params)
 
     def _produce_query_vector(self, query_descriptor: QueryDescriptor) -> Vector:
-        weight_by_space = query_descriptor.get_weights_by_space()
-        context = self._create_query_context_base(query_descriptor)
-        query_node_inputs_by_node_id = self.calculate_query_node_inputs_by_node_id(query_descriptor)
+        query_vector_params = reduce(
+            lambda params, clause: clause.get_altered_query_vector_params(
+                params, query_descriptor.index._node_id, query_descriptor.schema, self.app.storage_manager
+            ),
+            query_descriptor.clauses,
+            QueryVectorClauseParams(),
+        )
+        context = self._create_query_context_base(query_vector_params.context_time)
         return self.query_vector_factory.produce_vector(
             query_descriptor.index._node_id,
-            query_node_inputs_by_node_id,
-            weight_by_space,
+            query_vector_params.query_node_inputs_by_node_id,
+            query_vector_params.weight_by_space,
             query_descriptor.schema,
             context,
         )
 
-    def _create_query_context_base(self, query_descriptor: QueryDescriptor) -> ExecutionContext:
+    def _create_query_context_base(self, context_time: int | None) -> ExecutionContext:
         eval_context = ExecutionContext(
             environment=ExecutionEnvironment.QUERY,
             data=self.app._context.data,
             now_strategy=NowStrategy.CONTEXT_TIME,
         )
-        context_time = query_descriptor.get_context_time(self.app._context.now())
+        context_time = context_time if context_time is not None else self.app._context.now()
         eval_context.update_data({CONTEXT_COMMON: {CONTEXT_COMMON_NOW: context_time}})
         return eval_context
-
-    def calculate_query_node_inputs_by_node_id(
-        self, query_descriptor: QueryDescriptor
-    ) -> dict[str, list[QueryNodeInput]]:
-        inputs: defaultdict[str, list[QueryNodeInput]] = defaultdict(list)
-
-        def add_input(
-            node_id: str,
-            value: Any,
-            weight: float | dict[str, float],
-            to_invert: bool,
-        ) -> None:
-            inputs[node_id].append(
-                QueryNodeInput(
-                    QueryNodeInputValue(cast(NodeDataTypes, value), weight),
-                    to_invert,
-                )
-            )
-
-        looks_like_clause = query_descriptor.get_clause_by_type(LooksLikeFilterClause)
-        if looks_like_clause and (evaluation := looks_like_clause.evaluate()):
-            object_id, weight = evaluation
-            index_node_id = query_descriptor.index._node_id
-            vector = self.__get_looks_like_vector(index_node_id, looks_like_clause.schema_field.schema_obj, object_id)
-            add_input(index_node_id, vector, weight, True)
-        for similar_clause in query_descriptor.get_clauses_by_type(SimilarFilterClause):
-            if (result := similar_clause.evaluate()) is not None:
-                node_id = similar_clause.space._get_embedding_node(query_descriptor.schema).node_id
-                _, weighted_value = result
-                add_input(
-                    node_id,
-                    similar_clause.field_set._generate_space_input(weighted_value.item),
-                    weighted_value.weight,
-                    False,
-                )
-
-        return inputs
-
-    def __get_looks_like_vector(
-        self,
-        index_node_id: str,
-        schema_obj: SchemaObject,
-        object_id: str,
-    ) -> Vector:
-        vector: Vector | None = self.app._storage_manager.read_node_result(schema_obj, object_id, index_node_id, Vector)
-        if vector is None:
-            raise QueryException(f"Entity not found object_id: {object_id} node_id: {index_node_id}")
-        return vector
 
     def _knn_search(
         self, knn_search_params: KNNSearchParams, query_descriptor: QueryDescriptor, should_return_index_vector: bool

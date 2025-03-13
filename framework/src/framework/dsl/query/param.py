@@ -15,12 +15,12 @@
 
 from __future__ import annotations
 
-from beartype.typing import Any, Sequence, TypeAlias, TypeVar
+from beartype.typing import Any, Sequence, TypeAlias
 from PIL.Image import Image
 
 from superlinked.framework.common.util.type_validator import TypeValidator
 
-UNSET_PARAM_NAME = "__UNSET_PARAM_NAME_"
+UNSET_PARAM_NAME = "__UNSET_PARAM_NAME__"
 
 
 class Param:
@@ -42,7 +42,7 @@ class Param:
         name: str,
         description: str | None = None,
         default: ParamInputType | None = None,
-        options: Sequence[ParamInputType] | None = None,
+        options: Sequence[ParamInputType | None] | None = None,
     ) -> None:
         """
         Initialize the Param.
@@ -63,7 +63,7 @@ class Param:
         if self.default is not None:
             self._validate_value_allowed(self.default)
 
-    def __init_options(self, name: str, options: Sequence[ParamInputType] | None) -> set[ParamInputType]:
+    def __init_options(self, name: str, options: Sequence[ParamInputType | None] | None) -> set[ParamInputType | None]:
         if options and any(TypeValidator.is_sequence_safe(option) for option in options):
             raise ValueError(
                 f"Sequence option item is not allowed for parameter {name}. " "Each option must be a single value."
@@ -90,11 +90,9 @@ class Param:
 
 
 ParamInputType: TypeAlias = (
-    Sequence[str] | Sequence[float] | Image | str | int | float | bool | None | tuple[str | None, str | None]
+    Sequence[str] | Sequence[float] | Image | str | int | float | bool | tuple[str | None, str | None]
 )
-ParamType: TypeAlias = ParamInputType | Param
+ParamType: TypeAlias = ParamInputType | None | Param
 StringParamType: TypeAlias = str | Param
 NumericParamType: TypeAlias = float | int | Param
 IntParamType: TypeAlias = int | Param
-
-PIT = TypeVar("PIT", bound=ParamInputType)

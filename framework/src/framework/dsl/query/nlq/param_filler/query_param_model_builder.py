@@ -22,7 +22,7 @@ from superlinked.framework.dsl.query.nlq.nlq_clause_collector import NLQClauseCo
 from superlinked.framework.dsl.query.nlq.param_filler.query_param_model_validator import (
     QueryParamModelValidator,
 )
-from superlinked.framework.dsl.query.query_clause import QueryClause
+from superlinked.framework.dsl.query.query_clause.query_clause import QueryClause
 from superlinked.framework.dsl.query.typed_param import TypedParam
 
 QUERY_MODEL_NAME = "QueryModel"
@@ -45,11 +45,11 @@ class QueryParamModelBuilder:
     def _calculate_field_kwargs(cls, clause_collector: NLQClauseCollector) -> dict[str, tuple[Any, Any]]:
         return {
             QueryClause.get_param(param).name: (
-                cls._calculate_type(param, query_clause.is_type_mandatory_in_nlq),
+                cls._calculate_type(param, clause_handler.is_type_mandatory_in_nlq),
                 cls._calculate_field(param),
             )
-            for query_clause in clause_collector.clauses
-            for param in query_clause.params
+            for clause_handler in clause_collector.clause_handlers
+            for param in clause_handler.clause.params
         }
 
     @classmethod

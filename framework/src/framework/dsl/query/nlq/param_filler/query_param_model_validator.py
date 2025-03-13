@@ -22,11 +22,9 @@ from pydantic._internal._decorators import (
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.query.nlq.nlq_clause_collector import NLQClauseCollector
-from superlinked.framework.dsl.query.nlq.param_filler.query_param_model_validator_info import (
-    QueryParamModelValidatorInfo,
-)
 from superlinked.framework.dsl.query.param import ParamInputType
-from superlinked.framework.dsl.space.space import Space
+from superlinked.framework.dsl.query.query_clause.query_clause import QueryClause
+from superlinked.framework.dsl.query.space_weight_param_info import SpaceWeightParamInfo
 
 UNAFFECTING_VALUES = [constants.DEFAULT_NOT_AFFECTING_WEIGHT, None]
 
@@ -34,75 +32,57 @@ UNAFFECTING_VALUES = [constants.DEFAULT_NOT_AFFECTING_WEIGHT, None]
 class QueryParamModelValidator:
     @classmethod
     def build(cls, clause_collector: NLQClauseCollector) -> PydanticDescriptorProxy[ModelValidatorDecoratorInfo]:
-        validator_info = QueryParamModelValidatorInfo(clause_collector)
-        return cls._create_model_validator(validator_info)
+        allowed_values_by_param = {
+            QueryClause.get_param(param).name: allowed_values
+            for clause_handler in clause_collector.clause_handlers
+            for param in clause_handler.clause.params
+            if (allowed_values := clause_handler.get_allowed_values(param))
+        }
+        return cls._create_model_validator(clause_collector.space_weight_param_info, allowed_values_by_param)
 
     @classmethod
     def _create_model_validator(
-        cls, validator_info: QueryParamModelValidatorInfo
+        cls,
+        space_weight_param_info: SpaceWeightParamInfo,
+        allowed_values_by_param: dict[str, set[ParamInputType | None]],
     ) -> PydanticDescriptorProxy[ModelValidatorDecoratorInfo]:
         @model_validator(mode="after")
         def validate(model: BaseModel | Any) -> Any:
             if isinstance(model, BaseModel):
                 model_dict: dict[str, Any] = model.model_dump()
-                cls._validate_with_vector_weights(
-                    model_dict,
-                    validator_info.weight_param_names,
-                    validator_info.space_weight_param_name_by_space,
-                )
-                cls._validate_allowed_values(model_dict, validator_info.allowed_values_by_param)
-                cls._validate_similar_weights(model_dict, validator_info.space_param_name_and_space_weight_param_names)
+                cls._validate_space_weights(model_dict, space_weight_param_info)
+                cls._validate_allowed_values(model_dict, allowed_values_by_param)
             return model
 
         return validate
 
     @classmethod
-    def _validate_similar_weights(
+    def _validate_space_weights(
         cls,
-        model_dict: dict[str, Any],
-        space_param_name_and_space_weight_param_names: Sequence[tuple[str, str]],
+        model_dict: Mapping[str, Any],
+        space_weight_param_info: SpaceWeightParamInfo,
     ) -> None:
-        """Validate that space weights are filled when similar weights are present."""
-        for space_param_name, space_w_name in space_param_name_and_space_weight_param_names:
-            if (
-                model_dict.get(space_param_name) not in UNAFFECTING_VALUES
-                and model_dict.get(space_w_name) in UNAFFECTING_VALUES
-            ):
-                raise ValueError(
-                    f"If {space_param_name} is not {constants.DEFAULT_NOT_AFFECTING_WEIGHT}/None,"
-                    f" then set a positive value for the following field: {space_w_name}."
-                )
-
-    @classmethod
-    def _validate_with_vector_weights(
-        cls,
-        model_dict: dict[str, Any],
-        weight_param_names: list[str] | None,
-        space_weight_param_name_by_space: Mapping[Space, str],
-    ) -> None:
-        """Validate that space weights are filled when with_vector weights are present."""
-        if not weight_param_names:
-            return
-        weights = [model_dict.get(weight_param) for weight_param in weight_param_names]
-        if all(weight in UNAFFECTING_VALUES for weight in weights):
-            return
-        unaffecting_space_weight_param_names = [
-            param_name
-            for param_name in space_weight_param_name_by_space.values()
-            if model_dict.get(param_name) in UNAFFECTING_VALUES
-        ]
-        if unaffecting_space_weight_param_names:
-            none_space_weight_params_text = ", ".join(sorted(unaffecting_space_weight_param_names))
-            raise ValueError(
-                f"If either of {weight_param_names} is not {constants.DEFAULT_NOT_AFFECTING_WEIGHT}/None,"
-                f" then set a positive value for the following fields: {none_space_weight_params_text}."
+        def is_affecting_weight_with_unaffecting_space_weight(
+            space_weight_name: str, weight_names: Sequence[str]
+        ) -> bool:
+            return model_dict.get(space_weight_name) in UNAFFECTING_VALUES and any(
+                model_dict.get(weight_name) not in UNAFFECTING_VALUES for weight_name in weight_names
             )
+
+        for space, weight_names in space_weight_param_info.param_names_by_space.items():
+            if (
+                space_weight_name := space_weight_param_info.global_param_name_by_space.get(space)
+            ) is not None and is_affecting_weight_with_unaffecting_space_weight(space_weight_name, weight_names):
+                raise ValueError(
+                    f"If any of {weight_names} is not {constants.DEFAULT_NOT_AFFECTING_WEIGHT}/None,"
+                    f" then set a positive value for the following field: {space_weight_name}."
+                )
 
     @classmethod
     def _validate_allowed_values(
         cls,
-        model_dict: dict[str, Any],
-        allowed_values_by_param: Mapping[str, set[ParamInputType]],
+        model_dict: Mapping[str, Any],
+        allowed_values_by_param: Mapping[str, set[ParamInputType | None]],
     ) -> None:
         """Validate that all params have value set that is allowed"""
         for param_name, allowed_values in allowed_values_by_param.items():
@@ -122,6 +102,6 @@ class QueryParamModelValidator:
                 )
 
     @classmethod
-    def _format_allowed_values(cls, allowed_values: set[ParamInputType]) -> str:
+    def _format_allowed_values(cls, allowed_values: set[ParamInputType | None]) -> str:
         allowed_values_text = ", ".join(sorted((str(v) for v in allowed_values)))
         return allowed_values_text

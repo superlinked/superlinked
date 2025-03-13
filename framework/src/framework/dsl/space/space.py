@@ -22,7 +22,6 @@ from typing_extensions import override
 from superlinked.framework.common.dag.chunking_node import ChunkingNode
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.data_types import NodeDataTypes
-from superlinked.framework.common.interface.has_annotation import HasAnnotation
 from superlinked.framework.common.schema.schema_object import (
     ConcreteSchemaField,
     DescribedBlob,
@@ -52,11 +51,7 @@ SpaceFieldT = TypeVar(
 )
 
 
-class Space(
-    HasTransformationConfig[AggregationInputT, EmbeddingInputT],
-    Generic[AggregationInputT, EmbeddingInputT],
-    HasAnnotation,
-):
+class Space(HasTransformationConfig[AggregationInputT, EmbeddingInputT], Generic[AggregationInputT, EmbeddingInputT]):
     """
     Abstract base class for a space.
 
@@ -95,7 +90,6 @@ class Space(
         return True
 
     @property
-    @override
     def annotation(self) -> str:
         return self._annotation.replace(PYTHON_MULTILINE_STRING_DELIMITER, " ")
 

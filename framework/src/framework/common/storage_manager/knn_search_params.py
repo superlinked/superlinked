@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 from beartype.typing import Sequence
@@ -21,6 +23,7 @@ from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
 )
 from superlinked.framework.common.schema.schema_object import SchemaField
+from superlinked.framework.dsl.query.clause_params import KNNSearchClauseParams
 
 
 @dataclass(frozen=True)
@@ -32,3 +35,15 @@ class KNNSearchParams:
     radius: float | None
     # TODO FAB-3259
     # should_return_index_vector: bool
+
+    @classmethod
+    def from_clause_params(cls, query_vector: Vector, partial: KNNSearchClauseParams) -> KNNSearchParams:
+        if partial.limit is None:
+            raise ValueError(f"{cls.__name__} must have a valid limit, got None.")
+        return cls(
+            query_vector,
+            partial.limit,
+            partial.filters,
+            partial.schema_fields_to_return,
+            partial.radius,
+        )

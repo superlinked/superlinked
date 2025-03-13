@@ -12,49 +12,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections.abc import Mapping, Sequence
-from itertools import groupby
-
-from beartype.typing import Any, cast
-from typing_extensions import TypeVar
+from collections.abc import Sequence
 
 from superlinked.framework.common.interface.evaluated import Evaluated
-from superlinked.framework.common.interface.has_annotation import HasAnnotation
-from superlinked.framework.common.schema.schema_object import Blob
-from superlinked.framework.dsl.query.query_clause import (
-    QueryClause,
-    SimilarFilterClause,
+from superlinked.framework.dsl.query.nlq.nlq_compatible_clause_handler import (
+    NLQCompatibleClauseHandler,
 )
-
-QueryClauseT = TypeVar("QueryClauseT", bound=QueryClause)
+from superlinked.framework.dsl.query.query_clause.query_clause import QueryClause
+from superlinked.framework.dsl.query.space_weight_param_info import SpaceWeightParamInfo
 
 
 class NLQClauseCollector:
-    def __init__(self, query_clauses: Sequence[QueryClause]) -> None:
-        self._clauses = self._filter_for_nlq_compatible_clauses(query_clauses)
-        self._clauses_by_type: Mapping[type[QueryClause], list[QueryClause]] = {
-            key: list(group) for key, group in groupby(self._clauses, type)
-        }
+    def __init__(self, clauses: Sequence[QueryClause], space_weight_param_info: SpaceWeightParamInfo) -> None:
+        self.__clause_handlers = NLQCompatibleClauseHandler.from_clauses(clauses)
+        self.__space_weight_param_info = space_weight_param_info
 
     @property
-    def clauses(self) -> Sequence[QueryClause]:
-        return self._clauses
+    def clause_handlers(self) -> Sequence[NLQCompatibleClauseHandler]:
+        return self.__clause_handlers
 
-    def get_clauses_by_type(self, clause_type: type[QueryClauseT]) -> Sequence[QueryClauseT]:
-        return cast(Sequence[QueryClauseT], self._clauses_by_type.get(clause_type, []))
+    @property
+    def space_weight_param_info(self) -> SpaceWeightParamInfo:
+        return self.__space_weight_param_info
 
     @property
     def all_params_have_value_set(self) -> bool:
-        return all(isinstance(param, Evaluated) for clause in self._clauses for param in clause.params)
-
-    @classmethod
-    def _filter_for_nlq_compatible_clauses(cls, query_clauses: Sequence[QueryClause]) -> list[QueryClause[Any]]:
-        def is_nlq_compatible(clause: QueryClause) -> bool:
-            if not isinstance(clause, HasAnnotation):
-                return False
-            if isinstance(clause, SimilarFilterClause):
-                fields = clause.field_set.fields
-                return not any(isinstance(field, Blob) for field in fields)
-            return True
-
-        return [clause for clause in query_clauses if is_nlq_compatible(clause)]
+        return all(
+            isinstance(param, Evaluated)
+            for clause_handler in self.__clause_handlers
+            for param in clause_handler.clause.params
+        )

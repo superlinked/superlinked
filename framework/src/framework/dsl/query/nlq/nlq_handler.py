@@ -32,35 +32,40 @@ from superlinked.framework.dsl.query.nlq.suggestion.query_suggestion_model impor
 from superlinked.framework.dsl.query.nlq.suggestion.query_suggestions_prompt_builder import (
     QuerySuggestionsPromptBuilder,
 )
-from superlinked.framework.dsl.query.query_clause import QueryClause
+from superlinked.framework.dsl.query.query_clause.query_clause import QueryClause
+from superlinked.framework.dsl.query.space_weight_param_info import SpaceWeightParamInfo
 
 
 class NLQHandler:
-    @classmethod
-    def fill_params(
-        cls,
-        natural_query: str,
-        query_clauses: Sequence[QueryClause],
+    def __init__(
+        self,
         client_config: OpenAIClientConfig,
+    ) -> None:
+        self.__client_config = client_config
+
+    def fill_params(
+        self,
+        natural_query: str,
+        clauses: Sequence[QueryClause],
+        space_weight_param_info: SpaceWeightParamInfo,
         system_prompt: str | None = None,
     ) -> dict[str, Any]:
-        clause_collector = NLQClauseCollector(query_clauses)
+        clause_collector = NLQClauseCollector(clauses, space_weight_param_info)
         if clause_collector.all_params_have_value_set:
             return {}
         model_class = QueryParamModelBuilder.build(clause_collector)
         instructor_prompt = QueryParamPromptBuilder.calculate_instructor_prompt(clause_collector, system_prompt)
-        return cls._execute_query(natural_query, instructor_prompt, model_class, client_config)
+        return self._execute_query(natural_query, instructor_prompt, model_class)
 
-    @classmethod
     def suggest_improvements(
-        cls,
-        query_clauses: Sequence[QueryClause],
+        self,
+        clauses: Sequence[QueryClause],
+        space_weight_param_info: SpaceWeightParamInfo,
         natural_query: str | None,
         feedback: str | None,
-        client_config: OpenAIClientConfig,
         system_prompt: str | None = None,
     ) -> QuerySuggestionsModel:
-        clause_collector = NLQClauseCollector(query_clauses)
+        clause_collector = NLQClauseCollector(clauses, space_weight_param_info)
         if clause_collector.all_params_have_value_set:
             return QuerySuggestionsModel()
         instructor_prompt = QuerySuggestionsPromptBuilder.calculate_instructor_prompt(
@@ -69,25 +74,17 @@ class NLQHandler:
             feedback,
             natural_query,
         )
-        result = cls._execute_query(
+        result = self._execute_query(
             "Analyze the parameter definitions and provide specific improvements.",
             instructor_prompt,
             QuerySuggestionsModel,
-            client_config,
         )
         return QuerySuggestionsModel(**result)
 
-    @classmethod
     @time_execution
-    def _execute_query(
-        cls,
-        query: str,
-        instructor_prompt: str,
-        model_class: type[BaseModel],
-        client_config: OpenAIClientConfig,
-    ) -> dict[str, Any]:
+    def _execute_query(self, query: str, instructor_prompt: str, model_class: type[BaseModel]) -> dict[str, Any]:
         try:
-            client = OpenAIClient(client_config)
+            client = OpenAIClient(self.__client_config)
             result = client.query(query, instructor_prompt, model_class)
             return result
         except Exception as e:
