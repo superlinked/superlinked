@@ -239,3 +239,4 @@ The Superlinked Server accepts the following environment variables ([see this re
 | PERSISTENCE_FOLDER_PATH | str     | - | "in_memory_vdb" |
 | SERVER_HOST | str     | IP address of the server. | "0.0.0.0" |
 | SERVER_PORT | int     | Port of the server. | 8080 |
+| WORKER_COUNT | int     | Number of workers | 1 |
