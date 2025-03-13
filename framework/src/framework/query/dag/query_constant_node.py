@@ -32,7 +32,7 @@ class QueryConstantNode(QueryNode[ConstantNode[NodeDataT], NodeDataT], Generic[N
         super().__init__(node, parents)
 
     @override
-    def evaluate(
+    def _evaluate(
         self,
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,

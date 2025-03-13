@@ -39,12 +39,12 @@ class QueryRecencyNode(QueryEmbeddingOrphanNode[int, RecencyNode, int]):
         super().__init__(node, parents, int)
 
     @override
-    def evaluate(
+    def _evaluate(
         self,
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,
     ) -> QueryEvaluationResult[Vector]:
-        return super().evaluate(
+        return super()._evaluate(
             self._merge_inputs(
                 [
                     inputs,

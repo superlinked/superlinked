@@ -42,9 +42,6 @@ class QueryNumberEmbeddingNode(QueryEmbeddingOrphanNode[float, NumberEmbeddingNo
         super().__init__(node, parents, float)
 
     @override
-    def _pre_process_node_inputs(self, inputs: Mapping[str, Sequence[QueryNodeInput]]) -> Sequence[QueryNodeInput]:
-        return [self._pre_process_node_input(input_) for input_ in inputs.get(self.node_id) or []]
-
     def _pre_process_node_input(self, node_input: QueryNodeInput) -> QueryNodeInput:
         if isinstance(node_input.value.item, Vector):
             return node_input
@@ -56,7 +53,7 @@ class QueryNumberEmbeddingNode(QueryEmbeddingOrphanNode[float, NumberEmbeddingNo
         )
 
     @override
-    def evaluate(
+    def _evaluate(
         self,
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,
@@ -64,4 +61,4 @@ class QueryNumberEmbeddingNode(QueryEmbeddingOrphanNode[float, NumberEmbeddingNo
         embedding_config = cast(NumberEmbeddingConfig, self.node.transformation_config.embedding_config)
         if embedding_config.mode in (Mode.MINIMUM, Mode.MAXIMUM):
             return QueryEvaluationResult(embedding_config.default_vector)
-        return super().evaluate(inputs, context)
+        return super()._evaluate(inputs, context)

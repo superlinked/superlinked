@@ -33,7 +33,7 @@ from superlinked.framework.query.query_node_input import QueryNodeInput
 
 class QueryNodeWithParent(QueryNode[NT, QueryEvaluationResultT], Generic[NT, QueryEvaluationResultT]):
     @override
-    def evaluate(
+    def _evaluate(
         self,
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,

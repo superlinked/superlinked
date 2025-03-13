@@ -22,6 +22,7 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.dag import Dag
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.compiler.query.query_dag_compiler import QueryDagCompiler
+from superlinked.framework.query.dag.query_dag import QueryDag
 from superlinked.framework.query.query_node_input import QueryNodeInput
 
 logger = structlog.get_logger()
@@ -30,7 +31,7 @@ logger = structlog.get_logger()
 class QueryDagEvaluator:
     def __init__(self, dag: Dag) -> None:
         self._dag = dag
-        self._query_dag = QueryDagCompiler().compile_dag(dag)
+        self._query_dag: QueryDag = QueryDagCompiler().compile_dag(dag)
         logger.info(
             "initialized entity dag",
             node_ids=[node.node_id for node in self._dag.nodes],
@@ -47,5 +48,16 @@ class QueryDagEvaluator:
             "evaluated query",
             pii_inputs=inputs,
             pii_vector=partial(str, result),
+        )
+        return result
+
+    def get_vector_parts(
+        self, vectors: Sequence[Vector], node_ids: Sequence[str], context: ExecutionContext
+    ) -> list[list[Vector]] | None:
+        result = self._query_dag.get_vector_parts(vectors, node_ids, context)
+        logger.info(
+            "calculated vector parts",
+            vectors=[partial(str, vector) for vector in vectors],
+            node_ids=node_ids,
         )
         return result

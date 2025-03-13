@@ -85,20 +85,31 @@ class QueryIndexNode(QueryNodeWithParent[IndexNode, Vector]):
             )
         return parent_results[0]
 
+    @override
+    def _validate_get_vector_parts_inputs(self, vectors: Sequence[Vector]) -> None:
+        self._validate_vectors_dimension(self.node.length, vectors)
+
+    @override
+    def _get_vector_parts(
+        self, vectors: Sequence[Vector], node_ids: Sequence[str], context: ExecutionContext
+    ) -> list[list[Vector]] | None:
+        parent = self._get_active_parent(context)
+        return parent.get_vector_parts(vectors, node_ids, context)
+
     def _get_active_parent(self, context: ExecutionContext) -> QueryNode[Node[Vector], Vector]:
         queried_schema_name = context.get_node_context_value(self.node_id, QUERIED_SCHEMA_NAME_CONTEXT_KEY, str)
         if queried_schema_name is None:
             raise QueryEvaluationException("Missing schema name for query.")
-        active_parent = [
+        active_parents = [
             parent
             for parent in self.parents
             if queried_schema_name in [schema._schema_name for schema in parent.node.schemas]
         ]
-        if len(active_parent) == 0:
+        if len(active_parents) == 0:
             raise QueryEvaluationException(f"Query dag doesn't have the given schema {queried_schema_name}.")
-        if len(active_parent) > 1:
+        if len(active_parents) > 1:
             raise QueryEvaluationException(
                 "Ambiguous query dag definition, query index node cannot "
                 + f"have parents having the same {queried_schema_name} schema."
             )
-        return active_parent[0]
+        return active_parents[0]

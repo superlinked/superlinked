@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -20,6 +19,8 @@ from beartype.typing import Generic, Mapping, Sequence
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import NT
+from superlinked.framework.common.data_types import Vector
+from superlinked.framework.query.dag.exception import QueryEvaluationException
 from superlinked.framework.query.dag.query_evaluation_data_types import (
     QueryEvaluationResult,
     QueryEvaluationResultT,
@@ -47,18 +48,34 @@ class QueryNode(ABC, Generic[NT, QueryEvaluationResultT]):
         context: ExecutionContext,
     ) -> QueryEvaluationResult[QueryEvaluationResultT]:
         self._validate_evaluation_inputs(inputs)
-        return self.evaluate(inputs, context)
+        return self._evaluate(inputs, context)
 
-    @abstractmethod
-    def evaluate(
-        self,
-        inputs: Mapping[str, Sequence[QueryNodeInput]],
-        context: ExecutionContext,
-    ) -> QueryEvaluationResult[QueryEvaluationResultT]:
-        pass
+    def get_vector_parts(
+        self, vectors: Sequence[Vector], node_ids: Sequence[str], context: ExecutionContext
+    ) -> list[list[Vector]] | None:
+        self._validate_get_vector_parts_inputs(vectors)
+        return self._get_vector_parts(vectors, node_ids, context)
 
     def _validate_evaluation_inputs(self, inputs: Mapping[str, Sequence[QueryNodeInput]]) -> None:
         pass
+
+    @abstractmethod
+    def _evaluate(
+        self,
+        inputs: Mapping[str, Sequence[QueryNodeInput]],
+        context: ExecutionContext,
+    ) -> QueryEvaluationResult[QueryEvaluationResultT]: ...
+
+    def _validate_get_vector_parts_inputs(self, vectors: Sequence[Vector]) -> None:
+        pass
+
+    def _get_vector_parts(
+        self,
+        vectors: Sequence[Vector],  # pylint: disable=unused-argument
+        node_ids: Sequence[str],  # pylint: disable=unused-argument
+        context: ExecutionContext,  # pylint: disable=unused-argument
+    ) -> list[list[Vector]] | None:
+        return None
 
     def _merge_inputs(
         self,
@@ -72,3 +89,10 @@ class QueryNode(ABC, Generic[NT, QueryEvaluationResultT]):
                 node_inputs = list(merged_inputs_dict.get(node_id, [])) + list(input_)
                 merged_inputs_dict.update({node_id: node_inputs})
         return merged_inputs_dict
+
+    def _validate_vectors_dimension(self, dimension: int, vectors: Sequence[Vector]) -> None:
+        if wrong_dimensions := [vector.dimension for vector in vectors if vector.dimension != dimension]:
+            raise QueryEvaluationException(
+                f"{type(self).__name__} can only process vectors with {dimension} dimension,"
+                f" got {wrong_dimensions}."
+            )

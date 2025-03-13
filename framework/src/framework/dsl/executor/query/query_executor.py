@@ -103,6 +103,7 @@ class QueryExecutor:
         self.__check_executor_has_index()
         query_descriptor: QueryDescriptor = QueryParamValueSetter.set_values(self._query_descriptor, params)
         knn_search_params = self._produce_knn_search_params(query_descriptor)
+        # TODO FAB-3259 [adjust should_return_index_vector]
         entities = self._knn_search(knn_search_params, query_descriptor, query_descriptor.with_metadata)
         self._logger.info(
             "executed query",
@@ -118,20 +119,12 @@ class QueryExecutor:
             search_vector=[float(x) for x in query_vector.value.tolist()],
             search_params=self._map_search_params(query_descriptor),
         )
-        return QueryResult(
-            entries=self._map_entities(entities, query_vector, query_descriptor.with_metadata), metadata=metadata
-        )
+        partial_scores = self.__get_partial_scores(entities, query_vector, query_descriptor.with_metadata)
+        return QueryResult(entries=self._map_entities(entities, partial_scores), metadata=metadata)
 
     def _map_entities(
-        self, entities: Sequence[SearchResultItem], query_vector: Vector, with_partial_scores: bool
+        self, entities: Sequence[SearchResultItem], partial_scores: Sequence[Sequence[float]]
     ) -> list[ResultEntry]:
-        if with_partial_scores:
-            result_vectors = [
-                entity.index_vector or Vector.init_zero_vector(query_vector.dimension) for entity in entities
-            ]
-            partial_scores = self._calculate_partial_scores(query_vector, result_vectors)
-        else:
-            partial_scores = [list[float]()] * len(entities)
         return [
             ResultEntry(
                 id=entity.header.origin_id or entity.header.object_id,
@@ -143,6 +136,16 @@ class QueryExecutor:
             )
             for entity, partial_score in zip(entities, partial_scores)
         ]
+
+    def __get_partial_scores(
+        self, entities: Sequence[SearchResultItem], query_vector: Vector, with_partial_scores: bool
+    ) -> list[list[float]]:
+        if with_partial_scores:
+            result_vectors = [
+                entity.index_vector or Vector.init_zero_vector(query_vector.dimension) for entity in entities
+            ]
+            return self._calculate_partial_scores(query_vector, result_vectors)
+        return [list[float]()] * len(entities)
 
     def _map_search_params(self, query_descriptor: QueryDescriptor) -> dict[str, Any]:
         return {

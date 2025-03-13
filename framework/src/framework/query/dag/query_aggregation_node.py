@@ -37,6 +37,7 @@ class QueryAggregationNode(QueryNodeWithParent[AggregationNode, Vector]):
         super().__init__(node, parents)
         if len(self.parents) != 1:
             raise QueryDagInitializationException(f"{type(self).__name__} must have exactly 1 parent.")
+        self.parent = self.parents[0]
 
     @override
     def _evaluate_parent_results(
@@ -49,3 +50,13 @@ class QueryAggregationNode(QueryNodeWithParent[AggregationNode, Vector]):
         if not isinstance(parent_results[0].value, Vector):
             raise QueryEvaluationException(f"{type(self).__name__} can only evaluate vector type parent result.")
         return parent_results[0]
+
+    @override
+    def _validate_get_vector_parts_inputs(self, vectors: Sequence[Vector]) -> None:
+        self._validate_vectors_dimension(self.node.length, vectors)
+
+    @override
+    def _get_vector_parts(
+        self, vectors: Sequence[Vector], node_ids: Sequence[str], context: ExecutionContext
+    ) -> list[list[Vector]] | None:
+        return self.parent.get_vector_parts(vectors, node_ids, context)

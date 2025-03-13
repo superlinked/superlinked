@@ -71,7 +71,7 @@ class QueryEmbeddingNode(
         ).combine(vector_to_query_vector_step)
 
     @override
-    def evaluate(
+    def _evaluate(
         self,
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,
@@ -96,8 +96,17 @@ class QueryEmbeddingNode(
     ) -> list[QueryEvaluationResult]:
         pass
 
-    def _pre_process_node_inputs(self, inputs: Mapping[str, Sequence[QueryNodeInput]]) -> Sequence[QueryNodeInput]:
-        return inputs.get(self.node_id) or []
+    @override
+    def _validate_get_vector_parts_inputs(self, vectors: Sequence[Vector]) -> None:
+        self._validate_vectors_dimension(self.node.length, vectors)
+
+    @override
+    def _get_vector_parts(
+        self, vectors: Sequence[Vector], node_ids: Sequence[str], context: ExecutionContext
+    ) -> list[list[Vector]] | None:
+        if self.node_id in node_ids:
+            return [[vector] for vector in vectors]
+        return None
 
     def _validate_and_cast_node_inputs(
         self, inputs: Mapping[str, Sequence[QueryNodeInput]]
@@ -111,6 +120,12 @@ class QueryEmbeddingNode(
         )
         weighted_node_input_vectors = self._validate_and_cast_items(inputs_to_be_inverted, Vector)
         return weighted_node_inputs, weighted_node_input_vectors
+
+    def _pre_process_node_inputs(self, inputs: Mapping[str, Sequence[QueryNodeInput]]) -> Sequence[QueryNodeInput]:
+        return [self._pre_process_node_input(input_) for input_ in inputs.get(self.node_id) or []]
+
+    def _pre_process_node_input(self, node_input: QueryNodeInput) -> QueryNodeInput:
+        return node_input
 
     def _validate_and_cast_parent_results(self, parent_results: Sequence[QueryEvaluationResult]) -> list[Weighted]:
         single_items = QueryEmbeddingNode._flat_parent_result_values(parent_results)

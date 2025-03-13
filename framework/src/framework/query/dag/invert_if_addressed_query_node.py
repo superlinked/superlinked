@@ -41,10 +41,10 @@ class InvertIfAddressedQueryNode(
         context: ExecutionContext,  # pylint: disable=unused-argument
     ) -> dict[str, Sequence[QueryNodeInput]]:
         inputs_to_invert = [input_.value for input_ in inputs.get(self.node_id, []) if input_.to_invert]
-        inverted_inputs = self.invert_and_readdress(inputs_to_invert)
+        inverted_inputs = self._invert_and_readdress(inputs_to_invert)
         new_inputs = self._merge_inputs([inputs, inverted_inputs])
         return new_inputs
 
     @abstractmethod
-    def invert_and_readdress(self, node_inputs: Sequence[QueryNodeInputValue]) -> dict[str, list[QueryNodeInput]]:
+    def _invert_and_readdress(self, node_inputs: Sequence[QueryNodeInputValue]) -> dict[str, list[QueryNodeInput]]:
         pass

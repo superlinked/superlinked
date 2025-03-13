@@ -53,14 +53,19 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
         parents: Sequence[QueryNode[Node[Vector], Vector]],
     ) -> None:
         super().__init__(node, parents)
+        self.__parent_lengths = self.__init_parent_lengths(self.parents)
         self._denormalizer = self._create_denormalizer()
         self._l2_norm = L2Norm()
+
+    def __init_parent_lengths(self, parents: Sequence[QueryNode]) -> list[int]:
+        parents_without_duplicates = list(dict.fromkeys(parents))
+        return [cast(HasLength, parent.node).length for parent in parents_without_duplicates]
 
     def _create_denormalizer(self) -> ConstantNorm:
         return ConstantNorm(self.node.create_normalization_config([1.0] * len(self.node.parents)))
 
     @override
-    def invert_and_readdress(
+    def _invert_and_readdress(
         self, node_inputs: Sequence[QueryNodeInputValue[NodeDataTypes]]
     ) -> dict[str, list[QueryNodeInput]]:
         # All of the inputs are vectors having the same dimension as the CN.
@@ -91,9 +96,7 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
 
     def _split_weighted_vector(self, weighted_vector: QueryNodeInputValue[Vector]) -> list[QueryNodeInputValue[Vector]]:
         vector = weighted_vector.item
-        parents_without_duplicates = list(dict.fromkeys(self.parents))
-        lengths = [cast(HasLength, parent.node).length for parent in parents_without_duplicates]
-        vectors = vector.split(lengths)
+        vectors = vector.split(self.__parent_lengths)
         return [
             QueryNodeInputValue(self._denormalizer.denormalize(vector), weighted_vector.weight) for vector in vectors
         ]
@@ -132,6 +135,33 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
         concatenated_vector = reduce(lambda a, b: a.concatenate(b), weighted_vectors)
         normalized_vector = self._normalize_vector(concatenated_vector, vectors_with_weights)
         return QueryEvaluationResult(self._compensate_vector(normalized_vector, weighted_vectors))
+
+    @override
+    def _validate_get_vector_parts_inputs(self, vectors: Sequence[Vector]) -> None:
+        self._validate_vectors_dimension(self.node.length, vectors)
+
+    @override
+    def _get_vector_parts(
+        self, vectors: Sequence[Vector], node_ids: Sequence[str], context: ExecutionContext
+    ) -> list[list[Vector]] | None:
+        vector_parts_by_parent = self.__get_vector_parts_by_parent(vectors)
+        parent_results: list[list[list[Vector]] | None] = [
+            parent.get_vector_parts(vector_parts, node_ids, context)
+            for parent, vector_parts in vector_parts_by_parent.items()
+        ]
+        return [
+            [
+                vector_part
+                for parent_result in parent_results
+                if parent_result is not None
+                for vector_part in parent_result[i]
+            ]
+            for i in range(len(vectors))
+        ]
+
+    def __get_vector_parts_by_parent(self, vectors: Sequence[Vector]) -> dict[QueryNode, list[Vector]]:
+        split_vectors = [vector.split(self.__parent_lengths) for vector in vectors]
+        return {parent: [split_vector[i] for split_vector in split_vectors] for i, parent in enumerate(self.parents)}
 
     def _normalize_vector(self, vector: Vector, vectors_with_weights: Sequence[tuple[Vector, float]]) -> Vector:
         norm = ConstantNorm(

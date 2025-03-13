@@ -29,14 +29,9 @@ from superlinked.framework.common.parser.parsed_schema import (
     ParsedSchema,
     ParsedSchemaField,
 )
-from superlinked.framework.common.schema.event_schema_object import (
-    EventSchemaObject,
-)
+from superlinked.framework.common.schema.event_schema_object import EventSchemaObject
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObjectT
-from superlinked.framework.common.schema.schema_object import (
-    Blob,
-    SchemaField,
-)
+from superlinked.framework.common.schema.schema_object import Blob, SchemaField
 
 
 class DataFrameParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, pd.DataFrame]):

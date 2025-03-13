@@ -44,6 +44,13 @@ class QueryDag:
             )
         return result
 
+    def get_vector_parts(
+        self, vectors: Sequence[Vector], node_ids: Sequence[str], context: ExecutionContext
+    ) -> list[list[Vector]] | None:
+        if not node_ids:
+            return None
+        return self.leaf_node.get_vector_parts(vectors, node_ids, context)
+
     def __validate_and_get_leaf_node(self, nodes: Sequence[QueryNode]) -> QueryIndexNode:
         class_name = type(self).__name__
         index_nodes = [node for node in nodes if isinstance(node, QueryIndexNode)]

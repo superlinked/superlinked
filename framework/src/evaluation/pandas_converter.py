@@ -77,9 +77,13 @@ class PandasConverter:
         if new_column_name is None:
             new_column_name = original_column_name
         if year_only:
-            df[new_column_name] = pd.to_datetime(df[original_column_name], unit="s", utc=True).dt.year
+            df[new_column_name] = pd.to_datetime(  # type: ignore # mypy doesn't recognize to_datetime method
+                df[original_column_name], unit="s", utc=True
+            ).dt.year
         else:
-            df[new_column_name] = pd.to_datetime(df[original_column_name], unit="s", utc=True).dt.date
+            df[new_column_name] = pd.to_datetime(  # type: ignore # mypy doesn't recognize to_datetime method
+                df[original_column_name], unit="s", utc=True
+            ).dt.date
         if new_column_name != original_column_name:
             df.drop(columns=[original_column_name], inplace=True)
         return df

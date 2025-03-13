@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from beartype.typing import Mapping, Sequence
+from beartype.typing import Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.custom_node import CustomVectorEmbeddingNode
@@ -34,9 +34,6 @@ class QueryCustomVectorEmbeddingNode(QueryEmbeddingOrphanNode[Vector, CustomVect
         super().__init__(node, parents, Vector)
 
     @override
-    def _pre_process_node_inputs(self, inputs: Mapping[str, Sequence[QueryNodeInput]]) -> Sequence[QueryNodeInput]:
-        return [self._pre_process_node_input(input_) for input_ in inputs.get(self.node_id) or []]
-
     def _pre_process_node_input(self, node_input: QueryNodeInput) -> QueryNodeInput:
         result: QueryNodeInput[Vector]
         if isinstance(node_input.value.item, Vector):
