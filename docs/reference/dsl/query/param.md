@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.query.param
 Classes
 -------
 
-`Param(name: str, description: str | None = None, default: ParamInputType | None = None, options: Sequence[ParamInputType] | None = None)`
+`Param(name: str, description: str | None = None, default: ParamInputType | None = None, options: Sequence[ParamInputType | None] | None = None)`
 :   Class representing a parameter that will be provided during the execution of the query.
     
     Attributes:

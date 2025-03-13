@@ -43,7 +43,6 @@ Classes
     * superlinked.framework.common.space.interface.has_transformation_config.HasTransformationConfig
     * superlinked.framework.common.interface.has_length.HasLength
     * typing.Generic
-    * superlinked.framework.common.interface.has_annotation.HasAnnotation
     * abc.ABC
 
     ### Instance variables

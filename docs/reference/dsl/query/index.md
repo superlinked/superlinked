@@ -5,6 +5,7 @@ Queries can have parameters and weights that you can provide at query time to co
 
 Sub-modules
 -----------
+* superlinked.framework.dsl.query.clause_params
 * superlinked.framework.dsl.query.nlq
 * superlinked.framework.dsl.query.param
 * superlinked.framework.dsl.query.query
@@ -17,4 +18,5 @@ Sub-modules
 * superlinked.framework.dsl.query.query_vector_factory
 * superlinked.framework.dsl.query.query_weighting
 * superlinked.framework.dsl.query.result
+* superlinked.framework.dsl.query.space_weight_param_info
 * superlinked.framework.dsl.query.typed_param

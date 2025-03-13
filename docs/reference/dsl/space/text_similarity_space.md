@@ -49,7 +49,6 @@ Classes
     * superlinked.framework.common.space.interface.has_transformation_config.HasTransformationConfig
     * superlinked.framework.common.interface.has_length.HasLength
     * typing.Generic
-    * superlinked.framework.common.interface.has_annotation.HasAnnotation
     * superlinked.framework.dsl.space.has_space_field_set.HasSpaceFieldSet
     * abc.ABC
 

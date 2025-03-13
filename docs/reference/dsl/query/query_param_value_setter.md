@@ -9,7 +9,7 @@ Classes
 
     ### Static methods
 
-    `set_values(query_descriptor: QueryDescriptor, params: Mapping[str, ParamInputType]) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    `set_values(query_descriptor: QueryDescriptor, params: Mapping[str, ParamInputType | None]) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :
 
     `validate_params(query_descriptor: QueryDescriptor, params_to_set: Mapping[str, Any]) ‑> None`

@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.query.nlq.nlq_clause_collector
 Classes
 -------
 
-`NLQClauseCollector(query_clauses: Sequence[superlinked.framework.dsl.query.query_clause.QueryClause])`
+`NLQClauseCollector(clauses: Sequence[superlinked.framework.dsl.query.query_clause.query_clause.QueryClause], space_weight_param_info: superlinked.framework.dsl.query.space_weight_param_info.SpaceWeightParamInfo)`
 :   
 
     ### Instance variables
@@ -12,10 +12,8 @@ Classes
     `all_params_have_value_set: bool`
     :
 
-    `clauses: Sequence[superlinked.framework.dsl.query.query_clause.QueryClause]`
+    `clause_handlers: Sequence[superlinked.framework.dsl.query.nlq.nlq_compatible_clause_handler.NLQCompatibleClauseHandler]`
     :
 
-    ### Methods
-
-    `get_clauses_by_type(self, clause_type: type[~QueryClauseT]) ‑> Sequence[~QueryClauseT]`
+    `space_weight_param_info: superlinked.framework.dsl.query.space_weight_param_info.SpaceWeightParamInfo`
     :

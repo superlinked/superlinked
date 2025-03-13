@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.query.query_descriptor
 Classes
 -------
 
-`QueryDescriptor(index: superlinked.framework.dsl.index.index.Index, schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject, clauses: collections.abc.Sequence[superlinked.framework.dsl.query.query_clause.QueryClause] | None = None, with_metadata: bool = False)`
+`QueryDescriptor(index: superlinked.framework.dsl.index.index.Index, schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject, clauses: collections.abc.Sequence[superlinked.framework.dsl.query.query_clause.query_clause.QueryClause] | None = None, with_metadata: bool = False)`
 :   A class representing a query object. Use .with_vector to run queries using a stored
     vector, or use .similar for queries where you supply the query at query-time. Or combine
     them, or even combine multiple .similar to supply different queries for each space in the
@@ -59,31 +59,7 @@ Classes
     `get_clauses_by_type(self, clause_type: Type[QueryClauseT]) ‑> list[~QueryClauseT]`
     :
 
-    `get_context_time(self, default: int | Any) ‑> int`
-    :
-
-    `get_hard_filters(self) ‑> list[superlinked.framework.common.interface.comparison_operand.ComparisonOperation[superlinked.framework.common.schema.schema_object.SchemaField]]`
-    :
-
-    `get_limit(self) ‑> int`
-    :
-
-    `get_looks_like_filter(self) ‑> tuple[float | int | str | superlinked.framework.common.data_types.Vector | list[float] | list[str] | superlinked.framework.common.schema.blob_information.BlobInformation, float | dict[str, float]] | None`
-    :
-
-    `get_mandatory_clause_by_type(self, clause_type: Type[QueryClauseT]) ‑> ~QueryClauseT`
-    :
-
-    `get_param_value_to_set_for_unset_space_weight_clauses(self) ‑> dict[str, float]`
-    :
-
-    `get_radius(self) ‑> float | None`
-    :
-
-    `get_selected_fields(self) ‑> Sequence[superlinked.framework.common.schema.schema_object.SchemaField]`
-    :
-
-    `get_weights_by_space(self) ‑> dict[superlinked.framework.dsl.space.space.Space, float]`
+    `get_param_value_for_unset_space_weights(self) ‑> dict[str, float]`
     :
 
     `include_metadata(self) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
@@ -180,7 +156,7 @@ Classes
         Returns:
             Self: The query object itself.
 
-    `similar(self, space_field_set: superlinked.framework.dsl.space.has_space_field_set.HasSpaceFieldSet | superlinked.framework.dsl.space.space_field_set.SpaceFieldSet, param: collections.abc.Sequence[str] | collections.abc.Sequence[float] | PIL.Image.Image | str | int | float | bool | None | tuple[str | None, str | None] | superlinked.framework.dsl.query.param.Param, weight: float | int | superlinked.framework.dsl.query.param.Param = 1.0) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    `similar(self, space_field_set: superlinked.framework.dsl.space.has_space_field_set.HasSpaceFieldSet | superlinked.framework.dsl.space.space_field_set.SpaceFieldSet, param: collections.abc.Sequence[str] | collections.abc.Sequence[float] | PIL.Image.Image | str | int | float | bool | tuple[str | None, str | None] | None | superlinked.framework.dsl.query.param.Param, weight: float | int | superlinked.framework.dsl.query.param.Param = 1.0) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :   Add a 'similar' clause to the query. Similar queries compile query inputs (like query text) into vectors
         using a space and then use the query_vector (weighted with weight param) to search
         in the referenced space of the index.
