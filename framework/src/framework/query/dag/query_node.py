@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from beartype.typing import Generic, Mapping, Sequence
+from beartype.typing import Generic, Iterable, Mapping, Sequence
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import NT
@@ -47,8 +47,11 @@ class QueryNode(ABC, Generic[NT, QueryEvaluationResultT]):
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,
     ) -> QueryEvaluationResult[QueryEvaluationResultT]:
-        self._validate_evaluation_inputs(inputs)
-        return self._evaluate(inputs, context)
+        with context.dag_output_recorder.record_evaluation_exception(self.node_id):
+            self._validate_evaluation_inputs(inputs)
+            result = self._evaluate(inputs, context)
+        context.dag_output_recorder.record(self.node_id, list(result) if isinstance(result, Iterable) else [result])
+        return result
 
     def get_vector_parts(
         self, vectors: Sequence[Vector], node_ids: Sequence[str], context: ExecutionContext

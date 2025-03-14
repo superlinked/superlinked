@@ -42,6 +42,7 @@ class OnlineSchemaDag:
     def __init__(self, schema: SchemaObject, nodes: list[OnlineNode]) -> None:
         self.__validate(schema, nodes)
         self.__nodes = nodes
+        self.__base_nodes = [online_node.node for online_node in self.nodes]
         # There's exactly 1 leaf `OnlineNode` as it was already validated.
         self.__leaf_node = cast(
             OnlineIndexNode,
@@ -61,7 +62,9 @@ class OnlineSchemaDag:
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
     ) -> list[EvaluationResult[Vector] | None]:
-        return self.leaf_node.evaluate_next(parsed_schemas, context)
+        with context.dag_output_recorder.visualize_dag_context(self.__base_nodes):
+            results = self.leaf_node.evaluate_next(parsed_schemas, context)
+        return results
 
     def __validate(self, schema: SchemaObject, nodes: list[OnlineNode]) -> None:
         class_name = type(self).__name__

@@ -56,6 +56,9 @@ class Settings(BaseSettings):
     BLOB_HANDLER_CLASS_ARGS_STR: str | None = None
     BLOB_HANDLER_CLASS_ARGS: dict[str, Any] | None = None
     INIT_SEARCH_INDICES: bool = True
+    # DAG visualization
+    ENABLE_DAG_VISUALIZATION: bool = False
+    DAG_VISUALIZATION_OUTPUT_DIR: str | None = None
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

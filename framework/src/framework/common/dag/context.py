@@ -25,7 +25,18 @@ from superlinked.framework.common.exception import (
     NotImplementedException,
     QueryException,
 )
+from superlinked.framework.common.settings import Settings
 from superlinked.framework.common.util import time_util
+from superlinked.framework.common.visualize.ingestion_output_recorder import (
+    IngestionOutputRecorder,
+)
+from superlinked.framework.common.visualize.no_op_output_recorder import (
+    NoOpOutputRecorder,
+)
+from superlinked.framework.common.visualize.output_recorder import OutputRecorder
+from superlinked.framework.common.visualize.query_output_recorder import (
+    QueryOutputRecorder,
+)
 
 ContextValue: TypeAlias = int | float | str | Mapping | list | bool | None
 T = TypeVar("T", bound=ContextValue)
@@ -61,6 +72,7 @@ class ExecutionContext:
         self.__data: dict[str, dict[str, ContextValue]] = defaultdict(dict)
         if data:
             self.update_data(data)
+        self.__dag_output_recorder = self.__init_output_recorder()
 
     def update_data(self, data: Mapping[str, Mapping[str, ContextValue]]) -> Self:
         for key, sub_map in data.items():
@@ -100,6 +112,10 @@ class ExecutionContext:
     def data(self) -> Mapping[str, Mapping[str, ContextValue]]:
         return self.__data
 
+    @property
+    def dag_output_recorder(self) -> OutputRecorder:
+        return self.__dag_output_recorder
+
     def get_node_context_value(self, node_id: str, key: str, _: type[T]) -> T | None:
         value = self.__node_context(node_id).get(key)
         if value is None:
@@ -132,6 +148,13 @@ class ExecutionContext:
 
     def __node_context(self, node_id: str) -> dict[str, ContextValue]:
         return self.__data[node_id]
+
+    def __init_output_recorder(self) -> OutputRecorder:
+        if not Settings().ENABLE_DAG_VISUALIZATION:
+            return NoOpOutputRecorder()
+        if self.is_query_context:
+            return QueryOutputRecorder()
+        return IngestionOutputRecorder()
 
     @property
     def is_query_context(self) -> bool:

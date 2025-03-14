@@ -26,6 +26,7 @@ from superlinked.framework.query.query_node_input import QueryNodeInput
 class QueryDag:
     def __init__(self, nodes: Sequence[QueryNode]) -> None:
         self.__nodes = nodes
+        self.__base_nodes = [query_node.node for query_node in self.__nodes]
         self.__leaf_node = self.__validate_and_get_leaf_node(self.__nodes)
 
     @property
@@ -37,11 +38,12 @@ class QueryDag:
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,
     ) -> Vector:
-        result = self.leaf_node.evaluate_with_validation(inputs, context).value
-        if not isinstance(result, Vector):
-            raise QueryEvaluationException(
-                f"{type(self.leaf_node).__name__} must return a vector, " + f"got {type(result).__name__}."
-            )
+        with context.dag_output_recorder.visualize_dag_context(self.__base_nodes):
+            result = self.leaf_node.evaluate_with_validation(inputs, context).value
+            if not isinstance(result, Vector):
+                raise QueryEvaluationException(
+                    f"{type(self.leaf_node).__name__} must return a vector, " + f"got {type(result).__name__}."
+                )
         return result
 
     def get_vector_parts(

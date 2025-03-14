@@ -83,9 +83,11 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
     ) -> list[EvaluationResult[NodeDataT] | None]:
-        results = self.evaluate_self(parsed_schemas, context)
-        if self.node.persist_evaluation_result:
-            self.persist(results, parsed_schemas)
+        with context.dag_output_recorder.record_evaluation_exception(self.node_id):
+            results = self.evaluate_self(parsed_schemas, context)
+            if self.node.persist_evaluation_result:
+                self.persist(results, parsed_schemas)
+        context.dag_output_recorder.record(self.node_id, results)
         return results
 
     def evaluate_next_single(
