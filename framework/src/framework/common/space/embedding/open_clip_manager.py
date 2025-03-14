@@ -88,36 +88,29 @@ class OpenClipManager(ModelManager):
         if not texts:
             return torch.Tensor()
         tokenizer = OpenClipModelCache.initialize_tokenizer(self._model_name)
-        texts_tokenized = tokenizer(texts)
-        device = next(embedding_model.parameters()).device
-        if texts_tokenized.device != device:
-            logger.debug(
-                "moved tensor",
-                embedding_type="text",
-                new_device=device,
-                model_name=self._model_name,
-                old_device=texts_tokenized.device,
-            )
-            texts_tokenized = texts_tokenized.to(device)
+        texts_tokenized = self._move_tensor_to_model_device(embedding_model, tokenizer(texts))
         return embedding_model.encode_text(texts_tokenized)
 
     @time_execution
     def encode_images(self, images: list[Any], embedding_model: CLIP, preprocess_val: Compose) -> torch.Tensor:
         if not images:
             return torch.Tensor()
-        device = next(embedding_model.parameters()).device
-        torch.stack([preprocess_val(image) for image in images])
-        images_to_process = torch.tensor(np.stack([preprocess_val(image) for image in images]), device=device)
-        if images_to_process.device != device:
-            logger.debug(
-                "moved tensor",
-                embedding_type="image",
-                new_device=device,
-                model_name=self._model_name,
-                old_device=images_to_process.device,
-            )
-            images_to_process = images_to_process.to(device)
+        combined_images_tensor = torch.stack([preprocess_val(image) for image in images])
+        images_to_process = self._move_tensor_to_model_device(embedding_model, combined_images_tensor)
         return embedding_model.encode_image(images_to_process)
+
+    def _move_tensor_to_model_device(self, embedding_model: CLIP, tensor: torch.Tensor) -> torch.Tensor:
+        model_device = next(embedding_model.parameters()).device
+        if tensor.device == model_device:
+            return tensor
+        logger.debug(
+            "moved tensor",
+            embedding_type="image",
+            new_device=model_device,
+            model_name=self._model_name,
+            old_device=tensor.device,
+        )
+        return tensor.to(model_device)
 
 
 class OpenClipModelCache:
