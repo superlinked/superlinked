@@ -33,7 +33,9 @@ class CategoricalSimilarityEmbedding(InvertibleEmbedding[list[str], CategoricalS
 
     def __init__(self, embedding_config: CategoricalSimilarityEmbeddingConfig) -> None:
         super().__init__(embedding_config)
-        self._other_category_name = "".join(sorted(list(self._config.categories)[:100]) + ["_"])
+        self._other_category_name = (
+            f"{sorted(list(self._config.categories), key=len)[-1] if self._config.categories else ''}_"
+        )
         self._other_category_index: int | None = self.length - 1 if self._config.uncategorized_as_category else None
         self._category_index_map: dict[str, int] = {elem: i for i, elem in enumerate(self._config.categories)}
         self._default_n_hot_encoding = np.full(self.length, self._config.negative_filter, dtype=np.float64)
@@ -47,13 +49,9 @@ class CategoricalSimilarityEmbedding(InvertibleEmbedding[list[str], CategoricalS
     @override
     def inverse_embed(self, vector: Vector, context: ExecutionContext) -> list[str]:
         return [
-            (
-                self._config.categories[i]
-                if len(self._config.categories) > i
-                and vector.value[i] != constants.DEFAULT_NOT_AFFECTING_EMBEDDING_VALUE
-                else self._other_category_name
-            )
+            self._config.categories[i] if i < len(self._config.categories) else self._other_category_name
             for i in vector.non_negative_filter_indices
+            if vector.value[i] != constants.DEFAULT_NOT_AFFECTING_EMBEDDING_VALUE
         ]
 
     def get_categorical_encoding_value(self, len_category_list: int, is_query: bool) -> float:
@@ -80,7 +78,9 @@ class CategoricalSimilarityEmbedding(InvertibleEmbedding[list[str], CategoricalS
         )
 
     def _get_index_for_category(self, category: str) -> int | None:
-        return self._category_index_map.get(category, self._other_category_index)
+        return self._category_index_map.get(
+            category, self._other_category_index if self._config.uncategorized_as_category else None
+        )
 
     def _reallocate_vector_values(self, vector: Vector, scaling_factors: Mapping[int, float]) -> Vector:
         if scaling_factors:
