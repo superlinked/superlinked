@@ -38,8 +38,8 @@ class RadiusClause(SingleValueParamQueryClause):
         self.__validate_radius()
 
     @override
-    def get_altered_knn_search_params(self, partial_params: KNNSearchClauseParams) -> KNNSearchClauseParams:
-        return partial_params.set_params(radius=self._get_value())
+    def get_altered_knn_search_params(self, knn_search_clause_params: KNNSearchClauseParams) -> KNNSearchClauseParams:
+        return knn_search_clause_params.set_params(radius=self._get_value())
 
     @override
     def _get_default_value_param_name(self) -> str:

@@ -33,6 +33,7 @@ class KNNSearchClauseParams:
     filters: Sequence[ComparisonOperation[SchemaField]] = field(default_factory=list)
     schema_fields_to_return: Sequence[SchemaField] = field(default_factory=list)
     radius: float | None = None
+    should_return_index_vector: bool = False
 
     def set_params(self, **params: Any) -> KNNSearchClauseParams:
         return replace(self, **params) if params else self
@@ -55,3 +56,8 @@ class NLQClauseParams:
     client_config: OpenAIClientConfig | None = None
     natural_query: str | None = None
     system_prompt: str | None = None
+
+
+@dataclass(frozen=True)
+class MetadataExtractionClauseParams:
+    vector_part_ids: Sequence[str] = field(default_factory=list[str])

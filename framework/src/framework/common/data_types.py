@@ -241,6 +241,9 @@ class Vector:
             vector_before_normalization_to_use,
         )
 
+    def to_list(self) -> list[float]:
+        return [float(x) for x in self.value.tolist()]
+
     def __copy(self) -> Vector:
         if self.is_empty:
             return self

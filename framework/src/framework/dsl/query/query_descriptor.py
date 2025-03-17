@@ -94,6 +94,8 @@ from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
 logger = structlog.getLogger()
 
+SchemaFieldSelector = SchemaField | str | Param
+
 
 class QueryDescriptor:  # pylint: disable=too-many-public-methods
     """
@@ -207,17 +209,22 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         return altered_query_descriptor
 
     @TypeValidator.wrap
-    def select(self, *fields: SchemaField | str | Param) -> QueryDescriptor:
+    def select(
+        self,
+        fields: SchemaFieldSelector | Sequence[SchemaFieldSelector] | None = None,
+        metadata: Sequence[Space] | None = None,
+    ) -> QueryDescriptor:
         """
         Select specific fields from the schema to be returned in the query results.
 
         Args:
-            *fields (SchemaField | str | Param): The fields to select. Can be:
+            fields (SchemaFieldSelector | SchemaFieldSelector | None): The fields to select. Can be:
                 - One or more SchemaField objects
                 - One or more field names as strings
                 - A single Param object that will be filled with fields later
                 If no fields are provided, returns an empty selection.
-
+            metadata (Sequence[Space] | None): The spaces identifying the requested vector parts.
+                Defaults to None.
         Returns:
             Self: The query object itself.
 
@@ -225,9 +232,15 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
             QueryException: If multiple Param objects are provided or Param is mixed with other field types.
             TypeException: If any of the fields are of unsupported types.
             FieldException: If any of the schema fields are not part of the schema.
+            ValueError: If any of the spaces in metadata is not a Space.
         """
-        param = self.__handle_select_param(list(fields))
-        clause = SelectClause.from_param(self.schema, param)
+        field_list = (
+            list(fields)
+            if isinstance(fields, Sequence) and not isinstance(fields, str)
+            else [] if fields is None else [fields]
+        )
+        param = self.__handle_select_param(field_list)
+        clause = SelectClause.from_param(self.schema, param, [] if metadata is None else metadata)
         altered_query_descriptor = self.__append_clauses([clause])
         return altered_query_descriptor
 
@@ -241,14 +254,21 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         return [field.name if isinstance(field, SchemaField) else cast(str, field) for field in fields]
 
     @TypeValidator.wrap
-    def select_all(self) -> QueryDescriptor:
+    def select_all(self, metadata: Sequence[Space] | None = None) -> QueryDescriptor:
         """
         Select all fields from the schema to be returned in the query results.
 
+        Args:
+            metadata (Sequence[Space] | None): The spaces identifying the requested vector parts.
+                Defaults to None.
+
         Returns:
             Self: The query object itself.
+
+        Raises:
+            See `select`.
         """
-        return self.select(*self.__schema.schema_fields)
+        return self.select(self.__schema.schema_fields, metadata)
 
     @TypeValidator.wrap
     def with_natural_query(
@@ -439,7 +459,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         if self.get_clause_by_type(RadiusClause) is None:
             clauses.append(RadiusClause.from_param(None))
         if self.get_clause_by_type(SelectClause) is None:
-            clauses.append(SelectClause.from_param(self.schema, []))
+            clauses.append(SelectClause.from_param(self.schema, fields=[], vector_parts=[]))
         altered_query_descriptor = self.__append_clauses(clauses)
         return altered_query_descriptor._add_missing_space_weight_params()
 

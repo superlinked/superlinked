@@ -26,6 +26,7 @@ class ResultMetadata(ImmutableBaseModel):
 class ResultEntryMetadata(ImmutableBaseModel):
     score: float
     partial_scores: Sequence[float]
+    vector_parts: Sequence[Sequence[float]]
 
 
 class ResultEntry(ImmutableBaseModel):

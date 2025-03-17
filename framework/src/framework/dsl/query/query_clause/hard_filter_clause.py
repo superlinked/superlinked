@@ -72,13 +72,13 @@ class HardFilterClause(SingleValueParamQueryClause, NLQCompatible):
         return [NLQAnnotation(annotation, NLQAnnotationType.EXACT_VALUE_REQUIRED)]
 
     @override
-    def get_altered_knn_search_params(self, partial_params: KNNSearchClauseParams) -> KNNSearchClauseParams:
+    def get_altered_knn_search_params(self, knn_search_clause_params: KNNSearchClauseParams) -> KNNSearchClauseParams:
         hard_filter = self.__evaluate()
         if hard_filter is None:
-            return partial_params
-        hard_filters = list(partial_params.filters)
+            return knn_search_clause_params
+        hard_filters = list(knn_search_clause_params.filters)
         hard_filters.append(hard_filter)
-        return partial_params.set_params(filters=hard_filters)
+        return knn_search_clause_params.set_params(filters=hard_filters)
 
     @override
     def _get_default_value_param_name(self) -> str:

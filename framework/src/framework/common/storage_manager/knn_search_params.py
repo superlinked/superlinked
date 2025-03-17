@@ -33,8 +33,7 @@ class KNNSearchParams:
     filters: Sequence[ComparisonOperation[SchemaField]]
     schema_fields_to_return: Sequence[SchemaField]
     radius: float | None
-    # TODO FAB-3259
-    # should_return_index_vector: bool
+    should_return_index_vector: bool = False
 
     @classmethod
     def from_clause_params(cls, query_vector: Vector, partial: KNNSearchClauseParams) -> KNNSearchParams:
@@ -46,4 +45,5 @@ class KNNSearchParams:
             partial.filters,
             partial.schema_fields_to_return,
             partial.radius,
+            partial.should_return_index_vector,
         )

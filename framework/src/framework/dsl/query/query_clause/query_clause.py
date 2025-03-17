@@ -26,6 +26,7 @@ from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.dsl.query.clause_params import (
     KNNSearchClauseParams,
+    MetadataExtractionClauseParams,
     NLQClauseParams,
     QueryVectorClauseParams,
 )
@@ -50,8 +51,8 @@ class QueryClause(ABC):
         changes = self._evaluate_changes(param_values, is_override_set)
         return replace(self, **changes) if changes else self
 
-    def get_altered_knn_search_params(self, partial_params: KNNSearchClauseParams) -> KNNSearchClauseParams:
-        return partial_params
+    def get_altered_knn_search_params(self, knn_search_clause_params: KNNSearchClauseParams) -> KNNSearchClauseParams:
+        return knn_search_clause_params
 
     @abstractmethod
     def get_altered_query_vector_params(
@@ -64,6 +65,11 @@ class QueryClause(ABC):
 
     def get_altered_nql_params(self, nlq_clause_params: NLQClauseParams) -> NLQClauseParams:
         return nlq_clause_params
+
+    def get_altered_metadata_extraction_params(
+        self, metadata_extraction_params: MetadataExtractionClauseParams
+    ) -> MetadataExtractionClauseParams:
+        return metadata_extraction_params
 
     def get_space_weight_param_name_by_space(self) -> dict[Space, str]:
         return {}
