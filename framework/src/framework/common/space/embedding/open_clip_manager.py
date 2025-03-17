@@ -12,22 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from functools import lru_cache
-from pathlib import Path
 
 import numpy as np
 import structlog
 import torch
-from beartype.typing import Any, Sequence, cast
-from open_clip.factory import create_model_and_transforms, get_tokenizer
+from beartype.typing import Any, Sequence
 from open_clip.model import CLIP
-from open_clip.tokenizer import HFTokenizer, SimpleTokenizer
 from PIL.Image import Image
 from torchvision.transforms.transforms import Compose  # type:ignore[import-untyped]
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.space.embedding.model_manager import ModelManager
+from superlinked.framework.common.space.embedding.open_clip_model_cache import (
+    OpenClipModelCache,
+)
 from superlinked.framework.common.util.execution_timer import time_execution
 from superlinked.framework.common.util.gpu_embedding_util import GpuEmbeddingUtil
 
@@ -111,20 +110,3 @@ class OpenClipManager(ModelManager):
             old_device=tensor.device,
         )
         return tensor.to(model_device)
-
-
-class OpenClipModelCache:
-    @staticmethod
-    @lru_cache(maxsize=10)
-    @time_execution
-    def initialize_model(model_name: str, device: str, cache_dir: Path) -> tuple[CLIP, Compose]:
-        model, _, preprocess_val = cast(
-            tuple[CLIP, Any, Compose],
-            create_model_and_transforms(model_name, device=device, cache_dir=str(cache_dir)),
-        )
-        return model, preprocess_val
-
-    @staticmethod
-    @lru_cache(maxsize=10)
-    def initialize_tokenizer(model_name: str) -> HFTokenizer | SimpleTokenizer:
-        return get_tokenizer(model_name)

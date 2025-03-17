@@ -43,7 +43,7 @@ CONFIG_FILE_PATH = "{model_folder}/snapshots/{snapshot}/config.json"
 
 class SentenceTransformerModelCache:
     @classmethod
-    @lru_cache(maxsize=10)
+    @lru_cache(maxsize=Settings().SUPERLINKED_MODEL_CACHE_SIZE)
     @time_execution
     def initialize_model(
         cls,

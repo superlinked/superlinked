@@ -21,10 +21,14 @@ from open_clip.model import CLIP
 from open_clip.tokenizer import HFTokenizer, SimpleTokenizer
 from torchvision.transforms.transforms import Compose  # type:ignore[import-untyped]
 
+from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.util.execution_timer import time_execution
+
 
 class OpenClipModelCache:
     @staticmethod
-    @lru_cache(maxsize=10)
+    @lru_cache(maxsize=Settings().SUPERLINKED_MODEL_CACHE_SIZE)
+    @time_execution
     def initialize_model(model_name: str, device: str, cache_dir: Path) -> tuple[CLIP, Compose]:
         model, _, preprocess_val = cast(
             tuple[CLIP, Any, Compose],
@@ -33,6 +37,6 @@ class OpenClipModelCache:
         return model, preprocess_val
 
     @staticmethod
-    @lru_cache(maxsize=10)
+    @lru_cache(maxsize=Settings().SUPERLINKED_MODEL_CACHE_SIZE)
     def initialize_tokenizer(model_name: str) -> HFTokenizer | SimpleTokenizer:
         return get_tokenizer(model_name)
