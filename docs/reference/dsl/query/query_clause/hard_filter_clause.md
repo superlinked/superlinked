@@ -40,5 +40,5 @@ Classes
 
     ### Methods
 
-    `get_altered_knn_search_params(self, partial_params: KNNSearchClauseParams) ‑> superlinked.framework.dsl.query.clause_params.KNNSearchClauseParams`
+    `get_altered_knn_search_params(self, knn_search_clause_params: KNNSearchClauseParams) ‑> superlinked.framework.dsl.query.clause_params.KNNSearchClauseParams`
     :

@@ -4,8 +4,8 @@ Module superlinked.framework.dsl.query.clause_params
 Classes
 -------
 
-`KNNSearchClauseParams(limit: int | None = None, filters: Sequence[ComparisonOperation[SchemaField]] = <factory>, schema_fields_to_return: Sequence[SchemaField] = <factory>, radius: float | None = None)`
-:   KNNSearchClauseParams(limit: 'int | None' = None, filters: 'Sequence[ComparisonOperation[SchemaField]]' = <factory>, schema_fields_to_return: 'Sequence[SchemaField]' = <factory>, radius: 'float | None' = None)
+`KNNSearchClauseParams(limit: int | None = None, filters: Sequence[ComparisonOperation[SchemaField]] = <factory>, schema_fields_to_return: Sequence[SchemaField] = <factory>, radius: float | None = None, should_return_index_vector: bool = False)`
+:   KNNSearchClauseParams(limit: 'int | None' = None, filters: 'Sequence[ComparisonOperation[SchemaField]]' = <factory>, schema_fields_to_return: 'Sequence[SchemaField]' = <factory>, radius: 'float | None' = None, should_return_index_vector: 'bool' = False)
 
     ### Class variables
 
@@ -21,9 +21,20 @@ Classes
     `schema_fields_to_return: Sequence[superlinked.framework.common.schema.schema_object.SchemaField]`
     :
 
+    `should_return_index_vector: bool`
+    :
+
     ### Methods
 
     `set_params(self, **params: Any) ‑> superlinked.framework.dsl.query.clause_params.KNNSearchClauseParams`
+    :
+
+`MetadataExtractionClauseParams(vector_part_ids: Sequence[str] = <factory>)`
+:   MetadataExtractionClauseParams(vector_part_ids: 'Sequence[str]' = <factory>)
+
+    ### Class variables
+
+    `vector_part_ids: Sequence[str]`
     :
 
 `NLQClauseParams(client_config: OpenAIClientConfig | None = None, natural_query: str | None = None, system_prompt: str | None = None)`

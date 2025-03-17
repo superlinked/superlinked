@@ -132,16 +132,17 @@ Classes
     `replace_clauses(self, clauses: Sequence[QueryClause]) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :
 
-    `select(self, *fields: superlinked.framework.common.schema.schema_object.SchemaField | str | superlinked.framework.dsl.query.param.Param) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    `select(self, fields: superlinked.framework.common.schema.schema_object.SchemaField | str | superlinked.framework.dsl.query.param.Param | collections.abc.Sequence[superlinked.framework.common.schema.schema_object.SchemaField | str | superlinked.framework.dsl.query.param.Param] | None = None, metadata: collections.abc.Sequence[superlinked.framework.dsl.space.space.Space] | None = None) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :   Select specific fields from the schema to be returned in the query results.
         
         Args:
-            *fields (SchemaField | str | Param): The fields to select. Can be:
+            fields (SchemaFieldSelector | SchemaFieldSelector | None): The fields to select. Can be:
                 - One or more SchemaField objects
                 - One or more field names as strings
                 - A single Param object that will be filled with fields later
                 If no fields are provided, returns an empty selection.
-        
+            metadata (Sequence[Space] | None): The spaces identifying the requested vector parts.
+                Defaults to None.
         Returns:
             Self: The query object itself.
         
@@ -149,12 +150,20 @@ Classes
             QueryException: If multiple Param objects are provided or Param is mixed with other field types.
             TypeException: If any of the fields are of unsupported types.
             FieldException: If any of the schema fields are not part of the schema.
+            ValueError: If any of the spaces in metadata is not a Space.
 
-    `select_all(self) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    `select_all(self, metadata: collections.abc.Sequence[superlinked.framework.dsl.space.space.Space] | None = None) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :   Select all fields from the schema to be returned in the query results.
+        
+        Args:
+            metadata (Sequence[Space] | None): The spaces identifying the requested vector parts.
+                Defaults to None.
         
         Returns:
             Self: The query object itself.
+        
+        Raises:
+            See `select`.
 
     `similar(self, space_field_set: superlinked.framework.dsl.space.has_space_field_set.HasSpaceFieldSet | superlinked.framework.dsl.space.space_field_set.SpaceFieldSet, param: collections.abc.Sequence[str] | collections.abc.Sequence[float] | PIL.Image.Image | str | int | float | bool | tuple[str | None, str | None] | None | superlinked.framework.dsl.query.param.Param, weight: float | int | superlinked.framework.dsl.query.param.Param = 1.0) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :   Add a 'similar' clause to the query. Similar queries compile query inputs (like query text) into vectors

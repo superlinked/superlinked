@@ -169,6 +169,9 @@ Classes
     `score: float`
     :
 
+    `vector_parts: Sequence[Sequence[float]]`
+    :
+
 `ResultMetadata(**data: Any)`
 :   Usage docs: https://docs.pydantic.dev/2.10/concepts/models/
     

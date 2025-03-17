@@ -4,8 +4,8 @@ Module superlinked.framework.dsl.query.query_clause.select_clause
 Classes
 -------
 
-`SelectClause(value_param: superlinked.framework.dsl.query.typed_param.TypedParam | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.typed_param.TypedParam], schema: IdSchemaObject)`
-:   SelectClause(value_param: Union[superlinked.framework.dsl.query.typed_param.TypedParam, superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.typed_param.TypedParam]], schema: 'IdSchemaObject')
+`SelectClause(value_param: superlinked.framework.dsl.query.typed_param.TypedParam | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.typed_param.TypedParam], schema: IdSchemaObject, vector_parts: Sequence[Space])`
+:   SelectClause(value_param: Union[superlinked.framework.dsl.query.typed_param.TypedParam, superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.typed_param.TypedParam]], schema: 'IdSchemaObject', vector_parts: 'Sequence[Space]')
 
     ### Ancestors (in MRO)
 
@@ -18,12 +18,18 @@ Classes
     `schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject`
     :
 
+    `vector_parts: Sequence[superlinked.framework.dsl.space.space.Space]`
+    :
+
     ### Static methods
 
-    `from_param(schema: IdSchemaObject, param: Param | Sequence[str]) ‑> superlinked.framework.dsl.query.query_clause.select_clause.SelectClause`
+    `from_param(schema: IdSchemaObject, fields: Param | Sequence[str], vector_parts: Sequence[Space]) ‑> superlinked.framework.dsl.query.query_clause.select_clause.SelectClause`
     :
 
     ### Methods
 
-    `get_altered_knn_search_params(self, partial_params: KNNSearchClauseParams) ‑> superlinked.framework.dsl.query.clause_params.KNNSearchClauseParams`
+    `get_altered_knn_search_params(self, knn_search_clause_params: KNNSearchClauseParams) ‑> superlinked.framework.dsl.query.clause_params.KNNSearchClauseParams`
+    :
+
+    `get_altered_metadata_extraction_params(self, metadata_extraction_params: MetadataExtractionClauseParams) ‑> superlinked.framework.dsl.query.clause_params.MetadataExtractionClauseParams`
     :
