@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections.abc import Iterable
+
 from beartype.typing import Any, Iterator, Sequence, TypeVar
 
 from superlinked.framework.common.const import constants
@@ -31,4 +33,4 @@ class CollectionUtil:
 
     @staticmethod
     def convert_single_item_to_list(value: Any) -> list[Any]:
-        return value if isinstance(value, list) else [value]
+        return list(value) if isinstance(value, Iterable) and not isinstance(value, str) else [value]
