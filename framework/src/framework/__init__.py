@@ -107,6 +107,7 @@ from superlinked.framework.dsl.space.custom_space import CustomSpace
 from superlinked.framework.dsl.space.image_space import ImageSpace
 from superlinked.framework.dsl.space.number_space import NumberSpace
 from superlinked.framework.dsl.space.recency_space import RecencySpace
+from superlinked.framework.dsl.space.space import Space
 from superlinked.framework.dsl.space.text_similarity_space import (
     TextSimilaritySpace,
     chunk,
@@ -179,6 +180,7 @@ __all__ = [
     "RestQuery",
     "QueryResult",
     # DSL Space
+    "Space",
     "CategoricalSimilaritySpace",
     "CustomSpace",
     "ImageSpace",
