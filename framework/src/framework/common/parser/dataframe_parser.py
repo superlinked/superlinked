@@ -56,7 +56,8 @@ class DataFrameParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, pd.D
         self._convert_columns_to_type(data_copy, schema_cols)
 
         if blob_cols := [key for key, value in schema_cols.items() if isinstance(value, Blob)]:
-            data_copy[blob_cols] = data_copy[blob_cols].apply(lambda col: col.map(self.blob_loader.load))
+            for col in blob_cols:
+                data_copy[col] = self.blob_loader.load_multiple(list(data_copy[col]))
 
         if self._is_event_data_parser:
             self.__ensure_created_at(data_copy)

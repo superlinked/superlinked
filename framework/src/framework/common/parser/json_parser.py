@@ -57,26 +57,40 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, dict[str,
 
         if isinstance(data, dict):
             data = [data]
-        return [self._unmarshal_single(json_data) for json_data in data]
+        return self._unmarshal_multiple(data)
 
-    def _unmarshal_single(self, json_data: dict[str, Any]) -> EventParsedSchema | ParsedSchema:
-        id_ = self.__ensure_id(json_data)
-        parsed_fields: list[ParsedSchemaField] = [
-            ParsedSchemaField.from_schema_field(field, parsed_value)
-            for field, parsed_value in [
-                (field, self._parse_schema_field_value(field, json_data)) for field in self._schema.schema_fields
+    def _unmarshal_multiple(self, json_datas: Sequence[dict[str, Any]]) -> list[ParsedSchema]:
+        ids = [self.__ensure_id(json_data) for json_data in json_datas]
+        parsed_fields_for_each_field = [
+            [
+                ParsedSchemaField.from_schema_field(field, parsed_value)
+                for parsed_value in self._parse_schema_field_values(field, json_datas)
+                if parsed_value is not None
             ]
-            if parsed_value is not None
+            for field in self._schema.schema_fields
         ]
-        if self._is_event_data_parser:
-            return EventParsedSchema(
-                self._schema,
-                id_,
-                parsed_fields,
-                self.__ensure_created_at(json_data),
+        parsed_fields_for_each_data = self._transpose_parsed_fields(json_datas, parsed_fields_for_each_field)
+        return [
+            (
+                EventParsedSchema(
+                    self._schema,
+                    id_,
+                    fields,
+                    self.__ensure_created_at(json_data),
+                )
+                if self._is_event_data_parser
+                else ParsedSchema(self._schema, id_, fields)
             )
+            for id_, fields, json_data in zip(ids, parsed_fields_for_each_data, json_datas)
+        ]
 
-        return ParsedSchema(self._schema, id_, parsed_fields)
+    def _transpose_parsed_fields(
+        self, json_datas: Sequence[dict[str, Any]], parsed_fields_for_each_field: Sequence[Sequence[ParsedSchemaField]]
+    ) -> list[list[ParsedSchemaField]]:
+        return [
+            [field_list[data_idx] for field_list in parsed_fields_for_each_field if data_idx < len(field_list)]
+            for data_idx in range(len(json_datas))
+        ]
 
     def _marshal(
         self,
@@ -124,17 +138,19 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, dict[str,
             raise MissingCreatedAtException("The mandatory created_at field is missing from the input object.")
         return cast(int, created_at)
 
-    def _parse_schema_field_value(self, field: SchemaField[SFT], data: dict[str, Any]) -> SFT | None:
+    def _parse_schema_field_values(
+        self, field: SchemaField[SFT], datas: Sequence[dict[str, Any]]
+    ) -> Sequence[SFT | None]:
         path: str = self._get_path(field)
-        parsed_value = DotSeparatedPathUtil.get(data, path)
+        parsed_values = [DotSeparatedPathUtil.get(data, path) for data in datas]
 
         if isinstance(field, SchemaReference):
-            return cast(SFT, str(parsed_value))
+            return [cast(SFT, str(parsed_value)) for parsed_value in parsed_values]
 
         if isinstance(field, Blob):
-            return cast(SFT, self.blob_loader.load(parsed_value))
+            return cast(Sequence[SFT], self.blob_loader.load_multiple(parsed_values))
 
-        return parsed_value
+        return parsed_values
 
     def __get_all_fields_from_parsed_schema(self, parsed_schema: ParsedSchema) -> list[ParsedSchemaField]:
         return (

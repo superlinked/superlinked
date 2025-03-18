@@ -20,7 +20,7 @@ from urllib.parse import urlparse
 
 import requests
 import structlog
-from beartype.typing import Any, Callable, cast
+from beartype.typing import Any, Callable, Sequence, cast
 from PIL.Image import Image
 
 from superlinked.framework.blob.blob_handler_factory import (
@@ -29,6 +29,7 @@ from superlinked.framework.blob.blob_handler_factory import (
 )
 from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.settings import Settings
+from superlinked.framework.online.dag.concurrent_executor import ConcurrentExecutor
 
 logger = structlog.getLogger()
 
@@ -70,6 +71,13 @@ class BlobLoader:
         loaded_bytes = loader(blob_path)
         encoded_bytes = base64.b64encode(loaded_bytes)
         return BlobInformation(encoded_bytes, blob_path)
+
+    def load_multiple(self, blob_like_inputs: Sequence[str | Image | None | Any]) -> Sequence[BlobInformation]:
+        return ConcurrentExecutor().execute(
+            func=self.load,
+            args_list=[(blob_like_input,) for blob_like_input in blob_like_inputs],
+            condition=Settings().SUPERLINKED_CONCURRENT_BLOB_LOADING,
+        )
 
     def _get_loader(self, blob_path: str) -> Callable[[str], bytes]:
         scheme = urlparse(blob_path).scheme

@@ -17,8 +17,6 @@ from concurrent.futures import ThreadPoolExecutor
 
 from beartype.typing import Any, Callable, Sequence, TypeVar
 
-from superlinked.framework.common.settings import Settings
-
 ReturnT = TypeVar("ReturnT")
 
 MAX_WORKER_COUNT = 32
@@ -36,9 +34,23 @@ class ConcurrentExecutor:
         if not hasattr(self, "_executor"):
             self._executor = ThreadPoolExecutor(max_workers=ConcurrentExecutor._determine_optimal_workers())
 
-    def execute(self, func: Callable[..., ReturnT], args_list: Sequence[Sequence[Any]]) -> Sequence[ReturnT]:
-        if not Settings().SUPERLINKED_EXPERIMENTAL_ENABLE_CONCURRENT_DAG_EVALUATION or len(args_list) <= 1:
-            return [func(*args) for args in args_list]
+    def execute(
+        self, func: Callable[..., ReturnT], args_list: Sequence[Sequence[Any]], condition: bool
+    ) -> Sequence[ReturnT]:
+        if condition:
+            return self.execute_concurrently(func, args_list)
+        return self.execute_sequentially(func, args_list)
+
+    def execute_sequentially(
+        self, func: Callable[..., ReturnT], args_list: Sequence[Sequence[Any]]
+    ) -> Sequence[ReturnT]:
+        return [func(*args) for args in args_list]
+
+    def execute_concurrently(
+        self, func: Callable[..., ReturnT], args_list: Sequence[Sequence[Any]]
+    ) -> Sequence[ReturnT]:
+        if len(args_list) <= 1:
+            return self.execute_sequentially(func, args_list)
         futures = [self._executor.submit(func, *args) for args in args_list]
         return [future.result() for future in futures]
 
