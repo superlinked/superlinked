@@ -88,6 +88,8 @@ class OpenClipManager(ModelManager):
             return torch.Tensor()
         tokenizer = OpenClipModelCache.initialize_tokenizer(self._model_name)
         texts_tokenized = self._move_tensor_to_model_device(embedding_model, tokenizer(texts))
+        if not GpuEmbeddingUtil.should_use_full_precision_for_input(len(texts)):
+            texts_tokenized = texts_tokenized.half()
         return embedding_model.encode_text(texts_tokenized)
 
     @time_execution

@@ -118,7 +118,10 @@ class LoggerConfigurator:
 
     @staticmethod
     def _get_common_processors(expose_pii: bool = False) -> list[Processor]:
-        shared_processors: list[Processor] = [
+        processors: list[Processor] = [merge_contextvars]
+        if not expose_pii:
+            processors.append(CustomStructlogProcessor.filter_pii)
+        return processors + [
             merge_contextvars,
             CustomStructlogProcessor.evaluate_lazy_arguments,
             structlog.stdlib.add_logger_name,
@@ -130,6 +133,3 @@ class LoggerConfigurator:
             structlog.processors.StackInfoRenderer(),
             structlog.processors.UnicodeDecoder(),
         ]
-        if not expose_pii:
-            shared_processors.append(CustomStructlogProcessor.filter_pii)
-        return shared_processors

@@ -39,7 +39,7 @@ class OpenClipModelCache:
                 cache_dir=str(cache_dir),
             ),
         )
-        if not GpuEmbeddingUtil.should_use_full_precision_for_model():
+        if not GpuEmbeddingUtil.should_use_full_precision(device):
             model = model.half()
         return model, preprocess_val
 

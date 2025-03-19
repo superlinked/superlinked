@@ -55,7 +55,7 @@ class SentenceTransformerModelCache:
         model_cache_dir: Path,
     ) -> SentenceTransformer:
         cls._ensure_model_downloaded(model_name, model_cache_dir)
-        model_kwargs = cls._get_model_kwargs()
+        model_kwargs = cls._get_model_kwargs(device)
         try:
             return SentenceTransformer(
                 model_name_or_path=model_name,
@@ -77,8 +77,8 @@ class SentenceTransformerModelCache:
             )
 
     @classmethod
-    def _get_model_kwargs(cls) -> dict[str, Any]:
-        if GpuEmbeddingUtil.should_use_full_precision_for_model():
+    def _get_model_kwargs(cls, device: str) -> dict[str, Any]:
+        if GpuEmbeddingUtil.should_use_full_precision(device):
             return {}
         return {"torch_dtype": "float16"}
 
