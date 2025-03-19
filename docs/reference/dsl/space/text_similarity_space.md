@@ -27,7 +27,7 @@ Functions
 Classes
 -------
 
-`TextSimilaritySpace(text: superlinked.framework.common.schema.schema_object.String | superlinked.framework.common.dag.chunking_node.ChunkingNode | None | collections.abc.Sequence[superlinked.framework.common.schema.schema_object.String | superlinked.framework.common.dag.chunking_node.ChunkingNode | None], model: str, cache_size: int = 10000, model_cache_dir: pathlib.Path | None = None)`
+`TextSimilaritySpace(text: superlinked.framework.common.schema.schema_object.String | superlinked.framework.common.dag.chunking_node.ChunkingNode | None | collections.abc.Sequence[superlinked.framework.common.schema.schema_object.String | superlinked.framework.common.dag.chunking_node.ChunkingNode | None], model: str, cache_size: int = 10000, model_cache_dir: pathlib.Path | None = None, model_handler: superlinked.framework.common.space.config.embedding.text_similarity_embedding_config.TextModelHandler = TextModelHandler.SENTENCE_TRANSFORMERS)`
 :   A text similarity space is used to create vectors from documents in order to search in them
     later on. We only support (SentenceTransformers)[https://www.sbert.net/] models as they have
     finetuned pooling to encode longer text sequences most efficiently.
@@ -42,6 +42,8 @@ Classes
             Set it to 0, to disable caching. Defaults to 10000.
         model_cache_dir (Path | None, optional): Directory to cache downloaded models.
             If None, uses the default cache directory. Defaults to None.
+        model_handler (TextModelHandler, optional): The handler for the model,
+            defaults to ModelHandler.SENTENCE_TRANSFORMERS.
 
     ### Ancestors (in MRO)
 
