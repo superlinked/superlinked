@@ -24,9 +24,6 @@ from superlinked.framework.common.space.config.embedding.text_similarity_embeddi
 )
 from superlinked.framework.common.space.embedding.embedding import Embedding
 from superlinked.framework.common.space.embedding.embedding_cache import EmbeddingCache
-from superlinked.framework.common.space.embedding.sentence_transformer_manager import (
-    SentenceTransformerManager,
-)
 
 logger = structlog.getLogger()
 
@@ -37,7 +34,9 @@ class SentenceTransformerEmbedding(Embedding[str, TextSimilarityEmbeddingConfig]
         embedding_config: TextSimilarityEmbeddingConfig,
     ) -> None:
         super().__init__(embedding_config)
-        self.manager = SentenceTransformerManager(self._config.model_name, self._config.model_cache_dir)
+        self.manager = embedding_config.text_model_handler.create_manager(
+            embedding_config.model_name, embedding_config.model_cache_dir
+        )
         self._cache = EmbeddingCache(self._config.cache_size)
 
     @override

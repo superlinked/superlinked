@@ -23,6 +23,7 @@ from torchvision.transforms.transforms import Compose  # type:ignore[import-unty
 
 from superlinked.framework.common.settings import Settings
 from superlinked.framework.common.util.execution_timer import time_execution
+from superlinked.framework.common.util.gpu_embedding_util import GpuEmbeddingUtil
 
 
 class OpenClipModelCache:
@@ -32,8 +33,14 @@ class OpenClipModelCache:
     def initialize_model(model_name: str, device: str, cache_dir: Path) -> tuple[CLIP, Compose]:
         model, _, preprocess_val = cast(
             tuple[CLIP, Any, Compose],
-            create_model_and_transforms(model_name, device=device, cache_dir=str(cache_dir)),
+            create_model_and_transforms(
+                model_name,
+                device=device,
+                cache_dir=str(cache_dir),
+            ),
         )
+        if not GpuEmbeddingUtil.should_use_full_precision_for_model():
+            model = model.half()
         return model, preprocess_val
 
     @staticmethod

@@ -96,6 +96,8 @@ class OpenClipManager(ModelManager):
             return torch.Tensor()
         combined_images_tensor = torch.stack([preprocess_val(image) for image in images])
         images_to_process = self._move_tensor_to_model_device(embedding_model, combined_images_tensor)
+        if not GpuEmbeddingUtil.should_use_full_precision_for_input(len(images)):
+            images_to_process = images_to_process.half()
         return embedding_model.encode_image(images_to_process)
 
     def _move_tensor_to_model_device(self, embedding_model: CLIP, tensor: torch.Tensor) -> torch.Tensor:

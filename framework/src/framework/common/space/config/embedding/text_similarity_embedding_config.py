@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
 
 from beartype.typing import Any
@@ -21,6 +22,24 @@ from typing_extensions import override
 from superlinked.framework.common.space.config.embedding.embedding_config import (
     EmbeddingConfig,
 )
+from superlinked.framework.common.space.embedding.hugging_face_manager import (
+    HuggingFaceManager,
+)
+from superlinked.framework.common.space.embedding.sentence_transformer_manager import (
+    SentenceTransformerManager,
+)
+
+
+class TextModelHandler(Enum):
+    SENTENCE_TRANSFORMERS = "sentence_transformers"
+    HUGGING_FACE = "hugging_face"
+
+    def create_manager(
+        self, model_name: str, model_cache_dir: Path | None = None
+    ) -> SentenceTransformerManager | HuggingFaceManager:
+        if self == TextModelHandler.SENTENCE_TRANSFORMERS:
+            return SentenceTransformerManager(model_name, model_cache_dir)
+        return HuggingFaceManager(model_name)
 
 
 @dataclass(frozen=True)
@@ -29,6 +48,7 @@ class TextSimilarityEmbeddingConfig(EmbeddingConfig[str]):
     model_cache_dir: Path | None
     cache_size: int
     length_to_use: int
+    text_model_handler: TextModelHandler = TextModelHandler.SENTENCE_TRANSFORMERS
 
     def __post_init__(self) -> None:
         if self.cache_size < 0:

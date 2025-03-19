@@ -25,6 +25,20 @@ MPS_DEVICE_TYPE = "mps"
 
 class GpuEmbeddingUtil:
     @classmethod
+    def should_use_full_precision_for_model(cls) -> bool:
+        return (
+            Settings().SUPERLINKED_DISABLE_HALF_PRECISION_EMBEDDING
+            or cls._get_available_gpu_device() == CPU_DEVICE_TYPE
+        )
+
+    @classmethod
+    def should_use_full_precision_for_input(cls, number_of_embeddings: int) -> bool:
+        return (
+            Settings().SUPERLINKED_DISABLE_HALF_PRECISION_EMBEDDING
+            or cls.get_device_type(number_of_embeddings) == CPU_DEVICE_TYPE
+        )
+
+    @classmethod
     def get_device_type(cls, number_of_embeddings: int) -> str:
         if cls._should_use_gpu(number_of_embeddings):
             return cls._get_available_gpu_device()

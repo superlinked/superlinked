@@ -19,7 +19,7 @@ from pathlib import Path
 from time import sleep
 
 import structlog
-from beartype.typing import Sequence
+from beartype.typing import Any, Sequence
 from filelock import FileLock
 from huggingface_hub import snapshot_download
 from huggingface_hub.errors import LocalEntryNotFoundError
@@ -32,7 +32,10 @@ from superlinked.framework.common.space.embedding.model_manager import (
     SENTENCE_TRANSFORMERS_ORG_NAME,
 )
 from superlinked.framework.common.util.execution_timer import time_execution
-from superlinked.framework.common.util.gpu_embedding_util import CPU_DEVICE_TYPE
+from superlinked.framework.common.util.gpu_embedding_util import (
+    CPU_DEVICE_TYPE,
+    GpuEmbeddingUtil,
+)
 
 logger = structlog.getLogger()
 
@@ -52,6 +55,7 @@ class SentenceTransformerModelCache:
         model_cache_dir: Path,
     ) -> SentenceTransformer:
         cls._ensure_model_downloaded(model_name, model_cache_dir)
+        model_kwargs = cls._get_model_kwargs()
         try:
             return SentenceTransformer(
                 model_name_or_path=model_name,
@@ -59,6 +63,7 @@ class SentenceTransformerModelCache:
                 device=device,
                 cache_folder=str(model_cache_dir),
                 local_files_only=True,
+                model_kwargs=model_kwargs,
             )
         except (OSError, AttributeError, TypeError):
             logger.exception("Failed to use downloaded model, re-downloading.")
@@ -68,7 +73,14 @@ class SentenceTransformerModelCache:
                 device=device,
                 cache_folder=str(model_cache_dir),
                 local_files_only=False,
+                model_kwargs=model_kwargs,
             )
+
+    @classmethod
+    def _get_model_kwargs(cls) -> dict[str, Any]:
+        if GpuEmbeddingUtil.should_use_full_precision_for_model():
+            return {}
+        return {"torch_dtype": "float16"}
 
     @classmethod
     @lru_cache(maxsize=32)

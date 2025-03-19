@@ -28,6 +28,7 @@ from superlinked.framework.common.space.config.aggregation.aggregation_config im
     VectorAggregationConfig,
 )
 from superlinked.framework.common.space.config.embedding.text_similarity_embedding_config import (
+    TextModelHandler,
     TextSimilarityEmbeddingConfig,
 )
 from superlinked.framework.common.space.config.normalization.normalization_config import (
@@ -35,9 +36,6 @@ from superlinked.framework.common.space.config.normalization.normalization_confi
 )
 from superlinked.framework.common.space.config.transformation_config import (
     TransformationConfig,
-)
-from superlinked.framework.common.space.embedding.sentence_transformer_manager import (
-    SentenceTransformerManager,
 )
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.space.has_space_field_set import HasSpaceFieldSet
@@ -62,6 +60,7 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
         model: str,
         cache_size: int = DEFAULT_CACHE_SIZE,
         model_cache_dir: Path | None = None,
+        model_handler: TextModelHandler = TextModelHandler.SENTENCE_TRANSFORMERS,
     ) -> None:
         """
         Initialize the TextSimilaritySpace.
@@ -74,13 +73,16 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
                 Set it to 0, to disable caching. Defaults to 10000.
             model_cache_dir (Path | None, optional): Directory to cache downloaded models.
                 If None, uses the default cache directory. Defaults to None.
+            model_handler (TextModelHandler, optional): The handler for the model,
+                defaults to ModelHandler.SENTENCE_TRANSFORMERS.
         """
         unchecked_texts: list[ChunkingNode | String] = self._fields_to_non_none_sequence(text)
         text_fields = [self._get_root(unchecked_text) for unchecked_text in unchecked_texts]
         super().__init__(text_fields, String)
         self.text = SpaceFieldSet[str](self, set(text_fields))
-        length = SentenceTransformerManager(model, model_cache_dir).calculate_length()
-        self._transformation_config = self._init_transformation_config(model, model_cache_dir, cache_size, length)
+        self._transformation_config = self._init_transformation_config(
+            model, model_cache_dir, cache_size, model_handler
+        )
         self._schema_node_map: dict[SchemaObject, EmbeddingNode[Vector, str]] = {
             self._get_root(unchecked_text).schema_obj: self._generate_embedding_node(
                 unchecked_text, self._transformation_config
@@ -144,9 +146,10 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
         return False
 
     def _init_transformation_config(
-        self, model: str, model_cache_dir: Path | None, cache_size: int, length: int
+        self, model: str, model_cache_dir: Path | None, cache_size: int, model_handler: TextModelHandler
     ) -> TransformationConfig[Vector, str]:
-        embedding_config = TextSimilarityEmbeddingConfig(str, model, model_cache_dir, cache_size, length)
+        length = model_handler.create_manager(model, model_cache_dir).calculate_length()
+        embedding_config = TextSimilarityEmbeddingConfig(str, model, model_cache_dir, cache_size, length, model_handler)
         aggregation_config = VectorAggregationConfig(Vector)
         normalization_config = L2NormConfig()
         return TransformationConfig(normalization_config, aggregation_config, embedding_config)
