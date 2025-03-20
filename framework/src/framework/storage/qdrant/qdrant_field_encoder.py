@@ -22,6 +22,9 @@ from superlinked.framework.common.storage.exception import EncoderException
 from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.field.field_data import FieldData
 from superlinked.framework.common.storage.field.field_data_type import FieldDataType
+from superlinked.framework.common.storage.search_index.vector_component_precision import (
+    VectorComponentPrecision,
+)
 
 QdrantEncodedTypes = str | float | int | Sequence[float] | dict[str, Any] | Sequence[str]
 QdrantEncodedT = TypeVar("QdrantEncodedT", bound=QdrantEncodedTypes)
@@ -49,6 +52,7 @@ class QdrantFieldEncoder:
             FieldDataType.STRING_LIST: self._decode_base_type,
             FieldDataType.VECTOR: self._decode_vector,
         }
+        self.__vector_precision_type = VectorComponentPrecision.init_from_settings().to_np_type()
 
     def _encode_base_type(self, base_type: QdrantEncodedT) -> QdrantEncodedT:
         return base_type
@@ -65,9 +69,9 @@ class QdrantFieldEncoder:
     def _encode_vector(self, vector: Vector) -> list[float]:
         np_vector: np.ndarray
         if isinstance(vector.value, np.ndarray):
-            np_vector = vector.value.astype(np.float32)
+            np_vector = vector.value.astype(self.__vector_precision_type)
         else:
-            np_vector = np.array(vector.value, dtype=np.float32)
+            np_vector = np.array(vector.value, dtype=self.__vector_precision_type)
         return np_vector.tolist()
 
     def _decode_vector(self, vector: list[float]) -> Vector:

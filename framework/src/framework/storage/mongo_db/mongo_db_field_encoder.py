@@ -23,6 +23,9 @@ from superlinked.framework.common.storage.exception import EncoderException
 from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.field.field_data import FieldData
 from superlinked.framework.common.storage.field.field_data_type import FieldDataType
+from superlinked.framework.common.storage.search_index.vector_component_precision import (
+    VectorComponentPrecision,
+)
 
 MongoDBEncodedTypes = str | float | int | Sequence[float]
 
@@ -49,6 +52,7 @@ class MongoDBFieldEncoder:
             FieldDataType.STRING_LIST: self._decode_string_list,
             FieldDataType.VECTOR: self._decode_vector,
         }
+        self.__vector_precision_type = VectorComponentPrecision.init_from_settings().to_np_type()
 
     def _encode_blob(self, blob: BlobInformation) -> str | None:
         return blob.path
@@ -93,12 +97,12 @@ class MongoDBFieldEncoder:
         return string_list
 
     def _encode_vector(self, vector: Vector) -> Sequence[float]:
-        return vector.value.astype(np.float32).tolist()
+        return vector.value.astype(self.__vector_precision_type).tolist()
 
     def _decode_vector(self, vector: Any) -> Vector:
         if not isinstance(vector, list):
             raise NotImplementedError(f"Cannot decode non-list type vector, got: {type(vector)}")
-        return Vector(np.array(vector).astype(np.float32).tolist())
+        return Vector(np.array(vector).astype(self.__vector_precision_type).tolist())
 
     def encode_field(self, field: FieldData) -> MongoDBEncodedTypes:
         if encoder := self._encode_map.get(field.data_type):

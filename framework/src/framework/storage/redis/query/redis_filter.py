@@ -15,83 +15,42 @@
 from dataclasses import dataclass
 
 from beartype.typing import Any
+from redisvl.query.filter import FilterExpression, FilterOperator, Num, Tag, Text
 
-from superlinked.framework.common.interface.comparison_operation_type import (
-    ComparisonOperationType,
-)
+from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.field.field_data_type import FieldDataType
 from superlinked.framework.common.storage.query.vdb_filter import VDBFilter
+from superlinked.framework.storage.redis.query.redis_filter_information import (
+    RedisFilterInformation,
+)
 
-OR_OPERATOR = "|"
-AND_OPERATOR = " "  # it is really a space
-
-NUMBER_OPERATOR_MAP: dict[ComparisonOperationType, str] = {
-    ComparisonOperationType.EQUAL: "@%s:[%s %s]",
-    ComparisonOperationType.NOT_EQUAL: "(-@%s:[%s %s])",
-    ComparisonOperationType.GREATER_THAN: "@%s:[(%s +inf]",
-    ComparisonOperationType.LESS_THAN: "@%s:[-inf (%s]",
-    ComparisonOperationType.GREATER_EQUAL: "@%s:[%s +inf]",
-    ComparisonOperationType.LESS_EQUAL: "@%s:[-inf %s]",
-}
-
-TEXT_OPERATOR_MAP: dict[ComparisonOperationType, str] = {
-    ComparisonOperationType.EQUAL: '@%s:"%s"',
-    ComparisonOperationType.NOT_EQUAL: '-@%s:"%s"',
-}
-
-STRING_LIST_OPERATOR_MAP: dict[ComparisonOperationType, str] = {
-    ComparisonOperationType.CONTAINS: "@%s:{%s}",
-    ComparisonOperationType.NOT_CONTAINS: "-@%s:{%s}",
-    ComparisonOperationType.CONTAINS_ALL: "@%s:{%s}",  # splitting it into multiple CONTAINS
+REDIS_FIELD_TYPE_BY_FIELD_DATA_TYPE: dict[FieldDataType, type[Num | Text | Tag]] = {
+    FieldDataType.INT: Num,
+    FieldDataType.DOUBLE: Num,
+    FieldDataType.STRING: Text,
+    FieldDataType.STRING_LIST: Tag,
 }
 
 
 @dataclass(frozen=True)
 class RedisFilter(VDBFilter):
-    def get_prefix(self) -> str:
-        operator_map = self._get_operator_map()
-        if self.op == ComparisonOperationType.IN:
-            return self._join_operator(operator_map, ComparisonOperationType.EQUAL, OR_OPERATOR)
-        if self.op == ComparisonOperationType.NOT_IN:
-            return self._join_operator(operator_map, ComparisonOperationType.NOT_EQUAL, AND_OPERATOR)
-        if self.op in [
-            ComparisonOperationType.CONTAINS,
-            ComparisonOperationType.NOT_CONTAINS,
-        ]:
-            value_text = f" {OR_OPERATOR} ".join(f'"{value}"' for value in self.field_value.decode("utf-8").split(", "))
-            return self._fill_template(operator_map, self.op, value_text)
-        if self.op == ComparisonOperationType.CONTAINS_ALL:
-            values = [
-                self._fill_template(operator_map, self.op, f'"{value}"')
-                for value in self.field_value.decode("utf-8").split(", ")
-            ]
-            value_text = " ".join(values)
-            return f"({value_text})"
-        if self.op in operator_map:
-            return self._fill_template(operator_map, self.op, self.field_value)
-        raise NotImplementedError(f"Unsupported comparison operation: {self.op}")
-
-    def _get_operator_map(self) -> dict[ComparisonOperationType, str]:
-        if self.field.data_type == FieldDataType.STRING:
-            return TEXT_OPERATOR_MAP
-        if self.field.data_type in [FieldDataType.INT, FieldDataType.DOUBLE]:
-            return NUMBER_OPERATOR_MAP
-        if self.field.data_type == FieldDataType.STRING_LIST:
-            return STRING_LIST_OPERATOR_MAP
-        raise NotImplementedError(f"Unsupported filter field type: {self.field.data_type}")
-
-    def _join_operator(self, operator_map: dict, op: ComparisonOperationType, join_operator: str) -> str:
-        value_text = join_operator.join([self._fill_template(operator_map, op, value) for value in self.field_value])
-        return f"({value_text})"
-
-    def _fill_template(self, operator_map: dict, op: ComparisonOperationType, value: Any) -> str:
-        three_member_ops = [
-            ComparisonOperationType.EQUAL,
-            ComparisonOperationType.NOT_EQUAL,
+    def to_expression(self) -> FilterExpression:
+        filter_info = RedisFilterInformation.get(self.op)
+        values = filter_info.get_value_mapper_fn()(self.field_value)
+        filter_expressions = [
+            self._calculate_expression(self.field, filter_info.filter_operator, value) for value in values
         ]
-        template_args = (
-            (self.field.name, value, value)
-            if operator_map == NUMBER_OPERATOR_MAP and op in three_member_ops
-            else (self.field.name, value)
-        )
-        return f"({operator_map[op] % template_args})"
+        combined_expression = filter_info.get_combination_fn()(filter_expressions)
+        return combined_expression
+
+    @classmethod
+    def _calculate_expression(cls, field: Field, filter_operator: FilterOperator, value: Any) -> FilterExpression:
+        redis_field = cls._init_filter_field(field)
+        redis_field._set_value(value, redis_field.SUPPORTED_VAL_TYPES, filter_operator)
+        return FilterExpression(str(redis_field))
+
+    @classmethod
+    def _init_filter_field(cls, field: Field) -> Num | Text | Tag:
+        if redis_field_type := REDIS_FIELD_TYPE_BY_FIELD_DATA_TYPE.get(field.data_type):
+            return redis_field_type(field.name)
+        raise NotImplementedError(f"Unsupported {FieldDataType.__name__}: {field.data_type}")

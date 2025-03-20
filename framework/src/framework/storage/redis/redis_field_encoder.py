@@ -24,6 +24,9 @@ from superlinked.framework.common.storage.exception import EncoderException
 from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.field.field_data import FieldData
 from superlinked.framework.common.storage.field.field_data_type import FieldDataType
+from superlinked.framework.common.storage.search_index.vector_component_precision import (
+    VectorComponentPrecision,
+)
 
 RedisEncodedTypes = str | float | int | list[float] | bytes
 
@@ -50,6 +53,7 @@ class RedisFieldEncoder:
             FieldDataType.STRING_LIST: self._decode_string_list,
             FieldDataType.VECTOR: self._decode_vector,
         }
+        self.__vector_precision_type = VectorComponentPrecision.init_from_settings().to_np_type()
 
     def _encode_blob(self, blob: BlobInformation) -> str | None:
         return blob.path
@@ -67,7 +71,8 @@ class RedisFieldEncoder:
         return self._encode_vector(Vector(float_list))
 
     def _decode_float_list(self, float_list: bytes) -> list[float]:
-        return self._decode_vector(float_list).value.tolist()
+        vector = self._decode_vector(float_list)
+        return [float(x) for x in vector.value.tolist()]
 
     def _encode_int(self, int_: int) -> int:
         return int_
@@ -97,15 +102,15 @@ class RedisFieldEncoder:
     def _encode_vector(self, vector: Vector) -> bytes:
         np_vector: np.ndarray
         if isinstance(vector.value, np.ndarray):
-            np_vector = vector.value.astype(np.float32)
+            np_vector = vector.value.astype(self.__vector_precision_type)
         else:
-            np_vector = np.array(vector.value, dtype=np.float32)
+            np_vector = np.array(vector.value, dtype=self.__vector_precision_type)
         return np_vector.tobytes()
 
     def _decode_vector(self, vector: bytes) -> Vector:
         if not isinstance(vector, bytes):
             raise NotImplementedError(f"Cannot decode non-bytes type vector, got: {type(vector)}")
-        return Vector(np.frombuffer(vector, np.float32).tolist())
+        return Vector(np.frombuffer(vector, self.__vector_precision_type).tolist())
 
     def encode_field(self, field: FieldData) -> RedisEncodedTypes:
         if encoder := self._encode_map.get(field.data_type):

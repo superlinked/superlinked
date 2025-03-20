@@ -29,8 +29,8 @@ from superlinked.framework.common.storage.search_index.manager.search_index_mana
 )
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
 from superlinked.framework.storage.common.vdb_settings import VDBSettings
-from superlinked.framework.storage.redis.query.redis_query_builder import (
-    VECTOR_DISTANCE_ALIAS,
+from superlinked.framework.storage.redis.query.redis_vector_query_params import (
+    DISTANCE_ID,
 )
 from superlinked.framework.storage.redis.redis_connection_params import (
     RedisConnectionParams,
@@ -127,7 +127,7 @@ class RedisVDBConnector(VDBConnector):
                     document["extra_attributes"], vdb_knn_search_params.fields_to_return
                 ),
                 self._convert_distance_to_score(
-                    self._encoder._decode_double(document["extra_attributes"][VECTOR_DISTANCE_ALIAS])
+                    self._encoder._decode_double(document["extra_attributes"][DISTANCE_ID])
                 ),
             )
             for document in result["results"]

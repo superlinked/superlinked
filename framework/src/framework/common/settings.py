@@ -68,7 +68,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     @override
-    def model_post_init(self, __context: Any) -> None:
+    def model_post_init(self, __context: Any, /) -> None:
         self.QUEUE_CLASS_ARGS = self.__parse_class_args(self.QUEUE_CLASS_ARGS_STR)  # pylint: disable=invalid-name
         self.__warn_for_incomplete_queue_params()
 

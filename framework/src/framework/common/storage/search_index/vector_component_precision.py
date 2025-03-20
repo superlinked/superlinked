@@ -12,8 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 from enum import Enum
+
+import numpy as np
+
+from superlinked.framework.common.settings import Settings
 
 
 class VectorComponentPrecision(Enum):
     FLOAT32 = "FLOAT32"
+    FLOAT16 = "FLOAT16"
+
+    def to_np_type(self) -> type[np.float32] | type[np.float16]:
+        if self is VectorComponentPrecision.FLOAT32:
+            return np.float32
+        if self is VectorComponentPrecision.FLOAT16:
+            return np.float16
+        raise ValueError(f"Unsupported vector component precision: {self}")
+
+    @staticmethod
+    def init_from_settings() -> VectorComponentPrecision:
+        return (
+            VectorComponentPrecision.FLOAT32
+            if Settings().SUPERLINKED_DISABLE_HALF_PRECISION_EMBEDDING
+            else VectorComponentPrecision.FLOAT16
+        )

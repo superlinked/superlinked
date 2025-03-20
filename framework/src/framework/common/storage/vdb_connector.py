@@ -45,12 +45,11 @@ class VDBConnector(ABC):
         self,
         distance_metric: DistanceMetric = DistanceMetric.INNER_PRODUCT,
         search_algorithm: SearchAlgorithm = SearchAlgorithm.FLAT,
-        vector_coordinate_type: VectorComponentPrecision = VectorComponentPrecision.FLOAT32,
         index_configs: Sequence[IndexConfig] | None = None,
     ) -> None:
         self._distance_metric = distance_metric
         self._search_algorithm = search_algorithm
-        self._vector_coordinate_type = vector_coordinate_type
+        self._vector_coordinate_type = VectorComponentPrecision.init_from_settings()
         self._index_configs: dict[str, IndexConfig] = {
             index_config.index_name: index_config for index_config in (index_configs or [])
         }
