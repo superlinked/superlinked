@@ -18,13 +18,15 @@ import structlog
 from beartype.typing import Sequence
 from numpy import ndarray
 from PIL.Image import Image
-from sentence_transformers import SentenceTransformer
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.space.embedding.exception import EmbeddingException
 from superlinked.framework.common.space.embedding.model_manager import ModelManager
+from superlinked.framework.common.space.embedding.sentence_transformer import (
+    SentenceTransformer,
+)
 from superlinked.framework.common.space.embedding.sentence_transformer_model_cache import (
     SentenceTransformerModelCache,
 )
