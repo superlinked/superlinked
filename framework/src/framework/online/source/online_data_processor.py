@@ -62,7 +62,7 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
         id_field_names_by_schema: dict[SchemaObject, str] = {
             schema: schema.id.name for schema in index.schemas if isinstance(schema, IdSchemaObject)
         }
-        for field in index._fields:
+        for field in index.non_nullable_fields:
             field_name = field.name
             field_schema = field.schema_obj
             if id_field_names_by_schema.get(field_schema) != field_name:

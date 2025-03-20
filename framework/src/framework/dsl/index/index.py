@@ -15,7 +15,7 @@
 import datetime
 
 import structlog
-from beartype.typing import Sequence
+from beartype.typing import Sequence, cast
 from typing_extensions import Annotated
 
 from superlinked.framework.common.const import constants
@@ -56,7 +56,7 @@ from superlinked.framework.dsl.space.space import Space
 logger = structlog.getLogger()
 
 ValidatedSpaceList = Annotated[list[Space], TypeValidator.list_validator(Space)]
-ValidatedSchemaFieldList = Annotated[list[SchemaField], TypeValidator.list_validator(SchemaField)]
+ValidatedSchemaFieldList = Annotated[list[SchemaField | None], TypeValidator.list_validator(SchemaField)]
 ValidatedEffectList = Annotated[list[Effect], TypeValidator.list_validator(Effect)]
 
 
@@ -149,6 +149,10 @@ class Index:  # pylint: disable=too-many-instance-attributes
         return self.__fields
 
     @property
+    def non_nullable_fields(self) -> Sequence[SchemaField]:
+        return [field for field in self.__fields if not field.nullable]
+
+    @property
     def _node_id(self) -> str:
         return self.__node.node_id
 
@@ -208,12 +212,14 @@ class Index:  # pylint: disable=too-many-instance-attributes
             if not (schema in seen or seen_add(schema))
         ]
 
-    def __init_fields(self, fields: SchemaField | Sequence[SchemaField] | None) -> Sequence[SchemaField]:
+    def __init_fields(self, fields: SchemaField | Sequence[SchemaField | None] | None) -> Sequence[SchemaField]:
         if fields is None:
             return []
         if not isinstance(fields, Sequence):
             return [fields]
-        return fields
+        if None in fields:
+            raise ValidationException("Fields cannot contain None values")
+        return cast(Sequence[SchemaField], fields)
 
     def __init_effects_with_schema(
         self, effects: Effect | list[Effect] | None, spaces: list[Space]
