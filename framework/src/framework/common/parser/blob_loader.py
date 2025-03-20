@@ -33,6 +33,8 @@ from superlinked.framework.online.dag.concurrent_executor import ConcurrentExecu
 
 logger = structlog.getLogger()
 
+GCS_URL_IDENTIFIER = "storage.cloud.google.com"
+
 
 class BlobLoader:
     def __init__(self, allow_bytes: bool, blob_handler_config: BlobHandlerConfig | None = None) -> None:
@@ -100,10 +102,23 @@ class BlobLoader:
         try:
             response = requests.get(url, timeout=Settings().REQUEST_TIMEOUT)
             response.raise_for_status()
+            BlobLoader._validate_response_content(url, response)
             loaded_file: bytes | Any = response.content
         except requests.RequestException as exc:
             raise ValueError(f"Failed to load URL: {url}.") from exc
         return loaded_file
+
+    @staticmethod
+    def _validate_response_content(url: str, response: requests.Response) -> None:
+        content_type = response.headers.get("Content-Type", "").lower()
+        if "html" not in content_type:
+            return
+        if GCS_URL_IDENTIFIER in url:
+            raise ValueError(
+                f"Unable to access non-public Google Cloud Storage bucket: {url}. "
+                "Configure GCS blob handler to access private buckets."
+            )
+        raise ValueError(f"Unexpected HTML content for URL: {url}")
 
     @staticmethod
     def load_from_local(path: str) -> bytes:
