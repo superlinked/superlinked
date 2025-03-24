@@ -200,8 +200,11 @@ class QdrantVDBConnector(VDBConnector):
         return EntityData(
             entity.id_,
             {
-                field.name: self._encoder.decode_field(field, all_fields_to_return.get(field.name))
-                for field in entity.fields.values()
+                field.name: self._encoder.decode_field(field, field_value)
+                for field, field_value in [
+                    (field, all_fields_to_return.get(field.name)) for field in entity.fields.values()
+                ]
+                if field_value is not None
             },
         )
 
