@@ -13,14 +13,14 @@ Classes
     * superlinked.framework.dsl.query.query_clause.query_clause.QueryClause
     * abc.ABC
 
-    ### Class variables
-
-    `client_config: superlinked.framework.common.nlq.open_ai.OpenAIClientConfig`
-    :
-
     ### Static methods
 
     `from_param(natural_query: StringParamType, client_config: OpenAIClientConfig) ‑> superlinked.framework.dsl.query.query_clause.nlq_clause.NLQClause`
+    :
+
+    ### Instance variables
+
+    `client_config: superlinked.framework.common.nlq.open_ai.OpenAIClientConfig`
     :
 
     ### Methods

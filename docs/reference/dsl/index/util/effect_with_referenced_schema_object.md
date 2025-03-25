@@ -11,9 +11,17 @@ Classes
 
     * typing.Generic
 
-    ### Class variables
+    ### Static methods
+
+    `from_base_effect(base_effect: Effect, schemas: set[SchemaObject]) ‑> superlinked.framework.dsl.index.util.effect_with_referenced_schema_object.EffectWithReferencedSchemaObject`
+    :
+
+    ### Instance variables
 
     `base_effect: superlinked.framework.dsl.index.effect.Effect[~AggregationInputT, ~EmbeddingInputT]`
+    :
+
+    `dag_effect: DagEffect`
     :
 
     `event_schema: superlinked.framework.common.schema.event_schema_object.EventSchemaObject`
@@ -23,14 +31,4 @@ Classes
     :
 
     `resolved_affecting_schema_reference: superlinked.framework.common.dag.resolved_schema_reference.ResolvedSchemaReference`
-    :
-
-    ### Static methods
-
-    `from_base_effect(base_effect: Effect, schemas: set[SchemaObject]) ‑> superlinked.framework.dsl.index.util.effect_with_referenced_schema_object.EffectWithReferencedSchemaObject`
-    :
-
-    ### Instance variables
-
-    `dag_effect: DagEffect`
     :

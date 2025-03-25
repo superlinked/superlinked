@@ -11,7 +11,12 @@ Classes
 
     * typing.Generic
 
-    ### Class variables
+    ### Static methods
+
+    `from_filtered_effects(filtered_effects: Sequence[EffectWithReferencedSchemaObject[AggregationInputT, EmbeddingInputT]]) ‑> superlinked.framework.dsl.index.util.aggregation_effect_group.AggregationEffectGroup[~AggregationInputT, ~EmbeddingInputT]`
+    :
+
+    ### Instance variables
 
     `affected_schema: superlinked.framework.common.schema.schema_object.SchemaObject`
     :
@@ -20,9 +25,4 @@ Classes
     :
 
     `space: superlinked.framework.dsl.space.space.Space[~AggregationInputT, ~EmbeddingInputT]`
-    :
-
-    ### Static methods
-
-    `from_filtered_effects(filtered_effects: Sequence[EffectWithReferencedSchemaObject[AggregationInputT, EmbeddingInputT]]) ‑> superlinked.framework.dsl.index.util.aggregation_effect_group.AggregationEffectGroup[~AggregationInputT, ~EmbeddingInputT]`
     :

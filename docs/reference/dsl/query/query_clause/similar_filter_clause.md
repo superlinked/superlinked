@@ -14,14 +14,6 @@ Classes
     * superlinked.framework.dsl.query.query_clause.query_clause.NLQCompatible
     * abc.ABC
 
-    ### Class variables
-
-    `field_set: superlinked.framework.dsl.space.space_field_set.SpaceFieldSet`
-    :
-
-    `weight_param: superlinked.framework.dsl.query.typed_param.TypedParam | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.typed_param.TypedParam]`
-    :
-
     ### Static methods
 
     `from_param(spaces: Sequence[Space], field_set: SpaceFieldSet, param: ParamType, weight: NumericParamType) ‑> superlinked.framework.dsl.query.query_clause.similar_filter_clause.SimilarFilterClause`
@@ -32,7 +24,13 @@ Classes
     `annotation_by_space_annotation: dict[str, str]`
     :
 
+    `field_set: superlinked.framework.dsl.space.space_field_set.SpaceFieldSet`
+    :
+
     `params: Sequence[TypedParam | Evaluated[TypedParam]]`
+    :
+
+    `weight_param: superlinked.framework.dsl.query.typed_param.TypedParam | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.typed_param.TypedParam]`
     :
 
     ### Methods

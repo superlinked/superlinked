@@ -15,7 +15,7 @@ Classes
 
     * typing.Generic
 
-    ### Class variables
+    ### Instance variables
 
     `affected_schema_reference: superlinked.framework.common.schema.event_schema_object.SchemaReference`
     :

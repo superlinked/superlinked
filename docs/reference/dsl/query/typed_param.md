@@ -38,14 +38,6 @@ Classes
 `TypedParam(param: Param, valid_param_value_types: Sequence[TypeDescriptor])`
 :   TypedParam(param: 'Param', valid_param_value_types: 'Sequence[TypeDescriptor]')
 
-    ### Class variables
-
-    `param: superlinked.framework.dsl.query.param.Param`
-    :
-
-    `valid_param_value_types: Sequence[superlinked.framework.common.type_descriptor.TypeDescriptor]`
-    :
-
     ### Static methods
 
     `from_unchecked_types(param: Param, valid_param_value_types: Sequence[type]) ‑> superlinked.framework.dsl.query.typed_param.TypedParam`
@@ -55,6 +47,14 @@ Classes
     :
 
     `init_evaluated(valid_param_value_types: Sequence[type], value: Any) ‑> superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.typed_param.TypedParam]`
+    :
+
+    ### Instance variables
+
+    `param: superlinked.framework.dsl.query.param.Param`
+    :
+
+    `valid_param_value_types: Sequence[superlinked.framework.common.type_descriptor.TypeDescriptor]`
     :
 
     ### Methods

@@ -11,17 +11,17 @@ Classes
 
     * typing.Generic
 
-    ### Class variables
+    ### Static methods
+
+    `group_by_event_and_affecting_schema(effects: Sequence[EffectWithReferencedSchemaObject[AggregationInputT, EmbeddingInputT]]) ‑> list[superlinked.framework.dsl.index.util.event_aggregation_effect_group.EventAggregationEffectGroup[~AggregationInputT, ~EmbeddingInputT]]`
+    :
+
+    ### Instance variables
 
     `effects: Sequence[superlinked.framework.dsl.index.util.effect_with_referenced_schema_object.EffectWithReferencedSchemaObject]`
     :
 
     `key: superlinked.framework.dsl.index.util.event_aggregation_effect_group.GroupKey[~AggregationInputT, ~EmbeddingInputT]`
-    :
-
-    ### Static methods
-
-    `group_by_event_and_affecting_schema(effects: Sequence[EffectWithReferencedSchemaObject[AggregationInputT, EmbeddingInputT]]) ‑> list[superlinked.framework.dsl.index.util.event_aggregation_effect_group.EventAggregationEffectGroup[~AggregationInputT, ~EmbeddingInputT]]`
     :
 
 `GroupKey(space: Space[AggregationInputT, EmbeddingInputT], event_schema: EventSchemaObject, resolved_affected_schema_reference: ResolvedSchemaReference, resolved_affecting_schema: IdSchemaObject, resolved_affecting_reference_field: SchemaReference)`
@@ -31,7 +31,7 @@ Classes
 
     * typing.Generic
 
-    ### Class variables
+    ### Instance variables
 
     `event_schema: superlinked.framework.common.schema.event_schema_object.EventSchemaObject`
     :

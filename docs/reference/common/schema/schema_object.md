@@ -29,7 +29,7 @@ Classes
 `DescribedBlob(blob: Blob, description: String)`
 :   DescribedBlob(blob: 'Blob', description: 'String')
 
-    ### Class variables
+    ### Instance variables
 
     `blob: superlinked.framework.common.schema.schema_object.Blob`
     :

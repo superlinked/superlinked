@@ -15,11 +15,6 @@ Classes
     * superlinked.framework.dsl.query.query_clause.query_clause.QueryClause
     * abc.ABC
 
-    ### Class variables
-
-    `weight_param: superlinked.framework.dsl.query.typed_param.TypedParam | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.typed_param.TypedParam]`
-    :
-
     ### Static methods
 
     `from_param(id_: IdField, id_param: StringParamType, weight: NumericParamType) ‑> superlinked.framework.dsl.query.query_clause.looks_like_filter_clause.LooksLikeFilterClause`
@@ -31,6 +26,9 @@ Classes
     :
 
     `params: Sequence[TypedParam | Evaluated[TypedParam]]`
+    :
+
+    `weight_param: superlinked.framework.dsl.query.typed_param.TypedParam | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.typed_param.TypedParam]`
     :
 
     ### Methods

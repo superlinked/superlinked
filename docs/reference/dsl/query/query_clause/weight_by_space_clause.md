@@ -13,11 +13,6 @@ Classes
     * superlinked.framework.dsl.query.query_clause.query_clause.NLQCompatible
     * abc.ABC
 
-    ### Class variables
-
-    `space_weight_map: superlinked.framework.dsl.query.query_clause.space_weight_map.SpaceWeightMap`
-    :
-
     ### Static methods
 
     `from_params(weight_param_by_space: Mapping[Space, NumericParamType], all_space: Sequence[Space]) ‑> superlinked.framework.dsl.query.query_clause.weight_by_space_clause.WeightBySpaceClause`
@@ -29,6 +24,9 @@ Classes
     :
 
     `params: Sequence[TypedParam | Evaluated[TypedParam]]`
+    :
+
+    `space_weight_map: superlinked.framework.dsl.query.query_clause.space_weight_map.SpaceWeightMap`
     :
 
     ### Methods

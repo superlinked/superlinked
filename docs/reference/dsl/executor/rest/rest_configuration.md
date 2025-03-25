@@ -5,8 +5,7 @@ Classes
 -------
 
 `RestEndpointConfiguration(**data: Any)`
-:   !!! abstract "Usage Documentation"
-        [Models](../concepts/models.md)
+:   Usage docs: https://docs.pydantic.dev/2.10/concepts/models/
     
     A base class for creating Pydantic models.
     
@@ -70,15 +69,13 @@ Classes
 `RestQuery(rest_descriptor: superlinked.framework.dsl.executor.rest.rest_descriptor.RestDescriptor, query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor)`
 :   RestQuery(rest_descriptor: superlinked.framework.dsl.executor.rest.rest_descriptor.RestDescriptor, query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor)
 
-    ### Class variables
+    ### Instance variables
+
+    `path: str | None`
+    :
 
     `query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :
 
     `rest_descriptor: superlinked.framework.dsl.executor.rest.rest_descriptor.RestDescriptor`
-    :
-
-    ### Instance variables
-
-    `path: str | None`
     :

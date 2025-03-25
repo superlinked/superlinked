@@ -7,7 +7,7 @@ Classes
 `NLQAnnotation(annotation: str, annotation_type: superlinked.framework.dsl.query.nlq.param_filler.nlq_annotation.NLQAnnotationType)`
 :   NLQAnnotation(annotation: str, annotation_type: superlinked.framework.dsl.query.nlq.param_filler.nlq_annotation.NLQAnnotationType)
 
-    ### Class variables
+    ### Instance variables
 
     `annotation: str`
     :

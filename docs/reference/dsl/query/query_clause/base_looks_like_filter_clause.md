@@ -19,7 +19,7 @@ Classes
     * superlinked.framework.dsl.query.query_clause.looks_like_filter_clause.LooksLikeFilterClause
     * superlinked.framework.dsl.query.query_clause.looks_like_filter_clause_weights_by_space.LooksLikeFilterClauseWeightBySpace
 
-    ### Class variables
+    ### Instance variables
 
     `schema_field: superlinked.framework.common.schema.id_field.IdField`
     :

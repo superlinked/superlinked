@@ -69,7 +69,7 @@ Classes
 `DataLoaderConfig(path: str, format: superlinked.framework.dsl.source.data_loader_source.DataFormat, name: str | None = None, pandas_read_kwargs: dict[str, typing.Any] | None = None)`
 :   DataLoaderConfig(path: str, format: superlinked.framework.dsl.source.data_loader_source.DataFormat, name: str | None = None, pandas_read_kwargs: dict[str, typing.Any] | None = None)
 
-    ### Class variables
+    ### Instance variables
 
     `format: superlinked.framework.dsl.source.data_loader_source.DataFormat`
     :

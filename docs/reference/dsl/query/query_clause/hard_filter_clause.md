@@ -14,17 +14,6 @@ Classes
     * superlinked.framework.dsl.query.query_clause.query_clause.NLQCompatible
     * abc.ABC
 
-    ### Class variables
-
-    `group_key: int | None`
-    :
-
-    `op: superlinked.framework.common.interface.comparison_operation_type.ComparisonOperationType`
-    :
-
-    `operand: superlinked.framework.common.schema.schema_object.SchemaField`
-    :
-
     ### Static methods
 
     `from_param(operation: ComparisonOperation[SchemaField]) ‑> superlinked.framework.dsl.query.query_clause.hard_filter_clause.HardFilterClause`
@@ -32,10 +21,19 @@ Classes
 
     ### Instance variables
 
+    `group_key: int | None`
+    :
+
     `is_type_mandatory_in_nlq: bool`
     :
 
     `nlq_annotations: list[NLQAnnotation]`
+    :
+
+    `op: superlinked.framework.common.interface.comparison_operation_type.ComparisonOperationType`
+    :
+
+    `operand: superlinked.framework.common.schema.schema_object.SchemaField`
     :
 
     ### Methods

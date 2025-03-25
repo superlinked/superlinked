@@ -13,17 +13,17 @@ Classes
     * superlinked.framework.dsl.query.query_clause.query_clause.QueryClause
     * abc.ABC
 
-    ### Class variables
+    ### Static methods
+
+    `from_param(schema: IdSchemaObject, fields: Param | Sequence[str], vector_parts: Sequence[Space]) ‑> superlinked.framework.dsl.query.query_clause.select_clause.SelectClause`
+    :
+
+    ### Instance variables
 
     `schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject`
     :
 
     `vector_parts: Sequence[superlinked.framework.dsl.space.space.Space]`
-    :
-
-    ### Static methods
-
-    `from_param(schema: IdSchemaObject, fields: Param | Sequence[str], vector_parts: Sequence[Space]) ‑> superlinked.framework.dsl.query.query_clause.select_clause.SelectClause`
     :
 
     ### Methods

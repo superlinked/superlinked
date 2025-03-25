@@ -11,7 +11,7 @@ Classes
             0 or `negative_filter` recency_score.
         weight (float): Defaults to 1.0. Useful to tune different period_times against each other.
 
-    ### Class variables
+    ### Instance variables
 
     `period_time: datetime.timedelta`
     :

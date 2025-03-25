@@ -19,26 +19,24 @@ Classes
     * superlinked.framework.dsl.space.image_space_field_set.ImageDescriptionSpaceFieldSet
     * superlinked.framework.dsl.space.image_space_field_set.ImageSpaceFieldSet
 
-    ### Class variables
+    ### Instance variables
 
     `allowed_param_types: collections.abc.Sequence[type] | None`
     :
 
-    `fields: set[superlinked.framework.common.schema.schema_object.SchemaField]`
-    :
-
-    `space: superlinked.framework.dsl.space.space.Space`
-    :
-
-    ### Instance variables
-
     `field_names_text: Sequence[str]`
+    :
+
+    `fields: set[superlinked.framework.common.schema.schema_object.SchemaField]`
     :
 
     `fields_id: str`
     :
 
     `input_type: type[~SIT]`
+    :
+
+    `space: superlinked.framework.dsl.space.space.Space`
     :
 
     `validated_allowed_param_types: Sequence[type]`

@@ -24,14 +24,12 @@ Classes
     * superlinked.framework.dsl.query.query_clause.select_clause.SelectClause
     * superlinked.framework.dsl.query.query_clause.similar_filter_clause.SimilarFilterClause
 
-    ### Class variables
-
-    `value_param: superlinked.framework.dsl.query.typed_param.TypedParam | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.typed_param.TypedParam]`
-    :
-
     ### Instance variables
 
     `params: Sequence[superlinked.framework.dsl.query.typed_param.TypedParam | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.typed_param.TypedParam]]`
+    :
+
+    `value_param: superlinked.framework.dsl.query.typed_param.TypedParam | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.typed_param.TypedParam]`
     :
 
     ### Methods

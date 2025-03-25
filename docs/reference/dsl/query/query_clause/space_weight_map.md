@@ -15,14 +15,12 @@ Classes
     * collections.abc.Iterable
     * collections.abc.Container
 
-    ### Class variables
-
-    `space_weights: Mapping[superlinked.framework.dsl.space.space.Space, superlinked.framework.dsl.query.typed_param.TypedParam | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.typed_param.TypedParam]]`
-    :
-
     ### Instance variables
 
     `params: Sequence[superlinked.framework.dsl.query.typed_param.TypedParam | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.typed_param.TypedParam]]`
+    :
+
+    `space_weights: Mapping[superlinked.framework.dsl.space.space.Space, superlinked.framework.dsl.query.typed_param.TypedParam | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.typed_param.TypedParam]]`
     :
 
     ### Methods

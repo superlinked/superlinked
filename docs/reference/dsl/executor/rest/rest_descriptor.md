@@ -7,7 +7,7 @@ Classes
 `RestDescriptor(query_path: str | None = None, query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor | None = None, source_path: str | None = None)`
 :   RestDescriptor(query_path: str | None = None, query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor | None = None, source_path: str | None = None)
 
-    ### Class variables
+    ### Instance variables
 
     `query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor | None`
     :

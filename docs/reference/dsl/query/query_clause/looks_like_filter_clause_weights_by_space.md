@@ -15,11 +15,6 @@ Classes
     * superlinked.framework.dsl.query.query_clause.query_clause.QueryClause
     * abc.ABC
 
-    ### Class variables
-
-    `space_weight_map: superlinked.framework.dsl.query.query_clause.space_weight_map.SpaceWeightMap`
-    :
-
     ### Static methods
 
     `from_param(id_: IdField, id_param: StringParamType, weight: Mapping[Space, NumericParamType]) ‑> superlinked.framework.dsl.query.query_clause.looks_like_filter_clause_weights_by_space.LooksLikeFilterClauseWeightBySpace`
@@ -31,6 +26,9 @@ Classes
     :
 
     `params: Sequence[TypedParam | Evaluated[TypedParam]]`
+    :
+
+    `space_weight_map: superlinked.framework.dsl.query.query_clause.space_weight_map.SpaceWeightMap`
     :
 
     ### Methods

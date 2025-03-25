@@ -12,11 +12,6 @@ Classes
     * superlinked.framework.dsl.query.query_clause.query_clause.NLQCompatible
     * abc.ABC
 
-    ### Class variables
-
-    `clause: superlinked.framework.dsl.query.query_clause.query_clause.QueryClause`
-    :
-
     ### Static methods
 
     `from_clauses(clauses: Sequence[QueryClause]) ‑> list[superlinked.framework.dsl.query.nlq.nlq_compatible_clause_handler.NLQCompatibleClauseHandler]`
@@ -25,6 +20,9 @@ Classes
     ### Instance variables
 
     `annotation_by_space_annotation: dict[str, str]`
+    :
+
+    `clause: superlinked.framework.dsl.query.query_clause.query_clause.QueryClause`
     :
 
     `is_type_mandatory_in_nlq: bool`
