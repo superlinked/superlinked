@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import re
 
 from beartype.typing import Any, Sequence, cast
 from qdrant_client import QdrantClient
@@ -177,7 +178,13 @@ class QdrantVDBConnector(VDBConnector):
         vector_fields = list(
             {field_name for field_name in returned_field_names if field_name in self._vector_field_names}
         )
-        payload_fields = list({field_name for field_name in returned_field_names if field_name not in vector_fields})
+        payload_fields = list(
+            {
+                self.sanitize_field_name(field_name)
+                for field_name in returned_field_names
+                if field_name not in vector_fields
+            }
+        )
         points = self._client.retrieve(
             self.collection_name,
             ids=[QdrantVDBConnector._get_qdrant_id(entity.id_) for entity in entities],
@@ -278,3 +285,7 @@ class QdrantVDBConnector(VDBConnector):
             raise ValueError(f"The mandatory {ID_PAYLOAD_FIELD_NAME} is invalid: {id_str}.")
         schema_id, object_id = self._encoder._decode_base_type(id_str).split(":", 1)
         return EntityId(schema_id=schema_id, object_id=object_id)
+
+    @staticmethod
+    def sanitize_field_name(field_name: str) -> str:
+        return re.sub(r"[^A-Za-z0-9_]", "_", field_name)

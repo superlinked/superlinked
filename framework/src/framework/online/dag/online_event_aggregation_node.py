@@ -62,8 +62,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
     ) -> None:
         super().__init__(node, parents, storage_manager)
         self.__init_named_parents()
-        # in case 2 effects are identical except for the multiplier
-        self._metadata_key = str(self.node.effect_modifier)
+        self._metadata_key = self.node.node_id
         self._transformation_config = self.node.transformation_config
 
     def __init_named_parents(self) -> None:
