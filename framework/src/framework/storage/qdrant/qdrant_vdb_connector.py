@@ -74,6 +74,7 @@ class QdrantVDBConnector(VDBConnector):
         self._client = QdrantClient(
             url=connection_params.connection_string,
             api_key=connection_params._api_key,
+            timeout=connection_params.timeout,
         )
         self._encoder = QdrantFieldEncoder()
         self.__search_index_manager = QdrantSearchIndexManager(self._client)
@@ -238,7 +239,10 @@ class QdrantVDBConnector(VDBConnector):
         """Sort by score descending, then by id ascending"""
         result_points = list(scored_points)
         result_points.sort(
-            key=lambda point: (-point.score, point.payload.get(ID_PAYLOAD_FIELD_NAME) if point.payload else None)
+            key=lambda point: (
+                -point.score,
+                point.payload.get(ID_PAYLOAD_FIELD_NAME) if point.payload else None,
+            )
         )
         return result_points
 
