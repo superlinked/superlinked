@@ -28,25 +28,34 @@ logger = structlog.getLogger()
 @singleton
 class Settings(BaseSettings):
     APP_ID: str = "default"
+    # misc params
     ONLINE_PUT_CHUNK_SIZE: int = 10000
+    # embedding specific params
     MODEL_CACHE_DIR: str | None = None
     SUPERLINKED_MODEL_CACHE_SIZE: int = 10
+    GPU_EMBEDDING_THRESHOLD: int = 0
+    SUPERLINKED_DISABLE_HALF_PRECISION_EMBEDDING: bool = False
+    # model downloading specific params
     SENTENCE_TRANSFORMERS_MODEL_LOCK_MAX_RETRIES: int = 10
     SENTENCE_TRANSFORMERS_MODEL_LOCK_RETRY_DELAY: int = 1
-    GPU_EMBEDDING_THRESHOLD: int = 0
-    DISABLE_RICH_TRACEBACK: bool = False
-    SUPERLINKED_DISABLE_HALF_PRECISION_EMBEDDING: bool = False
+    # nlq specific params
+    SUPERLINKED_NLQ_MAX_RETRIES: int = 3
+    # concurrency specific params
     SUPERLINKED_CONCURRENT_BLOB_LOADING: bool = False
     SUPERLINKED_DISABLE_CONCURRENT_HUGGINGFACE_EMBEDDING: bool = False
     SUPERLINKED_EXPERIMENTAL_ENABLE_CONCURRENT_DAG_EVALUATION: bool = False
-    ENABLE_PROFILING: bool = False
+    # hugging face api embedding specific params
     HUGGING_FACE_API_TOKEN: str | None = None
+    # profiling specific params
+    ENABLE_PROFILING: bool = False
     SUPERLINKED_EXECUTION_TIMER_INTERVAL_MS: int = 10
     SUPERLINKED_EXECUTION_TIMER_FILE_PATH: str | None = None  # path for profiling output json
+    # logging specific params
     SUPERLINKED_LOG_LEVEL: int | str | None = None
     SUPERLINKED_LOG_AS_JSON: bool = False
     SUPERLINKED_LOG_FILE_PATH: str | None = None
     SUPERLINKED_EXPOSE_PII: bool = False
+    DISABLE_RICH_TRACEBACK: bool = False
     # QUEUE specific params
     QUEUE_MODULE_PATH: str | None = None
     QUEUE_CLASS_NAME: str | None = None

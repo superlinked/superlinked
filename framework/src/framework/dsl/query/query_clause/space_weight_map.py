@@ -42,8 +42,7 @@ class SpaceWeightMap(Mapping[Space, TypedParam | Evaluated[TypedParam]]):
 
     def set_param_name_if_unset(self, prefix: str) -> None:
         def get_default_weight_param_name(space: Space) -> str:
-            space_tag = f"{type(space).__name__}_{hash(space)}"
-            return f"{prefix}_{space_tag}_param__"
+            return f"{prefix}_{space}_param__"
 
         for space, weight_param in self.items():
             param = QueryClause.get_param(weight_param)
@@ -62,7 +61,11 @@ class SpaceWeightMap(Mapping[Space, TypedParam | Evaluated[TypedParam]]):
             return None
         return replace(self, **weight_param_changes)  # pylint: disable=not-a-mapping # it is a mapping
 
-    def extend(self, weight_param_by_space: Mapping[Space, NumericParamType], all_space: Sequence[Space]) -> Self:
+    def extend(
+        self,
+        weight_param_by_space: Mapping[Space, NumericParamType],
+        all_space: Sequence[Space],
+    ) -> Self:
         if not weight_param_by_space:
             return self
         self.__validate_params(weight_param_by_space, all_space)
@@ -102,7 +105,9 @@ class SpaceWeightMap(Mapping[Space, TypedParam | Evaluated[TypedParam]]):
         return {SPACE_WEIGHTS_ATTRIBUTE: dict(weight_param_by_space) | subchanges} if subchanges else None
 
     def __validate_params(
-        self, weight_param_by_space: Mapping[Space, NumericParamType], all_space: Sequence[Space]
+        self,
+        weight_param_by_space: Mapping[Space, NumericParamType],
+        all_space: Sequence[Space],
     ) -> None:
         if bound_spaces := set(self.keys()).intersection(weight_param_by_space.keys()):
             bound_space_names = ",".join([type(space).__name__ for space in bound_spaces])

@@ -50,18 +50,21 @@ class QueryParamModelValidator:
         def validate(model: BaseModel | Any) -> Any:
             if isinstance(model, BaseModel):
                 model_dict: dict[str, Any] = model.model_dump()
-                cls._validate_space_weights(model_dict, space_weight_param_info)
-                cls._validate_allowed_values(model_dict, allowed_values_by_param)
+                instructions: list[str] = []
+                instructions.extend(cls._calculate_space_weights_instructions(model_dict, space_weight_param_info))
+                instructions.extend(cls._calculate_allowed_values_instructions(model_dict, allowed_values_by_param))
+                if instructions:
+                    raise ValueError("The following issues were found: \n " + " \n ".join(instructions))
             return model
 
         return validate
 
     @classmethod
-    def _validate_space_weights(
+    def _calculate_space_weights_instructions(
         cls,
         model_dict: Mapping[str, Any],
         space_weight_param_info: SpaceWeightParamInfo,
-    ) -> None:
+    ) -> Sequence[str]:
         def is_affecting_weight_with_unaffecting_space_weight(
             space_weight_name: str, weight_names: Sequence[str]
         ) -> bool:
@@ -69,37 +72,40 @@ class QueryParamModelValidator:
                 model_dict.get(weight_name) not in UNAFFECTING_VALUES for weight_name in weight_names
             )
 
+        instructions = []
         for space, weight_names in space_weight_param_info.param_names_by_space.items():
             if (
                 space_weight_name := space_weight_param_info.global_param_name_by_space.get(space)
             ) is not None and is_affecting_weight_with_unaffecting_space_weight(space_weight_name, weight_names):
-                raise ValueError(
-                    f"If any of {weight_names} is not {constants.DEFAULT_NOT_AFFECTING_WEIGHT}/None,"
-                    f" then set a positive value for the following field: {space_weight_name}."
+                instructions.append(
+                    f"As {weight_names} are set, {space_weight_name} must be also set to a positive value."
                 )
+        return instructions
 
     @classmethod
-    def _validate_allowed_values(
+    def _calculate_allowed_values_instructions(
         cls,
         model_dict: Mapping[str, Any],
         allowed_values_by_param: Mapping[str, set[ParamInputType | None]],
-    ) -> None:
+    ) -> Sequence[str]:
         """Validate that all params have value set that is allowed"""
+        instructions = []
         for param_name, allowed_values in allowed_values_by_param.items():
             returned_value = model_dict.get(param_name)
             if returned_value is None:
                 continue
             if TypeValidator.is_sequence_safe(returned_value):
                 if any(value is not None and value not in allowed_values for value in returned_value):
-                    raise ValueError(
+                    instructions.append(
                         f"The field {param_name} can only contain None or a subset of: "
                         f"{cls._format_allowed_values(allowed_values)}."
                     )
             elif returned_value not in allowed_values:
-                raise ValueError(
+                instructions.append(
                     f"The field {param_name} must be None or one of the following items: "
                     f"{cls._format_allowed_values(allowed_values)}."
                 )
+        return instructions
 
     @classmethod
     def _format_allowed_values(cls, allowed_values: set[ParamInputType | None]) -> str:

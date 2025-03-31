@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from abc import abstractmethod
 
 from beartype.typing import Generic, Sequence, TypeAlias, TypeVar
@@ -51,7 +52,10 @@ SpaceFieldT = TypeVar(
 )
 
 
-class Space(HasTransformationConfig[AggregationInputT, EmbeddingInputT], Generic[AggregationInputT, EmbeddingInputT]):
+class Space(
+    HasTransformationConfig[AggregationInputT, EmbeddingInputT],
+    Generic[AggregationInputT, EmbeddingInputT],
+):
     """
     Abstract base class for a space.
 
@@ -141,4 +145,5 @@ class Space(HasTransformationConfig[AggregationInputT, EmbeddingInputT], Generic
 
     @override
     def __str__(self) -> str:
-        return f"{type(self).__name__}_{hash(self)}"
+        space_hash = hashlib.md5(str(hash(self)).encode()).hexdigest()[:4]
+        return f"{type(self).__name__}_{space_hash}"

@@ -124,7 +124,7 @@ class LooksLikeFilterClause(BaseLooksLikeFilterClause):
         return {WEIGHT_PARAM_FIELD: modified_param} if modified_param else None
 
     def __get_default_weight_param_name(self, space: Space | None) -> str:
-        space_tag = f"{type(space).__name__}_{hash(space)}_" if space else ""
+        space_tag = f"{str(space)}_" if space else ""
         return f"with_vector_{self.schema_field.name}_{space_tag}weight_param__"
 
     @classmethod

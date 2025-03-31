@@ -19,9 +19,15 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 
 import instructor
+import structlog
 from beartype.typing import Any, Generator
+from instructor.exceptions import InstructorRetryException
 from openai import OpenAI
 from pydantic import BaseModel
+
+from superlinked.framework.common.settings import Settings
+
+logger = structlog.getLogger()
 
 TEMPERATURE_VALUE: float = 0.0
 
@@ -76,15 +82,23 @@ class OpenAIClient:
         self._openai_model = config.model
 
     def query(self, prompt: str, instructor_prompt: str, response_model: type[BaseModel]) -> dict[str, Any]:
+        max_retries = Settings().SUPERLINKED_NLQ_MAX_RETRIES
         with suppress_tokenizer_warnings():
-            response: BaseModel = self._client.chat.completions.create(
-                model=self._openai_model,
-                response_model=response_model,
-                max_retries=3,
-                messages=[
-                    {"role": "system", "content": instructor_prompt},
-                    {"role": "user", "content": prompt},
-                ],
-                temperature=TEMPERATURE_VALUE,
-            )
+            try:
+                response = self._client.chat.completions.create(
+                    model=self._openai_model,
+                    response_model=response_model,
+                    max_retries=max_retries,
+                    messages=[
+                        {"role": "system", "content": instructor_prompt},
+                        {"role": "user", "content": prompt},
+                    ],
+                    temperature=TEMPERATURE_VALUE,
+                )
+            except InstructorRetryException as e:
+                logger.warning(
+                    f"LLM validation followup failed after {max_retries} retries."
+                    " Try increasing SUPERLINKED_NLQ_MAX_RETRIES."
+                )
+                raise e
         return response.model_dump()
