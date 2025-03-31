@@ -37,7 +37,7 @@ class Vector:
         self,
         value: Sequence[float] | Sequence[np.float64] | NPArray,
         negative_filter_indices: set[int] | frozenset[int] | None = None,
-        vector_before_normalization: Vector | None = None,
+        denormalizer: float = 1.0,
     ) -> None:
         if isinstance(value, np.ndarray):
             value_to_set = value
@@ -49,15 +49,15 @@ class Vector:
             frozenset(negative_filter_indices) if negative_filter_indices else frozenset({})
         )
         self.__validate_negative_filter_indices()
-        self.__vector_before_normalization = vector_before_normalization
+        self.__denormalizer = denormalizer
 
     @property
     def dimension(self) -> int:
         return self.__dimension
 
     @property
-    def vector_before_normalization(self) -> Vector | None:
-        return self.__vector_before_normalization
+    def denormalizer(self) -> float:
+        return self.__denormalizer
 
     @staticmethod
     def empty_vector() -> Vector:
@@ -86,19 +86,13 @@ class Vector:
         return mask
 
     def normalize(self, length: float) -> Vector:
-        if length in [0, 1]:
-            return self.copy_with_new(vector_before_normalization=self)
-        if self.is_empty:
+        if length in [0, 1] or self.is_empty:
             return self
-        normalized = (
-            self.copy_with_new(
-                self.without_negative_filter.value,
-                set(),
-                self,
-            )
-            / length
-        )
+        normalized = self.copy_with_new(self.without_negative_filter.value, set(), 1 / length) / length
         return normalized.apply_negative_filter(self)
+
+    def denormalize(self) -> Vector:
+        return self.normalize(self.denormalizer)
 
     def aggregate(self, vector: Vector) -> Vector:
         if self.is_empty:
@@ -160,15 +154,9 @@ class Vector:
         negative_filter_indices = self.negative_filter_indices.union(
             {i + self.dimension for i in other.negative_filter_indices}
         )
-        vector_before_normalization = (
-            self.vector_before_normalization.concatenate(other.vector_before_normalization)
-            if self.vector_before_normalization and other.vector_before_normalization
-            else None
-        )
         return self.copy_with_new(
             np.concatenate((self.value, np.array(other.value, dtype=np.float64))),
             negative_filter_indices,
-            vector_before_normalization,
         )
 
     def split(self, lengths: list[int]) -> list[Vector]:
@@ -185,7 +173,7 @@ class Vector:
             negative_filter_indices = {
                 idx - start_index for idx in self.negative_filter_indices if start_index <= idx < end_index
             }
-            split_vectors.append(Vector(split_values[i], negative_filter_indices, None))
+            split_vectors.append(Vector(split_values[i], negative_filter_indices))
         return split_vectors
 
     def __mul__(self, other: float | int | Vector) -> Vector:
@@ -224,21 +212,17 @@ class Vector:
         self,
         value: list[float] | list[np.float64] | NPArray | None = None,
         negative_filter_indices: set[int] | frozenset[int] | None = None,
-        vector_before_normalization: Vector | None = None,
+        denormalizer: float | None = None,
     ) -> Vector:
         value_to_use = self.value if value is None else value
-        vector_before_normalization_to_use = (
-            (self.vector_before_normalization.copy_with_new() if self.vector_before_normalization is not None else None)
-            if vector_before_normalization is None
-            else vector_before_normalization.copy_with_new()
-        )
+        denormalizer_to_use = self.denormalizer if denormalizer is None else denormalizer
         negative_filter_indices_to_use = (
             self.negative_filter_indices if negative_filter_indices is None else negative_filter_indices
         )
         return Vector(
             value_to_use.copy(),
             negative_filter_indices_to_use.copy(),
-            vector_before_normalization_to_use,
+            denormalizer_to_use,
         )
 
     def to_list(self) -> list[float]:

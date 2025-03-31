@@ -43,7 +43,10 @@ class Normalization(Generic[NormalizationConfigT], ABC):
 
     def normalize(self, vector: Vector, context: ExecutionContext | None = None) -> Vector:
         return vector.normalize(
-            self.norm(vector.without_negative_filter.value, context.is_query_context if context is not None else False)
+            self.norm(
+                vector.without_negative_filter.value,
+                context.is_query_context if context is not None else False,
+            )
         )
 
     def normalize_multiple(self, vectors: Sequence[Vector], context: ExecutionContext) -> list[Vector]:
@@ -53,9 +56,7 @@ class Normalization(Generic[NormalizationConfigT], ABC):
     def norm(self, value: NPArray, is_query: bool = False) -> float: ...
 
     def denormalize(self, vector: Vector) -> Vector:
-        if vector.vector_before_normalization is None:
-            return vector
-        return vector.vector_before_normalization.apply_negative_filter(vector)
+        return vector.denormalize()
 
     def denormalize_multiple(self, vectors: Sequence[Vector]) -> list[Vector]:
         return [self.denormalize(vector) for vector in vectors]
