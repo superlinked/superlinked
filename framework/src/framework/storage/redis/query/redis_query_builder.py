@@ -17,6 +17,7 @@ from dataclasses import asdict
 from beartype.typing import cast
 from redisvl.query.query import VectorQuery, VectorRangeQuery
 
+from superlinked.framework.common.const import Constants
 from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
@@ -34,6 +35,7 @@ class RedisQueryBuilder:
     def __init__(self, encoder: RedisFieldEncoder) -> None:
         self._encoder = encoder
         self.filter_builder = RedisFilterBuilder(self._encoder)
+        self._timeout = Constants().REDIS_TIMEOUT
 
     def build_query(self, search_params: VDBKNNSearchParams) -> VectorQueryObj:
         params = self._build_params(search_params)
@@ -55,5 +57,9 @@ class RedisQueryBuilder:
         self, search_params: VDBKNNSearchParams, params: RedisVectorQueryParams
     ) -> VectorQueryObj:
         if search_params.radius is not None:
-            return VectorRangeQuery(**asdict(params.with_radius(search_params.radius)))
-        return VectorQuery(**asdict(params))
+            query = VectorRangeQuery(**asdict(params.with_radius(search_params.radius)))
+        else:
+            query = VectorQuery(**asdict(params))
+        # timeout param is not available in RedisVL
+        query._timeout = self._timeout  # redis returns no results if timeout reached
+        return query

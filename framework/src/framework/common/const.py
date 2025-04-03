@@ -24,6 +24,7 @@ class Constants:
     DEFAULT_LIMIT: int = -1
     RADIUS_MIN: int = 0
     RADIUS_MAX: int = 1
+    REDIS_TIMEOUT: int = 10000  # ms
 
 
 constants = Constants()
