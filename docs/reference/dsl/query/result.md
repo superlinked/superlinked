@@ -5,7 +5,8 @@ Classes
 -------
 
 `QueryResult(**data: Any)`
-:   Usage docs: https://docs.pydantic.dev/2.10/concepts/models/
+:   !!! abstract "Usage Documentation"
+        [Models](../concepts/models.md)
     
     A base class for creating Pydantic models.
     
@@ -59,7 +60,8 @@ Classes
     :
 
 `ResultEntry(**data: Any)`
-:   Usage docs: https://docs.pydantic.dev/2.10/concepts/models/
+:   !!! abstract "Usage Documentation"
+        [Models](../concepts/models.md)
     
     A base class for creating Pydantic models.
     
@@ -116,7 +118,8 @@ Classes
     :
 
 `ResultEntryMetadata(**data: Any)`
-:   Usage docs: https://docs.pydantic.dev/2.10/concepts/models/
+:   !!! abstract "Usage Documentation"
+        [Models](../concepts/models.md)
     
     A base class for creating Pydantic models.
     
@@ -173,7 +176,8 @@ Classes
     :
 
 `ResultMetadata(**data: Any)`
-:   Usage docs: https://docs.pydantic.dev/2.10/concepts/models/
+:   !!! abstract "Usage Documentation"
+        [Models](../concepts/models.md)
     
     A base class for creating Pydantic models.
     
