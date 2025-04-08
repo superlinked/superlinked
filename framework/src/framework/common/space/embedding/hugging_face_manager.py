@@ -63,6 +63,7 @@ class HuggingFaceManager(ModelManager):
             )
         return self._embedding_length
 
+    # TODO: FAB-3342 unify embed methods
     def embed_text(self, inputs: Sequence[str], context: ExecutionContext) -> list[Vector]:
         if not inputs:
             return []

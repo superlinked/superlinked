@@ -46,6 +46,9 @@ class Settings(BaseSettings):
     SUPERLINKED_EXPERIMENTAL_ENABLE_CONCURRENT_DAG_EVALUATION: bool = False
     # hugging face api embedding specific params
     HUGGING_FACE_API_TOKEN: str | None = None
+    # infinity api embedding specific params
+    INFINITY_API_URL: str | None = None
+    INFINITY_API_TOKEN: str | None = None
     # profiling specific params
     ENABLE_PROFILING: bool = False
     SUPERLINKED_EXECUTION_TIMER_INTERVAL_MS: int = 10

@@ -17,7 +17,7 @@ from enum import Enum
 from pathlib import Path
 
 from beartype.typing import Any
-from typing_extensions import override
+from typing_extensions import Union, override
 
 from superlinked.framework.common.space.config.embedding.embedding_config import (
     EmbeddingConfig,
@@ -25,21 +25,31 @@ from superlinked.framework.common.space.config.embedding.embedding_config import
 from superlinked.framework.common.space.embedding.hugging_face_manager import (
     HuggingFaceManager,
 )
+from superlinked.framework.common.space.embedding.infinity_manager import (
+    InfinityManager,
+)
 from superlinked.framework.common.space.embedding.sentence_transformer_manager import (
     SentenceTransformerManager,
 )
+
+TextModelManager = Union[SentenceTransformerManager, HuggingFaceManager, InfinityManager]
 
 
 class TextModelHandler(Enum):
     SENTENCE_TRANSFORMERS = "sentence_transformers"
     HUGGING_FACE = "hugging_face"
+    INFINITY = "infinity"
 
-    def create_manager(
-        self, model_name: str, model_cache_dir: Path | None = None
-    ) -> SentenceTransformerManager | HuggingFaceManager:
-        if self == TextModelHandler.SENTENCE_TRANSFORMERS:
-            return SentenceTransformerManager(model_name, model_cache_dir)
-        return HuggingFaceManager(model_name)
+    def create_manager(self, model_name: str, model_cache_dir: Path | None = None) -> TextModelManager:
+        match self:
+            case TextModelHandler.SENTENCE_TRANSFORMERS:
+                return SentenceTransformerManager(model_name, model_cache_dir)
+            case TextModelHandler.HUGGING_FACE:
+                return HuggingFaceManager(model_name, model_cache_dir)
+            case TextModelHandler.INFINITY:
+                return InfinityManager(model_name, model_cache_dir)
+            case _:
+                raise ValueError(f"Unsupported model handler: {self}")
 
 
 @dataclass(frozen=True)
