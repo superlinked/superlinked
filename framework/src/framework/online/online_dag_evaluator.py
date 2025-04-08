@@ -108,14 +108,15 @@ class OnlineDagEvaluator:
 
     def evaluate_by_dag_effect(
         self,
-        parsed_schema_with_event: ParsedSchemaWithEvent,
+        parsed_schema_with_events: Sequence[ParsedSchemaWithEvent],
         context: ExecutionContext,
         dag_effect: DagEffect,
-    ) -> EvaluationResult[Vector] | None:
+    ) -> list[EvaluationResult[Vector] | None]:
         if (online_schema_dag := self._dag_effect_online_schema_dag_mapper.get(dag_effect)) is not None:
-            result = online_schema_dag.evaluate([parsed_schema_with_event], context)[0]
-            self._log_evaluated_event(parsed_schema_with_event, result)
-            return result
+            results = online_schema_dag.evaluate(parsed_schema_with_events, context)
+            for parsed_schema_with_event, result in zip(parsed_schema_with_events, results):
+                self._log_evaluated_event(parsed_schema_with_event, result)
+            return results
         raise InvalidDagEffectException(f"DagEffect ({dag_effect}) isn't present in the index.")
 
     def _log_evaluated_event(

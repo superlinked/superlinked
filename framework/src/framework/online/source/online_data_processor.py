@@ -70,18 +70,21 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
         return mandatory_field_names_by_schema
 
     def update(self, messages: Sequence[ParsedSchema]) -> None:
-        regular_msgs = list[ParsedSchema]()
         for message in messages:
             self._validate_mandatory_fields_are_present(message)
+        event_msgs = list[EventParsedSchema]()
+        regular_msgs = list[ParsedSchema]()
         for message in messages:
             if message.schema in self.effect_schemas:
-                self._process_event(cast(EventParsedSchema, message))
+                event_msgs.append(cast(EventParsedSchema, message))
             else:
                 regular_msgs.append(message)
         if regular_msgs:
             self.storage_manager.write_parsed_schema_fields(regular_msgs)
             self.evaluator.evaluate(regular_msgs, self.context)
 
+        if event_msgs:
+            self._process_events(cast(list[EventParsedSchema], event_msgs))
         logger.info(
             "stored input data",
             schemas=list({parsed_schema.schema._schema_name for parsed_schema in messages}),
@@ -101,13 +104,10 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
                 f"Message with id '{message.id_}' is missing mandatory index fields: {missing_fields_text}."
             )
 
-    def _process_event(
-        self,
-        event_parsed_schema: EventParsedSchema,
-    ) -> None:
-        effect_parsed_schema_map = self._map_event_parsed_schema_by_dag_effects(event_parsed_schema)
-        for effect, parsed_schema_with_event in effect_parsed_schema_map.items():
-            self.evaluator.evaluate_by_dag_effect(parsed_schema_with_event, self.context, effect)
+    def _process_events(self, event_parsed_schemas: Sequence[EventParsedSchema]) -> None:
+        effect_parsed_schema_map = self._map_event_parsed_schemas_by_dag_effects(event_parsed_schemas)
+        for effect, parsed_schema_with_events in effect_parsed_schema_map.items():
+            self.evaluator.evaluate_by_dag_effect(parsed_schema_with_events, self.context, effect)
 
     def _map_event_parsed_schema_by_dag_effects(
         self, event_parsed_schema: EventParsedSchema
@@ -141,3 +141,41 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
                     event_parsed_schema,
                 )
         return effect_parsed_schema_map
+
+    def _map_event_parsed_schemas_by_dag_effects(
+        self, event_parsed_schemas: Sequence[EventParsedSchema]
+    ) -> dict[DagEffect, list[ParsedSchemaWithEvent]]:
+        effect_parsed_schema_map: dict[DagEffect, list[ParsedSchemaWithEvent]] = defaultdict(list)
+        for event_parsed_schema in event_parsed_schemas:
+            for effect in self._get_distinct_effects(event_parsed_schema):
+                if parsed_schema_with_event := self._create_parsed_schema_with_event(effect, event_parsed_schema):
+                    effect_parsed_schema_map[effect].append(parsed_schema_with_event)
+        return effect_parsed_schema_map
+
+    def _get_distinct_effects(self, event_parsed_schema: EventParsedSchema) -> list[DagEffect]:
+        matching_effects = [effect for effect in self._dag_effects if effect.event_schema == event_parsed_schema.schema]
+        return [
+            effect
+            for i, effect in enumerate(matching_effects)
+            if not any(
+                effect.is_same_effect_except_for_multiplier(other_effect) for other_effect in matching_effects[:i]
+            )
+        ]
+
+    def _create_parsed_schema_with_event(
+        self, effect: DagEffect, event_parsed_schema: EventParsedSchema
+    ) -> ParsedSchemaWithEvent | None:
+        affected_schema_ids = [
+            reference.value
+            for reference in event_parsed_schema.fields
+            if reference.schema_field == effect.resolved_affected_schema_reference.reference_field
+            and reference.value is not None
+        ]
+        if not affected_schema_ids:
+            return None
+
+        if len(affected_schema_ids) > 1:
+            raise InvalidDagEffectException(f"DagEffect: {effect}")
+        return ParsedSchemaWithEvent(
+            effect.resolved_affected_schema_reference.schema, affected_schema_ids[0], [], event_parsed_schema
+        )

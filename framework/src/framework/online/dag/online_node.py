@@ -147,7 +147,7 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
         results: Sequence[EvaluationResult[NodeDataT] | None],
         parsed_schemas: Sequence[ParsedSchema],
     ) -> None:
-        node_datas = [
+        node_data_items = [
             data
             for i, result in enumerate(results)
             if result is not None
@@ -167,11 +167,11 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
                 ],
             ]
         ]
-        self.storage_manager.write_node_results(node_datas)
+        self.storage_manager.write_node_results(node_data_items)
         logger.debug(
             "stored online node data",
             schemas=lambda: {parsed_schema.schema._schema_name for parsed_schema in parsed_schemas},
-            n_results=len(node_datas),
+            n_results=len(node_data_items),
         )
 
     def load_stored_results(

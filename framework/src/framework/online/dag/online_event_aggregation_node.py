@@ -14,9 +14,7 @@
 
 from __future__ import annotations
 
-import math
-
-from beartype.typing import Sequence, cast
+from beartype.typing import Mapping, Sequence, cast
 from typing_extensions import override
 
 from superlinked.framework.common.const import constants
@@ -24,10 +22,7 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.event_aggregation_node import EventAggregationNode
 from superlinked.framework.common.dag.exception import ParentCountException
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.exception import (
-    DagEvaluationException,
-    ValidationException,
-)
+from superlinked.framework.common.exception import ValidationException
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.parser.parsed_schema import (
@@ -41,8 +36,12 @@ from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.event_aggregator import (
     EventAggregator,
     EventAggregatorParams,
-    EventMetadata,
 )
+from superlinked.framework.online.dag.event_effect_handler import (
+    EventAffectingInfo,
+    EventEffectHandler,
+)
+from superlinked.framework.online.dag.event_metadata_handler import EventMetadataHandler
 from superlinked.framework.online.dag.online_comparison_filter_node import (
     OnlineComparisonFilterNode,
 )
@@ -50,10 +49,6 @@ from superlinked.framework.online.dag.online_node import OnlineNode
 
 
 class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLength):
-    EFFECT_COUNT_KEY = "effect_count"
-    EFFECT_OLDEST_TS_KEY = "effect_oldest_age"
-    EFFECT_AVG_TS_KEY = "average_age"
-
     def __init__(
         self,
         node: EventAggregationNode,
@@ -62,8 +57,9 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
     ) -> None:
         super().__init__(node, parents, storage_manager)
         self.__init_named_parents()
-        self._metadata_key = self.node.node_id
         self._transformation_config = self.node.transformation_config
+        self._event_metadata_handler = EventMetadataHandler(self.storage_manager, self.node.node_id)
+        self._event_effect_handler = EventEffectHandler()
 
     def __init_named_parents(self) -> None:
         inputs_to_aggregate = [
@@ -92,180 +88,116 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         return self.node.length
 
     @override
-    def evaluate_self(
-        self,
-        parsed_schemas: Sequence[ParsedSchema],
-        context: ExecutionContext,
+    def evaluate_self(  # pylint: disable=too-many-locals  # we will refactor this
+        self, parsed_schemas: Sequence[ParsedSchema], context: ExecutionContext
     ) -> list[EvaluationResult[Vector] | None]:
-        return [self.evaluate_self_single(schema, context) for schema in parsed_schemas]
-
-    def evaluate_self_single(
-        self,
-        parsed_schema: ParsedSchema,
-        context: ExecutionContext,
-    ) -> EvaluationResult[Vector]:
-        self.__check_schema_validity(parsed_schema.schema)
-        stored_result = self.load_stored_result(parsed_schema.schema, parsed_schema.id_) or Vector.empty_vector()
-        input_to_aggregate = self._input_to_aggregate
-        if (
-            not isinstance(parsed_schema, ParsedSchemaWithEvent)
-            or self.node.event_schema != parsed_schema.event_parsed_schema.schema
-            or input_to_aggregate is None
-        ):
-            return EvaluationResult(self._get_single_evaluation_result(stored_result))
-
-        affecting_vector = self._calculate_affecting_vector(
-            context, parsed_schema.event_parsed_schema, input_to_aggregate
+        if not parsed_schemas:
+            return []
+        parsed_schema_types = list({type(parsed_schema) for parsed_schema in parsed_schemas})
+        if len(parsed_schema_types) != 1:
+            raise NotImplementedError("Cannot process a mix of event and non-event parsed schemas.")
+        unique_object_ids = list({parsed_schema.id_ for parsed_schema in parsed_schemas})
+        schema = self.__get_single_schema(parsed_schemas)
+        current_result_by_id = self._load_stored_result_by_id(schema, unique_object_ids)
+        if self._input_to_aggregate is None or parsed_schema_types[0] != ParsedSchemaWithEvent:
+            return self._to_evaluation_results(parsed_schemas, current_result_by_id)
+        relevant_parsed_schemas = [
+            parsed_schema
+            for parsed_schema in cast(Sequence[ParsedSchemaWithEvent], parsed_schemas)
+            if self.node.event_schema == parsed_schema.event_parsed_schema.schema
+        ]
+        event_metadata_by_object_id = self._event_metadata_handler.read(schema, unique_object_ids)
+        affecting_info_by_event_parsed_schema_id = self._calculate_affecting_info_by_event(
+            context, relevant_parsed_schemas, self._input_to_aggregate
         )
-        weights = self._calculate_affecting_weights(parsed_schema.event_parsed_schema, context)
-        if self._should_return_stored_result(affecting_vector, weights):
-            return EvaluationResult(self._get_single_evaluation_result(stored_result))
+        parsed_schemas_to_process = [
+            parsed_schema
+            for parsed_schema in relevant_parsed_schemas
+            if parsed_schema.event_parsed_schema.id_ in affecting_info_by_event_parsed_schema_id
+        ]
+        for parsed_schema in parsed_schemas_to_process:
+            affecting_info = affecting_info_by_event_parsed_schema_id[parsed_schema.event_parsed_schema.id_]
+            new_event_metadata = self._event_metadata_handler.recalculate(
+                parsed_schema.event_parsed_schema.created_at,
+                affecting_info.number_of_weights,
+                event_metadata_by_object_id[parsed_schema.id_],
+            )
+            event_aggregator_params = EventAggregatorParams(
+                context,
+                current_result_by_id[parsed_schema.id_],
+                Weighted(affecting_info.affecting_vector, affecting_info.average_weight),
+                new_event_metadata,
+                self.node.effect_modifier,
+                self._transformation_config,
+            )
+            event_vector = EventAggregator(event_aggregator_params).calculate_event_vector()
+            event_metadata_by_object_id[parsed_schema.id_] = new_event_metadata
+            current_result_by_id[parsed_schema.id_] = event_vector
+        self._event_metadata_handler.write(schema, event_metadata_by_object_id)
+        return self._to_evaluation_results(parsed_schemas, current_result_by_id)
 
-        avg_affecting_weight = sum(weights) / len(weights)
-        event_metadata: EventMetadata = self._calculate_and_store_metadata(parsed_schema, len(weights))
-        event_aggregator_params = EventAggregatorParams(
-            context,
-            stored_result,
-            Weighted(affecting_vector, avg_affecting_weight),
-            event_metadata,
-            self.node.effect_modifier,
-            self._transformation_config,
-        )
-        event_vector = EventAggregator(event_aggregator_params).calculate_event_vector()
-        return EvaluationResult(self._get_single_evaluation_result(event_vector))
+    def _to_evaluation_results(
+        self, parsed_schemas: Sequence[ParsedSchema], current_result_by_id: Mapping[str, Vector]
+    ) -> list[EvaluationResult[Vector] | None]:
+        return [
+            EvaluationResult(self._get_single_evaluation_result(current_result_by_id[parsed_schema.id_]))
+            for parsed_schema in parsed_schemas
+        ]
 
-    def _should_return_stored_result(self, affecting_vector: Vector, weights: Sequence[float]) -> bool:
-        """
-        For 2 event effects, 2 OnlineEventAggregationNode (OEAN) will be created.
-        When receiving an event, both OEANs will be evaluated. The `weights`
-        variable will be empty for one of them since the event only affects one space.
-        In this case, we should return the stored result since the weight would be 0.
-        Also when affecting_vector.is_empty, then it will not have an affect.
-        """
-        return affecting_vector.is_empty or not weights
+    def __get_single_schema(self, parsed_schemas: Sequence[ParsedSchema]) -> SchemaObject:
+        for parsed_schema in parsed_schemas:
+            if parsed_schema.schema != self.node.affected_schema.schema:
+                raise ValidationException(
+                    f"Unknown schema, {self.class_name} can only process"
+                    + f" {self.node.affected_schema.schema._base_class_name} "
+                    + f"got {parsed_schema.schema._base_class_name}"
+                )
+        return parsed_schemas[0].schema
 
-    def _calculate_affecting_vector(
+    def _load_stored_result_by_id(self, schema: SchemaObject, object_ids: Sequence[str]) -> dict[str, Vector]:
+        stored_results = self.load_stored_results([(schema, object_id) for object_id in object_ids])
+        return {
+            object_id: stored_result or Vector.empty_vector()
+            for object_id, stored_result in zip(object_ids, stored_results)
+        }
+
+    def _calculate_affecting_info_by_event(
         self,
         context: ExecutionContext,
-        event_parsed_schema: EventParsedSchema,
+        parsed_schemas: Sequence[ParsedSchemaWithEvent],
         input_to_aggregate: OnlineNode,
-    ) -> Vector:
-        affecting_parsed_schema = self._map_event_schema_to_affecting_schema(event_parsed_schema)
-        parent_result = next(iter(self.evaluate_parent(input_to_aggregate, [affecting_parsed_schema], context)))
-        affecting_vector = cast(EvaluationResult, parent_result).main.value
+    ) -> dict[str, EventAffectingInfo]:
+        event_parsed_schemas = [parsed_schema.event_parsed_schema for parsed_schema in parsed_schemas]
+        vectors = self._calculate_affecting_vectors(context, event_parsed_schemas, input_to_aggregate)
+        weights = self._calculate_affecting_weights(context, event_parsed_schemas)
+        return self._event_effect_handler.calculate_affecting_info_by_event_id(event_parsed_schemas, vectors, weights)
 
-        if not isinstance(affecting_vector, Vector):
-            raise DagEvaluationException(
-                "parent_to_aggregate's evaluation result must be of type Vector" + f", got {type(affecting_vector)}"
+    def _calculate_affecting_vectors(
+        self,
+        context: ExecutionContext,
+        event_parsed_schemas: Sequence[EventParsedSchema],
+        input_to_aggregate: OnlineNode,
+    ) -> list[Vector]:
+        affecting_parsed_schemas = [
+            self._event_effect_handler.map_event_schema_to_affecting_schema(
+                self.node.affecting_schema, event_parsed_schema
             )
-
-        return affecting_vector
-
-    def __check_schema_validity(self, schema: SchemaObject) -> None:
-        if schema != self.node.affected_schema.schema:
-            raise ValidationException(
-                f"Unknown schema, {self.class_name} can only process"
-                + f" {self.node.affected_schema.schema._base_class_name} "
-                + f"got {schema._base_class_name}"
-            )
+            for event_parsed_schema in event_parsed_schemas
+        ]
+        parent_results = self.evaluate_parent(input_to_aggregate, affecting_parsed_schemas, context)
+        return [
+            self._event_effect_handler.map_parent_result_to_vector(parent_result) for parent_result in parent_results
+        ]
 
     def _calculate_affecting_weights(
         self,
-        event_parsed_schema: EventParsedSchema,
         context: ExecutionContext,
-    ) -> list[float]:
+        event_parsed_schemas: Sequence[EventParsedSchema],
+    ) -> list[list[float]]:
         filter_parents = list(self.weighted_filter_parents.keys())
-        parent_results = self.evaluate_parents(filter_parents, [event_parsed_schema], context)[0]
-        return [self.weighted_filter_parents[parent] for parent, result in parent_results.items() if result.main.value]
-
-    def _map_event_schema_to_affecting_schema(self, event_parsed_schema: EventParsedSchema) -> ParsedSchema:
-        return next(
-            ParsedSchema(self.node.affecting_schema.schema, field.value, [])
-            for field in event_parsed_schema.fields
-            if field.schema_field == self.node.affecting_schema.reference_field
-        )
-
-    def _calculate_and_store_metadata(
-        self,
-        parsed_schema: ParsedSchemaWithEvent,
-        new_effect_count: int,
-    ) -> EventMetadata:
-        stored_by_key = self._read_stored_metadata(parsed_schema)
-        recalculated_effect_count = (
-            stored_by_key.get(OnlineEventAggregationNode.EFFECT_COUNT_KEY) or 0
-        ) + new_effect_count
-        recalculated_avg_ts = self._calculate_avg_ts(
-            stored_by_key, parsed_schema, recalculated_effect_count, new_effect_count
-        )
-        recalculated_oldest_ts = self._calculate_oldest_ts(stored_by_key, parsed_schema)
-        self._write_updated_metadata(
-            parsed_schema,
-            recalculated_effect_count,
-            recalculated_avg_ts,
-            recalculated_oldest_ts,
-        )
-        return EventMetadata(
-            recalculated_effect_count,
-            recalculated_avg_ts,
-            recalculated_oldest_ts,
-        )
-
-    def _read_stored_metadata(self, parsed_schema: ParsedSchemaWithEvent) -> dict:
-        return self.storage_manager.read_node_data(
-            parsed_schema.schema,
-            parsed_schema.id_,
-            self._metadata_key,
-            {
-                OnlineEventAggregationNode.EFFECT_COUNT_KEY: int,
-                OnlineEventAggregationNode.EFFECT_AVG_TS_KEY: int,
-                OnlineEventAggregationNode.EFFECT_OLDEST_TS_KEY: int,
-            },
-        )
-
-    def _calculate_avg_ts(
-        self,
-        stored_by_key: dict,
-        parsed_schema: ParsedSchemaWithEvent,
-        recalculated_effect_count: int,
-        new_effect_count: int,
-    ) -> int:
-        previous_avg_ts = stored_by_key.get(OnlineEventAggregationNode.EFFECT_AVG_TS_KEY)
-        if previous_avg_ts and new_effect_count == 0:
-            return previous_avg_ts
-        return (
-            math.ceil(  # ceil is used in case they are 1s apart
-                (
-                    previous_avg_ts * (recalculated_effect_count - new_effect_count)
-                    + parsed_schema.event_parsed_schema.created_at
-                )
-                / recalculated_effect_count
-            )
-            if previous_avg_ts
-            else parsed_schema.event_parsed_schema.created_at
-        )
-
-    def _calculate_oldest_ts(self, stored_by_key: dict, parsed_schema: ParsedSchemaWithEvent) -> int:
-        previous_oldest_ts = stored_by_key.get(OnlineEventAggregationNode.EFFECT_OLDEST_TS_KEY)
-        return (
-            min(previous_oldest_ts, parsed_schema.event_parsed_schema.created_at)
-            if previous_oldest_ts
-            else parsed_schema.event_parsed_schema.created_at
-        )
-
-    def _write_updated_metadata(
-        self,
-        parsed_schema: ParsedSchemaWithEvent,
-        recalculated_effect_count: int,
-        recalculated_avg_ts: int,
-        recalculated_oldest_ts: int,
-    ) -> None:
-        self.storage_manager.write_node_data(
-            parsed_schema.schema,
-            parsed_schema.id_,
-            self._metadata_key,
-            {
-                OnlineEventAggregationNode.EFFECT_COUNT_KEY: recalculated_effect_count,
-                OnlineEventAggregationNode.EFFECT_AVG_TS_KEY: recalculated_avg_ts,
-                OnlineEventAggregationNode.EFFECT_OLDEST_TS_KEY: recalculated_oldest_ts,
-            },
-        )
+        parent_results = self.evaluate_parents(filter_parents, event_parsed_schemas, context)
+        affecting_weights = [
+            [self.weighted_filter_parents[parent] for parent, result in parent_result.items() if result.main.value]
+            for parent_result in parent_results
+        ]
+        return affecting_weights

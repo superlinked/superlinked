@@ -29,6 +29,7 @@ from superlinked.framework.common.schema.schema_object import (
     SchemaField,
     SchemaObject,
 )
+from superlinked.framework.common.storage.entity.entity import Entity
 from superlinked.framework.common.storage.entity.entity_data import EntityData
 from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.field.field_data import (
@@ -215,24 +216,29 @@ class StorageManager:
         self._vdb_connector.write_entities(entities_to_write)
 
     @time_execution
-    def write_node_results(self, node_datas: Sequence[NodeResultData]) -> None:
+    def write_node_results(self, node_data_items: Sequence[NodeResultData]) -> None:
         entities_to_write = [
-            self._entity_builder.compose_entity_data_from_node_result(node_data) for node_data in node_datas
+            self._entity_builder.compose_entity_data_from_node_result(node_data) for node_data in node_data_items
         ]
         self._vdb_connector.write_entities(entities_to_write)
 
     @time_execution
     def write_node_data(
-        self,
-        schema: SchemaObject,
-        object_id: str,
-        node_id: str,
-        node_data: dict[str, PythonTypes],
+        self, schema: SchemaObject, node_data_by_object_id: Mapping[str, dict[str, PythonTypes]], node_id: str
     ) -> None:
+        entity_data_items = [
+            self._compose_entity_data(schema, object_id, node_id, node_data)
+            for object_id, node_data in node_data_by_object_id.items()
+        ]
+        self._vdb_connector.write_entities(entity_data_items)
+
+    def _compose_entity_data(
+        self, schema: SchemaObject, object_id: str, node_id: str, node_data: dict[str, PythonTypes]
+    ) -> EntityData:
         entity_id = self._entity_builder.compose_entity_id(schema._schema_name, object_id)
         field_data = list(self._entity_builder._admin_fields.create_header_field_data(entity_id))
         field_data.extend(list(self._entity_builder.compose_field_data_from_node_data(node_id, node_data)))
-        self._vdb_connector.write_entities([EntityData(entity_id, {fd.name: fd for fd in field_data})])
+        return EntityData(entity_id, {fd.name: fd for fd in field_data})
 
     @time_execution
     def read_schema_field_values(self, object_id: str, schema_fields: Sequence[SchemaField]) -> ParsedSchema:
@@ -294,23 +300,30 @@ class StorageManager:
     def read_node_data(
         self,
         schema: SchemaObject,
-        object_id: str,
+        object_ids: Sequence[str],
         node_id: str,
         node_data_descriptor: dict[str, type[NDVT]],
-    ) -> dict[str, NDVT]:
-        entity_id = self._entity_builder.compose_entity_id(schema._schema_name, object_id)
+    ) -> dict[str, dict[str, NDVT]]:
         field_by_node_data_key = self._map_fields_by_node_data_keys(node_id, node_data_descriptor or {})
         if not field_by_node_data_key:
-            return {}
-        fields = list(field_by_node_data_key.values())
+            return {object_id: {} for object_id in object_ids}
         node_data_key_by_field_name = {field.name: key for key, field in field_by_node_data_key.items()}
-        entity = self._entity_builder.compose_entity(entity_id, fields)
-        entity_data = self._vdb_connector.read_entities([entity])[0]
-        node_data = {
-            node_data_key_by_field_name[field_data.name]: cast(NDVT, field_data.value)
-            for field_data in entity_data.field_data.values()
+        fields = list(field_by_node_data_key.values())
+        entities = [self._compose_entity(schema, object_id, fields) for object_id in object_ids]
+        entity_data_items = self._vdb_connector.read_entities(entities)
+        node_data_items = {
+            object_id: {
+                node_data_key_by_field_name[field_data.name]: cast(NDVT, field_data.value)
+                for field_data in entity_data.field_data.values()
+            }
+            for object_id, entity_data in zip(object_ids, entity_data_items)
         }
-        return node_data
+        return node_data_items
+
+    def _compose_entity(self, schema: SchemaObject, object_id: str, fields: Sequence[Field]) -> Entity:
+        entity_id = self._entity_builder.compose_entity_id(schema._schema_name, object_id)
+        entity = self._entity_builder.compose_entity(entity_id, fields)
+        return entity
 
     def _compile_indexed_fields_to_descriptors(
         self, params: SearchIndexParams

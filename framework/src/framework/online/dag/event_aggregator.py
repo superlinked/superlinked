@@ -33,13 +33,7 @@ from superlinked.framework.common.space.normalization.normalization import L1Nor
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
 )
-
-
-@dataclass
-class EventMetadata:
-    effect_count: int
-    effect_avg_ts: int
-    effect_oldest_ts: int
+from superlinked.framework.online.dag.event_metadata_handler import EventMetadata
 
 
 @dataclass
