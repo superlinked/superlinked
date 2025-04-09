@@ -17,7 +17,7 @@ from __future__ import annotations
 from abc import ABC, ABCMeta, abstractmethod
 
 import structlog
-from beartype.typing import Generic, Mapping, Sequence
+from beartype.typing import Generic, Mapping, Sequence, cast
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.exception import ParentCountException
@@ -177,11 +177,16 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
     def load_stored_results(
         self, schemas_with_object_ids: Sequence[tuple[SchemaObject, str]]
     ) -> list[NodeDataT | None]:
-        return self.storage_manager.read_node_results(
-            schemas_with_object_ids,
+        if not schemas_with_object_ids:
+            return []
+        distinct_keys = list(set(schemas_with_object_ids))
+        distinct_stored_results = self.storage_manager.read_node_results(
+            distinct_keys,
             self.node_id,
             self.node.node_data_type,
         )
+        distinct_stored_result_by_key = dict(zip(distinct_keys, distinct_stored_results))
+        return [distinct_stored_result_by_key[key] for key in schemas_with_object_ids]
 
     def load_stored_results_with_default(
         self, schemas_with_object_ids: Sequence[tuple[SchemaObject, str]], default_value: NodeDataT
@@ -190,20 +195,21 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
             default_value if result is None else result for result in self.load_stored_results(schemas_with_object_ids)
         ]
 
-    def load_stored_result(self, schema: SchemaObject, object_id: str) -> NodeDataT | None:
-        return self.load_stored_results([(schema, object_id)])[0]
-
-    def load_stored_result_or_raise_exception(
+    def load_stored_results_or_raise_exception(
         self,
-        parsed_schema: ParsedSchema,
-    ) -> NodeDataT:
-        stored_result = self.load_stored_result(parsed_schema.schema, parsed_schema.id_)
-        if stored_result is None:
+        parsed_schemas: Sequence[ParsedSchema],
+    ) -> list[NodeDataT]:
+        schemas_with_object_ids = [(parsed_schema.schema, parsed_schema.id_) for parsed_schema in parsed_schemas]
+        stored_results = self.load_stored_results(schemas_with_object_ids)
+        if none_indices := [i for i, stored_result in enumerate(stored_results) if stored_result is None]:
+            wrong_parsed_schema_params = [
+                f"{parsed_schemas[index].schema._schema_name}, {parsed_schemas[index].id_}" for index in none_indices
+            ]
             raise DagEvaluationException(
-                f"{self.node_id} doesn't have a stored value for (schema, object_id):"
-                + f" ({parsed_schema.schema._schema_name}, {parsed_schema.id_})"
+                f"{self.node_id} doesn't have stored values for the following (schema, object_id) pairs:"
+                + f" ({wrong_parsed_schema_params})"
             )
-        return stored_result
+        return cast(list[NodeDataT], stored_results)
 
     def validate_parents(
         self,

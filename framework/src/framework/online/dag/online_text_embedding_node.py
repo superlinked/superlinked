@@ -55,11 +55,16 @@ class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasL
         return self._embedding_transformation
 
     @override
-    def get_fallback_result(self, parsed_schema: ParsedSchema) -> Vector:
-        stored_result = self.load_stored_result(parsed_schema.schema, parsed_schema.id_)
-        if stored_result is not None:
-            return stored_result
-        return Vector.init_zero_vector(self.node.length)
+    def get_fallback_results(
+        self,
+        parsed_schemas: Sequence[ParsedSchema],
+    ) -> list[Vector]:
+        schemas_with_object_ids = [(parsed_schema.schema, parsed_schema.id_) for parsed_schema in parsed_schemas]
+        stored_results = self.load_stored_results(schemas_with_object_ids)
+        return [
+            Vector.init_zero_vector(self.node.length) if stored_result is None else stored_result
+            for stored_result in stored_results
+        ]
 
     @override
     def _evaluate_singles(

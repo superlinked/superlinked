@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections import deque
 
 from beartype.typing import Generic, Sequence
 from typing_extensions import override
@@ -142,11 +143,15 @@ class DefaultOnlineNode(OnlineNode[NT, NodeDataT], ABC, Generic[NT, NodeDataT]):
         context: ExecutionContext,
         parent_results: Sequence[ParentResults],
     ) -> list[NodeDataT]:
-        single_result_all = self._evaluate_singles(parent_results, context)
-        return [
-            (single_result if single_result is not None else self.get_fallback_result(parsed_schemas[i]))
-            for i, single_result in enumerate(single_result_all)
+        single_results = self._evaluate_singles(parent_results, context)
+        parsed_schemas_with_none_result = [
+            parsed_schemas[i] for i, single_result in enumerate(single_results) if single_result is None
         ]
+        default_results = deque(self.get_fallback_results(parsed_schemas_with_none_result))
+        results = [
+            default_results.popleft() if single_result is None else single_result for single_result in single_results
+        ]
+        return results
 
     @abstractmethod
     def _evaluate_singles(
@@ -156,8 +161,8 @@ class DefaultOnlineNode(OnlineNode[NT, NodeDataT], ABC, Generic[NT, NodeDataT]):
     ) -> Sequence[NodeDataT | None]:
         pass
 
-    def get_fallback_result(
+    def get_fallback_results(
         self,
-        parsed_schema: ParsedSchema,
-    ) -> NodeDataT:
-        return self.load_stored_result_or_raise_exception(parsed_schema)
+        parsed_schemas: Sequence[ParsedSchema],
+    ) -> list[NodeDataT]:
+        return self.load_stored_results_or_raise_exception(parsed_schemas)

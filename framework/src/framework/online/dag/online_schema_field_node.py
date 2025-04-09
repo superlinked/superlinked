@@ -64,7 +64,7 @@ class OnlineSchemaFieldNode(Generic[SFT], OnlineNode[SchemaFieldNode, SFT]):
         if parsed_nodes:
             result = parsed_nodes[0].value
         else:
-            result = self.load_stored_result(parsed_schema.schema, parsed_schema.id_)
+            result = self.load_stored_results([(parsed_schema.schema, parsed_schema.id_)])[0]
         if result is not None:
             return EvaluationResult(self._get_single_evaluation_result(result))
         if self.node.schema_field.nullable:
