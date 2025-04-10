@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import numpy as np
 from beartype.typing import Any, Mapping, Sequence
+from typing_extensions import override
 
 from superlinked.framework.common.exception import (
     MismatchingDimensionException,
@@ -138,7 +139,7 @@ class Vector:
         else:
             value_iterator = iter(self.value)
             values = [
-                (next(value_iterator) if i not in other.negative_filter_indices else value)
+                (value if i in other.negative_filter_indices else next(value_iterator))
                 for i, value in enumerate(other.value)
             ]
         return self.shallow_copy_with_new(values, other.negative_filter_indices)
@@ -168,25 +169,28 @@ class Vector:
             split_vectors.append(Vector(split_values[i], negative_filter_indices))
         return split_vectors
 
-    def __mul__(self, other: float | int | Vector) -> Vector:
+    def __mul__(self, other: Any) -> Vector:
         if self.is_empty:
             return self
-        if isinstance(other, int | float):
-            return self if float(other) == 1.0 else self.shallow_copy_with_new(self.value * float(other))
-        if self.dimension != other.dimension:
-            raise ValueError(
-                f"Vector dimensions are not equal. First Vector dimension={self.dimension} "
-                f"other Vector dimension={other.dimension}"
-            )
-        return self.shallow_copy_with_new(self.value * other.value)
+        if not isinstance(other, int | float):
+            raise ValueError(f"{type(self).__name__} can only be multiplied with int or float")
+        if other == 1:
+            return self
+        if other == 0:
+            return Vector(np.zeros(self.dimension, dtype=np.float64))
+
+        multiplied_vector = Vector(self.value_without_negative_filter * float(other))
+        return multiplied_vector.apply_negative_filter(self)
+
+    def __rmul__(self, other: Any) -> Vector:
+        return self * other
 
     def __truediv__(self, other: Any) -> Vector:
-        if (not isinstance(other, (float, int))) or other == 0:
+        if other == 0:
             return NotImplemented
-        if self.is_empty or other == 1:
-            return self
-        return self.shallow_copy_with_new(self.value / float(other))
+        return self * (1 / other)
 
+    @override
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, Vector):
             return (
@@ -195,6 +199,7 @@ class Vector:
             )
         return False
 
+    @override
     def __hash__(self) -> int:
         return hash((str(self.value), self.negative_filter_indices))
 
@@ -219,6 +224,7 @@ class Vector:
             self.value, precision=NP_PRINT_PRECISION, suppress_small=True
         )
 
+    @override
     def __repr__(self) -> str:
         return self.__str__()
 
