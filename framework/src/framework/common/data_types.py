@@ -33,11 +33,6 @@ NP_PRINT_PRECISION = 6
 
 
 class Vector:
-    """
-    Vector class represents an immutable vector with optional negative filter indices.
-    WARNING: For performance reasons, the underlying numpy array is not deep copied.
-    Never modify vector.value directly as this will lead to unexpected behavior.
-    """
 
     def __init__(
         self,
@@ -50,12 +45,16 @@ class Vector:
         else:
             value_to_set = np.array(list(value), dtype=np.float64)
         self.value: NPArray = value_to_set
+        self.__make_value_immutable()
         self.__dimension: int = len(self.value)
         self.__negative_filter_indices = (
             frozenset(negative_filter_indices) if negative_filter_indices else frozenset({})
         )
         self.__validate_negative_filter_indices()
         self.__denormalizer = denormalizer
+
+    def __make_value_immutable(self) -> None:
+        self.value.setflags(write=False)
 
     @property
     def dimension(self) -> int:
@@ -205,12 +204,6 @@ class Vector:
         negative_filter_indices: set[int] | frozenset[int] | None = None,
         denormalizer: float | None = None,
     ) -> Vector:
-        """
-        Create a shallow copy of this Vector with optionally new values.
-        Note: If value is provided, it will be used directly without copying.
-        The caller is responsible for ensuring that the provided value is not
-        modified after calling this method.
-        """
         value_to_use = self.value if value is None else value
         denormalizer_to_use = self.denormalizer if denormalizer is None else denormalizer
         negative_filter_indices_to_use = (

@@ -84,8 +84,10 @@ class CategoricalSimilarityEmbedding(InvertibleEmbedding[list[str], CategoricalS
 
     def _reallocate_vector_values(self, vector: Vector, scaling_factors: Mapping[int, float]) -> Vector:
         if scaling_factors:
-            new_values: NPArray = vector.value
-            new_values[np.array(list(scaling_factors.keys()))] *= np.array(list(scaling_factors.values()))
+            new_values = np.copy(vector.value)
+            indices = np.fromiter(scaling_factors.keys(), dtype=int)
+            factors = np.fromiter(scaling_factors.values(), dtype=float)
+            new_values[indices] *= factors
             new_vector = Vector(new_values, vector.negative_filter_indices)
             sum_values = sum(CollectionUtil.get_positive_values_ndarray(new_vector.value))
             normalizing_factor = sum_values / math.sqrt(len(self._config.categories))
