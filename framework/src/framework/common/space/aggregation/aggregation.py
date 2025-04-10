@@ -72,7 +72,7 @@ class VectorAggregation(Aggregation[Vector]):
         there was a negative filter in all aggregated vectors.
         """
         all_negative_filter_indices = set().union(*(vector.negative_filter_indices for vector in vectors))
-        return aggregated_vector.copy_with_new(
+        return aggregated_vector.shallow_copy_with_new(
             negative_filter_indices={
                 i
                 for i, original_value in enumerate(aggregated_vector.value)

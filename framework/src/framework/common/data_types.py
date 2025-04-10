@@ -33,6 +33,12 @@ NP_PRINT_PRECISION = 6
 
 
 class Vector:
+    """
+    Vector class represents an immutable vector with optional negative filter indices.
+    WARNING: For performance reasons, the underlying numpy array is not deep copied.
+    Never modify vector.value directly as this will lead to unexpected behavior.
+    """
+
     def __init__(
         self,
         value: Sequence[float] | Sequence[np.float64] | NPArray,
@@ -76,8 +82,10 @@ class Vector:
         return self.dimension == 0
 
     @property
-    def without_negative_filter(self) -> Vector:
-        return Vector(self.value[self.non_negative_filter_mask])
+    def value_without_negative_filter(self) -> NPArray:
+        if self.__negative_filter_indices:
+            return self.value[self.non_negative_filter_mask]
+        return self.value
 
     @property
     def non_negative_filter_mask(self) -> np.ndarray:
@@ -88,7 +96,7 @@ class Vector:
     def normalize(self, length: float) -> Vector:
         if length in [0, 1] or self.is_empty:
             return self
-        normalized = self.copy_with_new(self.without_negative_filter.value, set(), 1 / length) / length
+        normalized = self.shallow_copy_with_new(self.value_without_negative_filter / float(length), set(), 1 / length)
         return normalized.apply_negative_filter(self)
 
     def denormalize(self) -> Vector:
@@ -96,14 +104,14 @@ class Vector:
 
     def aggregate(self, vector: Vector) -> Vector:
         if self.is_empty:
-            return vector.__copy()
+            return vector
         if vector.is_empty:
-            return self.__copy()
+            return self
         if self.dimension != vector.dimension:
             raise MismatchingDimensionException(
                 f"Cannot aggregate vectors with different dimensions: {self.dimension} != {vector.dimension}"
             )
-        return self.copy_with_new(
+        return self.shallow_copy_with_new(
             self.value + vector.value,
             negative_filter_indices=self.negative_filter_indices.intersection(vector.negative_filter_indices),
         )
@@ -134,29 +142,14 @@ class Vector:
                 (next(value_iterator) if i not in other.negative_filter_indices else value)
                 for i, value in enumerate(other.value)
             ]
-        return self.copy_with_new(values, other.negative_filter_indices)
+        return self.shallow_copy_with_new(values, other.negative_filter_indices)
 
     def replace_negative_filters(self, new_negative_filter_value: float) -> Vector:
-        return self.copy_with_new(
+        return self.shallow_copy_with_new(
             [
                 (new_negative_filter_value if i in self.negative_filter_indices else original_value)
                 for i, original_value in enumerate(self.value)
             ]
-        )
-
-    def concatenate(self, other: Any) -> Vector:
-        if not isinstance(other, Vector):
-            return NotImplemented
-        if self.is_empty:
-            return other.__copy()
-        if other.is_empty:
-            return self.__copy()
-        negative_filter_indices = self.negative_filter_indices.union(
-            {i + self.dimension for i in other.negative_filter_indices}
-        )
-        return self.copy_with_new(
-            np.concatenate((self.value, np.array(other.value, dtype=np.float64))),
-            negative_filter_indices,
         )
 
     def split(self, lengths: list[int]) -> list[Vector]:
@@ -180,22 +173,20 @@ class Vector:
         if self.is_empty:
             return self
         if isinstance(other, int | float):
-            return (
-                self.copy_with_new(self.value) if float(other) == 1.0 else self.copy_with_new(self.value * float(other))
-            )
+            return self if float(other) == 1.0 else self.shallow_copy_with_new(self.value * float(other))
         if self.dimension != other.dimension:
             raise ValueError(
                 f"Vector dimensions are not equal. First Vector dimension={self.dimension} "
                 f"other Vector dimension={other.dimension}"
             )
-        return self.copy_with_new(self.value * other.value)
+        return self.shallow_copy_with_new(self.value * other.value)
 
     def __truediv__(self, other: Any) -> Vector:
         if (not isinstance(other, (float, int))) or other == 0:
             return NotImplemented
-        if self.is_empty:
+        if self.is_empty or other == 1:
             return self
-        return self.copy_with_new(self.value / float(other))
+        return self.shallow_copy_with_new(self.value / float(other))
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, Vector):
@@ -208,30 +199,27 @@ class Vector:
     def __hash__(self) -> int:
         return hash((str(self.value), self.negative_filter_indices))
 
-    def copy_with_new(
+    def shallow_copy_with_new(
         self,
         value: list[float] | list[np.float64] | NPArray | None = None,
         negative_filter_indices: set[int] | frozenset[int] | None = None,
         denormalizer: float | None = None,
     ) -> Vector:
+        """
+        Create a shallow copy of this Vector with optionally new values.
+        Note: If value is provided, it will be used directly without copying.
+        The caller is responsible for ensuring that the provided value is not
+        modified after calling this method.
+        """
         value_to_use = self.value if value is None else value
         denormalizer_to_use = self.denormalizer if denormalizer is None else denormalizer
         negative_filter_indices_to_use = (
             self.negative_filter_indices if negative_filter_indices is None else negative_filter_indices
         )
-        return Vector(
-            value_to_use.copy(),
-            negative_filter_indices_to_use.copy(),
-            denormalizer_to_use,
-        )
+        return Vector(value_to_use, negative_filter_indices_to_use, denormalizer_to_use)
 
     def to_list(self) -> list[float]:
         return [float(x) for x in self.value.tolist()]
-
-    def __copy(self) -> Vector:
-        if self.is_empty:
-            return self
-        return self.copy_with_new()
 
     def __str__(self) -> str:
         return np.array_str(  # type: ignore # numpy stub is missing for mypy-pylance

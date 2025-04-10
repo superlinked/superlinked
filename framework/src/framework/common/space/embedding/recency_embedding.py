@@ -14,7 +14,6 @@
 
 import math
 from datetime import datetime, timedelta
-from functools import reduce
 
 import numpy as np
 from beartype.typing import Sequence
@@ -28,6 +27,7 @@ from superlinked.framework.common.space.config.embedding.recency_embedding_confi
 )
 from superlinked.framework.common.space.embedding.embedding import InvertibleEmbedding
 from superlinked.framework.common.util import time_util
+from superlinked.framework.common.util.collection_util import CollectionUtil
 
 MAX_PERIOD_TIME_X_COORDINATE: int = -3
 MAX_PERIOD_TIME_Y_COORDINATE: int = -2
@@ -54,17 +54,11 @@ class RecencyEmbedding(InvertibleEmbedding[int, RecencyEmbeddingConfig]):
 
     @override
     def embed(self, input_: int, context: ExecutionContext) -> Vector:
-        return reduce(
-            lambda a, b: a.concatenate(b),
-            (
-                self.calc_recency_vector_for_period_time(
-                    input_,
-                    period_time_param,
-                    context,
-                )
-                for period_time_param in self._period_time_list
-            ),
-        )
+        recency_vectors = [
+            self.calc_recency_vector_for_period_time(input_, period_time_param, context)
+            for period_time_param in self._period_time_list
+        ]
+        return CollectionUtil.concatenate_vectors(recency_vectors)
 
     @override
     def inverse_embed(self, vector: Vector, context: ExecutionContext) -> int:
@@ -92,10 +86,7 @@ class RecencyEmbedding(InvertibleEmbedding[int, RecencyEmbeddingConfig]):
         return True
 
     def calc_recency_vector_for_period_time(
-        self,
-        created_at: int,
-        period_time: PeriodTime,
-        context: ExecutionContext,
+        self, created_at: int, period_time: PeriodTime, context: ExecutionContext
     ) -> Vector:
         time_period_start: int = self._calculate_time_period_start(period_time, context.now())
         time_period_end: int = self._calculate_time_period_end(context.now())

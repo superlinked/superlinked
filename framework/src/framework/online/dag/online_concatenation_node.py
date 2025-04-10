@@ -14,8 +14,6 @@
 
 from __future__ import annotations
 
-from functools import reduce
-
 from beartype.typing import Sequence, cast
 from typing_extensions import override
 
@@ -26,6 +24,7 @@ from superlinked.framework.common.exception import ValidationException
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.space.normalization.normalization import ConstantNorm
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
+from superlinked.framework.common.util.collection_util import CollectionUtil
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
 from superlinked.framework.online.dag.evaluation_result import SingleEvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
@@ -66,9 +65,8 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
         vector_and_nodes: list[tuple[Vector, OnlineNode]],
         context: ExecutionContext,
     ) -> Vector:
-        weighted_vectors = (vector * context.get_weight_of_node(parent.node_id) for vector, parent in vector_and_nodes)
-        vector = reduce(lambda a, b: a.concatenate(b), weighted_vectors)
-        return vector
+        weighted_vectors = [vector * context.get_weight_of_node(parent.node_id) for vector, parent in vector_and_nodes]
+        return CollectionUtil.concatenate_vectors(weighted_vectors)
 
     def _check_evaluation_inputs(
         self,

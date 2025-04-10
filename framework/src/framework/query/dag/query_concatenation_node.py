@@ -15,7 +15,6 @@
 from __future__ import annotations
 
 import math
-from functools import reduce
 
 from beartype.typing import Sequence, cast
 from typing_extensions import override
@@ -32,6 +31,7 @@ from superlinked.framework.common.space.normalization.normalization import (
     ConstantNorm,
     L2Norm,
 )
+from superlinked.framework.common.util.collection_util import CollectionUtil
 from superlinked.framework.query.dag.exception import QueryEvaluationException
 from superlinked.framework.query.dag.invert_if_addressed_query_node import (
     InvertIfAddressedQueryNode,
@@ -132,7 +132,7 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
             for i, result in enumerate(parent_results)
         ]
         weighted_vectors = [vector * weight for vector, weight in vectors_with_weights]
-        concatenated_vector = reduce(lambda a, b: a.concatenate(b), weighted_vectors)
+        concatenated_vector = CollectionUtil.concatenate_vectors(weighted_vectors)
         normalized_vector = self._normalize_vector(concatenated_vector, vectors_with_weights)
         return QueryEvaluationResult(self._compensate_vector(normalized_vector, weighted_vectors))
 

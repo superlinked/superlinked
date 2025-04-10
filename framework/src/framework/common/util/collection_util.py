@@ -14,10 +14,11 @@
 
 from collections.abc import Iterable
 
+import numpy as np
 from beartype.typing import Any, Iterator, Sequence, TypeVar
 
 from superlinked.framework.common.const import constants
-from superlinked.framework.common.data_types import NPArray
+from superlinked.framework.common.data_types import NPArray, Vector
 
 T = TypeVar("T")
 
@@ -34,3 +35,27 @@ class CollectionUtil:
     @staticmethod
     def convert_single_item_to_list(value: Any) -> list[Any]:
         return list(value) if isinstance(value, Iterable) and not isinstance(value, str) else [value]
+
+    @staticmethod
+    def concatenate_vectors(vectors: Sequence[Vector]) -> Vector:
+        if not vectors:
+            raise ValueError("Cannot concatenate an empty sequence of vectors")
+
+        non_empty_vectors = [v for v in vectors if not v.is_empty]
+        if not non_empty_vectors:
+            return vectors[0]
+
+        if len(non_empty_vectors) == 1:
+            return non_empty_vectors[0]
+
+        dimensions = [v.dimension for v in non_empty_vectors]
+
+        negative_filter_indices = set()
+        offsets = [0]
+        for i in range(1, len(non_empty_vectors)):
+            offsets.append(offsets[-1] + dimensions[i - 1])
+
+        for vec, offset in zip(non_empty_vectors, offsets):
+            negative_filter_indices.update({idx + offset for idx in vec.negative_filter_indices})
+        concatenated_values = np.concatenate([v.value for v in non_empty_vectors])
+        return Vector(concatenated_values, negative_filter_indices)

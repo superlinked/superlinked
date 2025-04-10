@@ -114,22 +114,9 @@ class OnlineDagEvaluator:
     ) -> list[EvaluationResult[Vector] | None]:
         if (online_schema_dag := self._dag_effect_online_schema_dag_mapper.get(dag_effect)) is not None:
             results = online_schema_dag.evaluate(parsed_schema_with_events, context)
-            for parsed_schema_with_event, result in zip(parsed_schema_with_events, results):
-                self._log_evaluated_event(parsed_schema_with_event, result)
+            logger.info("evaluated events", n_records=len(results))
             return results
         raise InvalidDagEffectException(f"DagEffect ({dag_effect}) isn't present in the index.")
-
-    def _log_evaluated_event(
-        self, parsed_schema_with_event: ParsedSchemaWithEvent, result: EvaluationResult | None
-    ) -> None:
-        logger.info(
-            "evaluated event",
-            event_id=parsed_schema_with_event.event_parsed_schema.id_,
-            affected_schema=parsed_schema_with_event.schema._schema_name,
-            affecting_schema=parsed_schema_with_event.event_parsed_schema.schema._schema_name,
-            pii_event_vector=partial(str, result.main.value) if result is not None else "None",
-            pii_field_values=[field.value for field in parsed_schema_with_event.event_parsed_schema.fields],
-        )
 
     def __init_schema_online_schema_dag_mapper(
         self,

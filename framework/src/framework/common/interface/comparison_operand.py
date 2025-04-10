@@ -30,20 +30,18 @@ COT = TypeVar("COT", bound="ComparisonOperand")
 class ComparisonOperand(ABC, Generic[COT]):
     def __init__(self, _: type[COT]) -> None:
         super().__init__()
-        self.__built_in_operation_mapping: dict[
-            ComparisonOperationType, Callable[[ComparisonOperand[COT], object], bool]
-        ] = {
-            ComparisonOperationType.EQUAL: self._built_in_equal,
-            ComparisonOperationType.NOT_EQUAL: self._built_in_not_equal,
-            ComparisonOperationType.GREATER_THAN: self._built_in_greater_than,
-            ComparisonOperationType.LESS_THAN: self._built_in_less_than,
-            ComparisonOperationType.GREATER_EQUAL: self._built_in_greater_equal,
-            ComparisonOperationType.LESS_EQUAL: self._built_in_less_equal,
-            ComparisonOperationType.IN: self._built_in_in,
-            ComparisonOperationType.NOT_IN: self._built_in_not_in,
-            ComparisonOperationType.CONTAINS: self._built_in_contains,
-            ComparisonOperationType.NOT_CONTAINS: self._built_in_not_contains,
-            ComparisonOperationType.CONTAINS_ALL: self._built_in_contains_all,
+        self.__built_in_operation_mapping: dict[str, Callable[[ComparisonOperand[COT], object], bool]] = {
+            ComparisonOperationType.EQUAL.value: self._built_in_equal,
+            ComparisonOperationType.NOT_EQUAL.value: self._built_in_not_equal,
+            ComparisonOperationType.GREATER_THAN.value: self._built_in_greater_than,
+            ComparisonOperationType.LESS_THAN.value: self._built_in_less_than,
+            ComparisonOperationType.GREATER_EQUAL.value: self._built_in_greater_equal,
+            ComparisonOperationType.LESS_EQUAL.value: self._built_in_less_equal,
+            ComparisonOperationType.IN.value: self._built_in_in,
+            ComparisonOperationType.NOT_IN.value: self._built_in_not_in,
+            ComparisonOperationType.CONTAINS.value: self._built_in_contains,
+            ComparisonOperationType.NOT_CONTAINS.value: self._built_in_not_contains,
+            ComparisonOperationType.CONTAINS_ALL.value: self._built_in_contains_all,
         }
 
     def in_(self, __value: object) -> ComparisonOperation[COT]:
@@ -61,16 +59,10 @@ class ComparisonOperand(ABC, Generic[COT]):
     def contains_all(self, __value: object) -> ComparisonOperation[COT]:
         return ComparisonOperation(ComparisonOperationType.CONTAINS_ALL, self, __value)
 
-    @property
-    def _built_in_operation_mapping(
-        self,
-    ) -> dict[ComparisonOperationType, Callable[[ComparisonOperand[COT], object], bool]]:
-        return self.__built_in_operation_mapping
-
     def _get_built_in_operation(
         self, operation_type: ComparisonOperationType
     ) -> Callable[[ComparisonOperand[COT], object], bool]:
-        return self.__built_in_operation_mapping[operation_type]
+        return self.__built_in_operation_mapping[operation_type.value]
 
     def __eq__(self, __value: object) -> ComparisonOperation[COT]:  # type: ignore[override]
         return ComparisonOperation(ComparisonOperationType.EQUAL, self, __value)

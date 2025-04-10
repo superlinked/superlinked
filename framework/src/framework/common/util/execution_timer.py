@@ -222,6 +222,9 @@ def getTimer() -> ExecutionTimer:  # pylint: disable=invalid-name
 def time_execution(func: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
+        if not Settings().ENABLE_PROFILING:
+            return func(*args, **kwargs)
+
         timer = getTimer()
         if args and hasattr(args[0], "__class__"):
             prefix = args[0].__class__.__name__
@@ -241,6 +244,8 @@ def time_execution_with_arg(arg_name: str) -> Callable[..., Any]:
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             timer = getTimer()
+            if not Settings().ENABLE_PROFILING:
+                return func(*args, **kwargs)
 
             if args and hasattr(args[0], "__class__"):
                 prefix = args[0].__class__.__name__

@@ -19,7 +19,6 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 from beartype.typing import Any, Generic, Sequence, TypeVar
-from scipy import linalg
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
@@ -44,7 +43,7 @@ class Normalization(Generic[NormalizationConfigT], ABC):
     def normalize(self, vector: Vector, context: ExecutionContext | None = None) -> Vector:
         return vector.normalize(
             self.norm(
-                vector.without_negative_filter.value,
+                vector.value_without_negative_filter,
                 context.is_query_context if context is not None else False,
             )
         )
@@ -90,7 +89,7 @@ class L2Norm(Normalization[L2NormConfig]):
     @override
     def norm(self, value: NPArray, is_query: bool = False) -> float:
         """Must be called with value that has no negative filter"""
-        return linalg.norm(value)
+        return np.linalg.norm(value)  # type: ignore[attr-defined]  # np cannot find norm
 
 
 class ConstantNorm(Normalization[ConstantNormConfig]):
