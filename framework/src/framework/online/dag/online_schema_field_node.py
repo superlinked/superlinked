@@ -19,10 +19,7 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
-from superlinked.framework.common.parser.parsed_schema import (
-    ParsedSchema,
-    ParsedSchemaField,
-)
+from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.schema_object import SFT
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
@@ -47,37 +44,41 @@ class OnlineSchemaFieldNode(Generic[SFT], OnlineNode[SchemaFieldNode, SFT]):
 
     @override
     def evaluate_self(
-        self,
-        parsed_schemas: Sequence[ParsedSchema],
-        context: ExecutionContext,
+        self, parsed_schemas: Sequence[ParsedSchema], context: ExecutionContext
     ) -> list[EvaluationResult[SFT] | None]:
-        return [self.evaluate_self_single(schema) for schema in parsed_schemas]
-
-    def evaluate_self_single(
-        self,
-        parsed_schema: ParsedSchema,
-    ) -> EvaluationResult[SFT] | None:
-        parsed_nodes: list[ParsedSchemaField] = [
-            field for field in parsed_schema.fields if field.schema_field == self.node.schema_field
+        parsed_schema_values = [self._get_parsed_schema_value(parsed_schema) for parsed_schema in parsed_schemas]
+        stored_results = self._calculate_stored_result_by_id(parsed_schemas, parsed_schema_values)
+        return [
+            self._to_result(stored_results.get(parsed_schema.id_) if value is None else value)
+            for parsed_schema, value in zip(parsed_schemas, parsed_schema_values)
         ]
-        result: SFT | None
-        if parsed_nodes:
-            result = parsed_nodes[0].value
-        else:
-            result = self.load_stored_results([(parsed_schema.schema, parsed_schema.id_)])[0]
-        if result is not None:
-            return EvaluationResult(self._get_single_evaluation_result(result))
+
+    def _calculate_stored_result_by_id(
+        self, parsed_schemas: Sequence[ParsedSchema], parsed_schema_values: Sequence[SFT | None]
+    ) -> dict[str, SFT | None]:
+        parsed_schema_ids_without_value = set(
+            parsed_schema.id_ for parsed_schema, value in zip(parsed_schemas, parsed_schema_values) if not value
+        )
+        if not self.node.persist_evaluation_result or not parsed_schema_ids_without_value:
+            return {}
+
+        schemas_with_object_ids = [
+            (self.node.schema_field.schema_obj, parsed_schema_id)
+            for parsed_schema_id in parsed_schema_ids_without_value
+        ]
+        return dict(zip(parsed_schema_ids_without_value, self.load_stored_results(schemas_with_object_ids)))
+
+    def _get_parsed_schema_value(self, parsed_schema: ParsedSchema) -> SFT | None:
+        return next(
+            (field.value for field in parsed_schema.fields if field.schema_field == self.node.schema_field), None
+        )
+
+    def _to_result(self, value: SFT | None) -> EvaluationResult[SFT] | None:
+        if value is not None:
+            return EvaluationResult(self._get_single_evaluation_result(value))
         if self.node.schema_field.nullable:
             return None
-        field_name = ".".join(
-            [
-                self.node.schema_field.schema_obj._schema_name,
-                self.node.schema_field.name,
-            ]
-        )
+        field_name = f"{self.node.schema_field.schema_obj._schema_name}.{self.node.schema_field.name}"
         raise ValueNotProvidedException(
-            (
-                f"The SchemaField {field_name} "
-                + "doesn't have a default value and was not provided in the ParsedSchema.",
-            )
+            f"The SchemaField {field_name} doesn't have a default value and was not provided in the ParsedSchema."
         )
