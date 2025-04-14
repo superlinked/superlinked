@@ -41,11 +41,14 @@ class SentenceTransformerEmbedding(Embedding[str, TextSimilarityEmbeddingConfig]
 
     @override
     def embed_multiple(self, inputs: Sequence[str], context: ExecutionContext) -> list[Vector]:
-        cache_info = self._cache.calculate_cache_info(inputs)
+        unique_inputs = list(dict.fromkeys(inputs))  # used instead of set() to keep original order
+        cache_info = self._cache.calculate_cache_info(unique_inputs)
         new_vectors = self.manager.embed_text(cache_info.inputs_to_embed, context)
         self._cache.update(cache_info.inputs_to_embed, new_vectors)
         combined_vectors = cache_info.combine_vectors(new_vectors)
-        return combined_vectors
+        input_to_vector = dict(zip(unique_inputs, combined_vectors))
+        vectors_mapped_back_to_input_len = [input_to_vector[input_] for input_ in inputs]
+        return vectors_mapped_back_to_input_len
 
     @override
     def embed(self, input_: str, context: ExecutionContext) -> Vector:
