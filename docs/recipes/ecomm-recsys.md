@@ -17,7 +17,7 @@ These live signals help build a continuously updated profile of the user’s cur
 
 Additionally, we use [item2vec](https://arxiv.org/vc/arxiv/papers/1603/1603.04259v2.pdf) which introduces a collaborative aspect by capturing product relationships from collective user interactions. All of these approaches showcase how we can leverage Superlinked in an e-commerce application to deliver real-time, session-based recommendations. It is adaptable to your own product data as well, so you can tailor this setup to your specific product relationships and consumer behaviour. 
 
-# How does it work ?
+## How does it work ?
 
 ### Key features
 
@@ -44,11 +44,11 @@ The user events reach a Wrapper API, which sits on top of the main Superlinked s
 
 Under the hood, the Superlinked server connects to a vector database (Redis in this example). Each product is stored with multi-modal embeddings that include images, descriptions, categories, and numeric properties.
 
-# Item2vec
+## Item2vec
 
 To enhance these recommendations, the system leverages an item2vec model trained on user event data. For instance, if many shoppers who click Product A also end up exploring Product B, item2vec embeddings capture that relationship, increasing B’s rank when someone else shows interest in A. You can train your own item2vec model using the provided scripts and adapt it to your data.
 
-#  Real-Time Session-Based Recommendations
+##  Real-Time Session-Based Recommendations
 
 As the user continues to click and browse, the system instantly:
 -  Updates the session context in the Wrapper API.
@@ -57,7 +57,7 @@ As the user continues to click and browse, the system instantly:
 
 If the user starts exploring a particular category, brand, or price range, the system tailors the recommended items accordingly, keeping the shopping experience engaging and personalized. Because the system processes events as they happen, shoppers get the sense that the site is learning their preferences in real time. Highly relevant products show up first, while items that are somewhat related appear further down. This approach can boost engagement and sales, as visitors are guided toward products that align with their interests.
 
-#  Get in touch and build this on your own data! 
+##  Get in touch and build this on your own data! 
 
 We will soon publish the repo so you can host an app like this yourself, however if you want early access in the meantime, please contact our developer realtions team at: 
 ```filip@superlinked.com```
