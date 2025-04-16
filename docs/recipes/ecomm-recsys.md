@@ -19,6 +19,24 @@ Additionally, we use [item2vec](https://arxiv.org/vc/arxiv/papers/1603/1603.0425
 
 # How does it work ?
 
+### Key features
+
+- **Example of how to train item2vec on your event data:** - Use events data to extract custom product realtions.
+- **Events based system:** - Have a session based recommendation that adjust recommendations in realtime while user surfs the site.
+- **Multi modal features:** - Support images, text and categories out of the box with SL.
+
+![image](https://github.com/user-attachments/assets/17cc39fb-f007-4878-8e68-9d723d09aee2)
+
+### Modalities:
+
+- **Images** product images
+- **Text** product description
+- **Categories** product type, brand, category
+- **Numbers** product popularity, price.
+
+### Hard-filters
+- **Stock** - use `is_active` indicator that will make sure only in stock products are recommended.
+
 The user events reach a Wrapper API, which sits on top of the main Superlinked server. It:
 -  Records which products users click or view.
 -  Builds and updates a live session context that captures the user’s evolving interests.
