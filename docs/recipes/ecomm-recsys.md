@@ -2,7 +2,7 @@
 icon: cart-shopping
 ---
 
-# Ecommerce Recsys demo
+# Ecommerce Recsys
 
 {% hint style="info" %}
 🚀 Try it out: [e-commerce-recsys-recipe.superlinked.io](https://e-commerce-recsys-recipe.superlinked.io)
