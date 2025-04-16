@@ -6,7 +6,7 @@ icon: cart-shopping
 
 {% hint style="info" %}
 🚀 Try it out: [e-commerce-recsys-recipe.superlinked.io](https://e-commerce-recsys-recipe.superlinked.io)
-⭐ Give us a star: [Superlinked repo](https://links.superlinked.com/recsys_demo)
+⭐ Give us a star: [Superlinked repo](https://github.com/superlinked/superlinked)
 {% endhint %}
 
 ## Overview
@@ -64,7 +64,7 @@ We will soon publish the repo so you can host an app like this yourself, however
 
 {% hint style="info" %}
 🚀 Try it out: [e-commerce-recsys-recipe.superlinked.io](https://e-commerce-recsys-recipe.superlinked.io)
-⭐ Give us a star: [Superlinked repo](https://links.superlinked.com/recsys_demo)
+⭐ Give us a star: [Superlinked repo](https://github.com/superlinked/superlinked)
 {% endhint %}
 
 <!-- Link to the public repo (which we don't have for hotel search I think)
