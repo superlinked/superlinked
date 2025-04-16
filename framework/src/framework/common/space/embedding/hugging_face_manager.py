@@ -21,17 +21,19 @@ import structlog
 from beartype.typing import Any, Sequence, cast
 from huggingface_hub import HfApi, InferenceClient
 from huggingface_hub.inference._providers import PROVIDER_T
-from PIL.Image import Image
 from requests import HTTPError
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.settings import Settings
-from superlinked.framework.common.space.embedding.model_manager import ModelManager
+from superlinked.framework.common.space.embedding.model_manager import (
+    ModelEmbeddingInputT,
+    ModelManager,
+)
 from superlinked.framework.common.util.collection_util import CollectionUtil
+from superlinked.framework.common.util.concurrent_executor import ConcurrentExecutor
 from superlinked.framework.common.util.execution_timer import time_execution
-from superlinked.framework.online.dag.concurrent_executor import ConcurrentExecutor
 
 logger = structlog.getLogger(__name__)
 
@@ -71,7 +73,9 @@ class HuggingFaceManager(ModelManager):
 
     @override
     @time_execution
-    def _embed(self, inputs: Sequence[str | Image], context: ExecutionContext) -> list[list[float]] | list[np.ndarray]:
+    def _embed(
+        self, inputs: Sequence[ModelEmbeddingInputT], context: ExecutionContext
+    ) -> list[list[float]] | list[np.ndarray]:
         if not inputs:
             return []
         chunked_inputs = CollectionUtil.chunk_list(data=inputs, chunk_size=self._max_batch_size)

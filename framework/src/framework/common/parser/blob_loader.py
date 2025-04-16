@@ -15,7 +15,6 @@
 
 import base64
 import binascii
-import io
 from urllib.parse import urlparse
 
 import requests
@@ -29,7 +28,8 @@ from superlinked.framework.blob.blob_handler_factory import (
 )
 from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.settings import Settings
-from superlinked.framework.online.dag.concurrent_executor import ConcurrentExecutor
+from superlinked.framework.common.util.concurrent_executor import ConcurrentExecutor
+from superlinked.framework.common.util.image_util import ImageUtil
 
 logger = structlog.getLogger()
 
@@ -56,9 +56,7 @@ class BlobLoader:
             raise ValueError(f"Blob field must contain a non-empty str or PIL.Image.Image input, got: {type_text}.")
 
         if isinstance(blob_like_input, Image):
-            with io.BytesIO() as buffer:
-                blob_like_input.save(buffer, format=blob_like_input.format or "PNG")
-                blob_like_input = base64.b64encode(buffer.getvalue()).decode("utf-8")
+            blob_like_input = ImageUtil.encode_b64(blob_like_input)
 
         if self._is_base64_encoded(blob_like_input):
             if self.allow_bytes:

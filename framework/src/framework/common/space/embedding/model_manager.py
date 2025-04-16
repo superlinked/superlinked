@@ -26,17 +26,20 @@ from superlinked.framework.common.settings import Settings
 SENTENCE_TRANSFORMERS_ORG_NAME = "sentence-transformers"
 DEFAULT_MODEL_CACHE_DIR = (Path.home() / ".cache" / SENTENCE_TRANSFORMERS_ORG_NAME).absolute().as_posix()
 
+ModelEmbeddingInputT = str | Image
+
 
 class ModelManager(ABC):
     def __init__(self, model_name: str, model_cache_dir: Path | None = None) -> None:
         self._model_name = model_name
         self._model_cache_dir = self.__get_cache_folder(model_cache_dir)
 
-    def embed(self, inputs: Sequence[str | Image | None], context: ExecutionContext) -> list[Vector | None]:
+    def embed(self, inputs: Sequence[ModelEmbeddingInputT | None], context: ExecutionContext) -> list[Vector | None]:
         inputs_without_nones = [input_ for input_ in inputs if input_ is not None]
         if not inputs_without_nones:
             return [None] * len(inputs)
         none_indices = [i for i, input_ in enumerate(inputs) if input_ is None]
+        self._validate_inputs(inputs_without_nones)
         embeddings = self._embed(inputs_without_nones, context)
         result: list[Vector | None] = [Vector(embedding) for embedding in embeddings]
         for index in none_indices:
@@ -45,7 +48,7 @@ class ModelManager(ABC):
 
     @abstractmethod
     def _embed(
-        self, inputs: Sequence[str | Image], context: ExecutionContext
+        self, inputs: Sequence[ModelEmbeddingInputT], context: ExecutionContext
     ) -> list[list[float]] | list[np.ndarray]: ...
 
     @abstractmethod
@@ -53,3 +56,13 @@ class ModelManager(ABC):
 
     def __get_cache_folder(self, model_cache_dir: Path | None) -> Path:
         return model_cache_dir or Path(Settings().MODEL_CACHE_DIR or DEFAULT_MODEL_CACHE_DIR)
+
+    def _categorize_inputs(self, inputs: Sequence[ModelEmbeddingInputT]) -> tuple[list[str], list[Image]]:
+        text_inputs = [inp for inp in inputs if isinstance(inp, str)]
+        image_inputs = [inp for inp in inputs if isinstance(inp, Image)]
+        return text_inputs, image_inputs
+
+    def _validate_inputs(self, inputs: Sequence[ModelEmbeddingInputT]) -> None:
+        unsupported_item = next((inp for inp in inputs if not isinstance(inp, ModelEmbeddingInputT)), None)
+        if unsupported_item:
+            raise ValueError(f"Unsupported Image embedding input type: {type(unsupported_item).__name__}")

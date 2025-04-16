@@ -31,7 +31,9 @@ from superlinked.framework.common.space.config.embedding.image_embedding_config 
     ModelHandler,
 )
 from superlinked.framework.common.space.embedding.embedding import Embedding
-from superlinked.framework.common.space.embedding.model_manager import ModelManager
+from superlinked.framework.common.space.embedding.infinity_manager import (
+    InfinityManager,
+)
 from superlinked.framework.common.space.embedding.open_clip_manager import (
     OpenClipManager,
 )
@@ -41,10 +43,12 @@ from superlinked.framework.common.space.embedding.sentence_transformer_manager i
 
 logger = structlog.getLogger()
 
+ManagerT = SentenceTransformerManager | OpenClipManager | InfinityManager
 
-MANAGER_BY_HANDLER = {
+MANAGER_BY_HANDLER: dict[ModelHandler, type[ManagerT]] = {
     ModelHandler.SENTENCE_TRANSFORMERS: SentenceTransformerManager,
     ModelHandler.OPEN_CLIP: OpenClipManager,
+    ModelHandler.INFINITY: InfinityManager,
 }
 
 
@@ -84,7 +88,7 @@ class ImageEmbedding(Embedding[ImageData, ImageEmbeddingConfig]):
         return self._config.length
 
     @classmethod
-    def init_manager(cls, model_handler: ModelHandler, model_name: str, model_cache_dir: Path | None) -> ModelManager:
+    def init_manager(cls, model_handler: ModelHandler, model_name: str, model_cache_dir: Path | None) -> ManagerT:
         if manager_type := MANAGER_BY_HANDLER.get(model_handler):
             return manager_type(model_name, model_cache_dir)
         raise ValueError(f"Unsupported model handler: {model_handler}")

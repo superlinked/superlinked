@@ -18,15 +18,18 @@ import structlog
 import torch
 from beartype.typing import Any, Sequence
 from open_clip.model import CLIP
-from PIL.Image import Image
 from torchvision.transforms.transforms import Compose  # type:ignore[import-untyped]
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.space.embedding.model_manager import ModelManager
+from superlinked.framework.common.space.embedding.model_manager import (
+    ModelEmbeddingInputT,
+    ModelManager,
+)
 from superlinked.framework.common.space.embedding.open_clip_model_cache import (
     OpenClipModelCache,
 )
+from superlinked.framework.common.util.collection_util import CollectionUtil
 from superlinked.framework.common.util.execution_timer import time_execution
 from superlinked.framework.common.util.gpu_embedding_util import GpuEmbeddingUtil
 
@@ -41,14 +44,15 @@ class OpenClipManager(ModelManager):
 
     @override
     @time_execution
-    def _embed(self, inputs: Sequence[str | Image], context: ExecutionContext) -> list[list[float]] | list[np.ndarray]:
+    def _embed(
+        self, inputs: Sequence[ModelEmbeddingInputT], context: ExecutionContext
+    ) -> list[list[float]] | list[np.ndarray]:
         embedding_model, preprocess_val = self._get_embedding_model(len(inputs))
         text_inputs, image_inputs = self._categorize_inputs(inputs)
-        self._validate_inputs(inputs)
         with torch.no_grad():
             text_encodings = self.encode_texts(text_inputs, embedding_model)
             image_encodings = self.encode_images(image_inputs, embedding_model, preprocess_val)
-        encodings = self._combine_encodings(inputs, text_encodings, image_encodings)
+        encodings = CollectionUtil.combine_values_based_on_type(inputs, text_encodings, image_encodings, str)
         return [self._normalize_encoding(encoding).tolist() for encoding in encodings]
 
     def _get_embedding_model(self, number_of_inputs: int) -> tuple[CLIP, Compose]:
@@ -58,26 +62,6 @@ class OpenClipManager(ModelManager):
         )
         model = OpenClipModelCache.initialize_model(self._model_name, device_type, self._model_cache_dir)
         return model
-
-    def _categorize_inputs(self, inputs: Sequence[str | Image]) -> tuple[list[str], list[Image]]:
-        text_inputs = [inp for inp in inputs if isinstance(inp, str)]
-        image_inputs = [inp for inp in inputs if isinstance(inp, Image)]
-        return text_inputs, image_inputs
-
-    def _validate_inputs(self, inputs: Sequence[str | Image]) -> None:
-        unsupported_item = next((inp for inp in inputs if not isinstance(inp, (str, Image))), None)
-        if unsupported_item:
-            raise ValueError(f"Unsupported Image embedding input type: {type(unsupported_item).__name__}")
-
-    def _combine_encodings(
-        self,
-        inputs: Sequence[str | Image],
-        text_encodings: torch.Tensor,
-        image_encodings: torch.Tensor,
-    ) -> list[torch.Tensor]:
-        text_iter = iter(text_encodings)
-        image_iter = iter(image_encodings)
-        return [next(text_iter) if isinstance(inp, str) else next(image_iter) for inp in inputs]
 
     def _normalize_encoding(self, encoding: torch.Tensor) -> torch.Tensor:
         return encoding / encoding.norm(dim=-1, keepdim=True)

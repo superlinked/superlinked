@@ -64,7 +64,8 @@ class DataFrameParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, pd.D
             data_copy[self._created_at_name] = data_copy[self._created_at_name].astype(int)
             self.__ensure_created_at_type(data_copy)
 
-        schema_data = cast(pd.DataFrame, data_copy[list(schema_cols.keys())])
+        filtered_cols = {col: schema_field for col, schema_field in schema_cols.items() if col in data_copy.columns}
+        schema_data = cast(pd.DataFrame, data_copy[list(filtered_cols.keys())])
         records = cast(list[dict[str, Any]], schema_data.to_dict(orient="records"))
         return [self.__create_parsed_schema(record, schema_cols) for record in records]
 
@@ -170,6 +171,8 @@ class DataFrameParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, pd.D
         schema_cols: dict[str, SchemaField],
     ) -> None:
         for column_name, schema_field in schema_cols.items():
+            if column_name not in data.columns and schema_field.nullable:
+                continue
             # pylint: disable=W0640
             data[column_name] = data[column_name].apply(
                 lambda x: schema_field.as_type(x) if self._field_has_non_null_value(x) else None

@@ -22,7 +22,7 @@ from typing_extensions import override
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import NT
 from superlinked.framework.common.settings import Settings
-from superlinked.framework.online.dag.concurrent_executor import ConcurrentExecutor
+from superlinked.framework.common.util.concurrent_executor import ConcurrentExecutor
 from superlinked.framework.query.dag.exception import QueryEvaluationException
 from superlinked.framework.query.dag.query_evaluation_data_types import (
     QueryEvaluationResult,

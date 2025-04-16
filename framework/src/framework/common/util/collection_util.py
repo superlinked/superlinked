@@ -59,3 +59,17 @@ class CollectionUtil:
             negative_filter_indices.update({idx + offset for idx in vec.negative_filter_indices})
         concatenated_values = np.concatenate([v.value for v in non_empty_vectors])
         return Vector(concatenated_values, negative_filter_indices)
+
+    @staticmethod
+    def combine_values_based_on_type(
+        items: Iterable[Any],
+        condition_matching_values: Iterable[T],
+        alternate_values: Iterable[T],
+        type_condition: type,
+    ) -> list[T]:
+        """Recombines values from two iterables based on the type of items in a source iterable."""
+        matching_iterator = iter(condition_matching_values)
+        alternate_iterator = iter(alternate_values)
+        return [
+            next(matching_iterator) if isinstance(item, type_condition) else next(alternate_iterator) for item in items
+        ]

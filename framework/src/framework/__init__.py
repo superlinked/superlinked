@@ -59,6 +59,7 @@ from superlinked.framework.common.schema.id_field import IdField
 from superlinked.framework.common.schema.schema import Schema, schema
 from superlinked.framework.common.schema.schema_object import (
     Blob,
+    DescribedBlob,
     Float,
     FloatList,
     Integer,
@@ -73,6 +74,9 @@ from superlinked.framework.common.space.config.embedding.number_embedding_config
     LinearScale,
     LogarithmicScale,
     Mode,
+)
+from superlinked.framework.common.space.config.embedding.text_similarity_embedding_config import (
+    TextModelHandler,
 )
 from superlinked.framework.common.util.interactive_util import get_altair_renderer
 from superlinked.framework.dsl.app.interactive.interactive_app import InteractiveApp
@@ -149,8 +153,11 @@ __all__ = [
     "String",
     "StringList",
     "Timestamp",
+    "DescribedBlob",
     # Number Space Config
     "Mode",
+    # Text Similarity Space Config
+    "TextModelHandler",
     # DB
     "InMemoryVectorDatabase",
     "MongoDBVectorDatabase",

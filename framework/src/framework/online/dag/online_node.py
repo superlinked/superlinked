@@ -28,7 +28,7 @@ from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.settings import Settings
 from superlinked.framework.common.storage_manager.node_result_data import NodeResultData
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
-from superlinked.framework.online.dag.concurrent_executor import ConcurrentExecutor
+from superlinked.framework.common.util.concurrent_executor import ConcurrentExecutor
 from superlinked.framework.online.dag.evaluation_result import (
     EvaluationResult,
     SingleEvaluationResult,

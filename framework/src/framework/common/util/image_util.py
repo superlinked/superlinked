@@ -19,8 +19,17 @@ import os
 import PIL
 import PIL.Image
 
+FALLBACK_IMAGE_FORMAT = "PNG"
+
 
 class ImageUtil:
+    @staticmethod
+    def encode_b64(image: PIL.Image.Image) -> str:
+        with io.BytesIO() as buffer:
+            image.save(buffer, format=image.format or FALLBACK_IMAGE_FORMAT)
+            encoded_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
+        return encoded_str
+
     @staticmethod
     def open_image(data: bytes) -> PIL.Image.Image:
         return PIL.Image.open(io.BytesIO(base64.b64decode(data)))

@@ -17,12 +17,14 @@ import numpy as np
 import structlog
 from beartype.typing import Sequence
 from numpy import ndarray
-from PIL.Image import Image
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.space.embedding.model_manager import ModelManager
+from superlinked.framework.common.space.embedding.model_manager import (
+    ModelEmbeddingInputT,
+    ModelManager,
+)
 from superlinked.framework.common.space.embedding.sentence_transformer import (
     SentenceTransformer,
 )
@@ -42,14 +44,18 @@ QUERY_PROMPT_NAME = "query"
 class SentenceTransformerManager(ModelManager):
     @override
     @time_execution
-    def _embed(self, inputs: Sequence[str | Image], context: ExecutionContext) -> list[list[float]] | list[np.ndarray]:
+    def _embed(
+        self, inputs: Sequence[ModelEmbeddingInputT], context: ExecutionContext
+    ) -> list[list[float]] | list[np.ndarray]:
         model = self._get_embedding_model(len(inputs))
         prompt_name = self._calculate_prompt_name(model, context)
         embeddings = self._encode(inputs, model, prompt_name)
         return embeddings.tolist()
 
     @time_execution
-    def _encode(self, inputs: Sequence[str | Image], model: SentenceTransformer, prompt_name: str | None) -> ndarray:
+    def _encode(
+        self, inputs: Sequence[ModelEmbeddingInputT], model: SentenceTransformer, prompt_name: str | None
+    ) -> ndarray:
         return model.encode(
             list(inputs),  # type: ignore[arg-type] # it also accepts Image
             prompt_name=prompt_name,
