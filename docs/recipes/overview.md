@@ -47,7 +47,7 @@ Superlinked recipes are standalone applications designed to showcase the powerfu
   </tr>
   <tr>
     <td valign="top">
-      <strong>🛍️ E-Commerce RecSys</strong><br>
+      <a href="./ecomm-recsys.md">🛍️ E-Commerce RecSys</a>
     </td>
     <td valign="top">
       <a href="https://e-commerce-recsys-recipe.superlinked.io">🚀 Try it now</a>
