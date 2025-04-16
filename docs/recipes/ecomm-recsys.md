@@ -39,6 +39,10 @@ As the user continues to click and browse, the system instantly:
 
 If the user starts exploring a particular category, brand, or price range, the system tailors the recommended items accordingly, keeping the shopping experience engaging and personalized. Because the system processes events as they happen, shoppers get the sense that the site is learning their preferences in real time. Highly relevant products show up first, while items that are somewhat related appear further down. This approach can boost engagement and sales, as visitors are guided toward products that align with their interests.
 
+#  Get in touch and build this on your own data! 
+
+We will soon publish the repo so you can host an app like this yourself, however if you want early access in the meantime, please contact our developer realtions team at: 
+```filip@superlinked.com```
 
 {% hint style="info" %}
 🚀 Try it out: [e-commerce-recsys-recipe.superlinked.io](https://e-commerce-recsys-recipe.superlinked.io)
