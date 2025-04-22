@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from beartype.typing import Sequence
 
 from superlinked.framework.common.dag.dag_effect import DagEffect
@@ -34,14 +33,11 @@ class Dag:
         self.__check_for_node_id_duplication()
         self.dag_effects = dag_effects or set()
         node_id_schema_map: dict[str, set[SchemaObject]] = self.__init_node_id_schema_map(self.nodes)
-        node_id_dag_effect_map: dict[str, set[DagEffect]] = self.__init_node_id_dag_effect_map(self.nodes)
         self.__schemas: set[SchemaObject] = self.__init_schemas(node_id_schema_map)
         self.__schema_dag_map: dict[SchemaObject, SchemaDag] = self.__init_schema_schema_dag_map(
             self.__schemas, node_id_schema_map
         )
-        self.__dag_effect_dag_map: dict[DagEffect, SchemaDag] = self.__init_dag_effect_schema_dag_map(
-            self.dag_effects, node_id_dag_effect_map
-        )
+        self.__dag_effect_dag_map: dict[DagEffect, SchemaDag] = self.__init_dag_effect_schema_dag_map(self.dag_effects)
 
     @property
     def schemas(self) -> set[SchemaObject]:
@@ -72,9 +68,6 @@ class Dag:
     def __init_node_id_schema_map(self, nodes: list[Node]) -> dict[str, set[SchemaObject]]:
         return {node.node_id: node.schemas for node in nodes}
 
-    def __init_node_id_dag_effect_map(self, nodes: list[Node]) -> dict[str, set[DagEffect]]:
-        return {node.node_id: node.dag_effects for node in nodes}
-
     def __init_schemas(self, node_id_schema_map: dict[str, set[SchemaObject]]) -> set[SchemaObject]:
         return {schema for schemas in node_id_schema_map.values() for schema in schemas}
 
@@ -93,25 +86,24 @@ class Dag:
             list(projected_parents.union(filtered_nodes)),
         )
 
-    def __init_dag_effect_schema_dag_map(
-        self,
-        dag_effects: set[DagEffect],
-        node_id_dag_effect_map: dict[str, set[DagEffect]],
-    ) -> dict[DagEffect, SchemaDag]:
-        return {
-            dag_effect: self.__project_to_dag_effect(dag_effect, node_id_dag_effect_map) for dag_effect in dag_effects
-        }
+    def __init_dag_effect_schema_dag_map(self, dag_effects: set[DagEffect]) -> dict[DagEffect, SchemaDag]:
+        return {dag_effect: self.__project_to_dag_effect(dag_effect) for dag_effect in dag_effects}
 
-    def __project_to_dag_effect(
-        self, dag_effect: DagEffect, node_id_dag_effect_map: dict[str, set[DagEffect]]
-    ) -> SchemaDag:
-        filtered_nodes = {node for node in self.nodes if dag_effect in node_id_dag_effect_map[node.node_id]}
-        projected_parents = set(
-            parent for node in filtered_nodes for parent in node.project_parents_for_dag_effect(dag_effect)
-        )
+    def __project_to_dag_effect(self, dag_effect: DagEffect) -> SchemaDag:
+        def project_node_parents(node: Node) -> set[Node]:
+            return set(node.project_parents_for_dag_effect(dag_effect))
+
+        index_node = next(iter(node for node in self.nodes if isinstance(node, IndexNode)))
+        unvisited_nodes: list[Node] = [index_node]
+        visited_nodes = list[Node]()
+        while unvisited_nodes:
+            node = unvisited_nodes.pop()
+            visited_nodes.append(node)
+            parent_nodes = project_node_parents(node)
+            unvisited_nodes.extend([parent_node for parent_node in parent_nodes if parent_node not in visited_nodes])
         return SchemaDag(
             dag_effect.event_schema,
-            list(projected_parents.union(filtered_nodes)),
+            list(visited_nodes),
         )
 
     def __check_for_node_id_duplication(self) -> None:

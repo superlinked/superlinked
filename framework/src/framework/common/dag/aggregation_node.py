@@ -110,6 +110,4 @@ class AggregationNode(
         return []
 
     def project_parents_for_dag_effect(self, dag_effect: DagEffect) -> Sequence[Node]:
-        if dag_effect in self.dag_effects:
-            return self.parents
-        return []
+        return self.parents
