@@ -147,20 +147,13 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
     ) -> dict[DagEffect, list[ParsedSchemaWithEvent]]:
         effect_parsed_schema_map: dict[DagEffect, list[ParsedSchemaWithEvent]] = defaultdict(list)
         for event_parsed_schema in event_parsed_schemas:
-            for effect in self._get_distinct_effects(event_parsed_schema):
+            matching_effects = [
+                effect for effect in self._dag_effects if effect.event_schema == event_parsed_schema.schema
+            ]
+            for effect in matching_effects:
                 if parsed_schema_with_event := self._create_parsed_schema_with_event(effect, event_parsed_schema):
                     effect_parsed_schema_map[effect].append(parsed_schema_with_event)
         return effect_parsed_schema_map
-
-    def _get_distinct_effects(self, event_parsed_schema: EventParsedSchema) -> list[DagEffect]:
-        matching_effects = [effect for effect in self._dag_effects if effect.event_schema == event_parsed_schema.schema]
-        return [
-            effect
-            for i, effect in enumerate(matching_effects)
-            if not any(
-                effect.is_same_effect_except_for_multiplier(other_effect) for other_effect in matching_effects[:i]
-            )
-        ]
 
     def _create_parsed_schema_with_event(
         self, effect: DagEffect, event_parsed_schema: EventParsedSchema
