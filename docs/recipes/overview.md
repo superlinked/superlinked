@@ -59,7 +59,7 @@ Superlinked recipes are standalone applications designed to showcase the powerfu
           Image, Text, Numbers, Categories
     </td>
     <td valign="top">
-        Recommendation System
+        <a href="./recommendation-system.md">Recommendation System</a>
     </td>
   </tr>
 

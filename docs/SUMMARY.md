@@ -165,6 +165,7 @@
 * [Overview](recipes/overview.md)
 * [Multi-Modal Semantic Search](recipes/multi-modal-semantic-search.md)
   * [Hotel Search](recipes/hotel-search.md)
+* [Recommendation System](recipes/recommendation-system.md)
   * [E-Commerce RecSys](recipes/ecomm-recsys.md)
 
 ## Tutorials
