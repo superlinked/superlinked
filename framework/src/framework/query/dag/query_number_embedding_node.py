@@ -24,6 +24,10 @@ from superlinked.framework.common.space.config.embedding.number_embedding_config
     Mode,
     NumberEmbeddingConfig,
 )
+from superlinked.framework.common.space.normalization.normalization_factory import (
+    NormalizationFactory,
+)
+from superlinked.framework.query.dag.exception import QueryEvaluationException
 from superlinked.framework.query.dag.query_embedding_orphan_node import (
     QueryEmbeddingOrphanNode,
 )
@@ -40,6 +44,10 @@ from superlinked.framework.query.query_node_input import (
 class QueryNumberEmbeddingNode(QueryEmbeddingOrphanNode[float, NumberEmbeddingNode, float]):
     def __init__(self, node: NumberEmbeddingNode, parents: Sequence[QueryNode]) -> None:
         super().__init__(node, parents, float)
+        self._normalization = NormalizationFactory.create_normalization(
+            self.node.transformation_config.normalization_config
+        )
+        self._embedding_config = cast(NumberEmbeddingConfig, self.node.transformation_config.embedding_config)
 
     @override
     def _pre_process_node_input(self, node_input: QueryNodeInput) -> QueryNodeInput:
@@ -58,7 +66,26 @@ class QueryNumberEmbeddingNode(QueryEmbeddingOrphanNode[float, NumberEmbeddingNo
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,
     ) -> QueryEvaluationResult[Vector]:
-        embedding_config = cast(NumberEmbeddingConfig, self.node.transformation_config.embedding_config)
-        if embedding_config.mode in (Mode.MINIMUM, Mode.MAXIMUM):
-            return QueryEvaluationResult(embedding_config.default_vector)
-        return super()._evaluate(inputs, context)
+        if self._embedding_config.mode not in (Mode.MINIMUM, Mode.MAXIMUM):
+            return super()._evaluate(inputs, context)
+        if self._min_or_max_weight_is_zero(inputs):
+            return QueryEvaluationResult(Vector.init_zero_vector(self.node.length))
+        return QueryEvaluationResult(self._embedding_config.default_vector)
+
+    def _min_or_max_weight_is_zero(self, inputs: Mapping[str, Sequence[QueryNodeInput]]) -> None | float | int:
+        corresponding_inputs = inputs.get(self.node_id)
+        if not corresponding_inputs:
+            return None
+        if len(corresponding_inputs) > 1:
+            raise QueryEvaluationException(
+                f"Number embedding node with mode {self._embedding_config.mode} "
+                f"can only handle a single input, got {len(corresponding_inputs)}."
+            )
+        input_value = corresponding_inputs[0].value
+        if not isinstance(input_value.item, Vector):
+            raise QueryEvaluationException(
+                f"Number embedding node with mode {self._embedding_config.mode} "
+                f"can only handle a Vector input, got {type(input_value.item).__name__}."
+            )
+        weight = input_value.weight.get(self.node_id) if isinstance(input_value.weight, dict) else input_value.weight
+        return weight == 0
