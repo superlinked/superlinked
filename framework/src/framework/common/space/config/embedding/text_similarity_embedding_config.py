@@ -28,17 +28,19 @@ from superlinked.framework.common.space.embedding.hugging_face_manager import (
 from superlinked.framework.common.space.embedding.infinity_manager import (
     InfinityManager,
 )
+from superlinked.framework.common.space.embedding.modal_manager import ModalManager
 from superlinked.framework.common.space.embedding.sentence_transformer_manager import (
     SentenceTransformerManager,
 )
 
-TextModelManager = Union[SentenceTransformerManager, HuggingFaceManager, InfinityManager]
+TextModelManager = Union[SentenceTransformerManager, HuggingFaceManager, InfinityManager, ModalManager]
 
 
 class TextModelHandler(Enum):
     SENTENCE_TRANSFORMERS = "sentence_transformers"
     HUGGING_FACE = "hugging_face"
     INFINITY = "infinity"
+    MODAL = "modal"
 
     def create_manager(self, model_name: str, model_cache_dir: Path | None = None) -> TextModelManager:
         match self:
@@ -48,6 +50,8 @@ class TextModelHandler(Enum):
                 return HuggingFaceManager(model_name, model_cache_dir)
             case TextModelHandler.INFINITY:
                 return InfinityManager(model_name, model_cache_dir)
+            case TextModelHandler.MODAL:
+                return ModalManager(model_name, model_cache_dir)
             case _:
                 raise ValueError(f"Unsupported model handler: {self}")
 

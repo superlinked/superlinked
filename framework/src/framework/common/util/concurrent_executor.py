@@ -32,13 +32,30 @@ class ConcurrentExecutor:
 
     def __init__(self, max_workers: int | None = None) -> None:
         if not hasattr(self, "_executor"):
-            max_workers = max_workers or ConcurrentExecutor._determine_optimal_workers()
-            self._executor = ThreadPoolExecutor(max_workers=max_workers)
+            self._max_workers = max_workers or ConcurrentExecutor._determine_optimal_workers()
+            self._executor = ThreadPoolExecutor(max_workers=self._max_workers)
+
+    def execute_batched(
+        self,
+        func: Callable[..., Sequence[ReturnT]],
+        items: Sequence[Any],
+        batch_size: int | None = None,
+        additional_args: Sequence[Any] | None = None,
+        condition: bool = True,
+    ) -> Sequence[ReturnT]:
+        """Process items in batches with concurrent execution within each batch."""
+        if batch_size is None:
+            batch_size = max(1, len(items) // self._max_workers)
+        if additional_args is None:
+            additional_args = []
+        args_lists = [[items[i : i + batch_size]] + list(additional_args) for i in range(0, len(items), batch_size)]
+        batch_results = self.execute(func, args_lists, condition)
+        return [item for batch in batch_results for item in batch]
 
     def execute(
-        self, func: Callable[..., ReturnT], args_list: Sequence[Sequence[Any]], condition: bool
+        self, func: Callable[..., ReturnT], args_list: Sequence[Sequence[Any]], condition: bool = True
     ) -> Sequence[ReturnT]:
-        if condition:
+        if condition and len(args_list) > 1:
             return self.execute_concurrently(func, args_list)
         return self.execute_sequentially(func, args_list)
 
@@ -58,5 +75,5 @@ class ConcurrentExecutor:
     @staticmethod
     def _determine_optimal_workers() -> int:
         cpu_count = os.cpu_count() or 1
-        optimal_worker_count = cpu_count * 2
+        optimal_worker_count = cpu_count
         return min(MAX_WORKER_COUNT, optimal_worker_count)

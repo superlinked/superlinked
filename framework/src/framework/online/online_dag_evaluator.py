@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 from functools import partial
 
 import structlog
@@ -95,10 +96,11 @@ class OnlineDagEvaluator:
         index_schema = self.__get_single_schema(parsed_schemas)
         if (online_schema_dag := self._schema_online_schema_dag_mapper.get(index_schema)) is not None:
             results = online_schema_dag.evaluate(parsed_schemas, context)
+            logger_to_use = logger.bind(schema=index_schema._schema_name)
+            logger_to_use.info("evaluated entities", nr_of_entities=len(results))
             for i, result in enumerate(results):
-                logger.info(
+                logger_to_use.debug(
                     "evaluated entity",
-                    schema=index_schema._schema_name,
                     pii_vector=partial(str, result.main.value) if result is not None else "None",
                     pii_field_values=[field.value for field in parsed_schemas[i].fields],
                 )

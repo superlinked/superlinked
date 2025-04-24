@@ -34,6 +34,7 @@ from superlinked.framework.common.space.embedding.embedding import Embedding
 from superlinked.framework.common.space.embedding.infinity_manager import (
     InfinityManager,
 )
+from superlinked.framework.common.space.embedding.modal_manager import ModalManager
 from superlinked.framework.common.space.embedding.open_clip_manager import (
     OpenClipManager,
 )
@@ -43,12 +44,13 @@ from superlinked.framework.common.space.embedding.sentence_transformer_manager i
 
 logger = structlog.getLogger()
 
-ManagerT = SentenceTransformerManager | OpenClipManager | InfinityManager
+ManagerT = SentenceTransformerManager | OpenClipManager | InfinityManager | ModalManager
 
 MANAGER_BY_HANDLER: dict[ModelHandler, type[ManagerT]] = {
     ModelHandler.SENTENCE_TRANSFORMERS: SentenceTransformerManager,
     ModelHandler.OPEN_CLIP: OpenClipManager,
     ModelHandler.INFINITY: InfinityManager,
+    ModelHandler.MODAL: ModalManager,
 }
 
 

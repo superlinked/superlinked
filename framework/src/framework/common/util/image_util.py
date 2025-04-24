@@ -25,10 +25,14 @@ FALLBACK_IMAGE_FORMAT = "PNG"
 class ImageUtil:
     @staticmethod
     def encode_b64(image: PIL.Image.Image) -> str:
+        return base64.b64encode(ImageUtil.encode_bytes(image)).decode("utf-8")
+
+    @staticmethod
+    def encode_bytes(image: PIL.Image.Image) -> bytes:
         with io.BytesIO() as buffer:
             image.save(buffer, format=image.format or FALLBACK_IMAGE_FORMAT)
-            encoded_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
-        return encoded_str
+            encoded_bytes = buffer.getvalue()
+        return encoded_bytes
 
     @staticmethod
     def open_image(data: bytes) -> PIL.Image.Image:

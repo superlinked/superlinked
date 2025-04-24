@@ -73,11 +73,15 @@ class BlobLoader:
         return BlobInformation(encoded_bytes, blob_path)
 
     def load_multiple(self, blob_like_inputs: Sequence[str | Image | None | Any]) -> Sequence[BlobInformation]:
-        return ConcurrentExecutor().execute(
+        logger_to_use = logger.bind(nr_of_blobs=len(blob_like_inputs))
+        logger_to_use.info("started blob loading")
+        results = ConcurrentExecutor().execute(
             func=self.load,
             args_list=[(blob_like_input,) for blob_like_input in blob_like_inputs],
             condition=Settings().SUPERLINKED_CONCURRENT_BLOB_LOADING,
         )
+        logger_to_use.info("finished blob loading")
+        return results
 
     def _get_loader(self, blob_path: str) -> Callable[[str], bytes]:
         scheme = urlparse(blob_path).scheme
