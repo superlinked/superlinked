@@ -124,7 +124,6 @@ class LoggerConfigurator:
         return processors + [
             merge_contextvars,
             CustomStructlogProcessor.evaluate_lazy_arguments,
-            structlog.stdlib.add_logger_name,
             structlog.stdlib.add_log_level,
             structlog.stdlib.PositionalArgumentsFormatter(),
             structlog.stdlib.ExtraAdder(),

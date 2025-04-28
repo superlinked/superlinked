@@ -65,8 +65,7 @@ class OnlineDagEvaluator:
             logger.info(
                 "initialized entity dag",
                 schema=schema._schema_name,
-                node_ids=[node.node_id for node in online_schema_dag.nodes],
-                node_types=[node.class_name for node in online_schema_dag.nodes],
+                node_info=[(node.class_name, node.node_id) for node in online_schema_dag.nodes],
             )
         for (
             dag_effect,
@@ -76,8 +75,7 @@ class OnlineDagEvaluator:
                 "initialized event dag",
                 affected_schema=dag_effect.resolved_affected_schema_reference.schema._schema_name,
                 affecting_schema=dag_effect.resolved_affecting_schema_reference.schema._schema_name,
-                node_ids=[node.node_id for node in online_schema_dag.nodes],
-                node_types=[node.class_name for node in online_schema_dag.nodes],
+                node_info=[(node.class_name, node.node_id) for node in online_schema_dag.nodes],
             )
 
     def __get_single_schema(self, parsed_schemas: Sequence[ParsedSchema]) -> IdSchemaObject:
@@ -97,7 +95,7 @@ class OnlineDagEvaluator:
         if (online_schema_dag := self._schema_online_schema_dag_mapper.get(index_schema)) is not None:
             results = online_schema_dag.evaluate(parsed_schemas, context)
             logger_to_use = logger.bind(schema=index_schema._schema_name)
-            logger_to_use.info("evaluated entities", nr_of_entities=len(results))
+            logger_to_use.info("evaluated entities", n_entities=len(results))
             for i, result in enumerate(results):
                 logger_to_use.debug(
                     "evaluated entity",

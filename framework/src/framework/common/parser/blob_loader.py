@@ -73,7 +73,7 @@ class BlobLoader:
         return BlobInformation(encoded_bytes, blob_path)
 
     def load_multiple(self, blob_like_inputs: Sequence[str | Image | None | Any]) -> Sequence[BlobInformation]:
-        logger_to_use = logger.bind(nr_of_blobs=len(blob_like_inputs))
+        logger_to_use = logger.bind(n_blobs=len(blob_like_inputs))
         logger_to_use.info("started blob loading")
         results = ConcurrentExecutor().execute(
             func=self.load,
