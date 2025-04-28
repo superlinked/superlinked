@@ -17,47 +17,50 @@ It allows users to search for hotels based on various criteria such as descripti
 💻 Github repo: [here](https://github.com/superlinked/superlinked-recipes/tree/main/projects/hotel-search)
 {% endhint %}
 
-
-
 ### Key Features:
+
 - **Natural Language Queries:** Search for hotels using everyday language.
 - **Multi-modal Semantic Search:** Utilize different data types for comprehensive search results.
 
 ### Query examples:
+
 - Cheap but highly rated hotels in Paris, no children
 - No pets, posh hotel in Berlin
 - Popular hotels in center of London with free breakfast
 
 ### Modalities:
+
 - **Text:** Hotel descriptions.
 - **Numbers:** Price, rating, and number of reviews.
 
 ### Hard-filters:
+
 - **Location:** City.
 - **Numbers:** Price, ratings.
-- **Amenities:** Options for property and room amenities; 
+- **Amenities:** Options for property and room amenities;
   wellnes and spa; accessibility; children.
 
 ### Data example (hotel entity):
 
 ```json
 {
-    "id": "Lovely Hotel",
-    "country": "Germany",
-    "city": "Berlin",
-    "accomodation_type": "Hotel",
-    "price": 42,
-    "image_src": "...",
-    "description": "A family hotel close to city center ...",
-    "rating_count": 6543,
-    "rating": 8.9,
-    "property_amenities": ["Free parking", "Breakfast"],
-    "room_amenities": ["Air conditioning", "Balcony"],
-    "wellness_spa": [],
-    "accessibility": ["Wheelchair accessible"],
-    "for_children": ["Childcare", "Cot"],
+  "id": "Lovely Hotel",
+  "country": "Germany",
+  "city": "Berlin",
+  "accomodation_type": "Hotel",
+  "price": 42,
+  "image_src": "...",
+  "description": "A family hotel close to city center ...",
+  "rating_count": 6543,
+  "rating": 8.9,
+  "property_amenities": ["Free parking", "Breakfast"],
+  "room_amenities": ["Air conditioning", "Balcony"],
+  "wellness_spa": [],
+  "accessibility": ["Wheelchair accessible"],
+  "for_children": ["Childcare", "Cot"]
 }
 ```
+
 ### How it works in a nutshell
 
 <div align="center">
@@ -107,6 +110,7 @@ It will take some time (depending on the network) to download the sentence-trans
 API docs will be available at [localhost:8080/docs](http://localhost:8080/docs).
 
 To ingest the dataset, run this command in your terminal:
+
 ```shell
 curl -X 'POST' \
   'http://localhost:8080/data-loader/hotel/run' \
@@ -135,7 +139,7 @@ Attach to VDB and experiment with different superlinked queries from the jupyter
 The `superlinked cli` is a one-package solution to deploy the Superlinked cluster on your GCP cloud.
 Via `superlinked cli` you will be able to run superlinked application at scale with additional important components such as batch engine, logging and more, utilizing the same superlinked configuration you used in your local setup!
 
-Want to try it now? Contact us at [superlinked.com](https://superlinked.typeform.com/to/LXMRzHWk?typeform-source=hotel-search-recipe).
+Want to try it now? Contact us at [superlinked.com](http://getdemo.superlinked.com/?utm_source=recipe-hotel-search).
 
 ## Tutorial
 
@@ -145,7 +149,7 @@ Also, feel free to read our docs: [docs.superlinked.com](https://docs.superlinke
 
 Once you are happy with your local Superlinked setup, you can use config files without changes for your Cloud deployent.
 To make transition to the cloud smooth, we provide Superlinked CLI.
-[Contact us](https://superlinked.typeform.com/to/LXMRzHWk?typeform-source=hotel-search-recipe) if you want to try it now!
+[Contact us](http://getdemo.superlinked.com/?utm_source=recipe-hotel-search) if you want to try it now!
 
 ---
 
@@ -165,6 +169,7 @@ You can create one simply by copying [`.env-example`](./superlinked_app/.env-exa
 [**`index.py`**](https://github.com/superlinked/superlinked-recipes/blob/main/projects/hotel-search/superlinked_app/index.py)
 
 This file defines three important things:
+
 - object schema: declares names and types of raw attributes
 - vector spaces: bind embedders to schema fields
 - index: combines spaces for multi-modal vector search
@@ -190,6 +195,7 @@ Attribues like city, hotel-type, and amenities are used for hard-filtering.
 
 These two files define superlinked queries used for multi-modal semantic search with Natural Language Interface (NLI) on top.
 Our github contains many helpful notebooks that show how to configure superlinked queries:
+
 - [query time weights](https://github.com/superlinked/superlinked/blob/main/notebook/feature/query_time_weights.ipynb)
 - [querying options](https://github.com/superlinked/superlinked/blob/main/notebook/feature/querying_options.ipynb)
 - [dynamic parameters](https://github.com/superlinked/superlinked/blob/main/notebook/feature/dynamic_parameters.ipynb)
@@ -200,6 +206,7 @@ Our github contains many helpful notebooks that show how to configure superlinke
 [**`api.py`**](https://github.com/superlinked/superlinked-recipes/blob/main/projects/hotel-search/superlinked_app/api.py)
 
 This file sets the following components:
+
 - vector database: in current application we are using Redis.
   We also support [MongoDB and Qdrant](https://docs.superlinked.com/run-in-production/index-1).
 - data loader: our data is ingested from gcp bucket
@@ -209,12 +216,13 @@ This file sets the following components:
 
 We publish our recipes as a starting point for your own projects.
 There are many things you might want to try:
+
 - **Experiment with superlinked queries.**
   Try to come up with more queries focused on different search scenarios fitting your use-case.
 - **Bring your own dataset.**
   Want to run Natural Language Query with your data?
   Define your schema, spaces, index, queries, and data-sources based on this recipe.
-  In case of questions, don't hesitate to [contact us](https://superlinked.typeform.com/to/LXMRzHWk?typeform-source=hotel-search-recipe)!
+  In case of questions, don't hesitate to [contact us](http://getdemo.superlinked.com/?utm_source=recipe-hotel-search)!
 - **Try different VDBs.**
   Depending on your needs you can choose one of the [VDBs we currently support](https://docs.superlinked.com/run-in-production/index-1).
   More to come!
