@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 import os
 from concurrent.futures import ThreadPoolExecutor
 
@@ -25,14 +27,14 @@ MAX_WORKER_COUNT = 32
 class ConcurrentExecutor:
     _instance = None
 
-    def __new__(cls, max_workers: int | None = None) -> "ConcurrentExecutor":
+    def __new__(cls) -> ConcurrentExecutor:
         if cls._instance is None:
             cls._instance = super(ConcurrentExecutor, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self, max_workers: int | None = None) -> None:
+    def __init__(self) -> None:
         if not hasattr(self, "_executor"):
-            self._max_workers = max_workers or ConcurrentExecutor._determine_optimal_workers()
+            self._max_workers = ConcurrentExecutor._determine_optimal_workers()
             self._executor = ThreadPoolExecutor(max_workers=self._max_workers)
 
     def execute_batched(

@@ -14,7 +14,14 @@
 
 from attr import dataclass
 
+from superlinked.framework.common.calculation.distance_metric import DistanceMetric
+from superlinked.framework.common.storage.search_index.search_algorithm import (
+    SearchAlgorithm,
+)
+
 
 @dataclass(frozen=True)
 class VDBSettings:
     default_query_limit: int
+    search_algorithm: SearchAlgorithm = SearchAlgorithm.FLAT
+    distance_metric: DistanceMetric = DistanceMetric.INNER_PRODUCT

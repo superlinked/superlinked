@@ -37,18 +37,13 @@ from superlinked.framework.common.storage.search_index.vector_component_precisio
     VectorComponentPrecision,
 )
 from superlinked.framework.common.util.execution_timer import time_execution
+from superlinked.framework.storage.common.vdb_settings import VDBSettings
 from superlinked.framework.storage.in_memory.object_serializer import ObjectSerializer
 
 
 class VDBConnector(ABC):
-    def __init__(
-        self,
-        distance_metric: DistanceMetric = DistanceMetric.INNER_PRODUCT,
-        search_algorithm: SearchAlgorithm = SearchAlgorithm.FLAT,
-        index_configs: Sequence[IndexConfig] | None = None,
-    ) -> None:
-        self._distance_metric = distance_metric
-        self._search_algorithm = search_algorithm
+    def __init__(self, vdb_settings: VDBSettings, index_configs: Sequence[IndexConfig] | None = None) -> None:
+        self.__vdb_settings = vdb_settings
         self._vector_coordinate_type = VectorComponentPrecision.init_from_settings()
         self._index_configs: dict[str, IndexConfig] = {
             index_config.index_name: index_config for index_config in (index_configs or [])
@@ -57,11 +52,15 @@ class VDBConnector(ABC):
 
     @property
     def distance_metric(self) -> DistanceMetric:
-        return self._distance_metric
+        return self.__vdb_settings.distance_metric
 
     @property
     def search_algorithm(self) -> SearchAlgorithm:
-        return self._search_algorithm
+        return self.__vdb_settings.search_algorithm
+
+    @property
+    def _default_search_limit(self) -> int:
+        return self.__vdb_settings.default_query_limit
 
     @property
     def vector_coordinate_type(self) -> VectorComponentPrecision:
@@ -84,11 +83,6 @@ class VDBConnector(ABC):
     @property
     @abstractmethod
     def search_index_manager(self) -> SearchIndexManager:
-        pass
-
-    @property
-    @abstractmethod
-    def _default_search_limit(self) -> int:
         pass
 
     def persist(self, _: ObjectSerializer) -> None:

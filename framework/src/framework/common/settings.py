@@ -41,9 +41,10 @@ class Settings(BaseSettings):
     # nlq specific params
     SUPERLINKED_NLQ_MAX_RETRIES: int = 3
     # concurrency specific params
-    SUPERLINKED_CONCURRENT_BLOB_LOADING: bool = False
-    SUPERLINKED_DISABLE_CONCURRENT_HUGGINGFACE_EMBEDDING: bool = False
-    SUPERLINKED_EXPERIMENTAL_ENABLE_CONCURRENT_DAG_EVALUATION: bool = False
+    SUPERLINKED_CONCURRENT_BLOB_LOADING: bool = True
+    SUPERLINKED_CONCURRENT_HUGGINGFACE_EMBEDDING: bool = True
+    SUPERLINKED_CONCURRENT_EFFECT_EVALUATION: bool = True
+    SUPERLINKED_CONCURRENT_QUERY_DAG_EVALUATION: bool = True
     # hugging face api embedding specific params
     HUGGING_FACE_API_TOKEN: str | None = None
     # infinity api embedding specific params

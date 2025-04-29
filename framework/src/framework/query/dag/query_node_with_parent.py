@@ -66,7 +66,7 @@ class QueryNodeWithParent(QueryNode[NT, QueryEvaluationResultT], Generic[NT, Que
         return ConcurrentExecutor().execute(
             lambda parent: parent.evaluate_with_validation(inputs, context),
             args_list=[(parent,) for parent in self.parents],
-            condition=Settings().SUPERLINKED_EXPERIMENTAL_ENABLE_CONCURRENT_DAG_EVALUATION,
+            condition=Settings().SUPERLINKED_CONCURRENT_QUERY_DAG_EVALUATION,
         )
 
     def _validate_parent_results(self, parent_results: Sequence[QueryEvaluationResult]) -> None:

@@ -45,10 +45,9 @@ from superlinked.framework.storage.in_memory.object_serializer import ObjectSeri
 
 class InMemoryVDB(VDBConnector):
     def __init__(self, vdb_settings: VDBSettings) -> None:
-        super().__init__()
+        super().__init__(vdb_settings=vdb_settings)
         self._vdb = defaultdict[str, dict[str, Any]](dict)
         self._search = InMemorySearch()
-        self.__vdb_settings = vdb_settings
         self.__search_index_manager = InMemorySearchIndexManager()
 
     @override
@@ -60,11 +59,6 @@ class InMemoryVDB(VDBConnector):
     @override
     def search_index_manager(self) -> SearchIndexManager:
         return self.__search_index_manager
-
-    @property
-    @override
-    def _default_search_limit(self) -> int:
-        return self.__vdb_settings.default_query_limit
 
     @override
     def write_entities(self, entity_data: Sequence[EntityData]) -> None:

@@ -82,7 +82,7 @@ class HuggingFaceManager(ModelManager):
         chunked_results = ConcurrentExecutor().execute(
             func=lambda input_: self._client.feature_extraction(text=input_).tolist(),
             args_list=[(input_,) for input_ in chunked_inputs],
-            condition=not Settings().SUPERLINKED_DISABLE_CONCURRENT_HUGGINGFACE_EMBEDDING,
+            condition=not Settings().SUPERLINKED_CONCURRENT_HUGGINGFACE_EMBEDDING,
         )
         return cast(list[list[float]], [item for sublist in chunked_results for item in sublist])
 
