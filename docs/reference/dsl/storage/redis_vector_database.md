@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.storage.redis_vector_database
 Classes
 -------
 
-`RedisVectorDatabase(host: str, port: int, default_query_limit: int = 10, **extra_params: Any)`
+`RedisVectorDatabase(host: str, port: int, default_query_limit: int = 10, search_algorithm: superlinked.framework.common.storage.search_index.search_algorithm.SearchAlgorithm = SearchAlgorithm.FLAT, **extra_params: Any)`
 :   Redis implementation of the VectorDatabase.
     
     This class provides a Redis-based vector database connector.
@@ -15,6 +15,7 @@ Classes
         host (str): The hostname of the Redis server.
         port (int): The port number of the Redis server.
         default_query_limit (int): Default vector search limit, set to Redis's default of 10.
+        search_algorithm (SearchAlgorithm): The algorithm to use for vector search. Defaults to FLAT.
         **extra_params (Any): Additional parameters for the Redis connection.
 
     ### Ancestors (in MRO)
