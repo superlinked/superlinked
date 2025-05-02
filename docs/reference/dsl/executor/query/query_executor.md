@@ -12,7 +12,7 @@ Classes
     Args:
         app: An instance of the App class.
         query_descriptor: An instance of the QueryDescriptor class representing the query to be executed.
-        evaluator: An instance of the QueryDagEvaluator class used to evaluate the query.
+        query_vector_factory: An instance of the QueryVectorFactory class used to produce query vectors.
 
     ### Methods
 

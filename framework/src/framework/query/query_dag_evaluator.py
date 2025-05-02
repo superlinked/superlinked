@@ -33,9 +33,8 @@ class QueryDagEvaluator:
         self._dag = dag
         self._query_dag: QueryDag = QueryDagCompiler().compile_dag(dag)
         logger.info(
-            "initialized entity dag",
-            node_ids=[node.node_id for node in self._dag.nodes],
-            node_types=[node.class_name for node in self._dag.nodes],
+            "initialized query dag",
+            node_info=[(node.class_name, node.node_id) for node in self._dag.nodes],
         )
 
     def evaluate(

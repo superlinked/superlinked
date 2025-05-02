@@ -44,13 +44,16 @@ from superlinked.framework.storage.redis.redis_vdb_client import RedisVDBClient
 
 
 class RedisVDBConnector(VDBConnector):
-    def __init__(self, connection_params: RedisConnectionParams, vdb_settings: VDBSettings) -> None:
-        super().__init__()
+    def __init__(
+        self,
+        connection_params: RedisConnectionParams,
+        vdb_settings: VDBSettings,
+    ) -> None:
+        super().__init__(vdb_settings=vdb_settings)
         self._client = RedisVDBClient(connection_params.connection_string)
         self._encoder = RedisFieldEncoder()
         self.__search_index_manager = RedisSearchIndexManager(self._client, self._encoder)
         self._search = RedisSearch(self._client, self._encoder)
-        self.__vdb_settings = vdb_settings
 
     @override
     def close_connection(self) -> None:
@@ -60,11 +63,6 @@ class RedisVDBConnector(VDBConnector):
     @override
     def search_index_manager(self) -> SearchIndexManager:
         return self.__search_index_manager
-
-    @property
-    @override
-    def _default_search_limit(self) -> int:
-        return self.__vdb_settings.default_query_limit
 
     @override
     def write_entities(self, entity_data: Sequence[EntityData]) -> None:

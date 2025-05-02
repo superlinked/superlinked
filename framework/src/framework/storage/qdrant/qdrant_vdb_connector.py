@@ -70,7 +70,7 @@ ID_PAYLOAD_FIELD = Field(FieldDataType.STRING, ID_PAYLOAD_FIELD_NAME)
 
 class QdrantVDBConnector(VDBConnector):
     def __init__(self, connection_params: QdrantConnectionParams, vdb_settings: VDBSettings) -> None:
-        super().__init__()
+        super().__init__(vdb_settings=vdb_settings)
         self._client = QdrantClient(
             url=connection_params.connection_string,
             api_key=connection_params._api_key,
@@ -80,7 +80,6 @@ class QdrantVDBConnector(VDBConnector):
         self.__search_index_manager = QdrantSearchIndexManager(self._client)
         self._search = QdrantSearch(self._client, self._encoder)
         self._vector_field_names = list[str]()
-        self.__vdb_settings = vdb_settings
 
     @override
     def close_connection(self) -> None:
@@ -90,11 +89,6 @@ class QdrantVDBConnector(VDBConnector):
     @override
     def search_index_manager(self) -> SearchIndexManager:
         return self.__search_index_manager
-
-    @property
-    @override
-    def _default_search_limit(self) -> int:
-        return self.__vdb_settings.default_query_limit
 
     @override
     def init_search_index_configs(

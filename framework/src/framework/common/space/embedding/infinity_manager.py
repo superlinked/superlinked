@@ -62,7 +62,7 @@ class InfinityManager(ModelManager):
                 batch_size=Settings().INFINITY_TEXT_BATCH_SIZE,
                 additional_args=(client,),
             )
-        logger.info("finished encoding", nr_of_texts=len(text_encodings), nr_of_images=len(image_encodings))
+        logger.info("finished encoding", n_texts=len(text_encodings), n_images=len(image_encodings))
         return CollectionUtil.combine_values_based_on_type(inputs, text_encodings, image_encodings, str)
 
     def _process_images_in_batch(

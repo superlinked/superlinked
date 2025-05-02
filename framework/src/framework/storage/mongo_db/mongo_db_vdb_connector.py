@@ -50,13 +50,12 @@ from superlinked.framework.storage.mongo_db.search_index.mongo_db_search_index_m
 
 class MongoDBVDBConnector(VDBConnector):
     def __init__(self, connection_params: MongoDBConnectionParams, vdb_settings: VDBSettings) -> None:
-        super().__init__()
+        super().__init__(vdb_settings=vdb_settings)
         self._client = MongoClient(connection_params.connection_string)
         self._db = self._client[connection_params.db_name]
         self._encoder = MongoDBFieldEncoder()
         self._search_index_manager = MongoDBSearchIndexManager(self._db.name, connection_params.admin_params)
         self._search = MongoDBSearch(self._db, self._encoder)
-        self.__vdb_settings = vdb_settings
 
     @override
     def close_connection(self) -> None:
@@ -68,11 +67,6 @@ class MongoDBVDBConnector(VDBConnector):
     @override
     def search_index_manager(self) -> SearchIndexManager:
         return self._search_index_manager
-
-    @property
-    @override
-    def _default_search_limit(self) -> int:
-        return self.__vdb_settings.default_query_limit
 
     @override
     def write_entities(self, entity_data: Sequence[EntityData]) -> None:

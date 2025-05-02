@@ -78,6 +78,9 @@ from superlinked.framework.common.space.config.embedding.number_embedding_config
 from superlinked.framework.common.space.config.embedding.text_similarity_embedding_config import (
     TextModelHandler,
 )
+from superlinked.framework.common.storage.search_index.search_algorithm import (
+    SearchAlgorithm,
+)
 from superlinked.framework.common.util.interactive_util import get_altair_renderer
 from superlinked.framework.dsl.app.interactive.interactive_app import InteractiveApp
 from superlinked.framework.dsl.executor.in_memory.in_memory_executor import (
@@ -159,6 +162,7 @@ __all__ = [
     # Text Similarity Space Config
     "TextModelHandler",
     # DB
+    "SearchAlgorithm",
     "InMemoryVectorDatabase",
     "MongoDBVectorDatabase",
     "QdrantVectorDatabase",

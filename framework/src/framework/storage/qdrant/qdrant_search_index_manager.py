@@ -44,8 +44,8 @@ class QdrantSearchIndexManager(SearchIndexManager):
         super().__init__(index_configs)
         self._client = client
 
-    @override
     @property
+    @override
     def supported_vector_indexing(self) -> Sequence[SearchAlgorithm]:
         # SearchAlgorithm.FLAT is only supported query time by setting the
         # `exact` param to True.

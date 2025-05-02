@@ -94,7 +94,7 @@ class StorageUsageEvaluator:
             immeasurable_messages_count=data_stream_observer.immeasurable_messages_count,
             indexed_field_types=self._get_indexed_field_types(self.__index),
             indexed_vector_size=self.__index._node.length,
-            search_index_type=str(self.__app.storage_manager._vdb_connector._search_algorithm),
+            search_index_type=str(self.__app.storage_manager._vdb_connector.search_algorithm),
             partial_result_info=self._get_partial_result_info(self.__index._dag),
             memory_usage=memory_usage,
         )

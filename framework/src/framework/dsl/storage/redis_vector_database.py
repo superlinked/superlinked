@@ -15,6 +15,9 @@
 
 from beartype.typing import Any
 
+from superlinked.framework.common.storage.search_index.search_algorithm import (
+    SearchAlgorithm,
+)
 from superlinked.framework.dsl.storage.vector_database import VectorDatabase
 from superlinked.framework.storage.common.vdb_settings import VDBSettings
 from superlinked.framework.storage.redis.redis_connection_params import (
@@ -30,7 +33,14 @@ class RedisVectorDatabase(VectorDatabase[RedisVDBConnector]):
     This class provides a Redis-based vector database connector.
     """
 
-    def __init__(self, host: str, port: int, default_query_limit: int = 10, **extra_params: Any) -> None:
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        default_query_limit: int = 10,
+        search_algorithm: SearchAlgorithm = SearchAlgorithm.FLAT,
+        **extra_params: Any
+    ) -> None:
         """
         Initialize the RedisVectorDatabase.
 
@@ -38,11 +48,12 @@ class RedisVectorDatabase(VectorDatabase[RedisVDBConnector]):
             host (str): The hostname of the Redis server.
             port (int): The port number of the Redis server.
             default_query_limit (int): Default vector search limit, set to Redis's default of 10.
+            search_algorithm (SearchAlgorithm): The algorithm to use for vector search. Defaults to FLAT.
             **extra_params (Any): Additional parameters for the Redis connection.
         """
         super().__init__()
         self._connection_params = RedisConnectionParams(host, port, **extra_params)
-        self._settings = VDBSettings(default_query_limit)
+        self._settings = VDBSettings(default_query_limit, search_algorithm)
 
     @property
     def _vdb_connector(self) -> RedisVDBConnector:
