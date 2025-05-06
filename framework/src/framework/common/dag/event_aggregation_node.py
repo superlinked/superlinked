@@ -70,7 +70,7 @@ class EventAggregationNode(
             Vector,
             [init_params.input_to_aggregate] + [filter.item for filter in init_params.filter_inputs],
             dag_effects=set(init_params.dag_effects),
-            persistence_params=PersistenceParams(persist_evaluation_result=True, persist_parent_evaluation_result=True),
+            persistence_params=PersistenceParams(persist_node_result=True, persist_parent_node_result=True),
             non_nullable_parents=frozenset([filter.item for filter in init_params.filter_inputs]),
         )
         self.schemas = {

@@ -59,7 +59,7 @@ class OnlineSchemaFieldNode(Generic[SFT], OnlineNode[SchemaFieldNode, SFT]):
         parsed_schema_ids_without_value = set(
             parsed_schema.id_ for parsed_schema, value in zip(parsed_schemas, parsed_schema_values) if not value
         )
-        if not self.node.persist_evaluation_result or not parsed_schema_ids_without_value:
+        if not self.node.persist_node_result or not parsed_schema_ids_without_value:
             return {}
 
         schemas_with_object_ids = [

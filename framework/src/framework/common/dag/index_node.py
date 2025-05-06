@@ -31,9 +31,7 @@ class IndexNode(Node[Vector], HasLength):
         super().__init__(
             Vector,
             self.__validate_and_order_parents(parents),
-            persistence_params=PersistenceParams(
-                persist_evaluation_result=True, persistence_type=PersistenceType.VECTOR
-            ),
+            persistence_params=PersistenceParams(persist_node_result=True, persistence_type=PersistenceType.VECTOR),
             non_nullable_parents=frozenset(parents),
         )
         self.__length = cast(HasLength, self.parents[0]).length

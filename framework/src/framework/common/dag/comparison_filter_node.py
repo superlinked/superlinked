@@ -41,7 +41,7 @@ class ComparisonFilterNode(Node[bool]):
 
     @property
     @override
-    def persist_evaluation_result(self) -> bool:
+    def persist_node_result(self) -> bool:
         # ComparisonFilterNode's result is bool, currently it cannot be persisted.
         return False
 

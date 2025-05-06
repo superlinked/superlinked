@@ -52,7 +52,7 @@ class AggregationNode(
         super().__init__(
             Vector,
             [weighted_parent.item for weighted_parent in weighted_parents],
-            persistence_params=PersistenceParams(persist_parent_evaluation_result=True),
+            persistence_params=PersistenceParams(persist_parent_node_result=True),
             dag_effects=dag_effects,
         )
         self._validate_parents()
@@ -99,7 +99,7 @@ class AggregationNode(
 
     @property
     @override
-    def persist_evaluation_result(self) -> bool:
+    def persist_node_result(self) -> bool:
         # Aggregation node's parents are always persisted, no need for double persistence.
         return False
 

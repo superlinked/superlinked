@@ -84,7 +84,7 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
     ) -> list[EvaluationResult[NodeDataT] | None]:
         with context.dag_output_recorder.record_evaluation_exception(self.node_id):
             results = self.evaluate_self(parsed_schemas, context)
-            if self.node.persist_evaluation_result:
+            if self.node.persist_node_result:
                 self.persist(results, parsed_schemas)
         context.dag_output_recorder.record(self.node_id, results)
         return results

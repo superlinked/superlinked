@@ -19,6 +19,6 @@ from superlinked.framework.common.storage.persistence_type import PersistenceTyp
 
 @dataclass
 class PersistenceParams:
-    persist_evaluation_result: bool = False
-    persist_parent_evaluation_result: bool = False
+    persist_node_result: bool = False
+    persist_parent_node_result: bool = False
     persistence_type: PersistenceType = PersistenceType.PROPERTY

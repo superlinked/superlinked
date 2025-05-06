@@ -70,7 +70,7 @@ class Node(Generic[NodeDataT], ABC):  # pylint: disable=too-many-instance-attrib
 
     def _append_child(self, child: Node) -> None:
         self.children.append(child)
-        self._persistence_params.persist_evaluation_result |= child._persistence_params.persist_parent_evaluation_result
+        self._persistence_params.persist_node_result |= child._persistence_params.persist_parent_node_result
 
     @property
     def node_data_type(self) -> type[NodeDataT]:
@@ -91,8 +91,8 @@ class Node(Generic[NodeDataT], ABC):  # pylint: disable=too-many-instance-attrib
         return self.__class__.__name__
 
     @property
-    def persist_evaluation_result(self) -> bool:
-        return self._persistence_params.persist_evaluation_result
+    def persist_node_result(self) -> bool:
+        return self._persistence_params.persist_node_result
 
     @property
     def persistence_type(self) -> PersistenceType:
