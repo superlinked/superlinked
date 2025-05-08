@@ -22,6 +22,7 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.schema.image_data import ImageData
+from superlinked.framework.common.settings import Settings
 from superlinked.framework.common.space.aggregation.aggregation import VectorAggregation
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     VectorAggregationConfig,
@@ -35,12 +36,16 @@ from superlinked.framework.common.space.embedding.infinity_manager import (
     InfinityManager,
 )
 from superlinked.framework.common.space.embedding.modal_manager import ModalManager
+from superlinked.framework.common.space.embedding.model_manager import (
+    ModelEmbeddingInputT,
+)
 from superlinked.framework.common.space.embedding.open_clip_manager import (
     OpenClipManager,
 )
 from superlinked.framework.common.space.embedding.sentence_transformer_manager import (
     SentenceTransformerManager,
 )
+from superlinked.framework.common.util.image_util import ImageUtil
 
 logger = structlog.getLogger()
 
@@ -66,8 +71,8 @@ class ImageEmbedding(Embedding[ImageData, ImageEmbeddingConfig]):
 
     @override
     def embed_multiple(self, inputs: Sequence[ImageData], context: ExecutionContext) -> list[Vector]:
-        images, descriptions = zip(*((input_.image, input_.description) for input_ in inputs))
-        embeddings = self.manager.embed(images + descriptions, context)
+        images_and_descriptions = self._prepare_images_and_descriptions(inputs)
+        embeddings = self.manager.embed(images_and_descriptions, context)
         if all(embedding is None for embedding in embeddings):
             return [Vector.init_zero_vector(self._config.length)] * len(inputs)
         aggregation = VectorAggregation(VectorAggregationConfig(Vector))
@@ -88,6 +93,13 @@ class ImageEmbedding(Embedding[ImageData, ImageEmbeddingConfig]):
     @override
     def length(self) -> int:
         return self._config.length
+
+    def _prepare_images_and_descriptions(self, inputs: Sequence[ImageData]) -> list[ModelEmbeddingInputT | None]:
+        descriptions = [input_.description for input_ in inputs]
+        images = [input_.image for input_ in inputs]
+        if Settings().SUPERLINKED_RESIZE_IMAGES:
+            images = [ImageUtil.resize_for_embedding(image) if image is not None else None for image in images]
+        return [*images, *descriptions]
 
     @classmethod
     def init_manager(cls, model_handler: ModelHandler, model_name: str, model_cache_dir: Path | None) -> ManagerT:

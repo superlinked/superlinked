@@ -20,6 +20,10 @@ import PIL
 import PIL.Image
 
 FALLBACK_IMAGE_FORMAT = "PNG"
+RGB = "RGB"
+
+# Standard input dimensions (224x224) for vision models that optimize for both performance and accuracy
+EMBEDDING_IMAGE_SIZE = (224, 224)
 
 
 class ImageUtil:
@@ -41,3 +45,7 @@ class ImageUtil:
     @staticmethod
     def open_local_image_file(dir_path: str, file_name: str) -> PIL.Image.Image:
         return PIL.Image.open(os.path.join(dir_path, file_name))
+
+    @staticmethod
+    def resize_for_embedding(image: PIL.Image.Image) -> PIL.Image.Image:
+        return image.convert(RGB).resize(EMBEDDING_IMAGE_SIZE)

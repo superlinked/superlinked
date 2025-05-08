@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     MODEL_CACHE_DIR: str | None = None
     SUPERLINKED_MODEL_CACHE_SIZE: int = 10
     GPU_EMBEDDING_THRESHOLD: int = 0
+    SUPERLINKED_RESIZE_IMAGES: bool = False
     SUPERLINKED_DISABLE_HALF_PRECISION_EMBEDDING: bool = True
     # model downloading specific params
     SENTENCE_TRANSFORMERS_MODEL_LOCK_MAX_RETRIES: int = 10
@@ -55,9 +56,10 @@ class Settings(BaseSettings):
     INFINITY_MAX_RETRIES: int = 10
     INFINITY_RETRY_DELAY: float = 0.2
     # modal api embedding specific params
-    MODAL_APP_NAME: str = "infinity"
-    MODAL_CLASS_NAME: str = "Infinity"
-    MODAL_BATCH_SIZE: int = 2000
+    MODAL_APP_NAME: str = "App"
+    MODAL_CLASS_NAME: str = "Embedder"
+    MODAL_ENVIRONMENT_NAME: str = "main"
+    MODAL_BATCH_SIZE: int = 5000
     MODAL_MAX_RETRIES: int = 10
     MODAL_RETRY_DELAY: float = 0.2
     # profiling specific params

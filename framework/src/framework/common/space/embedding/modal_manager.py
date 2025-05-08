@@ -39,7 +39,11 @@ class ModalManager(ModelManager):
     def __init__(self, model_name: str, model_cache_dir: Path | None = None) -> None:
         super().__init__(model_name, model_cache_dir)
         settings = Settings()
-        self._infinity_modal_cls = modal.Cls.from_name(settings.MODAL_APP_NAME, settings.MODAL_CLASS_NAME)
+        self._modal_cls = modal.Cls.from_name(
+            app_name=settings.MODAL_APP_NAME,
+            name=settings.MODAL_CLASS_NAME,
+            environment_name=settings.MODAL_ENVIRONMENT_NAME,
+        )
         self._batch_size = settings.MODAL_BATCH_SIZE
         self._max_retries = settings.MODAL_MAX_RETRIES
         self._retry_delay = settings.MODAL_RETRY_DELAY
@@ -57,19 +61,18 @@ class ModalManager(ModelManager):
 
     @override
     def calculate_length(self) -> int:
-        return len(self._infinity_modal_cls().embed.remote(self._model_name, ["sample"])[0])
+        return len(self._modal_cls().embed.remote(["sample"], self._model_name)[0])
 
     def __send_request(self, inputs: Sequence[str | bytes]) -> list[list[float]]:
         if not inputs:
             return []
         batched_inputs = [inputs[i : i + self._batch_size] for i in range(0, len(inputs), self._batch_size)]
-        batched_model_names = [self._model_name] * len(batched_inputs)  # batching needed for .map call
         retry_count = 0
         current_delay = self._retry_delay
         while True:
             try:
-                batched_results: list[list[list[float]]] = self._infinity_modal_cls().embed.map(
-                    batched_model_names, batched_inputs
+                batched_results: list[list[list[float]]] = self._modal_cls().embed.map(
+                    batched_inputs, kwargs={"model_name": self._model_name}
                 )
                 return [item for batch in batched_results for item in batch]
             except Exception as e:  # pylint: disable=broad-exception-caught
