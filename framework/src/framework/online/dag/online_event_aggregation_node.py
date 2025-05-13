@@ -14,6 +14,8 @@
 
 from __future__ import annotations
 
+import itertools
+
 from beartype.typing import Mapping, Sequence, cast
 from typing_extensions import override
 
@@ -31,6 +33,7 @@ from superlinked.framework.common.parser.parsed_schema import (
     ParsedSchemaWithEvent,
 )
 from superlinked.framework.common.schema.schema_object import SchemaObject
+from superlinked.framework.common.settings import Settings
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.event_aggregator import (
@@ -106,34 +109,54 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
             for parsed_schema in cast(Sequence[ParsedSchemaWithEvent], parsed_schemas)
             if self.node.event_schema == parsed_schema.event_parsed_schema.schema
         ]
-        event_metadata_by_object_id = self._event_metadata_handler.read(schema, unique_object_ids)
-        affecting_info_by_event_parsed_schema_id = self._calculate_affecting_info_by_event(
-            context, relevant_parsed_schemas, self._input_to_aggregate
-        )
-        parsed_schemas_to_process = [
-            parsed_schema
-            for parsed_schema in relevant_parsed_schemas
-            if parsed_schema.event_parsed_schema.id_ in affecting_info_by_event_parsed_schema_id
-        ]
-        for parsed_schema in parsed_schemas_to_process:
-            affecting_info = affecting_info_by_event_parsed_schema_id[parsed_schema.event_parsed_schema.id_]
-            new_event_metadata = self._event_metadata_handler.recalculate(
-                parsed_schema.event_parsed_schema.created_at,
-                affecting_info.number_of_weights,
-                event_metadata_by_object_id[parsed_schema.id_],
+
+        remaining_ids = set(unique_object_ids)
+        for _ in itertools.repeat(None, Settings().ONLINE_EVENT_AGGREGATION_NODE_MAX_RETRY_COUNT):
+            if not remaining_ids:
+                break
+            object_id_to_metadata = self._event_metadata_handler.read(schema, list(remaining_ids))
+            original_object_id_to_metadata = dict(object_id_to_metadata)
+            parsed_schemas_to_process = [schema for schema in relevant_parsed_schemas if schema.id_ in remaining_ids]
+            if not parsed_schemas_to_process:
+                break
+            event_id_to_affecting_info = self._calculate_event_id_to_affecting_info(
+                context, parsed_schemas_to_process, self._input_to_aggregate
             )
-            event_aggregator_params = EventAggregatorParams(
-                context,
-                current_result_by_id[parsed_schema.id_],
-                Weighted(affecting_info.affecting_vector, affecting_info.average_weight),
-                new_event_metadata,
-                self.node.effect_modifier,
-                self._transformation_config,
-            )
-            event_vector = EventAggregator(event_aggregator_params).calculate_event_vector()
-            event_metadata_by_object_id[parsed_schema.id_] = new_event_metadata
-            current_result_by_id[parsed_schema.id_] = event_vector
-        self._event_metadata_handler.write(schema, event_metadata_by_object_id)
+            processed_ids = set()
+            for parsed_schema in parsed_schemas_to_process:
+                event_id = parsed_schema.event_parsed_schema.id_
+                if event_id not in event_id_to_affecting_info:
+                    continue
+                object_id = parsed_schema.id_
+                affecting_info = event_id_to_affecting_info[event_id]
+                object_id_to_metadata[object_id] = self._event_metadata_handler.recalculate(
+                    parsed_schema.event_parsed_schema.created_at,
+                    affecting_info.number_of_weights,
+                    object_id_to_metadata[object_id],
+                )
+                params = EventAggregatorParams(
+                    context,
+                    current_result_by_id[object_id],
+                    Weighted(affecting_info.affecting_vector, affecting_info.average_weight),
+                    object_id_to_metadata[object_id],
+                    self.node.effect_modifier,
+                    self._transformation_config,
+                )
+                current_result_by_id[object_id] = EventAggregator(params).calculate_event_vector()
+                processed_ids.add(object_id)
+            if not processed_ids:
+                break
+            current_metadata = self._event_metadata_handler.read(schema, list(processed_ids))
+            conflicting_ids = {
+                id_ for id_ in processed_ids if original_object_id_to_metadata.get(id_) != current_metadata.get(id_)
+            }
+            successful_ids = set(processed_ids) - conflicting_ids
+            if successful_ids:
+                self._event_metadata_handler.write(schema, {id_: object_id_to_metadata[id_] for id_ in successful_ids})
+                remaining_ids -= successful_ids
+        if remaining_ids:
+            conflicting_metadata = {id_: object_id_to_metadata[id_] for id_ in remaining_ids}
+            self._event_metadata_handler.write(schema, conflicting_metadata)
         return self._to_evaluation_results(parsed_schemas, current_result_by_id)
 
     def _to_evaluation_results(
@@ -161,7 +184,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
             for object_id, stored_result in zip(object_ids, stored_results)
         }
 
-    def _calculate_affecting_info_by_event(
+    def _calculate_event_id_to_affecting_info(
         self,
         context: ExecutionContext,
         parsed_schemas: Sequence[ParsedSchemaWithEvent],
