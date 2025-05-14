@@ -14,7 +14,10 @@
 
 
 from beartype.typing import Any
-
+from superlinked.framework.common.calculation.distance_metric import DistanceMetric
+from superlinked.framework.common.storage.search_index.search_algorithm import (
+    SearchAlgorithm,
+)
 from superlinked.framework.dsl.storage.vector_database import VectorDatabase
 from superlinked.framework.storage.common.vdb_settings import VDBSettings
 from superlinked.framework.storage.qdrant.qdrant_connection_params import (
@@ -31,7 +34,14 @@ class QdrantVectorDatabase(VectorDatabase[QdrantVDBConnector]):
     """
 
     def __init__(
-        self, url: str, api_key: str, default_query_limit: int = 10, timeout: int | None = None, **extra_params: Any
+        self,
+        url: str,
+        api_key: str | None = None,
+        default_query_limit: int = 10,
+        timeout: int | None = None,
+        search_algorithm: SearchAlgorithm = SearchAlgorithm.FLAT,
+        distance_metric: DistanceMetric = DistanceMetric.INNER_PRODUCT,
+        **extra_params: Any
     ) -> None:
         """
         Initialize the QdrantVectorDatabase.
@@ -44,8 +54,14 @@ class QdrantVectorDatabase(VectorDatabase[QdrantVDBConnector]):
             **extra_params (Any): Additional parameters for the Qdrant connection.
         """
         super().__init__()
-        self._connection_params = QdrantConnectionParams(url, api_key, timeout, **extra_params)
-        self._settings = VDBSettings(default_query_limit)
+        self._connection_params = QdrantConnectionParams(
+            url, api_key, timeout, **extra_params
+        )
+        self._settings = VDBSettings(
+            default_query_limit=default_query_limit,
+            search_algorithm=search_algorithm,
+            distance_metric=distance_metric,
+        )
 
     @property
     def _vdb_connector(self) -> QdrantVDBConnector:
