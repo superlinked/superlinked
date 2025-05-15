@@ -31,7 +31,13 @@ class QdrantVectorDatabase(VectorDatabase[QdrantVDBConnector]):
     """
 
     def __init__(
-        self, url: str, api_key: str, default_query_limit: int = 10, timeout: int | None = None, **extra_params: Any
+        self,
+        url: str,
+        api_key: str,
+        default_query_limit: int = 10,
+        timeout: int | None = None,
+        prefer_grpc: bool | None = None,
+        **extra_params: Any
     ) -> None:
         """
         Initialize the QdrantVectorDatabase.
@@ -41,10 +47,11 @@ class QdrantVectorDatabase(VectorDatabase[QdrantVDBConnector]):
             api_key (str): The api key of the Qdrant cluster.
             default_query_limit (int): Default vector search limit, set to Qdrant's default of 10.
             timeout (int | None): Timeout in seconds for Qdrant operations. Default is 5 seconds.
+            prefer_grpc (bool | None): Whether to prefer gRPC for Qdrant operations. Default is False.
             **extra_params (Any): Additional parameters for the Qdrant connection.
         """
         super().__init__()
-        self._connection_params = QdrantConnectionParams(url, api_key, timeout, **extra_params)
+        self._connection_params = QdrantConnectionParams(url, api_key, timeout, prefer_grpc, **extra_params)
         self._settings = VDBSettings(default_query_limit)
 
     @property

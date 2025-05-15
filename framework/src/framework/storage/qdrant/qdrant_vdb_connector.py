@@ -75,6 +75,7 @@ class QdrantVDBConnector(VDBConnector):
             url=connection_params.connection_string,
             api_key=connection_params._api_key,
             timeout=connection_params.timeout,
+            prefer_grpc=connection_params.prefer_grpc,
         )
         self._encoder = QdrantFieldEncoder()
         self.__search_index_manager = QdrantSearchIndexManager(self._client)
