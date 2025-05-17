@@ -38,12 +38,12 @@ class QueueFactory:
                 class_name=class_name,
             )
             return None
-        args = Settings().QUEUE_CLASS_ARGS or {}
-        initialized_class = queue_class(**args)
+        class_args = Settings().QUEUE_CLASS_ARGS or {}
+        initialized_class = queue_class(**class_args)
         logger.info(
             "initialized queue",
             module_path=module_path,
             class_name=class_name,
-            args=args,
+            class_args=class_args,
         )
         return cast(Queue[MessageBody[PayloadT]], initialized_class)

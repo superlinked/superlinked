@@ -50,7 +50,7 @@ class BlobHandlerFactory:
             "initialized blob handler",
             module_path=config.module_path,
             class_name=config.class_name,
-            args=config.class_args,
+            class_args=config.class_args,
         )
         return cast(BlobHandler, initialized_class)
 
