@@ -46,7 +46,6 @@ class Aggregation(ABC, Generic[AggregationInputT]):
 
 
 class VectorAggregation(Aggregation[Vector]):
-
     @override
     def aggregate_weighted(
         self,
@@ -71,29 +70,41 @@ class VectorAggregation(Aggregation[Vector]):
         Applies the previous negative filter on those indices where
         there was a negative filter in all aggregated vectors.
         """
-        all_negative_filter_indices = set().union(*(vector.negative_filter_indices for vector in vectors))
-        return aggregated_vector.shallow_copy_with_new(
-            negative_filter_indices={
-                i
-                for i, original_value in enumerate(aggregated_vector.value)
-                if original_value == constants.DEFAULT_NOT_AFFECTING_EMBEDDING_VALUE
-                and i in all_negative_filter_indices
-            }
-        ).replace_negative_filters(self.__calculate_negative_filter(vectors))
+        common_negative_filter_indices = set.intersection(*(set(vector.negative_filter_indices) for vector in vectors))
+        negative_filter_vector = self.__calculate_negative_filter_vector(
+            vectors, common_negative_filter_indices, aggregated_vector.dimension
+        )
+        return aggregated_vector.apply_negative_filter(negative_filter_vector)
 
-    def __calculate_negative_filter(self, vectors: Sequence[Vector]) -> float:
-        if negative_filter_values := {
-            vector.value[negative_filter_index]
-            for vector in vectors
-            for negative_filter_index in vector.negative_filter_indices
-            if vector.value[negative_filter_index] != constants.DEFAULT_NOT_AFFECTING_EMBEDDING_VALUE
-        }:
-            if len(negative_filter_values) > 1:
-                raise NegativeFilterException(
-                    f"Cannot aggregate vectors with different negative filter values: {negative_filter_values}."
+    def __calculate_negative_filter_vector(
+        self, vectors: Sequence[Vector], common_negative_filter_indices: set[int], vector_length: int
+    ) -> Vector:
+        """
+        For each dimension in the intersection of the negative filters
+        the value of all of the vector must be the same. Built on that we create a zero-vector
+        with these negative filter values.
+        """
+        if colliding_negative_filter_indices := [
+            i for i in common_negative_filter_indices if len({vector.value[i] for vector in vectors}) > 1
+        ]:
+            raise NegativeFilterException(
+                "Cannot aggregate vectors having different negative filter values in the following positions: "
+                f"{colliding_negative_filter_indices}."
+            )
+        return Vector(
+            value=[
+                (
+                    0.0
+                    if i not in common_negative_filter_indices
+                    else next(
+                        (vector.value[i] for vector in vectors),
+                        constants.DEFAULT_NOT_AFFECTING_EMBEDDING_VALUE,
+                    )
                 )
-            return negative_filter_values.pop()
-        return constants.DEFAULT_NOT_AFFECTING_EMBEDDING_VALUE
+                for i in range(vector_length)
+            ],
+            negative_filter_indices=common_negative_filter_indices,
+        )
 
 
 class NumberAggregation(Generic[NumberAggregationInputT], Aggregation[NumberAggregationInputT], ABC):

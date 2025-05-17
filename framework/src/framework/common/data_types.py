@@ -133,8 +133,7 @@ class Vector:
     def apply_negative_filter(self, other: Vector) -> Vector:
         if self.negative_filter_indices == other.negative_filter_indices:
             values = [
-                (self.value[i] if i not in other.negative_filter_indices else value)
-                for i, value in enumerate(other.value)
+                (value if i in other.negative_filter_indices else self.value[i]) for i, value in enumerate(other.value)
             ]
         else:
             value_iterator = iter(self.value)
@@ -177,7 +176,7 @@ class Vector:
         if other == 1:
             return self
         if other == 0:
-            return Vector(np.zeros(self.dimension, dtype=np.float64))
+            return Vector(np.zeros(self.dimension, dtype=np.float64), self.negative_filter_indices)
 
         multiplied_vector = Vector(self.value_without_negative_filter * float(other))
         return multiplied_vector.apply_negative_filter(self)
@@ -210,10 +209,10 @@ class Vector:
         denormalizer: float | None = None,
     ) -> Vector:
         value_to_use = self.value if value is None else value
-        denormalizer_to_use = self.denormalizer if denormalizer is None else denormalizer
         negative_filter_indices_to_use = (
             self.negative_filter_indices if negative_filter_indices is None else negative_filter_indices
         )
+        denormalizer_to_use = self.denormalizer if denormalizer is None else denormalizer
         return Vector(value_to_use, negative_filter_indices_to_use, denormalizer_to_use)
 
     def to_list(self) -> list[float]:
