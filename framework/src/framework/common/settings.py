@@ -60,6 +60,8 @@ class Settings(BaseSettings):
     MODAL_APP_NAME: str = "App"
     MODAL_CLASS_NAME: str = "Embedder"
     MODAL_ENVIRONMENT_NAME: str = "main"
+    MODAL_IMAGE_FORMAT: str | None = "WebP"
+    MODAL_IMAGE_QUALITY: int = 95
     MODAL_BATCH_SIZE: int = 5000
     MODAL_MAX_RETRIES: int = 10
     MODAL_RETRY_DELAY: float = 0.2

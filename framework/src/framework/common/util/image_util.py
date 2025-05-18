@@ -32,9 +32,10 @@ class ImageUtil:
         return base64.b64encode(ImageUtil.encode_bytes(image)).decode("utf-8")
 
     @staticmethod
-    def encode_bytes(image: PIL.Image.Image) -> bytes:
+    def encode_bytes(image: PIL.Image.Image, image_format: str | None = None, quality: int = 100) -> bytes:
+        format_to_use = image_format or image.format or FALLBACK_IMAGE_FORMAT
         with io.BytesIO() as buffer:
-            image.save(buffer, format=image.format or FALLBACK_IMAGE_FORMAT)
+            image.save(buffer, format=format_to_use, quality=quality)
             encoded_bytes = buffer.getvalue()
         return encoded_bytes
 

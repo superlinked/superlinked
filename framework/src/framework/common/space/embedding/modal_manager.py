@@ -47,13 +47,17 @@ class ModalManager(ModelManager):
         self._batch_size = settings.MODAL_BATCH_SIZE
         self._max_retries = settings.MODAL_MAX_RETRIES
         self._retry_delay = settings.MODAL_RETRY_DELAY
+        self._image_format = settings.MODAL_IMAGE_FORMAT
+        self._image_quality = settings.MODAL_IMAGE_QUALITY
 
     @override
     def _embed(
         self, inputs: Sequence[ModelEmbeddingInputT], context: ExecutionContext
     ) -> list[list[float]] | list[np.ndarray]:
         text_inputs, image_inputs = self._categorize_inputs(inputs)
-        processed_image_inputs = [ImageUtil.encode_bytes(image_input) for image_input in image_inputs]
+        processed_image_inputs = [
+            ImageUtil.encode_bytes(image_input, self._image_format, self._image_quality) for image_input in image_inputs
+        ]
         image_encodings = self.__send_request(processed_image_inputs)
         text_encodings = self.__send_request(text_inputs)
         logger.info("finished encoding", n_texts=len(text_encodings), n_images=len(image_encodings))
