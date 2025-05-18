@@ -66,10 +66,10 @@ paragraph_index = sl.Index(relevance_space)
 ## Executing your query to your chosen endpoints
 
 Before running your code, you need to structure your query using the following arguments:
-- `Query`: defines the index you want it to search, and you can add Params here (details in our [nothebook](https://github.com/superlinked/superlinked/blob/main/notebook/feature/dynamic_parameters.ipynb))
+- `Query`: defines the index you want it to search, and you can add Params here (details in our [notebook](https://github.com/superlinked/superlinked/blob/main/notebook/feature/dynamic_parameters.ipynb))
 - `.find`: tells it what to look for
 - `.similar`: tells it how to identify relevant results (details in [notebook](https://github.com/superlinked/superlinked/blob/main/notebook/feature/basic_building_blocks.ipynb))
-- `.select_all`: returns all the stored fields, without this clause, it will only return the id(s) (details in [notebook]https://github.com/superlinked/superlinked/blob/main/notebook/feature/query_result.ipynb))
+- `.select_all`: returns all the stored fields, without this clause, it will only return the id(s) (details in [notebook](https://github.com/superlinked/superlinked/blob/main/notebook/feature/query_result.ipynb))
 
 Note that you can wait to fill out the specific Params until later. (You can also add a `.with_vector` to search with an embedded vector of a specific element of your data (see details in [notebook](https://github.com/superlinked/superlinked/blob/main/notebook/feature/query_by_object.ipynb))).
 
