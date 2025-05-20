@@ -15,6 +15,9 @@
 
 from beartype.typing import Any
 
+from superlinked.framework.common.storage.search_index.search_algorithm import (
+    SearchAlgorithm,
+)
 from superlinked.framework.dsl.storage.vector_database import VectorDatabase
 from superlinked.framework.storage.common.vdb_settings import VDBSettings
 from superlinked.framework.storage.qdrant.qdrant_connection_params import (
@@ -30,12 +33,14 @@ class QdrantVectorDatabase(VectorDatabase[QdrantVDBConnector]):
     This class provides a Qdrant-based vector database connector.
     """
 
-    def __init__(
+    # We don't want to force users to use more complex data types.
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         url: str,
         api_key: str,
         default_query_limit: int = 10,
         timeout: int | None = None,
+        search_algorithm: SearchAlgorithm = SearchAlgorithm.FLAT,
         prefer_grpc: bool | None = None,
         **extra_params: Any
     ) -> None:
@@ -52,7 +57,7 @@ class QdrantVectorDatabase(VectorDatabase[QdrantVDBConnector]):
         """
         super().__init__()
         self._connection_params = QdrantConnectionParams(url, api_key, timeout, prefer_grpc, **extra_params)
-        self._settings = VDBSettings(default_query_limit)
+        self._settings = VDBSettings(default_query_limit=default_query_limit, search_algorithm=search_algorithm)
 
     @property
     def _vdb_connector(self) -> QdrantVDBConnector:
