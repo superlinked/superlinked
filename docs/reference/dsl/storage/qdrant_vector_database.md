@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.storage.qdrant_vector_database
 Classes
 -------
 
-`QdrantVectorDatabase(url: str, api_key: str, default_query_limit: int = 10, timeout: int | None = None, prefer_grpc: bool | None = None, **extra_params: Any)`
+`QdrantVectorDatabase(url: str, api_key: str, default_query_limit: int = 10, timeout: int | None = None, search_algorithm: superlinked.framework.common.storage.search_index.search_algorithm.SearchAlgorithm = SearchAlgorithm.FLAT, prefer_grpc: bool | None = None, **extra_params: Any)`
 :   Qdrant implementation of the VectorDatabase.
     
     This class provides a Qdrant-based vector database connector.
