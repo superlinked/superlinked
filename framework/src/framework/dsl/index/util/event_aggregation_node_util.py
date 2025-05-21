@@ -81,10 +81,7 @@ class EventAggregationNodeUtil:
         return [
             Weighted(
                 ComparisonFilterNode(
-                    SchemaFieldNode(
-                        cast(SchemaField, effect.base_effect.filter_._operand),
-                        {effect.dag_effect for effect in effects},
-                    ),
+                    SchemaFieldNode(cast(SchemaField, effect.base_effect.filter_._operand)),
                     effect.base_effect.filter_,
                     {effect.dag_effect},
                 ),

@@ -15,24 +15,15 @@
 from beartype.typing import Any, Generic
 from typing_extensions import override
 
-from superlinked.framework.common.dag.dag_effect import DagEffect
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.schema.schema_object import SFT, SchemaField
 
 
 class SchemaFieldNode(Generic[SFT], Node[SFT]):
-    def __init__(self, schema_field: SchemaField[SFT], dag_effects: set[DagEffect] | None = None) -> None:
-        super().__init__(
-            schema_field.type_,
-            [],
-            schemas={schema_field.schema_obj},
-            dag_effects=dag_effects,
-        )
+    def __init__(self, schema_field: SchemaField[SFT]) -> None:
+        super().__init__(schema_field.type_, [], schemas={schema_field.schema_obj})
         self.schema_field = schema_field
 
     @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
-        return {
-            "schema_field": self.schema_field,
-            "dag_effects": self.dag_effects,
-        }
+        return {"schema": self.schema_field.schema_obj._schema_name, "schema_field": self.schema_field.name}

@@ -66,19 +66,22 @@ class EmbeddingNode(
 
     def _calculate_node_id_identifier(self, fields: set[SchemaField]) -> str:
         """
-        This method ensures unique node ID generation by creating a hash of concatenated field names
-        when multiple fields exist. This prevents ID collisions between different spaces that may
+        This method ensures unique node ID generation by creating a hash of
+        - concatenated field names when multiple fields exist
+        - concatenated schema names when multiple schemas exist
+        This prevents ID collisions between different spaces that may
         share some of the same fields and have the same configuration.
         """
-        if len(fields) <= 1:
+        if len(fields) == 0 and len(self.schemas) == 0:
             return ""
         field_names_text = str(sorted([field.name for field in fields]))
-        return hashlib.md5(field_names_text.encode()).hexdigest()[:8]
+        schema_names_text = str(sorted([schema._schema_name for schema in self.schemas]))
+        return hashlib.md5((field_names_text + schema_names_text).encode()).hexdigest()[:8]
 
     @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
         return {
-            "transformation_config": self.transformation_config,
+            "transformation_config": self.transformation_config._get_embedding_config_parameters(),
             "identifier": self._identifier,
         }
 

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Any
+from beartype.typing import Any, Sequence, cast
 from typing_extensions import override
 
 from superlinked.framework.common.dag.dag_effect import DagEffect
@@ -47,7 +47,17 @@ class ComparisonFilterNode(Node[bool]):
 
     @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
+        schema_field = cast(SchemaField, self.comparison_operation._operand)
         return {
-            "comparison_operation": self.comparison_operation,
+            "comparison_operation": {
+                "schema": schema_field.schema_obj._schema_name,
+                "schema_field": schema_field.name,
+                "op": self.comparison_operation._op.value,
+                "other": self.comparison_operation._other,
+            },
             "dag_effects": self.dag_effects,
         }
+
+    @override
+    def project_parents_for_dag_effect(self, dag_effect: DagEffect) -> Sequence[Node]:
+        return self.parents

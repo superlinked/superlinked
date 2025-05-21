@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from abc import abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 
@@ -33,12 +34,18 @@ class Mode(Enum):
 
 @dataclass(frozen=True)
 class Scale:
-    pass
+    @abstractmethod
+    def _get_embedding_config_parameters(self) -> dict[str, Any]:
+        """
+        This method should include all class members that define its functionality.
+        """
 
 
 @dataclass(frozen=True)
 class LinearScale(Scale):
-    pass
+    @override
+    def _get_embedding_config_parameters(self) -> dict[str, Any]:
+        return {"class_name": type(self).__name__}
 
 
 @dataclass(frozen=True)
@@ -48,6 +55,10 @@ class LogarithmicScale(Scale):
     def __post_init__(self) -> None:
         if self.base <= 1:
             raise ValueError("Logarithmic function base must be larger than 1.")
+
+    @override
+    def _get_embedding_config_parameters(self) -> dict[str, Any]:
+        return {"class_name": type(self).__name__, "base": self.base}
 
 
 @dataclass(frozen=True)
@@ -81,10 +92,11 @@ class NumberEmbeddingConfig(EmbeddingConfig[float]):
     @override
     def _get_embedding_config_parameters(self) -> dict[str, Any]:
         return {
+            "class_name": type(self).__name__,
             "min_value": self.min_value,
             "max_value": self.max_value,
-            "mode": self.mode,
-            "scale": self.scale,
+            "mode": self.mode.value,
+            "scale": self.scale._get_embedding_config_parameters(),
             "negative_filter": self.negative_filter,
         }
 

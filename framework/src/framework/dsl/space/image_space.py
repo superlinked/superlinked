@@ -200,3 +200,16 @@ class ImageSpace(Space[Vector, ImageData]):
             )
             for image_field, description_field in zip(image_fields, description_fields)
         }
+
+    @override
+    def __eq__(self, other: object) -> bool:
+        return (
+            isinstance(other, ImageSpace)
+            and self.transformation_config == other.transformation_config
+            and self.image.fields == other.image.fields
+            and self.description.fields == other.description.fields
+        )
+
+    @override
+    def __hash__(self) -> int:
+        return hash((self.transformation_config, frozenset(self.image.fields), frozenset(self.description.fields)))

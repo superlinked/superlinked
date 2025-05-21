@@ -80,6 +80,7 @@ class RecencyEmbeddingConfig(EmbeddingConfig[int]):
     @override
     def _get_embedding_config_parameters(self) -> dict[str, Any]:
         return {
+            "class_name": type(self).__name__,
             "period_time_list": set(self.period_time_list),
             "time_period_hour_offset": self.time_period_hour_offset,
             "negative_filter": self.negative_filter,

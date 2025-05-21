@@ -15,7 +15,7 @@
 from abc import ABC
 from dataclasses import dataclass
 
-from beartype.typing import Generic, TypeVar
+from beartype.typing import Any, Generic, TypeVar
 
 from superlinked.framework.common.data_types import Vector
 
@@ -26,8 +26,8 @@ AggregationInputT = TypeVar("AggregationInputT")
 class AggregationConfig(ABC, Generic[AggregationInputT]):
     aggregation_input_type: type[AggregationInputT]
 
-    def __str__(self) -> str:
-        return f"{type(self).__name__}(aggregation_input_type={self.aggregation_input_type.__name__})"
+    def _get_aggregation_config_parameters(self) -> dict[str, Any]:
+        return {"class_name": type(self).__name__, "aggregation_input_type": self.aggregation_input_type.__name__}
 
 
 AggregationConfigT = TypeVar("AggregationConfigT", bound=AggregationConfig)

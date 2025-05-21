@@ -27,7 +27,6 @@ class GcsClientParams:
 
 
 class GCSFileOps:
-
     cached_params: GcsClientParams | None = None
 
     def __init__(self, client_params: GcsClientParams | None = None):

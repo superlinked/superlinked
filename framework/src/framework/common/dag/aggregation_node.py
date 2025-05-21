@@ -94,7 +94,7 @@ class AggregationNode(
         return {
             "weighted_parents": weighted_parents,
             "dag_effects": self.dag_effects,
-            "transformation_config": self.transformation_config,
+            "transformation_config": self.transformation_config._get_embedding_config_parameters(),
         }
 
     @property

@@ -17,7 +17,6 @@ import math
 from beartype.typing import Any, Sequence, cast
 from typing_extensions import override
 
-from superlinked.framework.common.const import constants
 from superlinked.framework.common.dag.dag_effect import DagEffect
 from superlinked.framework.common.dag.exception import ParentCountException
 from superlinked.framework.common.dag.node import Node
@@ -31,11 +30,7 @@ from superlinked.framework.common.space.config.normalization.normalization_confi
 
 
 class ConcatenationNode(Node[Vector], HasLength):
-    def __init__(
-        self,
-        parents: list[Node[Vector]],
-        default_weight: float = constants.DEFAULT_WEIGHT,
-    ) -> None:
+    def __init__(self, parents: list[Node[Vector]]) -> None:
         # Since events can change only a part of the whole result, we
         # must persist the rest of the parts.
         super().__init__(
@@ -45,7 +40,6 @@ class ConcatenationNode(Node[Vector], HasLength):
             non_nullable_parents=frozenset(parents),
         )
         self.__validate_parents()
-        self.default_weight = default_weight
         self.__length = sum(cast(HasLength, parent).length for parent in self.parents)
 
     def __validate_parents(self) -> None:
@@ -58,9 +52,7 @@ class ConcatenationNode(Node[Vector], HasLength):
 
     @override
     def _get_node_id_parameters(self) -> dict[str, Any]:
-        return {
-            "default_weight": self.default_weight,
-        }
+        return {"class_name": type(self).__name__}
 
     @override
     def project_parents_to_schema(self, schema: SchemaObject) -> Sequence[Node]:

@@ -39,5 +39,6 @@ class CustomEmbeddingConfig(EmbeddingConfig[Vector]):
     @override
     def _get_embedding_config_parameters(self) -> dict[str, Any]:
         return {
+            "class_name": type(self).__name__,
             "vector_length": self.vector_length,
         }

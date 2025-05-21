@@ -47,5 +47,6 @@ class ImageEmbeddingConfig(EmbeddingConfig[ImageData]):
     @override
     def _get_embedding_config_parameters(self) -> dict[str, Any]:
         return {
+            "class_name": type(self).__name__,
             "model_name": self.model_name,
         }

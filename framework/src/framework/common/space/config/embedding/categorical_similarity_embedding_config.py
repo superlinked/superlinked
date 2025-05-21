@@ -36,6 +36,7 @@ class CategoricalSimilarityEmbeddingConfig(EmbeddingConfig[list[str]]):
     @override
     def _get_embedding_config_parameters(self) -> dict[str, Any]:
         return {
+            "class_name": type(self).__name__,
             "transformation_config": set(self.categories),
             "uncategorized_as_category": self.uncategorized_as_category,
             "negative_filter": self.negative_filter,

@@ -210,4 +210,6 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
         parent_validation_type: ParentValidationType,
     ) -> None:
         if not parent_validation_type.validator(len(self.parents)):
-            raise ParentCountException(f"{type(self).__name__} must have {parent_validation_type.description}.")
+            raise ParentCountException(
+                f"{type(self).__name__} must have {parent_validation_type.description}, got {len(self.parents)}"
+            )
