@@ -5,15 +5,13 @@ icon: bullseye-arrow
 
 # Overview
 
-
 1. Describe your data using Python classes with the [@schema](../reference/common/schema/schema.md) decorator.
 2. Describe your vector embeddings from building blocks with [Spaces](../reference/dsl/space/index.md).
 3. Combine your embeddings into a queryable [Index](../reference/dsl/index/index.md).
 4. Define your search with dynamic parameters and weights as a [Query](../reference/dsl/query/query.md).
 5. Load your data using a [Source](../reference/dsl/source/index.md).
-6. Define your transformations with a [Parser](https://docs.superlinked.com/reference/components/parser) (e.g.: from [`pd.DataFrame`](../reference/common/parser/dataframe_parser.md)). 
+6. Define your transformations with a [Parser](https://docs.superlinked.com/reference/components/parser) (e.g.: from [`pd.DataFrame`](../reference/common/parser/dataframe_parser.md)).
 7. Run your configuration with an [Executor](../reference/dsl/executor/in_memory/in_memory_executor.md).
-
 
 ## Colab notebooks explaining the concepts
 
@@ -23,6 +21,13 @@ icon: bullseye-arrow
 </th></tr>
 </thead>
 <tbody>
+    <tr>
+        <td><strong>Accessing stored vector parts</strong></td>
+        <td>Use query interface to return vector-parts based on our needs</td>
+        <td></td>
+        <td><a href="../.gitbook/assets/concept-thumbnails/access-vector-parts.png">access-vector-parts.png</a></td>
+        <td><a href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/accessing_stored_vector_parts.ipynb" target="_blank">access_vector_part</a></td>
+    </tr>
     <tr>
         <td><strong>Categorical Embeddings</strong></td>
         <td>Efficiently represent and compare categorical data in vector space for similarity searches.</td>
@@ -94,11 +99,18 @@ icon: bullseye-arrow
         <td><a href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/number_embedding_similar.ipynb" target="_blank">number_embedding_similar</a></td>
     </tr>
     <tr>
-        <td><strong>Query by Object</strong></td>
-        <td>Search for similar items using an existing object as the query input.</td>
+        <td><strong>Optional Schema Fields</strong></td>
+        <td>Define optional fields in your schema.</td>
         <td></td>
-        <td><a href="../.gitbook/assets/concept-thumbnails/Query by Object.png">Query by Object.png</a></td>
-        <td><a href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/query_by_object.ipynb" target="_blank">query_by_object</a></td>
+        <td><a href="../.gitbook/assets/concept-thumbnails/optional-schema-fields.png">optional-schema-fields.png</a></td>
+        <td><a href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/optional_schema_fields.ipynb" target="_blank">optional_schema_fields</a></td>
+    </tr>
+    <tr>
+        <td><strong>Query Result</strong></td>
+        <td>Customize the result object for your queries.</td>
+        <td></td>
+        <td><a href="../.gitbook/assets/concept-thumbnails/query-result.png">query-result.png</a></td>
+        <td><a href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/query_result.ipynb" target="_blank">query_result</a></td>
     </tr>
     <tr>
         <td><strong>Query Time Weights</strong></td>
@@ -136,6 +148,5 @@ icon: bullseye-arrow
         <td><a href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/vector_sampler.ipynb" target="_blank">vector_sampler</a></td>
     </tr>
 
-    
 </tbody>
 </table>
