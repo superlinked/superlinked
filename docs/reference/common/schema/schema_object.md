@@ -26,6 +26,21 @@ Classes
     `as_type(self, value: Any) ‑> superlinked.framework.common.schema.blob_information.BlobInformation`
     :
 
+`Boolean(name: str, schema_obj: SchemaObjectT, nullable: bool)`
+:   Field of a schema that represents a boolean.
+
+    ### Ancestors (in MRO)
+
+    * superlinked.framework.common.schema.schema_object.SchemaField
+    * superlinked.framework.common.interface.comparison_operand.ComparisonOperand
+    * abc.ABC
+    * typing.Generic
+
+    ### Instance variables
+
+    `supported_comparison_operation_types: Sequence[ComparisonOperationType]`
+    :
+
 `DescribedBlob(blob: Blob, description: String)`
 :   DescribedBlob(blob: 'Blob', description: 'String')
 
@@ -128,6 +143,7 @@ Classes
     * superlinked.framework.common.schema.event_schema_object.SchemaReference
     * superlinked.framework.common.schema.id_field.IdField
     * superlinked.framework.common.schema.schema_object.Blob
+    * superlinked.framework.common.schema.schema_object.Boolean
     * superlinked.framework.common.schema.schema_object.FloatList
     * superlinked.framework.common.schema.schema_object.Number
     * superlinked.framework.common.schema.schema_object.String
