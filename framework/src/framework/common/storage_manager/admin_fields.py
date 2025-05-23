@@ -54,7 +54,7 @@ class AdminFieldDescriptor:
 
 class AdminFields:
     def __init__(self) -> None:
-        self.schema_id = AdminFieldDescriptor(Field(FieldDataType.STRING, StorageNaming.SCHEMA_INDEX_NAME))
+        self.schema_id = AdminFieldDescriptor(Field(FieldDataType.SCHEMA_ID_STRING, StorageNaming.SCHEMA_INDEX_NAME))
         self.object_id = AdminFieldDescriptor(Field(FieldDataType.STRING, StorageNaming.OBJECT_ID_INDEX_NAME))
         self.origin_id = AdminFieldDescriptor(Field(FieldDataType.STRING, StorageNaming.ORIGIN_ID_INDEX_NAME), True)
         admin_field_descriptors = [

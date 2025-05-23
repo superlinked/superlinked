@@ -39,6 +39,7 @@ class MongoDBFieldEncoder:
             FieldDataType.INT: self._encode_int,
             FieldDataType.JSON: self._encode_json,
             FieldDataType.STRING: self._encode_string,
+            FieldDataType.SCHEMA_ID_STRING: self._encode_string,
             FieldDataType.STRING_LIST: self._encode_string_list,
             FieldDataType.VECTOR: self._encode_vector,
         }
@@ -49,6 +50,7 @@ class MongoDBFieldEncoder:
             FieldDataType.INT: self._decode_int,
             FieldDataType.JSON: self._decode_json,
             FieldDataType.STRING: self._decode_string,
+            FieldDataType.SCHEMA_ID_STRING: self._encode_string,
             FieldDataType.STRING_LIST: self._decode_string_list,
             FieldDataType.VECTOR: self._decode_vector,
         }

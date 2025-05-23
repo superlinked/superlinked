@@ -23,5 +23,6 @@ class FieldDataType(Enum):
     INT = "INT"
     JSON = "JSON"
     STRING = "STRING"
+    SCHEMA_ID_STRING = "SCHEMA_ID_STRING"  # So schema can be Tag in redis
     STRING_LIST = "STRING_LIST"
     VECTOR = "VECTOR"

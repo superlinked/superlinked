@@ -17,6 +17,9 @@ from dataclasses import dataclass
 from beartype.typing import Any
 from redisvl.query.filter import FilterExpression, FilterOperator, Num, Tag, Text
 
+from superlinked.framework.common.interface.comparison_operation_type import (
+    ComparisonOperationType,
+)
 from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.field.field_data_type import FieldDataType
 from superlinked.framework.common.storage.query.vdb_filter import VDBFilter
@@ -28,12 +31,18 @@ REDIS_FIELD_TYPE_BY_FIELD_DATA_TYPE: dict[FieldDataType, type[Num | Text | Tag]]
     FieldDataType.INT: Num,
     FieldDataType.DOUBLE: Num,
     FieldDataType.STRING: Text,
+    FieldDataType.SCHEMA_ID_STRING: Tag,
     FieldDataType.STRING_LIST: Tag,
 }
 
 
 @dataclass(frozen=True)
 class RedisFilter(VDBFilter):
+    def __init__(self, field: Field, field_value: Any, op: ComparisonOperationType) -> None:
+        if field.data_type == FieldDataType.SCHEMA_ID_STRING:
+            field_value = [field_value]  # text to tag
+        super().__init__(field=field, field_value=field_value, op=op)
+
     def to_expression(self) -> FilterExpression:
         filter_info = RedisFilterInformation.get(self.op)
         values = filter_info.get_value_mapper_fn()(self.field_value)
