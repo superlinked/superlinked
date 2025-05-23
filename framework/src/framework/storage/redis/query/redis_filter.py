@@ -33,14 +33,17 @@ REDIS_FIELD_TYPE_BY_FIELD_DATA_TYPE: dict[FieldDataType, type[Num | Text | Tag]]
     FieldDataType.STRING: Text,
     FieldDataType.SCHEMA_ID_STRING: Tag,
     FieldDataType.STRING_LIST: Tag,
+    FieldDataType.BOOLEAN: Tag,
 }
+
+REDIS_FIELD_TYPES_TO_BE_MAPPED_TO_LIST = [FieldDataType.SCHEMA_ID_STRING, FieldDataType.BOOLEAN]
 
 
 @dataclass(frozen=True)
 class RedisFilter(VDBFilter):
     def __init__(self, field: Field, field_value: Any, op: ComparisonOperationType) -> None:
-        if field.data_type == FieldDataType.SCHEMA_ID_STRING:
-            field_value = [field_value]  # text to tag
+        if field.data_type in REDIS_FIELD_TYPES_TO_BE_MAPPED_TO_LIST:
+            field_value = [field_value]
         super().__init__(field=field, field_value=field_value, op=op)
 
     def to_expression(self) -> FilterExpression:

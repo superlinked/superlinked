@@ -37,6 +37,7 @@ class MongoDBFieldEncoder:
             FieldDataType.DOUBLE: self._encode_double,
             FieldDataType.FLOAT_LIST: self._encode_float_list,
             FieldDataType.INT: self._encode_int,
+            FieldDataType.BOOLEAN: self._encode_boolean,
             FieldDataType.JSON: self._encode_json,
             FieldDataType.STRING: self._encode_string,
             FieldDataType.SCHEMA_ID_STRING: self._encode_string,
@@ -48,6 +49,7 @@ class MongoDBFieldEncoder:
             FieldDataType.DOUBLE: self._decode_double,
             FieldDataType.FLOAT_LIST: self._decode_float_list,
             FieldDataType.INT: self._decode_int,
+            FieldDataType.BOOLEAN: self._decode_boolean,
             FieldDataType.JSON: self._decode_json,
             FieldDataType.STRING: self._decode_string,
             FieldDataType.SCHEMA_ID_STRING: self._encode_string,
@@ -79,6 +81,12 @@ class MongoDBFieldEncoder:
 
     def _decode_int(self, int_: int) -> int:
         return int_
+
+    def _encode_boolean(self, bool_: bool) -> bool:
+        return bool_
+
+    def _decode_boolean(self, bool_: bool) -> bool:
+        return bool_
 
     def _encode_json(self, json_: Json) -> str:
         return json.dumps(json_, ensure_ascii=True)

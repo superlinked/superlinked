@@ -257,6 +257,20 @@ class Integer(Number[int]):
         return EQUALITY_COMPARISON_OPERATION_TYPES + COMPARABLE_COMPARISON_OPERATION_TYPES
 
 
+class Boolean(SchemaField[bool]):
+    """
+    Field of a schema that represents a boolean.
+    """
+
+    def __init__(self, name: str, schema_obj: SchemaObjectT, nullable: bool) -> None:
+        super().__init__(name, schema_obj, bool, nullable)
+
+    @property
+    @override
+    def supported_comparison_operation_types(self) -> Sequence[ComparisonOperationType]:
+        return EQUALITY_COMPARISON_OPERATION_TYPES
+
+
 class FloatList(SchemaField[list[float]]):
     """
     Field of a schema that represents a vector.
@@ -307,5 +321,5 @@ class DescribedBlob:
     description: String
 
 
-ConcreteSchemaField = String | Timestamp | Float | Integer | FloatList | StringList | Blob
+ConcreteSchemaField = String | Timestamp | Float | Integer | Boolean | FloatList | StringList | Blob
 ConcreteSchemaFieldT = TypeVar("ConcreteSchemaFieldT", bound="ConcreteSchemaField")

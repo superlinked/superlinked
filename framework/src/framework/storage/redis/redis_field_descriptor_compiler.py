@@ -30,6 +30,7 @@ RedisFieldTypeByFieldDataType: dict[FieldDataType, type[RedisField]] = {
     FieldDataType.STRING: TextField,
     FieldDataType.SCHEMA_ID_STRING: TagField,
     FieldDataType.STRING_LIST: TagField,
+    FieldDataType.BOOLEAN: TagField,
 }
 
 DistanceMetricMap = {

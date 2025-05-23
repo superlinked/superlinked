@@ -28,6 +28,7 @@ from superlinked.framework.common.storage.search_index.index_field_descriptor im
 PAYLOAD_SCHEMA_BY_FIELD_DATA_TYPE = {
     FieldDataType.DOUBLE: PayloadSchemaType.FLOAT,
     FieldDataType.INT: PayloadSchemaType.INTEGER,
+    FieldDataType.BOOLEAN: PayloadSchemaType.BOOL,
     FieldDataType.STRING: PayloadSchemaType.KEYWORD,
     FieldDataType.SCHEMA_ID_STRING: PayloadSchemaType.KEYWORD,
     FieldDataType.STRING_LIST: PayloadSchemaType.KEYWORD,

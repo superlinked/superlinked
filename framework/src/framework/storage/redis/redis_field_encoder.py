@@ -38,6 +38,7 @@ class RedisFieldEncoder:
             FieldDataType.DOUBLE: self._encode_double,
             FieldDataType.FLOAT_LIST: self._encode_float_list,
             FieldDataType.INT: self._encode_int,
+            FieldDataType.BOOLEAN: self._encode_bool,
             FieldDataType.JSON: self._encode_json,
             FieldDataType.STRING: self._encode_string,
             FieldDataType.SCHEMA_ID_STRING: self._encode_string,
@@ -49,6 +50,7 @@ class RedisFieldEncoder:
             FieldDataType.DOUBLE: self._decode_double,
             FieldDataType.FLOAT_LIST: self._decode_float_list,
             FieldDataType.INT: self._decode_int,
+            FieldDataType.BOOLEAN: self._decode_bool,
             FieldDataType.JSON: self._decode_json,
             FieldDataType.STRING: self._decode_string,
             FieldDataType.SCHEMA_ID_STRING: self._decode_string,
@@ -81,6 +83,12 @@ class RedisFieldEncoder:
 
     def _decode_int(self, int_: bytes) -> int:
         return int(int_)
+
+    def _encode_bool(self, bool_: bool) -> str:
+        return "1" if bool_ else "0"
+
+    def _decode_bool(self, bool_: bytes) -> bool:
+        return bool(int(bool_))
 
     def _encode_json(self, json_: dict[str, Any]) -> str:
         return json.dumps(json_, ensure_ascii=True)

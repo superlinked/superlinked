@@ -59,6 +59,7 @@ from superlinked.framework.common.schema.id_field import IdField
 from superlinked.framework.common.schema.schema import Schema, schema
 from superlinked.framework.common.schema.schema_object import (
     Blob,
+    Boolean,
     DescribedBlob,
     Float,
     FloatList,
@@ -152,6 +153,7 @@ __all__ = [
     "FloatList",
     "IdField",
     "Integer",
+    "Boolean",
     "SchemaReference",
     "String",
     "StringList",

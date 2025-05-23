@@ -73,6 +73,11 @@ class IntFieldData(FieldData[int]):
         super().__init__(FieldDataType.INT, name, value)
 
 
+class BooleanFieldData(FieldData[bool]):
+    def __init__(self, name: str, value: bool) -> None:
+        super().__init__(FieldDataType.BOOLEAN, name, value)
+
+
 class JsonFieldData(FieldData[dict[str, Any]]):
     def __init__(self, name: str, value: dict[str, Any]) -> None:
         super().__init__(FieldDataType.JSON, name, value)
