@@ -5,6 +5,34 @@ icon: clock-rotate-left
 
 # Changelog
 
+## 2025-05-09
+
+- #### Framework: v22.16.1 - v23.2.0
+- #### Batch: v2.18.1 - v2.22.0
+- #### Server: v1.24.2 - v1.25.0
+
+### Breaking Changes
+
+- **Framework (v23.0.0)**:
+  - Changed default of `SUPERLINKED_CONCURRENT_BLOB_LOADING` setting to `True`.
+  - Introduced new setting: `SUPERLINKED_CONCURRENT_EFFECT_EVALUATION` which enables concurrent event processing (defaults to `True`).
+
+### Added
+
+- **Concurrent Event Processing**: Introduced concurrent event processing for improved throughput.
+- **Image Resizing**: Enabled resizing images for more flexible input handling.
+- **Configurable Redis Search**: Added support for configurable search algorithm (FLAT or HNSW) for Redis.
+
+### Changed
+
+- **Modal Performance**: Improved modal performance.
+- **Silver Dataset Efficiency**: Optimized silver dataset updates by using deltas instead of full recreation, improving efficiency.
+
+### Fixed
+
+- **HuggingFace Error Handling**: Improved error handling by catching `HfHubHTTPError` when interfacing with HuggingFace.
+- **Batch Metadata Storage**: Reworked metadata handling to enable storing (partial) node results in batch.
+
 ## 2025-04-25
 
 - #### Framework: v22.13.0 - v22.16.1
