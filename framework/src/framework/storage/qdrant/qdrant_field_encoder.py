@@ -40,7 +40,7 @@ class QdrantFieldEncoder:
             FieldDataType.BOOLEAN: self._encode_base_type,
             FieldDataType.JSON: self._encode_base_type,
             FieldDataType.STRING: self._encode_base_type,
-            FieldDataType.SCHEMA_ID_STRING: self._encode_base_type,
+            FieldDataType.METADATA_STRING: self._encode_base_type,
             FieldDataType.STRING_LIST: self._encode_base_type,
             FieldDataType.VECTOR: self._encode_vector,
         }
@@ -52,7 +52,7 @@ class QdrantFieldEncoder:
             FieldDataType.BOOLEAN: self._decode_base_type,
             FieldDataType.JSON: self._decode_base_type,
             FieldDataType.STRING: self._decode_base_type,
-            FieldDataType.SCHEMA_ID_STRING: self._decode_base_type,
+            FieldDataType.METADATA_STRING: self._decode_base_type,
             FieldDataType.STRING_LIST: self._decode_base_type,
             FieldDataType.VECTOR: self._decode_vector,
         }

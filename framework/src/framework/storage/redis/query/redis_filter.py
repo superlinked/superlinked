@@ -31,12 +31,12 @@ REDIS_FIELD_TYPE_BY_FIELD_DATA_TYPE: dict[FieldDataType, type[Num | Text | Tag]]
     FieldDataType.INT: Num,
     FieldDataType.DOUBLE: Num,
     FieldDataType.STRING: Text,
-    FieldDataType.SCHEMA_ID_STRING: Tag,
+    FieldDataType.METADATA_STRING: Tag,
     FieldDataType.STRING_LIST: Tag,
     FieldDataType.BOOLEAN: Tag,
 }
 
-REDIS_FIELD_TYPES_TO_BE_MAPPED_TO_LIST = [FieldDataType.SCHEMA_ID_STRING, FieldDataType.BOOLEAN]
+REDIS_FIELD_TYPES_TO_BE_MAPPED_TO_LIST = [FieldDataType.METADATA_STRING, FieldDataType.BOOLEAN]
 
 
 @dataclass(frozen=True)

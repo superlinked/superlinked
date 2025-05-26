@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     # misc params
     ONLINE_PUT_CHUNK_SIZE: int = 10000
     ONLINE_EVENT_AGGREGATION_NODE_MAX_RETRY_COUNT: int = 5
+    QUERY_TO_RETURN_ORIGIN_ID: bool = False
     # embedding specific params
     MODEL_CACHE_DIR: str | None = None
     SUPERLINKED_MODEL_CACHE_SIZE: int = 10

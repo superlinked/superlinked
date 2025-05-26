@@ -20,6 +20,7 @@ from dataclasses import dataclass
 from beartype.typing import Sequence, cast
 
 from superlinked.framework.common.data_types import PythonTypes
+from superlinked.framework.common.settings import Settings
 from superlinked.framework.common.storage.entity.entity_id import EntityId
 from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.field.field_data import FT, FieldData
@@ -32,7 +33,7 @@ from superlinked.framework.common.storage_manager.storage_naming import StorageN
 class AdminFieldDescriptor:
     field: Field
     nullable: bool = False
-    is_header: bool = True
+    should_be_returned: bool = True  # Whether to include in query result
 
     def extract_value(self, field_data: dict[str, FieldData], _: type[FT]) -> FT | None:
         data = field_data.get(self.field.name)
@@ -54,9 +55,13 @@ class AdminFieldDescriptor:
 
 class AdminFields:
     def __init__(self) -> None:
-        self.schema_id = AdminFieldDescriptor(Field(FieldDataType.SCHEMA_ID_STRING, StorageNaming.SCHEMA_INDEX_NAME))
-        self.object_id = AdminFieldDescriptor(Field(FieldDataType.STRING, StorageNaming.OBJECT_ID_INDEX_NAME))
-        self.origin_id = AdminFieldDescriptor(Field(FieldDataType.STRING, StorageNaming.ORIGIN_ID_INDEX_NAME), True)
+        self.schema_id = AdminFieldDescriptor(Field(FieldDataType.METADATA_STRING, StorageNaming.SCHEMA_INDEX_NAME))
+        self.object_id = AdminFieldDescriptor(Field(FieldDataType.METADATA_STRING, StorageNaming.OBJECT_ID_INDEX_NAME))
+        self.origin_id = AdminFieldDescriptor(
+            Field(FieldDataType.STRING, StorageNaming.ORIGIN_ID_INDEX_NAME),
+            True,
+            should_be_returned=Settings().QUERY_TO_RETURN_ORIGIN_ID,
+        )
         admin_field_descriptors = [
             self.schema_id,
             self.object_id,
@@ -67,7 +72,7 @@ class AdminFields:
         self.__header_fields = [
             admin_field_descriptor.field
             for admin_field_descriptor in admin_field_descriptors
-            if admin_field_descriptor.is_header
+            if admin_field_descriptor.should_be_returned
         ]
 
     @property

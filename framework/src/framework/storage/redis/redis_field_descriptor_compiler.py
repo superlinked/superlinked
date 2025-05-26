@@ -28,7 +28,7 @@ RedisFieldTypeByFieldDataType: dict[FieldDataType, type[RedisField]] = {
     FieldDataType.DOUBLE: NumericField,
     FieldDataType.INT: NumericField,
     FieldDataType.STRING: TextField,
-    FieldDataType.SCHEMA_ID_STRING: TagField,
+    FieldDataType.METADATA_STRING: TagField,
     FieldDataType.STRING_LIST: TagField,
     FieldDataType.BOOLEAN: TagField,
 }
