@@ -5,6 +5,43 @@ icon: clock-rotate-left
 
 # Changelog
 
+## 2025-05-25
+
+- #### Framework: v23.2.0 - v25.1.0
+- #### Batch: v2.22.0 - v2.29.0
+- #### Server: v1.25.0 - v1.26.0
+
+### Breaking Changes
+
+- **Framework (v24.0.0)**: Fixed embedding node `node_id` generation.
+- **Framework (v25.0.0)**: Introduced full text field for Redis performance improvements.
+
+### Added
+
+- **Boolean Field Type**: Introduced boolean field type to schema for both Framework and Batch.
+- **Qdrant gRPC Config**: Added gRPC configurability for Qdrant.
+- **Qdrant Search Algorithm Config**: Implemented search algorithm configuration for Qdrant vector search.
+- **Query Result Weight Explanation**: Extended weight mechanics and explanation in query results.
+- **Batch Data Sorting**: Added sorting of parsed data by ID in Batch.
+
+### Changed
+
+- **Redis Query Performance**: Improved Redis query performance by using `__schema__` as a tag.
+- **Modal Embedding Latency**: Enhanced Modal embeddings with a minimum latency setting.
+- **Concurrent Processing Optimization**: Optimized concurrent processing for blob loading, Hugging Face embeddings, and query DAG evaluation.
+- **Log Argument Naming**: Updated argument naming in framwork logs for clarity.
+
+### Fixed
+
+- **Embedding Node ID Generation**: Fixed embedding node with specific `node_id` generation.
+- **Vector Operation Negative Filter**: Resolved negative filter handling in vector operations.
+- **Batch GPU/CPU OOM**: Addressed batch GPU/CPU Out-Of-Memory issues.
+- **Batch Negative Filter Indices**: Ensured no `None` value for `negative_filter_indices` in Batch.
+- **Batch Node ID Calculation**: Adjusted batch to `node_id` calculation change.
+- **Raw Schema Reading (Batch)**: Corrected raw schema reading in Batch.
+- **Model Loading Memory Leak (Batch)**: Prevented memory leaks in model loading in Batch.
+- **Parallel Download Connection Pooling (Batch)**: Ensured proper connection pooling for parallel downloads in Batch.
+
 ## 2025-05-09
 
 - #### Framework: v22.16.1 - v23.2.0
