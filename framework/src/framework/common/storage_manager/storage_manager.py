@@ -341,7 +341,7 @@ class StorageManager:
             list(self._create_index_field_descriptors_from_schema_fields(params.indexed_fields))
             + [
                 IndexFieldDescriptor(
-                    FieldDataType.SCHEMA_ID_STRING,
+                    FieldDataType.METADATA_STRING,
                     self._entity_builder._admin_fields.schema_id.field.name,
                 )
             ],

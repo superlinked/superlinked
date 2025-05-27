@@ -24,6 +24,6 @@ class FieldDataType(Enum):
     JSON = "JSON"
     STRING = "STRING"
     BOOLEAN = "BOOLEAN"
-    SCHEMA_ID_STRING = "SCHEMA_ID_STRING"  # So schema can be Tag in redis
+    METADATA_STRING = "METADATA_STRING"  # so admin fields can be Tags in redis
     STRING_LIST = "STRING_LIST"
     VECTOR = "VECTOR"

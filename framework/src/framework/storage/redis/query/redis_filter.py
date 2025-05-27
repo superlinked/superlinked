@@ -27,16 +27,15 @@ from superlinked.framework.storage.redis.query.redis_filter_information import (
     RedisFilterInformation,
 )
 
-REDIS_FIELD_TYPE_BY_FIELD_DATA_TYPE: dict[FieldDataType, type[Num | Text | Tag]] = {
+REDIS_FIELD_TYPE_BY_FIELD_DATA_TYPE: dict[FieldDataType, type[Num | Tag | Text]] = {
     FieldDataType.INT: Num,
     FieldDataType.DOUBLE: Num,
-    FieldDataType.STRING: Text,
-    FieldDataType.SCHEMA_ID_STRING: Tag,
+    FieldDataType.STRING: Tag,
+    FieldDataType.METADATA_STRING: Tag,
     FieldDataType.STRING_LIST: Tag,
     FieldDataType.BOOLEAN: Tag,
 }
-
-REDIS_FIELD_TYPES_TO_BE_MAPPED_TO_LIST = [FieldDataType.SCHEMA_ID_STRING, FieldDataType.BOOLEAN]
+REDIS_FIELD_TYPES_TO_BE_MAPPED_TO_LIST = [FieldDataType.STRING, FieldDataType.METADATA_STRING, FieldDataType.BOOLEAN]
 
 
 @dataclass(frozen=True)
@@ -62,7 +61,7 @@ class RedisFilter(VDBFilter):
         return FilterExpression(str(redis_field))
 
     @classmethod
-    def _init_filter_field(cls, field: Field) -> Num | Text | Tag:
+    def _init_filter_field(cls, field: Field) -> Num | Tag | Text:
         if redis_field_type := REDIS_FIELD_TYPE_BY_FIELD_DATA_TYPE.get(field.data_type):
             return redis_field_type(field.name)
         raise NotImplementedError(f"Unsupported {FieldDataType.__name__}: {field.data_type}")

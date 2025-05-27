@@ -42,7 +42,7 @@ FIELD_DATA_TYPE_BY_SCHEMA_FIELD_TYPE: dict[type[ConcreteSchemaField | IdField], 
     Boolean: FieldDataType.BOOLEAN,
     String: FieldDataType.STRING,
     Timestamp: FieldDataType.INT,
-    IdField: FieldDataType.STRING,
+    IdField: FieldDataType.METADATA_STRING,
 }
 
 FIELD_DATA_TYPE_BY_NODE_DATA_TYPE: dict[type[NodeDataTypes | dict], FieldDataType] = {
@@ -67,7 +67,7 @@ VALID_TYPE_BY_FIELD_DATA_TYPE: dict[FieldDataType, Sequence[type[NodeDataTypes |
     FieldDataType.FLOAT_LIST: [list[float]],
     FieldDataType.STRING_LIST: [list[str]],
     FieldDataType.STRING: [str],
-    FieldDataType.SCHEMA_ID_STRING: [str],
+    FieldDataType.METADATA_STRING: [str],
     FieldDataType.VECTOR: [Vector],
     FieldDataType.IMAGE_DATA: [ImageData],
 }

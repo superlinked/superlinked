@@ -14,7 +14,7 @@
 
 from beartype.typing import Sequence
 from redis.commands.search.field import Field as RedisField
-from redis.commands.search.field import NumericField, TagField, TextField
+from redis.commands.search.field import NumericField, TagField
 from redis.commands.search.field import VectorField as RedisVectorField
 
 from superlinked.framework.common.calculation.distance_metric import DistanceMetric
@@ -27,8 +27,8 @@ from superlinked.framework.common.storage.search_index.index_field_descriptor im
 RedisFieldTypeByFieldDataType: dict[FieldDataType, type[RedisField]] = {
     FieldDataType.DOUBLE: NumericField,
     FieldDataType.INT: NumericField,
-    FieldDataType.STRING: TextField,
-    FieldDataType.SCHEMA_ID_STRING: TagField,
+    FieldDataType.STRING: TagField,
+    FieldDataType.METADATA_STRING: TagField,
     FieldDataType.STRING_LIST: TagField,
     FieldDataType.BOOLEAN: TagField,
 }
