@@ -66,6 +66,9 @@ class Settings(BaseSettings):
     MODAL_BATCH_SIZE: int = 5000
     MODAL_MAX_RETRIES: int = 10
     MODAL_RETRY_DELAY: float = 0.2
+    # redis specific params
+    REDIS_HYBRID_POLICY: str | None = "BATCHES"
+    REDIS_BATCH_SIZE: int | None = 250
     # profiling specific params
     ENABLE_PROFILING: bool = False
     SUPERLINKED_EXECUTION_TIMER_INTERVAL_MS: int = 10
