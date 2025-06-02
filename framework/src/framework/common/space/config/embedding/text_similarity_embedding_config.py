@@ -25,21 +25,17 @@ from superlinked.framework.common.space.config.embedding.embedding_config import
 from superlinked.framework.common.space.embedding.hugging_face_manager import (
     HuggingFaceManager,
 )
-from superlinked.framework.common.space.embedding.infinity_manager import (
-    InfinityManager,
-)
 from superlinked.framework.common.space.embedding.modal_manager import ModalManager
 from superlinked.framework.common.space.embedding.sentence_transformer_manager import (
     SentenceTransformerManager,
 )
 
-TextModelManager = Union[SentenceTransformerManager, HuggingFaceManager, InfinityManager, ModalManager]
+TextModelManager = Union[SentenceTransformerManager, HuggingFaceManager, ModalManager]
 
 
 class TextModelHandler(Enum):
     SENTENCE_TRANSFORMERS = "sentence_transformers"
     HUGGING_FACE = "hugging_face"
-    INFINITY = "infinity"
     MODAL = "modal"
 
     def create_manager(self, model_name: str, model_cache_dir: Path | None = None) -> TextModelManager:
@@ -48,8 +44,6 @@ class TextModelHandler(Enum):
                 return SentenceTransformerManager(model_name, model_cache_dir)
             case TextModelHandler.HUGGING_FACE:
                 return HuggingFaceManager(model_name, model_cache_dir)
-            case TextModelHandler.INFINITY:
-                return InfinityManager(model_name, model_cache_dir)
             case TextModelHandler.MODAL:
                 return ModalManager(model_name, model_cache_dir)
             case _:

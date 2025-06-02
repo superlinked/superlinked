@@ -28,7 +28,6 @@ from superlinked.framework.common.space.config.embedding.embedding_config import
 class ModelHandler(Enum):
     SENTENCE_TRANSFORMERS = "sentence_transformers"
     OPEN_CLIP = "open_clip"
-    INFINITY = "infinity"
     MODAL = "modal"
 
 

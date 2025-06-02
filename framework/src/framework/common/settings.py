@@ -50,13 +50,6 @@ class Settings(BaseSettings):
     SUPERLINKED_CONCURRENT_QUERY_DAG_EVALUATION: bool = True
     # hugging face api embedding specific params
     HUGGING_FACE_API_TOKEN: str | None = None
-    # infinity api embedding specific params
-    INFINITY_API_URL: str | None = None
-    INFINITY_API_TOKEN: str | None = None
-    INFINITY_IMAGE_BATCH_SIZE: int = 32
-    INFINITY_TEXT_BATCH_SIZE: int = 1000
-    INFINITY_MAX_RETRIES: int = 10
-    INFINITY_RETRY_DELAY: float = 0.2
     # modal api embedding specific params
     MODAL_APP_NAME: str = "App"
     MODAL_CLASS_NAME: str = "Embedder"
