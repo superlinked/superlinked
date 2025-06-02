@@ -41,6 +41,16 @@ Classes
     `supported_comparison_operation_types: Sequence[ComparisonOperationType]`
     :
 
+    ### Methods
+
+    `is_(self, _Boolean__value: bool) ‑> superlinked.framework.common.interface.comparison_operand.ComparisonOperation[superlinked.framework.common.schema.schema_object.SchemaField]`
+    :   Equivalent to equality comparison for boolean fields.
+        This method exists to avoid linter errors when comparing boolean fields.
+
+    `is_not_(self, _Boolean__value: bool) ‑> superlinked.framework.common.interface.comparison_operand.ComparisonOperation[superlinked.framework.common.schema.schema_object.SchemaField]`
+    :   Equivalent to inequality comparison for boolean fields.
+        This method exists to avoid linter errors when comparing boolean fields.
+
 `DescribedBlob(blob: Blob, description: String)`
 :   DescribedBlob(blob: 'Blob', description: 'String')
 
