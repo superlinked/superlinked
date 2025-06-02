@@ -21,7 +21,10 @@ from beartype.typing import Any, Generic, Sequence, TypeVar, cast
 from typing_extensions import override
 
 from superlinked.framework.common.data_types import PythonTypes
-from superlinked.framework.common.interface.comparison_operand import ComparisonOperand
+from superlinked.framework.common.interface.comparison_operand import (
+    ComparisonOperand,
+    ComparisonOperation,
+)
 from superlinked.framework.common.interface.comparison_operation_type import (
     COMPARABLE_COMPARISON_OPERATION_TYPES,
     CONTAINS_COMPARISON_OPERATION_TYPES,
@@ -269,6 +272,20 @@ class Boolean(SchemaField[bool]):
     @override
     def supported_comparison_operation_types(self) -> Sequence[ComparisonOperationType]:
         return EQUALITY_COMPARISON_OPERATION_TYPES
+
+    def is_(self, __value: bool) -> ComparisonOperation[SchemaField]:
+        """
+        Equivalent to equality comparison for boolean fields.
+        This method exists to avoid linter errors when comparing boolean fields.
+        """
+        return self == __value
+
+    def is_not_(self, __value: bool) -> ComparisonOperation[SchemaField]:
+        """
+        Equivalent to inequality comparison for boolean fields.
+        This method exists to avoid linter errors when comparing boolean fields.
+        """
+        return self != __value
 
 
 class FloatList(SchemaField[list[float]]):
