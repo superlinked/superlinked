@@ -253,7 +253,12 @@ class QueryExecutor:
         ]
         result_count = len(result_vectors)
         per_space_scores = [
-            list[float](np.dot(vector_parts[:result_count], vector_parts[result_count]))
+            list[float](
+                np.dot(
+                    vector_parts[:result_count],
+                    vector_parts[result_count],  # type: ignore[call-overload] # it exists
+                ),
+            )
             for vector_parts in vector_parts_per_space
         ]
         return [[scores[i] for scores in per_space_scores] for i in range(result_count)]

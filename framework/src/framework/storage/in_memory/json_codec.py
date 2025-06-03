@@ -25,7 +25,7 @@ class JsonEncoder(json.JSONEncoder):
     def default(self, o: object) -> dict[str, str | list]:
         object_ = o  # `o` cannot be renamed because it would break the JsonEncoder.default's interface
         if isinstance(object_, Vector):
-            return {"type": "__Vector__", "value": object_.value.tolist()}
+            return {"type": "__Vector__", "value": list(object_.value.tolist())}
         if isinstance(object_, BlobInformation):
             return {"type": "__BlobInformation__", "value": object_.path or ""}
         return super().default(object_)

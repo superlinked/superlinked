@@ -33,4 +33,8 @@ class VectorSimilarityCalculator:
                 raise ValueError(f"Unsupported calculation method: {self.__method}")
 
     def __calculate_inner_product(self, vector_a: NPArray, vector_b: NPArray) -> float:
-        return np.inner(vector_a, vector_b)
+
+        return np.inner(  # type: ignore[attr-defined] # it exists
+            vector_a,
+            vector_b,
+        )

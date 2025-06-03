@@ -76,7 +76,7 @@ class QdrantFieldEncoder:
             np_vector = vector.value.astype(self.__vector_precision_type)
         else:
             np_vector = np.array(vector.value, dtype=self.__vector_precision_type)
-        return np_vector.tolist()
+        return list(np_vector.tolist())
 
     def _decode_vector(self, vector: list[float]) -> Vector:
         return Vector(vector)

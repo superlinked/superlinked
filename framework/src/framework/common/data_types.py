@@ -26,10 +26,7 @@ from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.schema.image_data import ImageData
 
 Json = Mapping[str, Any]
-NPArray = np.ndarray[
-    Any,
-    np.dtype[np.float64],  # type: ignore # numpy stub is missing for mypy-pylance
-]
+NPArray = np.ndarray[np.float64]
 NP_PRINT_PRECISION = 6
 
 

@@ -38,21 +38,24 @@ class VectorCollection:
         vectors (np.ndarray[Any, np.dtype[np.float32]]): Numpy array of floats.
     """
 
-    def __init__(self, id_list: Sequence[str], vectors: NPArray) -> None:
-        if (len(id_list) > 1) & (len(id_list) != vectors.shape[0]):
+    def __init__(self, id_list: Sequence[str], vectors: list[NPArray]) -> None:
+        if (len(id_list) > 1) & (len(id_list) != len(vectors)):
             raise ValueError(
                 f"id_list length and vectors parameter shape's first dimension should match. "
-                f"Got {id_list=} and {vectors.shape[0]=}"
+                f"Got {id_list=} and {len(vectors)=}"
             )
         self.id_list: Sequence[str] = id_list
-        self.vectors: NPArray = vectors
+        self.vectors: list[NPArray] = vectors
 
     def __len__(self) -> int:
         return len(self.id_list)
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, VectorCollection):
-            return (self.id_list == other.id_list) & np.allclose(self.vectors, other.vectors)
+            return (self.id_list == other.id_list) & np.allclose(  # type: ignore[attr-defined] # it exists
+                self.vectors,
+                other.vectors,
+            )
         return False
 
     def __str__(self) -> str:
@@ -139,7 +142,7 @@ class VectorSampler:
             entity_vectors.append(np.array(vector.value))
             entity_ids.append(readable_id)
 
-        return VectorCollection(entity_ids, np.array(entity_vectors))
+        return VectorCollection(entity_ids, entity_vectors)
 
     def get_all_vectors(
         self,

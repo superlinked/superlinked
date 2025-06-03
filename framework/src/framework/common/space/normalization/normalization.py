@@ -129,7 +129,7 @@ class CategoricalNorm(Normalization[CategoricalNormConfig]):
 
     @override
     def norm(self, value: NPArray, is_query: bool = False) -> float:
-        vector_values_max: float = float(np.max(value, initial=0.0))
+        vector_values_max: float = float(np.max(value, initial=0.0))  # type: ignore[call-overload] # it exists
         len_implied_categories: int = len(CollectionUtil.get_positive_values_ndarray(value))
         sqrt_len_config_categories: float = math.sqrt(self._config.categories_count)
         expected_max: float = (
