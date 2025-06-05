@@ -14,12 +14,12 @@
 <p>
   <a href="https://links.superlinked.com/deep_wiki_repo">
     <img src="https://img.shields.io/badge/chat%20with%20our%20AI%20docs-%E2%86%92-72A1FF?style=for-the-badge&logo=readthedocs&logoColor=white"
-         alt="chat with our AI docs" width="260">
+         alt="chat with our AI docs" width="200">
   </a>
 </p>
 
 
-<p>
+<p> 
   <a href="https://docs.superlinked.com/">
     <img src="https://img.shields.io/badge/Docs-orange?logo=readthedocs" alt="Documentation">
   </a>
@@ -39,12 +39,46 @@
 </div>
 
 <p align="center">
-  <em>Superlinked is a Python framework for AI Engineers building <b>high-performance search &amp; recommendation applications</b> that combine <b>structured</b> and <b>unstructured</b> data. <a href="https://docs.superlinked.com">Check documentation</a> to get started.</em>
+  <em>Superlinked is a Python framework for AI Engineers building <b>high-performance search &amp; recommendation applications</b> that combine <b>structured</b> and <b>unstructured</b> data. </em>
 </p>
 
-## Table of Contents
+## Quickstart
+```python
+%pip install superlinked
+```
+```python
+from superlinked import framework as sl  
+  
+# Define schema for movie reviews  
+class Review(sl.Schema):  
+    id: sl.IdField  
+    text: sl.String  
+  
+review = Review()  
+space = sl.TextSimilaritySpace(text=review.text, model="all-MiniLM-L6-v2")  
+index = sl.Index(space)  
+query = sl.Query(index).find(review).similar(space, sl.Param("search")).select_all()  
+  
+# Setup and run  
+source = sl.InMemorySource(review)  
+app = sl.InMemoryExecutor(sources=[source], indices=[index]).run()  
+  
+# Add data and search  
+source.put([  
+    {"id": "1", "text": "Amazing acting and great story"},  
+    {"id": "2", "text": "Boring plot with bad acting"}  
+])  
+  
+result = app.query(query, search="excellent performance")  
+print(sl.PandasConverter.to_pandas(result))
+
+```
+
+<details>
+<summary><strong>Table&nbsp;of&nbsp;Contents</strong></summary>
 
 - [Table of Contents](#table-of-contents)
+- [Quickstart](#quickstart)
 - [Overview](#overview)
 - [Hands on tutorials](#hands-on-tutorials)
 - [Use-cases](#use-cases)
@@ -57,6 +91,8 @@
 - [Resources](#resources)
 - [Support](#support)
 
+</details>
+
 ## Overview
 
 - **WHY**: Improve your vector search relevance by encoding metadata together with your unstructured data into vectors.
@@ -67,7 +103,6 @@ If you like what we do, give us a star! ⭐
 
 ![](./docs/.gitbook/assets/sl_diagram.png)
 
----
 
 ## Hands-on Tutorials
 
@@ -80,33 +115,22 @@ If you like what we do, give us a star! ⭐
 | **Analyse & export** | **Vector sampler** — pull embeddings into pandas for dashboards & offline analysis. | [Sampler](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/vector_sampler.ipynb) |
 | **Go multi-modal** | **Joint text + image space** for product search, memes & more. | [Multimodal](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/image_embedding.ipynb) |
 
+
 > 💡 **Want even more?** Browse the complete list of features & concepts in our docs →  
 > <https://docs.superlinked.com/concepts/overview>
 
-## Use-cases
-
-Dive deeper with our notebooks into how each use-case benefits from the Superlinked framework.
-
-- **RAG**: [HR Knowledgebase](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/rag_hr_knowledgebase.ipynb)
-- **Semantic Search**: [Movies](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/semantic_search_netflix_titles.ipynb), [Business News](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/semantic_search_news.ipynb), [Product Images & Descriptions](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/image_search_e_commerce.ipynb)
-- **Recommendation Systems**: [E-commerce](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/recommendations_e_commerce.ipynb)
-- **Analytics**: [User Acquisition](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/analytics_user_acquisition.ipynb), [Keyword expansion](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/analytics_keyword_expansion_ads.ipynb)
-
-You can check a full list of examples [here](https://github.com/superlinked/superlinked/tree/main/notebook).
 
 ## Experiment in a notebook
 
 Let's build an e-commerce product search that understands product descriptions and ratings:
 
-#### Install the superlinked library
-```
-%pip install superlinked
-```
-
-#### Run the example:
+#### Run the notebook example:
 
 >First run will take a minute to download the embedding model.  
 
+```python
+%pip install superlinked
+```
 ```python
 import json
 import os
@@ -191,6 +215,18 @@ print(json.dumps(result.metadata, indent=2))
 sl.PandasConverter.to_pandas(result)
 ```
 
+## Use-cases
+
+Dive deeper with our notebooks into how each use-case benefits from the Superlinked framework.
+
+- **RAG**: [HR Knowledgebase](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/rag_hr_knowledgebase.ipynb)
+- **Semantic Search**: [Movies](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/semantic_search_netflix_titles.ipynb), [Business News](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/semantic_search_news.ipynb), [Product Images & Descriptions](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/image_search_e_commerce.ipynb)
+- **Recommendation Systems**: [E-commerce](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/recommendations_e_commerce.ipynb)
+- **Analytics**: [User Acquisition](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/analytics_user_acquisition.ipynb), [Keyword expansion](https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/analytics_keyword_expansion_ads.ipynb)
+
+You can check a full list of examples [here](https://github.com/superlinked/superlinked/tree/main/notebook).
+
+
 ## Run in production
 
 With a single command you can run Superlinked as a REST API Server locally or in your cloud with [Superlinked Server](https://pypi.org/project/superlinked-server). Get data ingestion and query APIs, embedding model inference and deep vector database integrations for free!
@@ -218,6 +254,7 @@ The Superlinked framework logs include contextual information, such as the proce
 
 - [Vector DB Comparison](https://superlinked.com/vector-db-comparison/): Open-source collaborative comparison of vector databases by Superlinked.
 - [VectorHub](https://superlinked.com/vectorhub/): VectorHub is a free and open-sourced learning hub for people interested in adding vector retrieval to their ML stack
+
 
 ## Support
 
