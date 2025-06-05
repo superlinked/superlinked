@@ -16,9 +16,18 @@
 
 <div align="center">
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/superlinked/superlinked)
+<p align="center">
+  <a href="https://links.superlinked.com/deep_wiki_repo">
+    <img
+      src="https://img.shields.io/badge/Chat%20with%20our%20AI%20docs-DeepWiki-72A1FF?style=for-the-badge&logo=readthedocs&logoColor=white"
+      alt="Chat with our AI docs"
+      width="260" />
+  </a>
+</p>
+
 
 [![Documentation](https://img.shields.io/badge/Documentation-orange?logo=data:image/svg%2bxml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDdWMjEiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik0zIDE4QzIuNzM0NzggMTggMi40ODA0MyAxNy44OTQ2IDIuMjkyODkgMTcuNzA3MUMyLjEwNTM2IDE3LjUxOTYgMiAxNy4yNjUyIDIgMTdWNEMyIDMuNzM0NzggMi4xMDUzNiAzLjQ4MDQzIDIuMjkyODkgMy4yOTI4OUMyLjQ4MDQzIDMuMTA1MzYgMi43MzQ3OCAzIDMgM0g4QzkuMDYwODcgMyAxMC4wNzgzIDMuNDIxNDMgMTAuODI4NCA0LjE3MTU3QzExLjU3ODYgNC45MjE3MiAxMiA1LjkzOTEzIDEyIDdDMTIgNS45MzkxMyAxMi40MjE0IDQuOTIxNzIgMTMuMTcxNiA0LjE3MTU3QzEzLjkyMTcgMy40MjE0MyAxNC45MzkxIDMgMTYgM0gyMUMyMS4yNjUyIDMgMjEuNTE5NiAzLjEwNTM2IDIxLjcwNzEgMy4yOTI4OUMyMS44OTQ2IDMuNDgwNDMgMjIgMy43MzQ3OCAyMiA0VjE3QzIyIDE3LjI2NTIgMjEuODk0NiAxNy41MTk2IDIxLjcwNzEgMTcuNzA3MUMyMS41MTk2IDE3Ljg5NDYgMjEuMjY1MiAxOCAyMSAxOEgxNUMxNC4yMDQ0IDE4IDEzLjQ0MTMgMTguMzE2MSAxMi44Nzg3IDE4Ljg3ODdDMTIuMzE2MSAxOS40NDEzIDEyIDIwLjIwNDQgMTIgMjFDMTIgMjAuMjA0NCAxMS42ODM5IDE5LjQ0MTMgMTEuMTIxMyAxOC44Nzg3QzEwLjU1ODcgMTguMzE2MSA5Ljc5NTY1IDE4IDkgMThIM1oiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=)](https://docs.superlinked.com/)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/superlinked/superlinked)
 [![PyPI](https://img.shields.io/pypi/v/superlinked)](https://pypi.org/project/superlinked/)
 ![Last commit](https://img.shields.io/github/last-commit/superlinked/superlinked)
 ![License](https://img.shields.io/github/license/superlinked/superlinked) 
