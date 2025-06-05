@@ -13,63 +13,20 @@
 # limitations under the License.
 
 from dataclasses import dataclass
-from enum import Enum
-from pathlib import Path
 
-from beartype.typing import Any
-from typing_extensions import Union, override
-
-from superlinked.framework.common.space.config.embedding.embedding_config import (
-    EmbeddingConfig,
+from superlinked.framework.common.space.config.embedding.model_based_embedding_config import (
+    ModelBasedEmbeddingConfig,
 )
-from superlinked.framework.common.space.embedding.hugging_face_manager import (
-    HuggingFaceManager,
+from superlinked.framework.common.space.embedding.model_based.model_handler import (
+    TextModelHandler,
 )
-from superlinked.framework.common.space.embedding.modal_manager import ModalManager
-from superlinked.framework.common.space.embedding.sentence_transformer_manager import (
-    SentenceTransformerManager,
-)
-
-TextModelManager = Union[SentenceTransformerManager, HuggingFaceManager, ModalManager]
-
-
-class TextModelHandler(Enum):
-    SENTENCE_TRANSFORMERS = "sentence_transformers"
-    HUGGING_FACE = "hugging_face"
-    MODAL = "modal"
-
-    def create_manager(self, model_name: str, model_cache_dir: Path | None = None) -> TextModelManager:
-        match self:
-            case TextModelHandler.SENTENCE_TRANSFORMERS:
-                return SentenceTransformerManager(model_name, model_cache_dir)
-            case TextModelHandler.HUGGING_FACE:
-                return HuggingFaceManager(model_name, model_cache_dir)
-            case TextModelHandler.MODAL:
-                return ModalManager(model_name, model_cache_dir)
-            case _:
-                raise ValueError(f"Unsupported model handler: {self}")
 
 
 @dataclass(frozen=True)
-class TextSimilarityEmbeddingConfig(EmbeddingConfig[str]):
-    model_name: str
-    model_cache_dir: Path | None
-    cache_size: int
-    length_to_use: int
-    text_model_handler: TextModelHandler = TextModelHandler.SENTENCE_TRANSFORMERS
+class TextSimilarityEmbeddingConfig(ModelBasedEmbeddingConfig[str, TextModelHandler]):
+    model_handler: TextModelHandler = TextModelHandler.SENTENCE_TRANSFORMERS
+    cache_size: int = 0
 
     def __post_init__(self) -> None:
         if self.cache_size < 0:
             raise ValueError("cache_size must be non-negative")
-
-    @property
-    @override
-    def length(self) -> int:
-        return self.length_to_use
-
-    @override
-    def _get_embedding_config_parameters(self) -> dict[str, Any]:
-        return {
-            "class_name": type(self).__name__,
-            "model_name": self.model_name,
-        }

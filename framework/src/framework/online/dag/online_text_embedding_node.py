@@ -22,6 +22,9 @@ from superlinked.framework.common.dag.text_embedding_node import TextEmbeddingNo
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
+from superlinked.framework.common.space.embedding.model_based.singleton_embedding_engine_manager import (
+    SingletonEmbeddingEngineManager,
+)
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.transform.transform import Step
 from superlinked.framework.common.transform.transformation_factory import (
@@ -43,7 +46,9 @@ class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasL
         self._embedding_transformation = self._init_embedding_transformation()
 
     def _init_embedding_transformation(self) -> Step[Sequence[str], list[Vector]]:
-        return TransformationFactory.create_multi_embedding_transformation(self.node.transformation_config)
+        return TransformationFactory.create_multi_embedding_transformation(
+            self.node.transformation_config, SingletonEmbeddingEngineManager()
+        )
 
     @property
     @override

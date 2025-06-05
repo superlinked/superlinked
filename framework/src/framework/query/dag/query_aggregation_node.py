@@ -33,7 +33,11 @@ from superlinked.framework.query.dag.query_node_with_parent import QueryNodeWith
 
 
 class QueryAggregationNode(QueryNodeWithParent[AggregationNode, Vector]):
-    def __init__(self, node: AggregationNode, parents: Sequence[QueryNode[Node[Vector], Vector]]) -> None:
+    def __init__(
+        self,
+        node: AggregationNode,
+        parents: Sequence[QueryNode[Node[Vector], Vector]],
+    ) -> None:
         super().__init__(node, parents)
         if len(self.parents) != 1:
             raise QueryDagInitializationException(f"{type(self).__name__} must have exactly 1 parent.")

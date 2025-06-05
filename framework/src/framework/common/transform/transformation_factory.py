@@ -48,6 +48,12 @@ from superlinked.framework.common.space.embedding.embedding_step import (
     InverseMultiEmbeddingStep,
     MultiEmbeddingStep,
 )
+from superlinked.framework.common.space.embedding.model_based.embedding_engine_manager import (
+    EmbeddingEngineManager,
+)
+from superlinked.framework.common.space.embedding.model_based.singleton_embedding_engine_manager import (
+    SingletonEmbeddingEngineManager,
+)
 from superlinked.framework.common.space.normalization.normalization import Normalization
 from superlinked.framework.common.space.normalization.normalization_factory import (
     NormalizationFactory,
@@ -83,24 +89,35 @@ class TransformationFactory:
     @staticmethod
     def create_embedding_transformation(
         transformation_config: TransformationConfig[AggregationInputT, EmbeddingInputT],
+        embedding_engine_manager: EmbeddingEngineManager | None = None,
     ) -> Step[EmbeddingInputT, Vector]:
-        embedding = EmbeddingFactory.create_embedding(transformation_config.embedding_config)
+        if embedding_engine_manager is None:
+            embedding_engine_manager = SingletonEmbeddingEngineManager()
+        embedding = EmbeddingFactory.create_embedding(transformation_config.embedding_config, embedding_engine_manager)
         normalization = NormalizationFactory.create_normalization(transformation_config.normalization_config)
         return EmbeddingStep(embedding).combine(NormalizationStep(normalization))
 
     @staticmethod
     def create_multi_embedding_transformation(
         transformation_config: TransformationConfig[AggregationInputT, EmbeddingInputT],
+        embedding_engine_manager: EmbeddingEngineManager | None = None,
     ) -> Step[Sequence[EmbeddingInputT], list[Vector]]:
-        embedding = EmbeddingFactory.create_embedding(transformation_config.embedding_config)
+        if embedding_engine_manager is None:
+            embedding_engine_manager = SingletonEmbeddingEngineManager()
+        embedding = EmbeddingFactory.create_embedding(transformation_config.embedding_config, embedding_engine_manager)
         normalization = NormalizationFactory.create_normalization(transformation_config.normalization_config)
         return MultiEmbeddingStep(embedding).combine(MultiNormalizationStep(normalization))
 
     @staticmethod
     def create_aggregation_transformation(
         transformation_config: TransformationConfig[AggregationInputT, EmbeddingInputT],
+        embedding_engine_manager: EmbeddingEngineManager | None = None,
     ) -> Step[Sequence[Weighted[Vector]], Vector]:
-        base_transformations = TransformationFactory.__create_base_transformations(transformation_config)
+        if embedding_engine_manager is None:
+            embedding_engine_manager = SingletonEmbeddingEngineManager()
+        base_transformations = TransformationFactory.__create_base_transformations(
+            transformation_config, embedding_engine_manager
+        )
         aggregation_step = AggregationStep(base_transformations.aggregation)
         transformation: Step[Sequence[Weighted[Vector]], Vector]
         if (
@@ -153,8 +170,9 @@ class TransformationFactory:
     @staticmethod
     def __create_base_transformations(
         transformation_config: TransformationConfig[AggregationInputT, EmbeddingInputT],
+        embedding_engine_manager: EmbeddingEngineManager,
     ) -> BaseTransformations[AggregationInputT, EmbeddingInputT]:
         normalization = NormalizationFactory.create_normalization(transformation_config.normalization_config)
         aggregation = AggregationFactory.create_aggregation(transformation_config.aggregation_config)
-        embedding = EmbeddingFactory.create_embedding(transformation_config.embedding_config)
+        embedding = EmbeddingFactory.create_embedding(transformation_config.embedding_config, embedding_engine_manager)
         return BaseTransformations(normalization, aggregation, embedding)

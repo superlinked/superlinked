@@ -44,15 +44,20 @@ from superlinked.framework.common.space.embedding.custom_embedding import (
     CustomEmbedding,
 )
 from superlinked.framework.common.space.embedding.embedding import Embedding
-from superlinked.framework.common.space.embedding.image_embedding import ImageEmbedding
+from superlinked.framework.common.space.embedding.model_based.embedding_engine_manager import (
+    EmbeddingEngineManager,
+)
+from superlinked.framework.common.space.embedding.model_based.image_embedding import (
+    ImageEmbedding,
+)
+from superlinked.framework.common.space.embedding.model_based.text_embedding import (
+    TextEmbedding,
+)
 from superlinked.framework.common.space.embedding.number_embedding import (
     NumberEmbedding,
 )
 from superlinked.framework.common.space.embedding.recency_embedding import (
     RecencyEmbedding,
-)
-from superlinked.framework.common.space.embedding.sentence_transformer_embedding import (
-    SentenceTransformerEmbedding,
 )
 
 EMBEDDING_BY_CONFIG_CLASS: Mapping[type[EmbeddingConfig], type[Embedding]] = {
@@ -60,7 +65,7 @@ EMBEDDING_BY_CONFIG_CLASS: Mapping[type[EmbeddingConfig], type[Embedding]] = {
     CustomEmbeddingConfig: CustomEmbedding,
     NumberEmbeddingConfig: NumberEmbedding,
     RecencyEmbeddingConfig: RecencyEmbedding,
-    TextSimilarityEmbeddingConfig: SentenceTransformerEmbedding,
+    TextSimilarityEmbeddingConfig: TextEmbedding,
     ImageEmbeddingConfig: ImageEmbedding,
 }
 
@@ -68,8 +73,8 @@ EMBEDDING_BY_CONFIG_CLASS: Mapping[type[EmbeddingConfig], type[Embedding]] = {
 class EmbeddingFactory:
     @staticmethod
     def create_embedding(
-        embedding_config: EmbeddingConfig[EmbeddingInputT],
+        embedding_config: EmbeddingConfig[EmbeddingInputT], embedding_engine_manager: EmbeddingEngineManager
     ) -> Embedding[EmbeddingInputT, Any]:
         if embedding_class := EMBEDDING_BY_CONFIG_CLASS.get(type(embedding_config)):
-            return embedding_class(embedding_config)
+            return embedding_class(embedding_config, embedding_engine_manager)
         raise ValueError(f"Unknown embedding config type: {type(embedding_config).__name__}")

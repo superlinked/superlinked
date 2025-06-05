@@ -12,21 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-import torch
+from dataclasses import dataclass
 
 from superlinked.framework.common.settings import Settings
 
-CPU_DEVICE_TYPE = "cpu"
-CUDA_DEVICE_TYPE = "cuda"
-MPS_DEVICE_TYPE = "mps"
 
-
-class GpuEmbeddingUtil:
-    @classmethod
-    def get_device(cls) -> str:
-        if torch.cuda.is_available():
-            return CUDA_DEVICE_TYPE
-        if Settings().PREFER_MPS_OVER_CPU_IF_AVAILABLE and torch.backends.mps.is_available():
-            return MPS_DEVICE_TYPE
-        return CPU_DEVICE_TYPE
+@dataclass(frozen=True)
+class ModalConfig:  # pylint: disable=too-many-instance-attributes
+    app_name: str = Settings().MODAL_APP_NAME
+    class_name: str = Settings().MODAL_CLASS_NAME
+    environment_name: str = Settings().MODAL_ENVIRONMENT_NAME
+    batch_size: int = Settings().MODAL_BATCH_SIZE
+    max_concurrent_batches: int = Settings().MODAL_MAX_CONCURRENT_BATCHES
+    max_retries: int = Settings().MODAL_MAX_RETRIES
+    retry_delay: float = Settings().MODAL_RETRY_DELAY
+    image_format: str | None = Settings().MODAL_IMAGE_FORMAT
+    image_quality: int = Settings().MODAL_IMAGE_QUALITY

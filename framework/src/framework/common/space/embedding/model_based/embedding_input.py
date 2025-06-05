@@ -12,21 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
 
-import torch
+from beartype.typing import TypeVar
+from PIL.Image import Image as PILImage
 
-from superlinked.framework.common.settings import Settings
-
-CPU_DEVICE_TYPE = "cpu"
-CUDA_DEVICE_TYPE = "cuda"
-MPS_DEVICE_TYPE = "mps"
-
-
-class GpuEmbeddingUtil:
-    @classmethod
-    def get_device(cls) -> str:
-        if torch.cuda.is_available():
-            return CUDA_DEVICE_TYPE
-        if Settings().PREFER_MPS_OVER_CPU_IF_AVAILABLE and torch.backends.mps.is_available():
-            return MPS_DEVICE_TYPE
-        return CPU_DEVICE_TYPE
+ModelEmbeddingInputT = TypeVar("ModelEmbeddingInputT", bound=str | PILImage)

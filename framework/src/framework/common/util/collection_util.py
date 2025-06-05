@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from collections.abc import Iterable
+from itertools import accumulate
 
 import numpy as np
 from beartype.typing import Any, Iterator, Sequence, TypeVar
@@ -49,14 +50,10 @@ class CollectionUtil:
             return non_empty_vectors[0]
 
         dimensions = [v.dimension for v in non_empty_vectors]
-
-        negative_filter_indices = set()
-        offsets = [0]
-        for i in range(1, len(non_empty_vectors)):
-            offsets.append(offsets[-1] + dimensions[i - 1])
-
-        for vec, offset in zip(non_empty_vectors, offsets):
-            negative_filter_indices.update({idx + offset for idx in vec.negative_filter_indices})
+        offsets = [0] + list(accumulate(dimensions))[:-1]
+        negative_filter_indices = {
+            (idx + off) for v, off in zip(non_empty_vectors, offsets) for idx in v.negative_filter_indices
+        }
         concatenated_values = np.concatenate([v.value for v in non_empty_vectors])
         return Vector(concatenated_values, negative_filter_indices)
 

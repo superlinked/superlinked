@@ -32,6 +32,9 @@ from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.space.config.embedding.recency_embedding_config import (
     RecencyEmbeddingConfig,
 )
+from superlinked.framework.common.space.embedding.model_based.singleton_embedding_engine_manager import (
+    SingletonEmbeddingEngineManager,
+)
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
 )
@@ -68,7 +71,7 @@ class RecencyPlotter:
         )
         self._embedding_config = cast(RecencyEmbeddingConfig, recency_space.transformation_config.embedding_config)
         self._embedding_transformation = TransformationFactory.create_embedding_transformation(
-            recency_space.transformation_config
+            recency_space.transformation_config, SingletonEmbeddingEngineManager()
         )
         self._negative_filter_time_period_showcase_multiplier = negative_filter_time_period_showcase_multiplier
         self.vector_similarity_calculator = vector_similarity_calculator

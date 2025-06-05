@@ -26,6 +26,9 @@ from superlinked.framework.common.space.config.embedding.recency_embedding_confi
     RecencyEmbeddingConfig,
 )
 from superlinked.framework.common.space.embedding.embedding import InvertibleEmbedding
+from superlinked.framework.common.space.embedding.model_based.embedding_engine_manager import (
+    EmbeddingEngineManager,
+)
 from superlinked.framework.common.util import time_util
 from superlinked.framework.common.util.collection_util import CollectionUtil
 
@@ -35,8 +38,10 @@ EXPIRY_TIMEDELTA = timedelta(days=1)
 
 
 class RecencyEmbedding(InvertibleEmbedding[int, RecencyEmbeddingConfig]):
-    def __init__(self, embedding_config: RecencyEmbeddingConfig) -> None:
-        super().__init__(embedding_config)
+    def __init__(
+        self, embedding_config: RecencyEmbeddingConfig, embedding_engine_manager: EmbeddingEngineManager
+    ) -> None:
+        super().__init__(embedding_config, embedding_engine_manager)
         # sort period times to ensure the last vector part corresponds to the max period_time
         self._period_time_list: Sequence[PeriodTime] = sorted(
             self._config.period_time_list, key=lambda x: x.period_time.total_seconds()

@@ -13,12 +13,18 @@
 # limitations under the License.
 
 
+from abc import ABC
+
+from beartype.typing import Generic
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.space.config.embedding.custom_embedding_config import (
-    CustomEmbeddingConfig,
+from superlinked.framework.common.space.config.embedding.embedding_config import (
+    EmbeddingInputT,
+)
+from superlinked.framework.common.space.config.embedding.model_based_embedding_config import (
+    ModelBasedEmbeddingConfigT,
 )
 from superlinked.framework.common.space.embedding.embedding import Embedding
 from superlinked.framework.common.space.embedding.model_based.embedding_engine_manager import (
@@ -26,17 +32,19 @@ from superlinked.framework.common.space.embedding.model_based.embedding_engine_m
 )
 
 
-class CustomEmbedding(Embedding[Vector, CustomEmbeddingConfig]):
+class ModelEmbedding(
+    Embedding[EmbeddingInputT, ModelBasedEmbeddingConfigT], Generic[EmbeddingInputT, ModelBasedEmbeddingConfigT], ABC
+):
     def __init__(
-        self, embedding_config: CustomEmbeddingConfig, embedding_engine_manager: EmbeddingEngineManager
+        self, embedding_config: ModelBasedEmbeddingConfigT, embedding_engine_manager: EmbeddingEngineManager
     ) -> None:
         super().__init__(embedding_config, embedding_engine_manager)
+
+    @override
+    def embed(self, input_: EmbeddingInputT, context: ExecutionContext) -> Vector:
+        return self.embed_multiple([input_], context)[0]
 
     @property
     @override
     def length(self) -> int:
         return self._config.length
-
-    @override
-    def embed(self, input_: Vector, context: ExecutionContext) -> Vector:
-        return input_

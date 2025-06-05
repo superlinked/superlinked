@@ -38,7 +38,10 @@ __pdoc__["QueryVectorFactory"] = False
 
 
 class QueryVectorFactory:
-    def __init__(self, dag: Dag) -> None:
+    def __init__(
+        self,
+        dag: Dag,
+    ) -> None:
         self._index_node_id = dag.index_node.node_id
         self._evaluator = QueryDagEvaluator(dag)
         self._query_weighting = QueryWeighting(dag)

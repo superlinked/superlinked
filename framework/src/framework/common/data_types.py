@@ -24,9 +24,13 @@ from superlinked.framework.common.exception import (
 )
 from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.schema.image_data import ImageData
+from superlinked.framework.common.storage.search_index.vector_component_precision import (
+    VectorComponentPrecision,
+)
 
 Json = Mapping[str, Any]
-NPArray = np.ndarray[np.float64]
+VectorItemT = VectorComponentPrecision.init_from_settings().to_np_type()
+NPArray = np.ndarray[VectorItemT]  # type: ignore[valid-type] # it is valid
 NP_PRINT_PRECISION = 6
 
 
@@ -34,14 +38,14 @@ class Vector:
 
     def __init__(
         self,
-        value: Sequence[float] | Sequence[np.float64] | NPArray,
+        value: Sequence[float] | Sequence[np.floating] | NPArray,
         negative_filter_indices: set[int] | frozenset[int] | None = None,
         denormalizer: float = 1.0,
     ) -> None:
         if isinstance(value, np.ndarray):
-            value_to_set = value
+            value_to_set = value.astype(VectorItemT, copy=False)
         else:
-            value_to_set = np.array(list(value), dtype=np.float64)
+            value_to_set = np.array(list(value), dtype=VectorItemT)
         self.value: NPArray = value_to_set
         self.__make_value_immutable()
         self.__dimension: int = len(self.value)
@@ -168,12 +172,18 @@ class Vector:
     def __mul__(self, other: Any) -> Vector:
         if self.is_empty:
             return self
-        if not isinstance(other, int | float):
+        if not isinstance(other, int | float | np.floating):
             raise ValueError(f"{type(self).__name__} can only be multiplied with int or float")
         if other == 1:
             return self
         if other == 0:
-            return Vector(np.zeros(self.dimension, dtype=np.float64), self.negative_filter_indices)
+            return Vector(
+                np.zeros(
+                    self.dimension,
+                    dtype=VectorItemT,  # type: ignore[arg-type] # it is valid
+                ),
+                self.negative_filter_indices,
+            )
 
         multiplied_vector = Vector(self.value_without_negative_filter * float(other))
         return multiplied_vector.apply_negative_filter(self)
@@ -201,7 +211,7 @@ class Vector:
 
     def shallow_copy_with_new(
         self,
-        value: list[float] | list[np.float64] | NPArray | None = None,
+        value: list[float] | list[np.floating] | NPArray | None = None,
         negative_filter_indices: set[int] | frozenset[int] | None = None,
         denormalizer: float | None = None,
     ) -> Vector:

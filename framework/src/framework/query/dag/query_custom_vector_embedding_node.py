@@ -30,7 +30,11 @@ from superlinked.framework.query.query_node_input import (
 
 
 class QueryCustomVectorEmbeddingNode(QueryEmbeddingOrphanNode[Vector, CustomVectorEmbeddingNode, Vector]):
-    def __init__(self, node: CustomVectorEmbeddingNode, parents: Sequence[QueryNode]) -> None:
+    def __init__(
+        self,
+        node: CustomVectorEmbeddingNode,
+        parents: Sequence[QueryNode],
+    ) -> None:
         super().__init__(node, parents, Vector)
 
     @override

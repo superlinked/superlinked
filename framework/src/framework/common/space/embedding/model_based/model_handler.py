@@ -12,21 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from enum import Enum
 
-import torch
-
-from superlinked.framework.common.settings import Settings
-
-CPU_DEVICE_TYPE = "cpu"
-CUDA_DEVICE_TYPE = "cuda"
-MPS_DEVICE_TYPE = "mps"
+from beartype.typing import TypeVar
 
 
-class GpuEmbeddingUtil:
-    @classmethod
-    def get_device(cls) -> str:
-        if torch.cuda.is_available():
-            return CUDA_DEVICE_TYPE
-        if Settings().PREFER_MPS_OVER_CPU_IF_AVAILABLE and torch.backends.mps.is_available():
-            return MPS_DEVICE_TYPE
-        return CPU_DEVICE_TYPE
+class ModelHandler(Enum):
+    SENTENCE_TRANSFORMERS = "sentence_transformers"
+    HUGGING_FACE = "hugging_face"
+    OPEN_CLIP = "open_clip"
+    MODAL = "modal"
+
+
+class TextModelHandler(Enum):
+    SENTENCE_TRANSFORMERS = "sentence_transformers"
+    HUGGING_FACE = "hugging_face"
+    MODAL = "modal"
+
+
+ModelHandlerType = ModelHandler | TextModelHandler
+ModelHandlerT = TypeVar("ModelHandlerT", bound=ModelHandlerType)

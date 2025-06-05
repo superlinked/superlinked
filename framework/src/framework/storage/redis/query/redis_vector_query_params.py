@@ -19,6 +19,9 @@ from redisvl.query.filter import FilterExpression
 from redisvl.query.query import VectorQuery, VectorRangeQuery
 
 from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.storage.search_index.vector_component_precision import (
+    VectorComponentPrecision,
+)
 
 VectorQueryObj: TypeAlias = VectorQuery | VectorRangeQuery
 DISTANCE_ID: str = "vector_distance"
@@ -36,6 +39,7 @@ class RedisVectorQueryParams:  # pylint: disable=too-many-instance-attributes
     sort_by: str = DISTANCE_ID
     hybrid_policy: str | None = Settings().REDIS_HYBRID_POLICY
     batch_size: int | None = Settings().REDIS_BATCH_SIZE
+    dtype: str = VectorComponentPrecision.init_from_settings().value.lower()
 
     def with_radius(self, radius: float) -> "RedisVectorRangeQueryParams":
         return RedisVectorRangeQueryParams(

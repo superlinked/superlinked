@@ -82,8 +82,10 @@ class CompiledNodeRegistry(Generic[CompiledNodeT]):
             raise ValueError(f"Not {expected_class.__name__} type: {node_class.__name__}")
         return cast(type[ImportedNodeT], node_class)
 
-    def init_compiled_node(self, node: Node, parents: Sequence[CompiledNodeT], *args: Any) -> CompiledNodeT:
+    def init_compiled_node(
+        self, node: Node, parents: Sequence[CompiledNodeT], *args: Any, **kwargs: Any
+    ) -> CompiledNodeT:
         compiled_node_class = self._compiled_node_type_by_node_type.get(type(node))
         if compiled_node_class is None:
             raise NotImplementedException(f"Not implemented Node type: {type(node).__name__}")
-        return compiled_node_class(node, parents, *args)  # type: ignore
+        return compiled_node_class(node, parents, *args, **kwargs)  # type: ignore

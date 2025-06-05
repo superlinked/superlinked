@@ -33,7 +33,11 @@ from superlinked.framework.query.query_node_input import (
 
 
 class QueryCategoricalSimilarityNode(QueryEmbeddingOrphanNode[Vector, CategoricalSimilarityNode, list[str]]):
-    def __init__(self, node: CategoricalSimilarityNode, parents: Sequence[QueryNode]) -> None:
+    def __init__(
+        self,
+        node: CategoricalSimilarityNode,
+        parents: Sequence[QueryNode],
+    ) -> None:
         super().__init__(node, parents, list)
 
     @override

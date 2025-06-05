@@ -22,13 +22,16 @@ from superlinked.framework.common.space.config.embedding.embedding_config import
 from superlinked.framework.common.space.embedding.embedding_factory import (
     EmbeddingFactory,
 )
+from superlinked.framework.common.space.embedding.model_based.singleton_embedding_engine_manager import (
+    SingletonEmbeddingEngineManager,
+)
 from superlinked.framework.common.transform.transform import Step
 
 
 class TransformVectorToQueryVector(Step[Vector, Vector]):
     def __init__(self, embedding_config: EmbeddingConfig) -> None:
         super().__init__()
-        self._embedding = EmbeddingFactory.create_embedding(embedding_config)
+        self._embedding = EmbeddingFactory.create_embedding(embedding_config, SingletonEmbeddingEngineManager())
 
     @override
     def transform(

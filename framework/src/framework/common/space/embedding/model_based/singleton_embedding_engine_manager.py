@@ -12,21 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
 
-import torch
-
-from superlinked.framework.common.settings import Settings
-
-CPU_DEVICE_TYPE = "cpu"
-CUDA_DEVICE_TYPE = "cuda"
-MPS_DEVICE_TYPE = "mps"
+from superlinked.framework.common.space.embedding.model_based.embedding_engine_manager import (
+    EmbeddingEngineManager,
+)
 
 
-class GpuEmbeddingUtil:
-    @classmethod
-    def get_device(cls) -> str:
-        if torch.cuda.is_available():
-            return CUDA_DEVICE_TYPE
-        if Settings().PREFER_MPS_OVER_CPU_IF_AVAILABLE and torch.backends.mps.is_available():
-            return MPS_DEVICE_TYPE
-        return CPU_DEVICE_TYPE
+class SingletonEmbeddingEngineManager(EmbeddingEngineManager):
+    _instance: SingletonEmbeddingEngineManager | None = None
+
+    def __new__(cls) -> SingletonEmbeddingEngineManager:
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance

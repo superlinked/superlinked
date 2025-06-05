@@ -26,13 +26,18 @@ from superlinked.framework.common.space.config.embedding.number_embedding_config
     NumberEmbeddingConfig,
 )
 from superlinked.framework.common.space.embedding.embedding import InvertibleEmbedding
+from superlinked.framework.common.space.embedding.model_based.embedding_engine_manager import (
+    EmbeddingEngineManager,
+)
 
 NumberT = TypeVar("NumberT", int, float)
 
 
 class NumberEmbedding(InvertibleEmbedding[NumberT, NumberEmbeddingConfig]):
-    def __init__(self, embedding_config: NumberEmbeddingConfig) -> None:
-        super().__init__(embedding_config)
+    def __init__(
+        self, embedding_config: NumberEmbeddingConfig, embedding_engine_manager: EmbeddingEngineManager
+    ) -> None:
+        super().__init__(embedding_config, embedding_engine_manager)
         self._circle_size_in_rad = math.pi / 2
         self._value_when_out_of_bounds = [0.0, 0.0, self._config.negative_filter]
 

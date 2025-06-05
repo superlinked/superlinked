@@ -126,22 +126,20 @@ class OnlineDagEvaluator:
     ) -> dict[SchemaObject, OnlineSchemaDag]:
         return {
             schema: OnlineSchemaDagCompiler(set(dag.nodes)).compile_schema_dag(
-                dag.project_to_schema(schema),
-                storage_manager,
+                dag.project_to_schema(schema), storage_manager
             )
             for schema in schemas
         }
 
     def __init_dag_effect_online_schema_dag_mapper(
-        self, dag: Dag, storage_manager: StorageManager
+        self,
+        dag: Dag,
+        storage_manager: StorageManager,
     ) -> dict[DagEffect, OnlineSchemaDag]:
         dag_effect_schema_dag_map = {
             dag_effect: dag.project_to_dag_effect(dag_effect) for dag_effect in dag.dag_effects
         }
         return {
-            dag_effect: OnlineSchemaDagCompiler(set(schema_dag.nodes)).compile_schema_dag(
-                schema_dag,
-                storage_manager,
-            )
+            dag_effect: OnlineSchemaDagCompiler(set(schema_dag.nodes)).compile_schema_dag(schema_dag, storage_manager)
             for dag_effect, schema_dag in dag_effect_schema_dag_map.items()
         }

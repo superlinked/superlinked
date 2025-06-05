@@ -27,6 +27,9 @@ from superlinked.framework.common.exception import (
 )
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.interface.weighted import Weighted
+from superlinked.framework.common.space.embedding.model_based.singleton_embedding_engine_manager import (
+    SingletonEmbeddingEngineManager,
+)
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
@@ -52,7 +55,7 @@ class OnlineAggregationNode(DefaultOnlineNode[AggregationNode, Vector], HasLengt
         )
         OnlineAggregationNode._validate_parents(parents)
         self._aggregation_transformation = TransformationFactory.create_aggregation_transformation(
-            self.node.transformation_config,
+            self.node.transformation_config, SingletonEmbeddingEngineManager()
         )
 
     @property

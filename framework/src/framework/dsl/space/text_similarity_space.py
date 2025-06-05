@@ -37,6 +37,9 @@ from superlinked.framework.common.space.config.normalization.normalization_confi
 from superlinked.framework.common.space.config.transformation_config import (
     TransformationConfig,
 )
+from superlinked.framework.common.space.embedding.model_based.singleton_embedding_engine_manager import (
+    SingletonEmbeddingEngineManager,
+)
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.space.has_space_field_set import HasSpaceFieldSet
 from superlinked.framework.dsl.space.space import Space
@@ -147,8 +150,15 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
     def _init_transformation_config(
         self, model: str, model_cache_dir: Path | None, cache_size: int, model_handler: TextModelHandler
     ) -> TransformationConfig[Vector, str]:
-        length = model_handler.create_manager(model, model_cache_dir).calculate_length()
-        embedding_config = TextSimilarityEmbeddingConfig(str, model, model_cache_dir, cache_size, length, model_handler)
+        length = SingletonEmbeddingEngineManager().calculate_length(model_handler, model, model_cache_dir)
+        embedding_config = TextSimilarityEmbeddingConfig(
+            str,
+            model,
+            model_cache_dir,
+            length,
+            model_handler,
+            cache_size,
+        )
         aggregation_config = VectorAggregationConfig(Vector)
         normalization_config = L2NormConfig()
         return TransformationConfig(normalization_config, aggregation_config, embedding_config)

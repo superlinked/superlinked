@@ -39,7 +39,11 @@ class OnlineSchemaDagCompiler:
         compiled_parents = [
             self.compile_node(parent, storage_manager) for parent in node.parents if parent in self.__nodes
         ]
-        compiled_node = self.__online_node_registry.init_compiled_node(node, compiled_parents, storage_manager)
+        compiled_node = self.__online_node_registry.init_compiled_node(
+            node=node,
+            parents=compiled_parents,
+            storage_manager=storage_manager,
+        )
         self.__compiled_node_by_node_id[node.node_id] = compiled_node
         return compiled_node
 

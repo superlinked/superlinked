@@ -29,6 +29,9 @@ from superlinked.framework.common.space.config.normalization.normalization_confi
 from superlinked.framework.common.space.config.transformation_config import (
     TransformationConfig,
 )
+from superlinked.framework.common.space.embedding.model_based.singleton_embedding_engine_manager import (
+    SingletonEmbeddingEngineManager,
+)
 from superlinked.framework.common.space.normalization.normalization import L1Norm
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
@@ -56,7 +59,7 @@ class EventAggregator:
             self._params.transformation_config.embedding_config,
         )
         self._aggregation_transformation = TransformationFactory.create_aggregation_transformation(
-            transform_config_with_no_norm
+            transform_config_with_no_norm, SingletonEmbeddingEngineManager()
         )
 
     def calculate_event_vector(self) -> Vector:

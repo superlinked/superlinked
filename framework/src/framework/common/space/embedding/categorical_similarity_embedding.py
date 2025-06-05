@@ -21,24 +21,29 @@ from typing_extensions import override
 
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.data_types import NPArray, Vector
+from superlinked.framework.common.data_types import NPArray, Vector, VectorItemT
 from superlinked.framework.common.space.config.embedding.categorical_similarity_embedding_config import (
     CategoricalSimilarityEmbeddingConfig,
 )
 from superlinked.framework.common.space.embedding.embedding import InvertibleEmbedding
+from superlinked.framework.common.space.embedding.model_based.embedding_engine_manager import (
+    EmbeddingEngineManager,
+)
 from superlinked.framework.common.util.collection_util import CollectionUtil
 
 
 class CategoricalSimilarityEmbedding(InvertibleEmbedding[list[str], CategoricalSimilarityEmbeddingConfig]):
 
-    def __init__(self, embedding_config: CategoricalSimilarityEmbeddingConfig) -> None:
-        super().__init__(embedding_config)
+    def __init__(
+        self, embedding_config: CategoricalSimilarityEmbeddingConfig, embedding_engine_manager: EmbeddingEngineManager
+    ) -> None:
+        super().__init__(embedding_config, embedding_engine_manager)
         self._other_category_name = (
             f"{sorted(list(self._config.categories), key=len)[-1] if self._config.categories else ''}_"
         )
         self._other_category_index: int | None = self.length - 1 if self._config.uncategorized_as_category else None
         self._category_index_map: dict[str, int] = {elem: i for i, elem in enumerate(self._config.categories)}
-        self._default_n_hot_encoding = np.full(self.length, self._config.negative_filter, dtype=np.float64)
+        self._default_n_hot_encoding = np.full(self.length, self._config.negative_filter, dtype=VectorItemT)
 
     @override
     def embed(self, input_: list[str], context: ExecutionContext) -> Vector:

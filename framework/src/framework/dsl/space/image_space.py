@@ -44,7 +44,9 @@ from superlinked.framework.common.space.config.normalization.normalization_confi
 from superlinked.framework.common.space.config.transformation_config import (
     TransformationConfig,
 )
-from superlinked.framework.common.space.embedding.image_embedding import ImageEmbedding
+from superlinked.framework.common.space.embedding.model_based.singleton_embedding_engine_manager import (
+    SingletonEmbeddingEngineManager,
+)
 from superlinked.framework.dsl.space.exception import InvalidSpaceParamException
 from superlinked.framework.dsl.space.image_space_field_set import (
     ImageDescriptionSpaceFieldSet,
@@ -104,7 +106,7 @@ class ImageSpace(Space[Vector, ImageData]):
         self.__validate_field_schemas(non_none_image)
         image_fields, description_fields = self._split_images_from_descriptions(non_none_image)
         super().__init__(image_fields, Blob)
-        length = ImageEmbedding.init_manager(model_handler, model, model_cache_dir).calculate_length()
+        length = SingletonEmbeddingEngineManager().calculate_length(model_handler, model, model_cache_dir)
         self.image = ImageSpaceFieldSet(self, set(image_fields), allowed_param_types=[str, Image])
         self.description = ImageDescriptionSpaceFieldSet(
             self,
@@ -177,8 +179,8 @@ class ImageSpace(Space[Vector, ImageData]):
             ImageData,
             model,
             model_cache_dir,
-            model_handler,
             length,
+            model_handler,
         )
         aggregation_config = VectorAggregationConfig(Vector)
         normalization_config = L2NormConfig()

@@ -25,17 +25,8 @@ MAX_WORKER_COUNT = 32
 
 
 class ConcurrentExecutor:
-    _instance = None
-
-    def __new__(cls) -> ConcurrentExecutor:
-        if cls._instance is None:
-            cls._instance = super(ConcurrentExecutor, cls).__new__(cls)
-        return cls._instance
-
-    def __init__(self) -> None:
-        if not hasattr(self, "_executor"):
-            self._max_workers = ConcurrentExecutor._determine_optimal_workers()
-            self._executor = ThreadPoolExecutor(max_workers=self._max_workers)
+    def __init__(self, max_workers: int = MAX_WORKER_COUNT) -> None:
+        self._max_workers = ConcurrentExecutor._determine_optimal_workers(max_workers)
 
     def execute_batched(
         self,
@@ -44,7 +35,7 @@ class ConcurrentExecutor:
         batch_size: int | None = None,
         additional_args: Sequence[Any] | None = None,
         condition: bool = True,
-    ) -> Sequence[ReturnT]:
+    ) -> list[ReturnT]:
         """Process items in batches with concurrent execution within each batch."""
         if batch_size is None:
             batch_size = max(1, len(items) // self._max_workers)
@@ -56,26 +47,24 @@ class ConcurrentExecutor:
 
     def execute(
         self, func: Callable[..., ReturnT], args_list: Sequence[Sequence[Any]], condition: bool = True
-    ) -> Sequence[ReturnT]:
+    ) -> list[ReturnT]:
         if condition and len(args_list) > 1:
             return self.execute_concurrently(func, args_list)
         return self.execute_sequentially(func, args_list)
 
-    def execute_sequentially(
-        self, func: Callable[..., ReturnT], args_list: Sequence[Sequence[Any]]
-    ) -> Sequence[ReturnT]:
+    def execute_sequentially(self, func: Callable[..., ReturnT], args_list: Sequence[Sequence[Any]]) -> list[ReturnT]:
         return [func(*args) for args in args_list]
 
-    def execute_concurrently(
-        self, func: Callable[..., ReturnT], args_list: Sequence[Sequence[Any]]
-    ) -> Sequence[ReturnT]:
+    def execute_concurrently(self, func: Callable[..., ReturnT], args_list: Sequence[Sequence[Any]]) -> list[ReturnT]:
         if len(args_list) <= 1:
             return self.execute_sequentially(func, args_list)
-        futures = [self._executor.submit(func, *args) for args in args_list]
-        return [future.result() for future in futures]
+        worker_count = min(len(args_list), self._max_workers)
+        with ThreadPoolExecutor(max_workers=worker_count) as executor:
+            futures = [executor.submit(func, *args) for args in args_list]
+            return [future.result() for future in futures]
 
     @staticmethod
-    def _determine_optimal_workers() -> int:
+    def _determine_optimal_workers(max_workers: int) -> int:
         cpu_count = os.cpu_count() or 1
         optimal_worker_count = cpu_count
-        return min(MAX_WORKER_COUNT, optimal_worker_count)
+        return min(max_workers, optimal_worker_count)

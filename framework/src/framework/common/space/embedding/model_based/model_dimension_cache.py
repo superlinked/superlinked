@@ -12,21 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from beartype.typing import Mapping
 
-import torch
-
-from superlinked.framework.common.settings import Settings
-
-CPU_DEVICE_TYPE = "cpu"
-CUDA_DEVICE_TYPE = "cuda"
-MPS_DEVICE_TYPE = "mps"
-
-
-class GpuEmbeddingUtil:
-    @classmethod
-    def get_device(cls) -> str:
-        if torch.cuda.is_available():
-            return CUDA_DEVICE_TYPE
-        if Settings().PREFER_MPS_OVER_CPU_IF_AVAILABLE and torch.backends.mps.is_available():
-            return MPS_DEVICE_TYPE
-        return CPU_DEVICE_TYPE
+MODEL_DIMENSION_BY_NAME: Mapping[str, int] = {
+    "sentence-transformers/all-MiniLM-L6-v2": 384,
+    "sentence-transformers/all-mpnet-base-v2": 768,
+    "Alibaba-NLP/gte-large-en-v1.5": 1024,
+    "Alibaba-NLP/gte-Qwen2-1.5B-instruct": 1536,
+    "clip-ViT-B-32": 512,
+    "RN50": 1024,
+}

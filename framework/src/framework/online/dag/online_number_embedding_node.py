@@ -25,6 +25,9 @@ from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.space.config.embedding.number_embedding_config import (
     NumberEmbeddingConfig,
 )
+from superlinked.framework.common.space.embedding.model_based.singleton_embedding_engine_manager import (
+    SingletonEmbeddingEngineManager,
+)
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.transform.transform import Step
 from superlinked.framework.common.transform.transformation_factory import (
@@ -46,7 +49,7 @@ class OnlineNumberEmbeddingNode(
     ) -> None:
         super().__init__(node, parents, storage_manager)
         self._embedding_transformation = TransformationFactory.create_embedding_transformation(
-            self.node.transformation_config
+            self.node.transformation_config, SingletonEmbeddingEngineManager()
         )
         self.embedding_config = cast(NumberEmbeddingConfig, self.node.transformation_config.embedding_config)
 

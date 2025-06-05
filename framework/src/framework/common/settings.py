@@ -34,20 +34,23 @@ class Settings(BaseSettings):
     QUERY_TO_RETURN_ORIGIN_ID: bool = False
     # embedding specific params
     MODEL_CACHE_DIR: str | None = None
-    SUPERLINKED_MODEL_CACHE_SIZE: int = 10
-    GPU_EMBEDDING_THRESHOLD: int = 0
+    PREFER_MPS_OVER_CPU_IF_AVAILABLE: bool = False
     SUPERLINKED_RESIZE_IMAGES: bool = False
-    SUPERLINKED_DISABLE_HALF_PRECISION_EMBEDDING: bool = True
+    SUPERLINKED_DISABLE_HALF_PRECISION_EMBEDDING: bool = False
     # model downloading specific params
+    MODEL_LOCK_TIMEOUT_SECONDS: int = 120
     SENTENCE_TRANSFORMERS_MODEL_LOCK_MAX_RETRIES: int = 10
     SENTENCE_TRANSFORMERS_MODEL_LOCK_RETRY_DELAY: int = 1
+    SENTENCE_TRANSFORMERS_MODEL_LOCK_TIMEOUT_BUFFER_SECONDS: int = 10
+    SENTENCE_TRANSFORMERS_MODEL_LOCK_TIMEOUT_MIN_SECONDS: int = 5
     # nlq specific params
     SUPERLINKED_NLQ_MAX_RETRIES: int = 3
     # concurrency specific params
     SUPERLINKED_CONCURRENT_BLOB_LOADING: bool = True
     SUPERLINKED_CONCURRENT_HUGGINGFACE_EMBEDDING: bool = True
     SUPERLINKED_CONCURRENT_EFFECT_EVALUATION: bool = True
-    SUPERLINKED_CONCURRENT_QUERY_DAG_EVALUATION: bool = True
+    SUPERLINKED_CONCURRENT_ONLINE_DAG_EVALUATION: bool = False
+    SUPERLINKED_CONCURRENT_QUERY_DAG_EVALUATION: bool = False
     # hugging face api embedding specific params
     HUGGING_FACE_API_TOKEN: str | None = None
     # modal api embedding specific params
@@ -57,6 +60,7 @@ class Settings(BaseSettings):
     MODAL_IMAGE_FORMAT: str | None = "WebP"
     MODAL_IMAGE_QUALITY: int = 95
     MODAL_BATCH_SIZE: int = 5000
+    MODAL_MAX_CONCURRENT_BATCHES: int = 1
     MODAL_MAX_RETRIES: int = 10
     MODAL_RETRY_DELAY: float = 0.2
     # redis specific params

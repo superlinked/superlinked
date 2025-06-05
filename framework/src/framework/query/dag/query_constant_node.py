@@ -28,7 +28,11 @@ from superlinked.framework.query.query_node_input import QueryNodeInput
 
 
 class QueryConstantNode(QueryNode[ConstantNode[NodeDataT], NodeDataT], Generic[NodeDataT]):
-    def __init__(self, node: ConstantNode[NodeDataT], parents: Sequence[QueryNode]) -> None:
+    def __init__(
+        self,
+        node: ConstantNode[NodeDataT],
+        parents: Sequence[QueryNode],
+    ) -> None:
         super().__init__(node, parents)
 
     @override

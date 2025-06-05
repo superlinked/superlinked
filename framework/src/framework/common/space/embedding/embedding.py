@@ -24,11 +24,15 @@ from superlinked.framework.common.space.config.embedding.embedding_config import
     EmbeddingConfigT,
     EmbeddingInputT,
 )
+from superlinked.framework.common.space.embedding.model_based.embedding_engine_manager import (
+    EmbeddingEngineManager,
+)
 
 
 class Embedding(HasDefaultVector, Generic[EmbeddingInputT, EmbeddingConfigT], ABC):
-    def __init__(self, embedding_config: EmbeddingConfigT) -> None:
+    def __init__(self, embedding_config: EmbeddingConfigT, embedding_engine_manager: EmbeddingEngineManager) -> None:
         self._config = embedding_config
+        self._embedding_engine_manager = embedding_engine_manager
 
     @abstractmethod
     def embed(self, input_: EmbeddingInputT, context: ExecutionContext) -> Vector:
