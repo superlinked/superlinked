@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.space.image_space
 Classes
 -------
 
-`ImageSpace(image: superlinked.framework.common.schema.schema_object.Blob | superlinked.framework.common.schema.schema_object.DescribedBlob | None | collections.abc.Sequence[superlinked.framework.common.schema.schema_object.Blob | superlinked.framework.common.schema.schema_object.DescribedBlob | None], model: str = 'clip-ViT-B-32', model_handler: superlinked.framework.common.space.config.embedding.image_embedding_config.ModelHandler = ModelHandler.SENTENCE_TRANSFORMERS, model_cache_dir: pathlib.Path | None = None)`
+`ImageSpace(image: superlinked.framework.common.schema.schema_object.Blob | superlinked.framework.common.schema.schema_object.DescribedBlob | None | collections.abc.Sequence[superlinked.framework.common.schema.schema_object.Blob | superlinked.framework.common.schema.schema_object.DescribedBlob | None], model: str = 'clip-ViT-B-32', model_handler: superlinked.framework.common.space.embedding.model_based.model_handler.ModelHandler = ModelHandler.SENTENCE_TRANSFORMERS, model_cache_dir: pathlib.Path | None = None)`
 :   Initialize the ImageSpace instance for generating vector representations
     from images, supporting models from the OpenCLIP project.
     
