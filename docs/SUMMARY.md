@@ -85,6 +85,7 @@
     * [Query Descriptor](reference/dsl/query/query_descriptor.md)
     * [Typed Param](reference/dsl/query/typed_param.md)
     * [Query Clause](reference/dsl/query/query_clause.md)
+    * [Query User Config](reference/dsl/query/query_user_config.md)
     * [Query Filter Validator](reference/dsl/query/query_filter_validator.md)
     * [Query Param Information](reference/dsl/query/query_param_information.md)
     * [Query Mixin](reference/dsl/query/query_mixin.md)
