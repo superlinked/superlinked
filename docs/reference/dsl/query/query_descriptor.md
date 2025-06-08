@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.query.query_descriptor
 Classes
 -------
 
-`QueryDescriptor(index: superlinked.framework.dsl.index.index.Index, schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject, clauses: collections.abc.Sequence[superlinked.framework.dsl.query.query_clause.query_clause.QueryClause] | None = None, with_metadata: bool = False)`
+`QueryDescriptor(index: superlinked.framework.dsl.index.index.Index, schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject, clauses: collections.abc.Sequence[superlinked.framework.dsl.query.query_clause.query_clause.QueryClause] | None = None, query_user_config: superlinked.framework.dsl.query.query_user_config.QueryUserConfig | None = None)`
 :   A class representing a query object. Use .with_vector to run queries using a stored
     vector, or use .similar for queries where you supply the query at query-time. Or combine
     them, or even combine multiple .similar to supply different queries for each space in the
@@ -16,6 +16,9 @@ Classes
     :
 
     `index: Index`
+    :
+
+    `query_user_config: QueryUserConfig`
     :
 
     `schema: IdSchemaObject`
@@ -64,9 +67,7 @@ Classes
 
     `include_metadata(self) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :   Make per-item metadata to be returned in the query results.
-        
         Current metadata includes space-wise partial scores.
-        
         Returns:
             Self: The query object itself.
 
@@ -131,6 +132,18 @@ Classes
 
     `replace_clauses(self, clauses: Sequence[QueryClause]) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :
+
+    `replace_user_config(self, query_user_config: superlinked.framework.dsl.query.query_user_config.QueryUserConfig) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    :   Replace the current query user configuration with a new one.
+        
+        This method allows you to set custom configuration options for the query execution,
+        such as whether to include metadata in results or Redis-specific settings.
+        
+        Args:
+            query_user_config (QueryUserConfig): The new configuration to use for this query.
+        
+        Returns:
+            QueryDescriptor: A new query descriptor with the updated configuration.
 
     `select(self, fields: superlinked.framework.common.schema.schema_object.SchemaField | str | superlinked.framework.dsl.query.param.Param | collections.abc.Sequence[superlinked.framework.common.schema.schema_object.SchemaField | str | superlinked.framework.dsl.query.param.Param] | None = None, metadata: collections.abc.Sequence[superlinked.framework.dsl.space.space.Space] | None = None) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :   Select specific fields from the schema to be returned in the query results.
