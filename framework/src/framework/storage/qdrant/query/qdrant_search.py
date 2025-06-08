@@ -19,6 +19,9 @@ from qdrant_client.models import SearchParams
 from typing_extensions import override
 
 from superlinked.framework.common.storage.index_config import IndexConfig
+from superlinked.framework.common.storage.query.vdb_knn_search_config import (
+    VDBKNNSearchConfig,
+)
 from superlinked.framework.common.storage.search import Search
 from superlinked.framework.common.storage.search_index.search_algorithm import (
     SearchAlgorithm,
@@ -33,14 +36,14 @@ from superlinked.framework.storage.qdrant.query.qdrant_vdb_knn_search_params imp
 )
 
 
-class QdrantSearch(Search[QdrantVDBKNNSearchParams, QdrantQuery, QueryResponse]):
+class QdrantSearch(Search[QdrantVDBKNNSearchParams, QdrantQuery, QueryResponse, VDBKNNSearchConfig]):
     def __init__(self, client: QdrantClient, encoder: QdrantFieldEncoder) -> None:
         super().__init__()
         self._client = client
         self._query_builder = QdrantQueryBuilder(encoder)
 
     @override
-    def build_query(self, search_params: QdrantVDBKNNSearchParams) -> QdrantQuery:
+    def build_query(self, search_params: QdrantVDBKNNSearchParams, search_config: VDBKNNSearchConfig) -> QdrantQuery:
         return self._query_builder.build(search_params)
 
     @override

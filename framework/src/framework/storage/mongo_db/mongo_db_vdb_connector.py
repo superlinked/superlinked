@@ -21,6 +21,9 @@ from superlinked.framework.common.storage.entity.entity_data import EntityData
 from superlinked.framework.common.storage.entity.entity_id import EntityId
 from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.field.field_data import FieldData
+from superlinked.framework.common.storage.query.vdb_knn_search_config import (
+    VDBKNNSearchConfig,
+)
 from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
@@ -29,6 +32,7 @@ from superlinked.framework.common.storage.search_index.manager.search_index_mana
     SearchIndexManager,
 )
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
+from superlinked.framework.dsl.query.query_user_config import QueryUserConfig
 from superlinked.framework.storage.common.vdb_settings import VDBSettings
 from superlinked.framework.storage.mongo_db.mongo_db_connection_params import (
     MongoDBConnectionParams,
@@ -48,7 +52,7 @@ from superlinked.framework.storage.mongo_db.search_index.mongo_db_search_index_m
 )
 
 
-class MongoDBVDBConnector(VDBConnector):
+class MongoDBVDBConnector(VDBConnector[VDBKNNSearchConfig]):
     def __init__(self, connection_params: MongoDBConnectionParams, vdb_settings: VDBSettings) -> None:
         super().__init__(vdb_settings=vdb_settings)
         self._client = MongoClient(connection_params.connection_string)
@@ -110,6 +114,7 @@ class MongoDBVDBConnector(VDBConnector):
         index_name: str,
         schema_name: str,
         vdb_knn_search_params: VDBKNNSearchParams,
+        search_config: VDBKNNSearchConfig,
         **params: Any,
     ) -> Sequence[ResultEntityData]:
         index_config = self._get_index_config(index_name)
@@ -121,6 +126,7 @@ class MongoDBVDBConnector(VDBConnector):
                 index_name,
                 params.get("numCandidates"),
             ),
+            search_config,
         )
         return [
             ResultEntityData(
@@ -130,6 +136,10 @@ class MongoDBVDBConnector(VDBConnector):
             )
             for document in results
         ]
+
+    @override
+    def init_search_config(self, query_user_config: QueryUserConfig) -> VDBKNNSearchConfig:
+        return VDBKNNSearchConfig()
 
     def _extract_fields_from_document(
         self, document: dict[str, Any], fields_to_return: Sequence[Field]

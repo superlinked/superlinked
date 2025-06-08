@@ -27,25 +27,31 @@ from superlinked.framework.common.storage.index_config import IndexConfig
 from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
+from superlinked.framework.common.storage.vdb_connector import VDBKNNSearchConfigT
 
 KNNReturnT = TypeVar("KNNReturnT")
 SearchParamsT = TypeVar("SearchParamsT", bound=VDBKNNSearchParams)
 QuertT = TypeVar("QuertT")
 
 
-class Search(ABC, Generic[SearchParamsT, QuertT, KNNReturnT]):
+class Search(ABC, Generic[SearchParamsT, QuertT, KNNReturnT, VDBKNNSearchConfigT]):
     def knn_search_with_checks(
         self,
         index_config: IndexConfig,
         search_params: SearchParamsT,
+        search_config: VDBKNNSearchConfigT,
     ) -> KNNReturnT:
         self.check_vector_field(index_config, search_params.vector_field)
         self.check_filters(index_config, search_params.filters)
-        query = self.build_query(search_params)
+        query = self.build_query(search_params, search_config)
         return self.knn_search(index_config, query)
 
     @abstractmethod
-    def build_query(self, search_params: SearchParamsT) -> QuertT:
+    def build_query(
+        self,
+        search_params: SearchParamsT,
+        search_config: VDBKNNSearchConfigT,
+    ) -> QuertT:
         pass
 
     @abstractmethod

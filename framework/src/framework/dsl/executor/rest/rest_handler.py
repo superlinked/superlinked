@@ -22,6 +22,7 @@ from superlinked.framework.dsl.executor.rest.rest_configuration import (
     RestQuery,
 )
 from superlinked.framework.dsl.query.query_mixin import QueryMixin
+from superlinked.framework.dsl.query.query_user_config import QueryUserConfig
 from superlinked.framework.dsl.query.result import QueryResult
 from superlinked.framework.dsl.source.rest_source import RestSource
 
@@ -62,10 +63,9 @@ class RestHandler:
         source.put([input_schema])
 
     @time_execution_with_arg("path")
-    def _query_handler(self, query_descriptor: dict, path: str, include_metadata: bool = False) -> QueryResult:
+    def _query_handler(self, query_descriptor: dict, path: str, query_user_config: QueryUserConfig) -> QueryResult:
         query = self.__path_to_query_map[path].query_descriptor
-        if include_metadata:
-            query = query.include_metadata()
+        query = query.replace_user_config(query_user_config)
         result = self.__query_mixin.query(query, **query_descriptor)
         return result
 

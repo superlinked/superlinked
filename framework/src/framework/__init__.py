@@ -98,6 +98,7 @@ from superlinked.framework.dsl.index.effect import Effect
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.query.param import Param
 from superlinked.framework.dsl.query.query import Query
+from superlinked.framework.dsl.query.query_user_config import QueryUserConfig
 from superlinked.framework.dsl.query.result import QueryResult
 from superlinked.framework.dsl.registry.superlinked_registry import SuperlinkedRegistry
 from superlinked.framework.dsl.source.data_loader_source import (
@@ -192,6 +193,7 @@ __all__ = [
     "Query",
     "RestQuery",
     "QueryResult",
+    "QueryUserConfig",
     # DSL Space
     "Space",
     "CategoricalSimilaritySpace",

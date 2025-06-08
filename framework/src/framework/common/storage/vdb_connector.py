@@ -14,7 +14,7 @@
 
 from abc import ABC, abstractmethod
 
-from beartype.typing import Any, Sequence
+from beartype.typing import Any, Generic, Sequence, TypeVar
 
 from superlinked.framework.common.calculation.distance_metric import DistanceMetric
 from superlinked.framework.common.const import constants
@@ -23,6 +23,9 @@ from superlinked.framework.common.settings import Settings
 from superlinked.framework.common.storage.entity.entity import Entity
 from superlinked.framework.common.storage.entity.entity_data import EntityData
 from superlinked.framework.common.storage.index_config import IndexConfig
+from superlinked.framework.common.storage.query.vdb_knn_search_config import (
+    VDBKNNSearchConfig,
+)
 from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
@@ -37,11 +40,14 @@ from superlinked.framework.common.storage.search_index.vector_component_precisio
     VectorComponentPrecision,
 )
 from superlinked.framework.common.util.execution_timer import time_execution
+from superlinked.framework.dsl.query.query_user_config import QueryUserConfig
 from superlinked.framework.storage.common.vdb_settings import VDBSettings
 from superlinked.framework.storage.in_memory.object_serializer import ObjectSerializer
 
+VDBKNNSearchConfigT = TypeVar("VDBKNNSearchConfigT", bound=VDBKNNSearchConfig)
 
-class VDBConnector(ABC):
+
+class VDBConnector(ABC, Generic[VDBKNNSearchConfigT]):
     def __init__(self, vdb_settings: VDBSettings, index_configs: Sequence[IndexConfig] | None = None) -> None:
         self.__vdb_settings = vdb_settings
         self._vector_coordinate_type = VectorComponentPrecision.init_from_settings()
@@ -122,6 +128,7 @@ class VDBConnector(ABC):
         index_name: str,
         schema_name: str,
         vdb_knn_search_params: VDBKNNSearchParams,
+        search_config: VDBKNNSearchConfigT,
         **params: Any,
     ) -> Sequence[ResultEntityData]:
         # If the limit is set to the default, assign it a database-specific default value
@@ -137,7 +144,7 @@ class VDBConnector(ABC):
             filters=vdb_knn_search_params.filters,
             radius=vdb_knn_search_params.radius,
         )
-        return self._knn_search(index_name, schema_name, search_params, **params)
+        return self._knn_search(index_name, schema_name, search_params, search_config, **params)
 
     @abstractmethod
     def _knn_search(
@@ -145,8 +152,13 @@ class VDBConnector(ABC):
         index_name: str,
         schema_name: str,
         vdb_knn_search_params: VDBKNNSearchParams,
+        search_config: VDBKNNSearchConfigT,
         **params: Any,
     ) -> Sequence[ResultEntityData]:
+        pass
+
+    @abstractmethod
+    def init_search_config(self, query_user_config: QueryUserConfig) -> VDBKNNSearchConfigT:
         pass
 
     def _get_index_config(self, index_name: str) -> IndexConfig:

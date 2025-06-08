@@ -17,6 +17,9 @@ from pymongo.database import Database
 from typing_extensions import override
 
 from superlinked.framework.common.storage.index_config import IndexConfig
+from superlinked.framework.common.storage.query.vdb_knn_search_config import (
+    VDBKNNSearchConfig,
+)
 from superlinked.framework.common.storage.search import Search
 from superlinked.framework.storage.mongo_db.mongo_db_field_encoder import (
     MongoDBFieldEncoder,
@@ -29,14 +32,14 @@ from superlinked.framework.storage.mongo_db.query.mongo_db_vdb_knn_search_params
 MAX_NUMBER_OF_CANDIDATES = 10000
 
 
-class MongoDBSearch(Search[MongoDBVDBKNNSearchParams, MongoDBQuery, CommandCursor]):
+class MongoDBSearch(Search[MongoDBVDBKNNSearchParams, MongoDBQuery, CommandCursor, VDBKNNSearchConfig]):
     def __init__(self, db: Database, encoder: MongoDBFieldEncoder) -> None:
         super().__init__()
         self._db = db
         self._encoder = encoder
 
     @override
-    def build_query(self, search_params: MongoDBVDBKNNSearchParams) -> MongoDBQuery:
+    def build_query(self, search_params: MongoDBVDBKNNSearchParams, search_config: VDBKNNSearchConfig) -> MongoDBQuery:
         if search_params.num_candidates > MAX_NUMBER_OF_CANDIDATES:
             raise ValueError("Number of nearest neighbors exeeded")
         return (

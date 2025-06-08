@@ -18,13 +18,15 @@ from beartype.typing import Sequence, TypeAlias
 from redisvl.query.filter import FilterExpression
 from redisvl.query.query import VectorQuery, VectorRangeQuery
 
-from superlinked.framework.common.settings import Settings
 from superlinked.framework.common.storage.search_index.vector_component_precision import (
     VectorComponentPrecision,
 )
 
 VectorQueryObj: TypeAlias = VectorQuery | VectorRangeQuery
 DISTANCE_ID: str = "vector_distance"
+
+HYBRID_POLICY_BATCHES = "BATCHES"
+HYBRID_POLICY_ADHOC_BF = "ADHOC_BF"
 
 
 @dataclass(frozen=True)
@@ -37,8 +39,8 @@ class RedisVectorQueryParams:  # pylint: disable=too-many-instance-attributes
     return_score: bool = True
     dialect: int = 2
     sort_by: str = DISTANCE_ID
-    hybrid_policy: str | None = Settings().REDIS_HYBRID_POLICY
-    batch_size: int | None = Settings().REDIS_BATCH_SIZE
+    hybrid_policy: str | None = None
+    batch_size: int | None = None
     dtype: str = VectorComponentPrecision.init_from_settings().value.lower()
 
     def with_radius(self, radius: float) -> "RedisVectorRangeQueryParams":
@@ -51,6 +53,8 @@ class RedisVectorQueryParams:  # pylint: disable=too-many-instance-attributes
             return_score=self.return_score,
             dialect=self.dialect,
             sort_by=self.sort_by,
+            hybrid_policy=self.hybrid_policy,
+            batch_size=self.batch_size,
             distance_threshold=radius,
         )
 

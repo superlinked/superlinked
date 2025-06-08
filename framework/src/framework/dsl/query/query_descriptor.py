@@ -84,6 +84,7 @@ from superlinked.framework.dsl.query.query_clause.weight_by_space_clause import 
     WeightBySpaceClause,
 )
 from superlinked.framework.dsl.query.query_filter_validator import QueryFilterValidator
+from superlinked.framework.dsl.query.query_user_config import QueryUserConfig
 from superlinked.framework.dsl.query.space_weight_param_info import SpaceWeightParamInfo
 from superlinked.framework.dsl.space.categorical_similarity_space import (
     CategoricalSimilaritySpace,
@@ -111,12 +112,12 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         index: Index,
         schema: IdSchemaObject,
         clauses: Sequence[QueryClause] | None = None,
-        with_metadata: bool = False,
+        query_user_config: QueryUserConfig | None = None,
     ) -> None:
         self.__index = index
         self.__schema = schema
         self.__clauses: Sequence[QueryClause] = clauses if clauses else []
-        self.__with_metadata = with_metadata
+        self.__query_user_config = query_user_config if query_user_config else QueryUserConfig()
         self.__space_weight_param_info: SpaceWeightParamInfo | None = None
         QueryDescriptorValidator.validate(self)
 
@@ -134,7 +135,11 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
 
     @property
     def with_metadata(self) -> bool:
-        return self.__with_metadata
+        return self.__query_user_config.with_metadata
+
+    @property
+    def query_user_config(self) -> QueryUserConfig:
+        return self.__query_user_config
 
     @property
     def _space_weight_param_info(self) -> SpaceWeightParamInfo:
@@ -400,13 +405,32 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
     def include_metadata(self) -> QueryDescriptor:
         """
         Make per-item metadata to be returned in the query results.
-
         Current metadata includes space-wise partial scores.
-
         Returns:
             Self: The query object itself.
         """
-        return QueryDescriptor(self.index, self.schema, self.clauses, with_metadata=True)
+        query_user_config = QueryUserConfig(
+            with_metadata=True,
+            redis_hybrid_policy=self.query_user_config.redis_hybrid_policy,
+            redis_batch_size=self.query_user_config.redis_batch_size,
+        )
+        return QueryDescriptor(self.index, self.schema, self.clauses, query_user_config=query_user_config)
+
+    @TypeValidator.wrap
+    def replace_user_config(self, query_user_config: QueryUserConfig) -> QueryDescriptor:
+        """
+        Replace the current query user configuration with a new one.
+
+        This method allows you to set custom configuration options for the query execution,
+        such as whether to include metadata in results or Redis-specific settings.
+
+        Args:
+            query_user_config (QueryUserConfig): The new configuration to use for this query.
+
+        Returns:
+            QueryDescriptor: A new query descriptor with the updated configuration.
+        """
+        return QueryDescriptor(self.index, self.schema, self.clauses, query_user_config=query_user_config)
 
     @TypeValidator.wrap
     def nlq_suggestions(self, feedback: str | None = None) -> QuerySuggestionsModel:
@@ -506,14 +530,14 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         return [clause for clause in self.clauses if isinstance(clause, clause_type)]
 
     def replace_clauses(self, clauses: Sequence[QueryClause]) -> QueryDescriptor:
-        return QueryDescriptor(self.index, self.schema, clauses, self.with_metadata)
+        return QueryDescriptor(self.index, self.schema, clauses, self.__query_user_config)
 
     def __replace_clause(self, old_clause: QueryClause, new_clause: QueryClause) -> QueryDescriptor:
         clauses = [clause for clause in self.clauses if clause != old_clause]
-        return QueryDescriptor(self.index, self.schema, clauses + [new_clause], self.with_metadata)
+        return QueryDescriptor(self.index, self.schema, clauses + [new_clause], self.__query_user_config)
 
     def __append_clauses(self, clauses: Sequence[QueryClause]) -> QueryDescriptor:
-        return QueryDescriptor(self.index, self.schema, list(self.clauses) + list(clauses), self.with_metadata)
+        return QueryDescriptor(self.index, self.schema, list(self.clauses) + list(clauses), self.__query_user_config)
 
     @classmethod
     def __warn_if_nlq_is_used_without_recommended_param_descriptions(cls, query_descriptor: QueryDescriptor) -> None:

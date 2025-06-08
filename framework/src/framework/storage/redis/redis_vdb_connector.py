@@ -28,9 +28,13 @@ from superlinked.framework.common.storage.search_index.manager.search_index_mana
     SearchIndexManager,
 )
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
+from superlinked.framework.dsl.query.query_user_config import QueryUserConfig
 from superlinked.framework.storage.common.vdb_settings import VDBSettings
 from superlinked.framework.storage.redis.query.redis_vector_query_params import (
     DISTANCE_ID,
+)
+from superlinked.framework.storage.redis.query.vdb_knn_search_params import (
+    RedisVDBKNNSearchConfig,
 )
 from superlinked.framework.storage.redis.redis_connection_params import (
     RedisConnectionParams,
@@ -43,7 +47,7 @@ from superlinked.framework.storage.redis.redis_search_index_manager import (
 from superlinked.framework.storage.redis.redis_vdb_client import RedisVDBClient
 
 
-class RedisVDBConnector(VDBConnector):
+class RedisVDBConnector(VDBConnector[RedisVDBKNNSearchConfig]):
     def __init__(
         self,
         connection_params: RedisConnectionParams,
@@ -112,11 +116,12 @@ class RedisVDBConnector(VDBConnector):
         index_name: str,
         schema_name: str,
         vdb_knn_search_params: VDBKNNSearchParams,
+        search_config: RedisVDBKNNSearchConfig,
         **params: Any,
     ) -> Sequence[ResultEntityData]:
         index_config = self._get_index_config(index_name)
         result = self._encoder.convert_bytes_keys_dict(
-            self._search.knn_search_with_checks(index_config, vdb_knn_search_params)
+            self._search.knn_search_with_checks(index_config, vdb_knn_search_params, search_config)
         )
         return [
             ResultEntityData(
@@ -130,6 +135,10 @@ class RedisVDBConnector(VDBConnector):
             )
             for document in result["results"]
         ]
+
+    @override
+    def init_search_config(self, query_user_config: QueryUserConfig) -> RedisVDBKNNSearchConfig:
+        return RedisVDBKNNSearchConfig(query_user_config.redis_hybrid_policy, query_user_config.redis_batch_size)
 
     def _convert_distance_to_score(self, distance: float) -> float:
         return 1 - distance

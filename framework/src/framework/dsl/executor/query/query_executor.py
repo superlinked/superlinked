@@ -236,10 +236,17 @@ class QueryExecutor:
         return eval_context
 
     def _knn_search(
-        self, knn_search_params: KNNSearchParams, query_descriptor: QueryDescriptor, should_return_index_vector: bool
+        self,
+        knn_search_params: KNNSearchParams,
+        query_descriptor: QueryDescriptor,
+        should_return_index_vector: bool,
     ) -> Sequence[SearchResultItem]:
         return self.app.storage_manager.knn_search(
-            query_descriptor.index._node, query_descriptor.schema, knn_search_params, should_return_index_vector
+            query_descriptor.index._node,
+            query_descriptor.schema,
+            knn_search_params,
+            query_descriptor.query_user_config,
+            should_return_index_vector,
         )
 
     def _calculate_partial_scores(self, query_vector: Vector, result_vectors: Sequence[Vector]) -> list[list[float]]:

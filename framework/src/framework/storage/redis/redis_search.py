@@ -25,19 +25,22 @@ from superlinked.framework.storage.redis.query.redis_query_builder import (
     RedisQueryBuilder,
     VectorQueryObj,
 )
+from superlinked.framework.storage.redis.query.vdb_knn_search_params import (
+    RedisVDBKNNSearchConfig,
+)
 from superlinked.framework.storage.redis.redis_field_encoder import RedisFieldEncoder
 from superlinked.framework.storage.redis.redis_vdb_client import RedisVDBClient
 
 
-class RedisSearch(Search[VDBKNNSearchParams, VectorQueryObj, dict[bytes, Any]]):
+class RedisSearch(Search[VDBKNNSearchParams, VectorQueryObj, dict[bytes, Any], RedisVDBKNNSearchConfig]):
     def __init__(self, client: RedisVDBClient, encoder: RedisFieldEncoder) -> None:
         super().__init__()
         self._client = client
         self._query_builder = RedisQueryBuilder(encoder)
 
     @override
-    def build_query(self, search_params: VDBKNNSearchParams) -> VectorQueryObj:
-        return self._query_builder.build_query(search_params)
+    def build_query(self, search_params: VDBKNNSearchParams, search_config: RedisVDBKNNSearchConfig) -> VectorQueryObj:
+        return self._query_builder.build_query(search_params, search_config)
 
     @override
     def knn_search(

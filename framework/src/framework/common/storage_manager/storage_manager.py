@@ -60,6 +60,7 @@ from superlinked.framework.common.storage_manager.search_result_item import (
 )
 from superlinked.framework.common.storage_manager.storage_naming import StorageNaming
 from superlinked.framework.common.util.execution_timer import time_execution
+from superlinked.framework.dsl.query.query_user_config import QueryUserConfig
 
 ResultTypeT = TypeVar("ResultTypeT")
 # NodeDataValueType
@@ -111,6 +112,7 @@ class StorageManager:
         index_node: IndexNode,
         schema: IdSchemaObject,
         knn_search_params: KNNSearchParams,
+        query_user_config: QueryUserConfig,
         should_return_index_vector: bool = False,
         **params: Any,
     ) -> Sequence[SearchResultItem]:
@@ -124,6 +126,7 @@ class StorageManager:
         fields_to_return = list(schema_fields_by_fields.keys()) + list(self._entity_builder._admin_fields.header_fields)
         if should_return_index_vector:
             fields_to_return.append(self._entity_builder.compose_field(index_node.node_id, Vector))
+        search_config = self._vdb_connector.init_search_config(query_user_config)
         search_result: Sequence[ResultEntityData] = self._vdb_connector.knn_search(
             index_name,
             schema._schema_name,
@@ -134,6 +137,7 @@ class StorageManager:
                 self._compose_filter_field_data(schema, knn_search_params.filters),
                 knn_search_params.radius,
             ),
+            search_config,
             **params,
         )
         schema_field_by_field_name = self._create_schema_field_by_field_name(schema_fields_by_fields)

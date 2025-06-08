@@ -39,6 +39,9 @@ from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.field.field_data import FieldData
 from superlinked.framework.common.storage.field.field_data_type import FieldDataType
 from superlinked.framework.common.storage.index_config import IndexConfig
+from superlinked.framework.common.storage.query.vdb_knn_search_config import (
+    VDBKNNSearchConfig,
+)
 from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
@@ -48,6 +51,7 @@ from superlinked.framework.common.storage.search_index.manager.search_index_mana
 )
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
 from superlinked.framework.common.util.string_util import StringUtil
+from superlinked.framework.dsl.query.query_user_config import QueryUserConfig
 from superlinked.framework.storage.common.vdb_settings import VDBSettings
 from superlinked.framework.storage.qdrant.qdrant_connection_params import (
     QdrantConnectionParams,
@@ -68,7 +72,7 @@ ID_PAYLOAD_FIELD_NAME = "__original_entity_id__"
 ID_PAYLOAD_FIELD = Field(FieldDataType.STRING, ID_PAYLOAD_FIELD_NAME)
 
 
-class QdrantVDBConnector(VDBConnector):
+class QdrantVDBConnector(VDBConnector[VDBKNNSearchConfig]):
     def __init__(self, connection_params: QdrantConnectionParams, vdb_settings: VDBSettings) -> None:
         super().__init__(vdb_settings=vdb_settings)
         self._client = QdrantClient(
@@ -217,6 +221,7 @@ class QdrantVDBConnector(VDBConnector):
         index_name: str,
         schema_name: str,
         vdb_knn_search_params: VDBKNNSearchParams,
+        search_config: VDBKNNSearchConfig,
         **params: Any,
     ) -> Sequence[ResultEntityData]:
         index_config = self._get_index_config(index_name)
@@ -224,11 +229,16 @@ class QdrantVDBConnector(VDBConnector):
         result: QueryResponse = self._search.knn_search_with_checks(
             index_config,
             QdrantVDBKNNSearchParams.from_base(vdb_knn_search_params, self.collection_name, extended_fields_to_return),
+            search_config,
         )
         return [
             self._get_result_entity_data_from_point(point, vdb_knn_search_params.fields_to_return)
             for point in self._calculate_sorted_result_points(result.points)
         ]
+
+    @override
+    def init_search_config(self, query_user_config: QueryUserConfig) -> VDBKNNSearchConfig:
+        return VDBKNNSearchConfig()
 
     def _calculate_sorted_result_points(self, scored_points: Sequence[ScoredPoint]) -> list[ScoredPoint]:
         """Sort by score descending, then by id ascending"""
