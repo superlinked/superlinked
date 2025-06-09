@@ -30,3 +30,7 @@ class GpuEmbeddingUtil:
         if Settings().PREFER_MPS_OVER_CPU_IF_AVAILABLE and torch.backends.mps.is_available():
             return MPS_DEVICE_TYPE
         return CPU_DEVICE_TYPE
+
+    @classmethod
+    def should_disable_half_precision(cls) -> bool:
+        return not Settings().PREFER_MPS_OVER_CPU_IF_AVAILABLE and torch.backends.mps.is_available()
