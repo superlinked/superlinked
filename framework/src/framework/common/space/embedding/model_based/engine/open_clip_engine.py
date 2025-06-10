@@ -48,7 +48,11 @@ with warnings.catch_warnings():
             "will be removed in v5 of Transformers. Use `HF_HOME` instead."
         ),
     )
-    from open_clip.factory import create_model_and_transforms, get_tokenizer
+    from open_clip.factory import (
+        HF_HUB_PREFIX,
+        create_model_and_transforms,
+        get_tokenizer,
+    )
     from open_clip.model import CLIP
 
 logger = structlog.getLogger()
@@ -77,7 +81,8 @@ class OpenCLIPEngine(EmbeddingEngine):
         model_downloader = ModelDownloader()
         cache_dir = model_downloader.get_cache_dir(self._model_cache_dir)
         if self.__is_model_name_from_hugging_face(self._model_name):
-            model_downloader.ensure_model_downloaded(self._model_name, cache_dir)
+            clean_model_name = self._model_name.replace(HF_HUB_PREFIX, "")
+            model_downloader.ensure_model_downloaded(clean_model_name, cache_dir)
         model_lock = model_downloader._get_model_lock(self._model_name)
         model_lock_timeout = Settings().MODEL_LOCK_TIMEOUT_SECONDS
         if not model_downloader._acquire_lock_with_timeout(model_lock, model_lock_timeout):
@@ -129,4 +134,4 @@ class OpenCLIPEngine(EmbeddingEngine):
 
     @classmethod
     def __is_model_name_from_hugging_face(cls, model_name: str) -> bool:
-        return "/" in model_name
+        return model_name.startswith(HF_HUB_PREFIX)

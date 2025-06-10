@@ -80,5 +80,8 @@ class OnlineSchemaFieldNode(Generic[SFT], OnlineNode[SchemaFieldNode, SFT]):
             return None
         field_name = f"{self.node.schema_field.schema_obj._schema_name}.{self.node.schema_field.name}"
         raise ValueNotProvidedException(
-            f"The SchemaField {field_name} doesn't have a default value and was not provided in the ParsedSchema."
+            (
+                f"The SchemaField {field_name} was not supplied in the input data. "
+                "If you want to ingest missing data for this field, make it optional."
+            )
         )
