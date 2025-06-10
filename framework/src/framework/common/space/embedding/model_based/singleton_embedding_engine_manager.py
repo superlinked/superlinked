@@ -17,12 +17,9 @@ from __future__ import annotations
 from superlinked.framework.common.space.embedding.model_based.embedding_engine_manager import (
     EmbeddingEngineManager,
 )
+from superlinked.framework.common.util.singleton_decorator import singleton
 
 
+@singleton
 class SingletonEmbeddingEngineManager(EmbeddingEngineManager):
-    _instance: SingletonEmbeddingEngineManager | None = None
-
-    def __new__(cls) -> SingletonEmbeddingEngineManager:
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
+    pass
