@@ -51,12 +51,19 @@ class ModelDownloader:
     def get_cache_dir(self, model_cache_dir: Path | None) -> Path:
         return model_cache_dir or Path(self._settings.MODEL_CACHE_DIR or DEFAULT_MODEL_CACHE_DIR)
 
-    def ensure_model_downloaded(self, model_name: str, model_cache_dir: Path | None) -> Path:
+    def ensure_model_downloaded(
+        self, model_name: str, model_cache_dir: Path | None, force_download: bool = False
+    ) -> Path:
         cache_dir = self.get_cache_dir(model_cache_dir)
         os.makedirs(cache_dir, exist_ok=True)
         lock_file_path = os.path.join(str(cache_dir), f"downloading_{model_name}.lock")
 
-        if not os.path.exists(lock_file_path) and self._is_model_downloaded(model_name, cache_dir):
+        # Skip early return if force_download is True
+        if (
+            not force_download
+            and not os.path.exists(lock_file_path)
+            and self._is_model_downloaded(model_name, cache_dir)
+        ):
             return self._get_model_folder_path(model_name, cache_dir)
 
         model_lock = self._get_model_lock(model_name)
@@ -73,19 +80,18 @@ class ModelDownloader:
             raise TimeoutError(f"Timeout acquiring model lock for {model_name}")
 
         try:
-            if self._is_model_downloaded(model_name, cache_dir):
+            # Skip this check if force_download is True
+            if not force_download and self._is_model_downloaded(model_name, cache_dir):
                 return self._get_model_folder_path(model_name, cache_dir)
+
             for attempt in range(max_retries):
                 try:
                     with FileLock(lock_file_path, timeout=timeout):
-                        # Final check after acquiring the file lock
-                        if self._is_model_downloaded(model_name, cache_dir):
+                        # Final check after acquiring the file lock, skip if force_download is True
+                        if not force_download and self._is_model_downloaded(model_name, cache_dir):
                             return self._get_model_folder_path(model_name, cache_dir)
                         logger.info(f"Downloading model {model_name} to {cache_dir}")
-                        snapshot_download(
-                            repo_id=model_name,
-                            cache_dir=str(cache_dir),
-                        )
+                        snapshot_download(repo_id=model_name, cache_dir=str(cache_dir))
                         model_path = self._get_model_folder_path(model_name, cache_dir)
                         if not model_path.exists():
                             raise RuntimeError(f"Model download completed but path {model_path} does not exist")

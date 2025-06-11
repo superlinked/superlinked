@@ -71,14 +71,30 @@ class SentenceTransformersEngine(EmbeddingEngine):
         model_downloader = ModelDownloader()
         cache_dir = model_downloader.get_cache_dir(self._model_cache_dir)
         model_downloader.ensure_model_downloaded(self._model_name, cache_dir)
-        return SentenceTransformer(
-            model_name_or_path=self._model_name,
-            trust_remote_code=True,
-            device=GpuEmbeddingUtil.get_device(),
-            cache_folder=str(cache_dir),
-            local_files_only=True,
-            model_kwargs=self._get_model_kwargs(),
-        )
+        device = GpuEmbeddingUtil.get_device()
+        cache_dir_text = str(cache_dir)
+        model_kwargs = self._get_model_kwargs()
+        try:
+            model = SentenceTransformer(
+                model_name_or_path=self._model_name,
+                trust_remote_code=True,
+                device=device,
+                cache_folder=cache_dir_text,
+                local_files_only=True,
+                model_kwargs=model_kwargs,
+            )
+        except OSError:
+            logger.warning("Model download issue, forcing re-download.")
+            model_downloader.ensure_model_downloaded(self._model_name, cache_dir, force_download=True)
+            model = SentenceTransformer(
+                model_name_or_path=self._model_name,
+                trust_remote_code=True,
+                device=device,
+                cache_folder=cache_dir_text,
+                local_files_only=False,
+                model_kwargs=model_kwargs,
+            )
+        return model
 
     def _get_model_kwargs(self) -> dict[str, Any]:
         if VectorComponentPrecision.use_half_precision():

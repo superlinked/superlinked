@@ -88,17 +88,24 @@ class OpenCLIPEngine(EmbeddingEngine):
         if not model_downloader._acquire_lock_with_timeout(model_lock, model_lock_timeout):
             logger.warning(f"Timeout acquiring model lock for {self._model_name} after {model_lock_timeout} seconds")
             raise TimeoutError(f"Timeout acquiring model lock for {self._model_name}")
+        cache_dir_text = str(cache_dir)
         try:
-            model, _, preprocess_val = cast(
-                tuple[CLIP, Any, Compose],
-                create_model_and_transforms(
-                    self._model_name,
-                    device=device,
-                    cache_dir=str(cache_dir),
-                ),
+            model_and_transforms = create_model_and_transforms(
+                self._model_name,
+                device=device,
+                cache_dir=cache_dir_text,
+            )
+        except OSError:
+            logger.warning("Model download issue, forcing re-download.")
+            model_downloader.ensure_model_downloaded(clean_model_name, cache_dir, force_download=True)
+            model_and_transforms = create_model_and_transforms(
+                self._model_name,
+                device=device,
+                cache_dir=cache_dir_text,
             )
         finally:
             model_lock.release()
+        model, _, preprocess_val = cast(tuple[CLIP, Any, Compose], model_and_transforms)
         if VectorComponentPrecision.use_half_precision():
             model = model.half()
         return model, preprocess_val
