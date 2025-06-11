@@ -54,12 +54,12 @@ class ModelDownloader:
     def ensure_model_downloaded(self, model_name: str, model_cache_dir: Path | None) -> Path:
         cache_dir = self.get_cache_dir(model_cache_dir)
         os.makedirs(cache_dir, exist_ok=True)
+        lock_file_path = os.path.join(str(cache_dir), f"downloading_{model_name}.lock")
 
-        if self._is_model_downloaded(model_name, cache_dir):
+        if not os.path.exists(lock_file_path) and self._is_model_downloaded(model_name, cache_dir):
             return self._get_model_folder_path(model_name, cache_dir)
 
         model_lock = self._get_model_lock(model_name)
-        lock_file_path = os.path.join(str(cache_dir), f"downloading_{model_name}.lock")
         max_retries = self._settings.SENTENCE_TRANSFORMERS_MODEL_LOCK_MAX_RETRIES
         retry_delay = self._settings.SENTENCE_TRANSFORMERS_MODEL_LOCK_RETRY_DELAY
         timeout = max(
