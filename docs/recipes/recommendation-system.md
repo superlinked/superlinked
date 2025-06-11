@@ -20,7 +20,7 @@ Below is a table showcasing projects built using Superlinked, demonstrating reco
       <strong>🛍️ E-Commerce RecSys</strong><br>
     </td>
     <td valign="top">
-      <a href="https://e-commerce-recsys-recipe.superlinked.io">🚀 Try it now</a>
+      <a href="https://recsys-nlq-demo.superlinked.io/">🚀 Try it now</a>
     </td>
     <td valign="top">
       Coming Soon
