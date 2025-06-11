@@ -5,7 +5,7 @@ icon: cart-shopping
 # Ecommerce Recsys
 
 {% hint style="info" %}
-🚀 Try it out: [e-commerce-recsys-recipe.superlinked.io](https://e-commerce-recsys-recipe.superlinked.io)
+🚀 Try it out: [recsys-nlq-demo.superlinked.io/](https://recsys-nlq-demo.superlinked.io/)
 {% endhint %}
 
 ## Overview
