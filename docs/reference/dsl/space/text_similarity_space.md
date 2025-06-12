@@ -27,7 +27,7 @@ Functions
 Classes
 -------
 
-`TextSimilaritySpace(text: superlinked.framework.common.schema.schema_object.String | superlinked.framework.common.dag.chunking_node.ChunkingNode | None | collections.abc.Sequence[superlinked.framework.common.schema.schema_object.String | superlinked.framework.common.dag.chunking_node.ChunkingNode | None], model: str, cache_size: int = 10000, model_cache_dir: pathlib.Path | None = None, model_handler: superlinked.framework.common.space.embedding.model_based.model_handler.TextModelHandler = TextModelHandler.SENTENCE_TRANSFORMERS)`
+`TextSimilaritySpace(text: superlinked.framework.common.schema.schema_object.String | superlinked.framework.common.dag.chunking_node.ChunkingNode | None | collections.abc.Sequence[superlinked.framework.common.schema.schema_object.String | superlinked.framework.common.dag.chunking_node.ChunkingNode | None], model: str, cache_size: int = 10000, model_cache_dir: pathlib.Path | None = None, model_handler: superlinked.framework.common.space.embedding.model_based.model_handler.TextModelHandler = TextModelHandler.SENTENCE_TRANSFORMERS, embedding_engine_config: superlinked.framework.common.space.embedding.model_based.engine.embedding_engine_config.EmbeddingEngineConfig | None = None)`
 :   A text similarity space is used to create vectors from documents in order to search in them
     later on. We only support (SentenceTransformers)[https://www.sbert.net/] models as they have
     finetuned pooling to encode longer text sequences most efficiently.
@@ -43,7 +43,9 @@ Classes
         model_cache_dir (Path | None, optional): Directory to cache downloaded models.
             If None, uses the default cache directory. Defaults to None.
         model_handler (TextModelHandler, optional): The handler for the model,
-            defaults to ModelHandler.SENTENCE_TRANSFORMERS.
+            Defaults to ModelHandler.SENTENCE_TRANSFORMERS.
+        embedding_engine_config (EmbeddingEngineConfig, optional): Configuration for the embedding engine.
+            Defaults to EmbeddingEngineConfig().
 
     ### Ancestors (in MRO)
 
