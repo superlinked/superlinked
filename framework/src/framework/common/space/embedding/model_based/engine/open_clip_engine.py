@@ -30,6 +30,9 @@ from superlinked.framework.common.space.embedding.model_based.embedding_input im
 from superlinked.framework.common.space.embedding.model_based.engine.embedding_engine import (
     EmbeddingEngine,
 )
+from superlinked.framework.common.space.embedding.model_based.engine.embedding_engine_config import (
+    EmbeddingEngineConfig,
+)
 from superlinked.framework.common.space.embedding.model_based.model_downloader import (
     ModelDownloader,
 )
@@ -58,9 +61,9 @@ with warnings.catch_warnings():
 logger = structlog.getLogger()
 
 
-class OpenCLIPEngine(EmbeddingEngine):
-    def __init__(self, model_name: str, model_cache_dir: Path | None) -> None:
-        super().__init__(model_name, model_cache_dir)
+class OpenCLIPEngine(EmbeddingEngine[EmbeddingEngineConfig]):
+    def __init__(self, model_name: str, model_cache_dir: Path | None, config: EmbeddingEngineConfig) -> None:
+        super().__init__(model_name, model_cache_dir, config)
         self._embedding_model, self._preprocess_val = self._get_embedding_model()
         self._tokenizer = get_tokenizer(self._model_name)
 

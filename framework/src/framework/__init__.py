@@ -79,6 +79,12 @@ from superlinked.framework.common.space.config.embedding.number_embedding_config
 from superlinked.framework.common.space.config.embedding.text_similarity_embedding_config import (
     TextModelHandler,
 )
+from superlinked.framework.common.space.embedding.model_based.engine.embedding_engine_config import (
+    EmbeddingEngineConfig,
+)
+from superlinked.framework.common.space.embedding.model_based.engine.modal_engine_config import (
+    ModalEngineConfig,
+)
 from superlinked.framework.common.storage.search_index.search_algorithm import (
     SearchAlgorithm,
 )
@@ -162,6 +168,9 @@ __all__ = [
     "DescribedBlob",
     # Number Space Config
     "Mode",
+    # Text/Image Space Config
+    "EmbeddingEngineConfig",
+    "ModalEngineConfig",
     # Text Similarity Space Config
     "TextModelHandler",
     # DB

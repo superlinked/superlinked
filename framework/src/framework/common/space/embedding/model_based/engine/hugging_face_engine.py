@@ -25,12 +25,15 @@ from superlinked.framework.common.space.embedding.model_based.embedding_input im
 from superlinked.framework.common.space.embedding.model_based.engine.embedding_engine import (
     EmbeddingEngine,
 )
+from superlinked.framework.common.space.embedding.model_based.engine.embedding_engine_config import (
+    EmbeddingEngineConfig,
+)
 
 PROVIDER: PROVIDER_T = "hf-inference"
 HTTP_PREFIXES = ("http://", "https://")
 
 
-class HuggingFaceEngine(EmbeddingEngine):
+class HuggingFaceEngine(EmbeddingEngine[EmbeddingEngineConfig]):
     @override
     def embed(self, inputs: Sequence[ModelEmbeddingInputT], is_query_context: bool) -> list[list[float]]:
         inputs_to_embed = self._validate_and_cast_inputs(inputs)

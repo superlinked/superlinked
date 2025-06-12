@@ -25,6 +25,9 @@ from superlinked.framework.common.space.embedding.model_based.embedding_input im
 from superlinked.framework.common.space.embedding.model_based.engine.embedding_engine import (
     EmbeddingEngine,
 )
+from superlinked.framework.common.space.embedding.model_based.engine.embedding_engine_config import (
+    EmbeddingEngineConfig,
+)
 from superlinked.framework.common.space.embedding.model_based.engine.hugging_face_engine import (
     HuggingFaceEngine,
 )
@@ -62,7 +65,11 @@ class EmbeddingEngineManager:
         self._engines: dict[str, EmbeddingEngine] = {}
 
     def get_engine(
-        self, model_handler: ModelHandlerType, model_name: str, model_cache_dir: Path | None
+        self,
+        model_handler: ModelHandlerType,
+        model_name: str,
+        model_cache_dir: Path | None,
+        config: EmbeddingEngineConfig,
     ) -> EmbeddingEngine:
         """
         Get or create an embedding engine based on the provided config.
@@ -72,7 +79,7 @@ class EmbeddingEngineManager:
         if engine_key in self._engines:
             return self._engines[engine_key]
         if engine_type := ENGINE_BY_HANDLER.get(model_handler):
-            engine = engine_type(model_name, model_cache_dir)
+            engine = engine_type(model_name, model_cache_dir, config)
             self._engines[engine_key] = engine
             return engine
         raise ValueError(f"Unsupported model handler: {model_handler.value}")
@@ -101,22 +108,29 @@ class EmbeddingEngineManager:
     def clear_engines(self) -> None:
         self._engines.clear()
 
-    def embed(
+    def embed(  # pylint: disable=too-many-arguments
         self,
         model_handler: ModelHandlerType,
         model_name: str,
         inputs: Sequence[ModelEmbeddingInputT],
         is_query_context: bool,
         model_cache_dir: Path | None,
+        config: EmbeddingEngineConfig,
     ) -> list[Vector]:
         if not inputs:
             return []
-        engine = self.get_engine(model_handler, model_name, model_cache_dir)
+        engine = self.get_engine(model_handler, model_name, model_cache_dir, config)
         embeddings = engine.embed(inputs, is_query_context)
         return [Vector(embedding) for embedding in embeddings]
 
-    def calculate_length(self, model_handler: ModelHandlerType, model_name: str, model_cache_dir: Path | None) -> int:
+    def calculate_length(
+        self,
+        model_handler: ModelHandlerType,
+        model_name: str,
+        model_cache_dir: Path | None,
+        config: EmbeddingEngineConfig,
+    ) -> int:
         clean_model_name = self._get_clean_model_name(model_handler, model_name)
         if clean_model_name in MODEL_DIMENSION_BY_NAME:
             return MODEL_DIMENSION_BY_NAME[clean_model_name]
-        return self.get_engine(model_handler, model_name, model_cache_dir).length
+        return self.get_engine(model_handler, model_name, model_cache_dir, config).length

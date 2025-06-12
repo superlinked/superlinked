@@ -48,6 +48,7 @@ class ImageEmbedding(ModelEmbedding[ImageData, ImageEmbeddingConfig]):
             valid_inputs,
             context.is_query_context,
             self._config.model_cache_dir,
+            self._config.embedding_engine_config,
         )
         embeddings = []
         valid_input_index = 0

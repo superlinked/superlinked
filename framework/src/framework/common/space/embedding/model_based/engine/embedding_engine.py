@@ -15,18 +15,24 @@
 from abc import abstractmethod
 from pathlib import Path
 
-from beartype.typing import Sequence
+from beartype.typing import Generic, Sequence, TypeVar
 
 from superlinked.framework.common.space.embedding.model_based.embedding_input import (
     ModelEmbeddingInputT,
 )
+from superlinked.framework.common.space.embedding.model_based.engine.embedding_engine_config import (
+    EmbeddingEngineConfig,
+)
 from superlinked.framework.common.util.lazy_property import lazy_property
 
+EmbeddingEngineConfigT = TypeVar("EmbeddingEngineConfigT", bound=EmbeddingEngineConfig)
 
-class EmbeddingEngine:
-    def __init__(self, model_name: str, model_cache_dir: Path | None) -> None:
+
+class EmbeddingEngine(Generic[EmbeddingEngineConfigT]):
+    def __init__(self, model_name: str, model_cache_dir: Path | None, config: EmbeddingEngineConfigT) -> None:
         self._model_name = model_name
         self._model_cache_dir = model_cache_dir
+        self._config = config
 
     @abstractmethod
     def embed(self, inputs: Sequence[ModelEmbeddingInputT], is_query_context: bool) -> list[list[float]]: ...

@@ -25,6 +25,9 @@ from superlinked.framework.common.space.config.embedding.embedding_config import
     EmbeddingConfig,
     EmbeddingInputT,
 )
+from superlinked.framework.common.space.embedding.model_based.engine.embedding_engine_config import (
+    EmbeddingEngineConfig,
+)
 from superlinked.framework.common.space.embedding.model_based.model_handler import (
     ModelHandlerT,
 )
@@ -35,6 +38,7 @@ class ModelBasedEmbeddingConfig(EmbeddingConfig[EmbeddingInputT], Generic[Embedd
     model_name: str
     model_cache_dir: Path | None
     length_to_use: int
+    embedding_engine_config: EmbeddingEngineConfig
     model_handler: ModelHandlerT
 
     @property

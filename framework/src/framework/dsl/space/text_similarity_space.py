@@ -37,6 +37,12 @@ from superlinked.framework.common.space.config.normalization.normalization_confi
 from superlinked.framework.common.space.config.transformation_config import (
     TransformationConfig,
 )
+from superlinked.framework.common.space.embedding.model_based.engine.embedding_engine_config import (
+    EmbeddingEngineConfig,
+)
+from superlinked.framework.common.space.embedding.model_based.engine.modal_engine_config import (
+    ModalEngineConfig,
+)
 from superlinked.framework.common.space.embedding.model_based.singleton_embedding_engine_manager import (
     SingletonEmbeddingEngineManager,
 )
@@ -57,13 +63,14 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
     finetuned pooling to encode longer text sequences most efficiently.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         text: TextInput | None | Sequence[TextInput | None],
         model: str,
         cache_size: int = DEFAULT_CACHE_SIZE,
         model_cache_dir: Path | None = None,
         model_handler: TextModelHandler = TextModelHandler.SENTENCE_TRANSFORMERS,
+        embedding_engine_config: EmbeddingEngineConfig | None = None,
     ) -> None:
         """
         Initialize the TextSimilaritySpace.
@@ -77,14 +84,19 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
             model_cache_dir (Path | None, optional): Directory to cache downloaded models.
                 If None, uses the default cache directory. Defaults to None.
             model_handler (TextModelHandler, optional): The handler for the model,
-                defaults to ModelHandler.SENTENCE_TRANSFORMERS.
+                Defaults to ModelHandler.SENTENCE_TRANSFORMERS.
+            embedding_engine_config (EmbeddingEngineConfig, optional): Configuration for the embedding engine.
+                Defaults to EmbeddingEngineConfig().
         """
+        if embedding_engine_config is None:
+            embedding_engine_config = EmbeddingEngineConfig()
         unchecked_texts: list[ChunkingNode | String] = self._fields_to_non_none_sequence(text)
         text_fields = [self._get_root(unchecked_text) for unchecked_text in unchecked_texts]
         super().__init__(text_fields, String)
         self.text = SpaceFieldSet[str](self, set(text_fields))
+        self.__validate_model_handler(model_handler, embedding_engine_config)
         self._transformation_config = self._init_transformation_config(
-            model, model_cache_dir, cache_size, model_handler
+            model, model_cache_dir, cache_size, model_handler, embedding_engine_config
         )
         self._schema_node_map: dict[SchemaObject, EmbeddingNode[Vector, str]] = {
             self._get_root(unchecked_text).schema_obj: self._generate_embedding_node(
@@ -93,6 +105,17 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
             for unchecked_text in unchecked_texts
         }
         self._model = model
+
+    def __validate_model_handler(
+        self, model_handler: TextModelHandler, embedding_engine_config: EmbeddingEngineConfig
+    ) -> None:
+        if model_handler == TextModelHandler.MODAL and not isinstance(embedding_engine_config, ModalEngineConfig):
+            raise ValueError(
+                (
+                    f"When using {TextModelHandler.MODAL} as model_handler, embedding_engine_config must "
+                    f"be an instance of ModalEngineConfig, but got {type(embedding_engine_config).__name__}"
+                )
+            )
 
     def _get_root(self, text: String | Node) -> String:
         if isinstance(text, String):
@@ -148,14 +171,22 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
         return False
 
     def _init_transformation_config(
-        self, model: str, model_cache_dir: Path | None, cache_size: int, model_handler: TextModelHandler
+        self,
+        model: str,
+        model_cache_dir: Path | None,
+        cache_size: int,
+        model_handler: TextModelHandler,
+        embedding_engine_config: EmbeddingEngineConfig,
     ) -> TransformationConfig[Vector, str]:
-        length = SingletonEmbeddingEngineManager().calculate_length(model_handler, model, model_cache_dir)
+        length = SingletonEmbeddingEngineManager().calculate_length(
+            model_handler, model, model_cache_dir, embedding_engine_config
+        )
         embedding_config = TextSimilarityEmbeddingConfig(
             str,
             model,
             model_cache_dir,
             length,
+            embedding_engine_config,
             model_handler,
             cache_size,
         )

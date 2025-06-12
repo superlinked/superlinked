@@ -27,8 +27,8 @@ from superlinked.framework.common.space.embedding.model_based.embedding_input im
 from superlinked.framework.common.space.embedding.model_based.engine.embedding_engine import (
     EmbeddingEngine,
 )
-from superlinked.framework.common.space.embedding.model_based.engine.modal_config import (
-    ModalConfig,
+from superlinked.framework.common.space.embedding.model_based.engine.modal_engine_config import (
+    ModalEngineConfig,
 )
 from superlinked.framework.common.util.concurrent_executor import ConcurrentExecutor
 from superlinked.framework.common.util.image_util import ImageUtil
@@ -36,14 +36,13 @@ from superlinked.framework.common.util.image_util import ImageUtil
 logger = structlog.getLogger()
 
 
-class ModalEngine(EmbeddingEngine):
-    def __init__(self, model_name: str, model_cache_dir: Path | None) -> None:
-        super().__init__(model_name, model_cache_dir)
-        self._config = ModalConfig()
+class ModalEngine(EmbeddingEngine[ModalEngineConfig]):
+    def __init__(self, model_name: str, model_cache_dir: Path | None, config: ModalEngineConfig) -> None:
+        super().__init__(model_name, model_cache_dir, config=config)
         self._modal_cls = modal.Cls.from_name(
-            app_name=self._config.app_name,
-            name=self._config.class_name,
-            environment_name=self._config.environment_name,
+            app_name=self._config.modal_app_name,
+            name=self._config.modal_class_name,
+            environment_name=self._config.modal_environment_name,
         )
 
     @override
@@ -57,31 +56,31 @@ class ModalEngine(EmbeddingEngine):
             (
                 input_
                 if isinstance(input_, str)
-                else ImageUtil.encode_bytes(input_, self._config.image_format, self._config.image_quality)
+                else ImageUtil.encode_bytes(input_, self._config.modal_image_format, self._config.modal_image_quality)
             )
             for input_ in inputs
         ]
 
     def __send_request(self, inputs: Sequence[str | bytes]) -> list[list[float]]:
         retry_count = 0
-        current_delay = self._config.retry_delay
+        current_delay = self._config.modal_retry_delay
         while True:
             try:
-                return ConcurrentExecutor(max_workers=self._config.max_concurrent_batches).execute_batched(
+                return ConcurrentExecutor(max_workers=self._config.modal_max_concurrent_batches).execute_batched(
                     func=self._modal_cls().embed.remote,
                     items=inputs,
-                    batch_size=self._config.batch_size,
+                    batch_size=self._config.modal_batch_size,
                     additional_args=[self._model_name],
                 )
             except Exception as e:  # pylint: disable=broad-exception-caught
                 retry_count += 1
-                if retry_count >= self._config.max_retries:
-                    logger.error(f"Failed after {self._config.max_retries} attempts", error=str(e))
+                if retry_count >= self._config.modal_max_retries:
+                    logger.error(f"Failed after {self._config.modal_max_retries} attempts", error=str(e))
                     raise UnexpectedResponseException(
-                        f"Failed to get embeddings after {self._config.max_retries} attempts: {str(e)}"
+                        f"Failed to get embeddings after {self._config.modal_max_retries} attempts: {str(e)}"
                     ) from e
                 logger.warning(
-                    f"Request failed (attempt {retry_count}/{self._config.max_retries})",
+                    f"Request failed (attempt {retry_count}/{self._config.modal_max_retries})",
                     error=str(e),
                     retry_delay=current_delay,
                 )

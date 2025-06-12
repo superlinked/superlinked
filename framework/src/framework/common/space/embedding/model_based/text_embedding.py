@@ -49,6 +49,7 @@ class TextEmbedding(ModelEmbedding[str, TextSimilarityEmbeddingConfig]):
             inputs_to_embed,
             context.is_query_context,
             self._config.model_cache_dir,
+            self._config.embedding_engine_config,
         )
         self._cache.update(inputs_to_embed, new_vectors)
         combined_vectors = self._cache.combine_vectors(inputs_to_embed, found_indices, existing_vectors, new_vectors)

@@ -26,6 +26,9 @@ from superlinked.framework.common.space.embedding.model_based.embedding_input im
 from superlinked.framework.common.space.embedding.model_based.engine.embedding_engine import (
     EmbeddingEngine,
 )
+from superlinked.framework.common.space.embedding.model_based.engine.embedding_engine_config import (
+    EmbeddingEngineConfig,
+)
 from superlinked.framework.common.space.embedding.model_based.model_downloader import (
     SENTENCE_TRANSFORMERS_ORG_NAME,
     ModelDownloader,
@@ -51,10 +54,10 @@ logger = structlog.getLogger()
 QUERY_PROMPT_NAME = "query"
 
 
-class SentenceTransformersEngine(EmbeddingEngine):
-    def __init__(self, model_name: str, model_cache_dir: Path | None) -> None:
+class SentenceTransformersEngine(EmbeddingEngine[EmbeddingEngineConfig]):
+    def __init__(self, model_name: str, model_cache_dir: Path | None, config: EmbeddingEngineConfig) -> None:
         full_model_name = f"{SENTENCE_TRANSFORMERS_ORG_NAME}/{model_name}" if "/" not in model_name else model_name
-        super().__init__(full_model_name, model_cache_dir)
+        super().__init__(full_model_name, model_cache_dir, config)
         self._model = self._initialize_model()
 
     @override

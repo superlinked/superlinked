@@ -44,6 +44,12 @@ from superlinked.framework.common.space.config.normalization.normalization_confi
 from superlinked.framework.common.space.config.transformation_config import (
     TransformationConfig,
 )
+from superlinked.framework.common.space.embedding.model_based.engine.embedding_engine_config import (
+    EmbeddingEngineConfig,
+)
+from superlinked.framework.common.space.embedding.model_based.engine.modal_engine_config import (
+    ModalEngineConfig,
+)
 from superlinked.framework.common.space.embedding.model_based.singleton_embedding_engine_manager import (
     SingletonEmbeddingEngineManager,
 )
@@ -71,6 +77,10 @@ class ImageSpace(Space[Vector, ImageData]):
             Defaults to "clip-ViT-B-32".
         model_handler (ModelHandler, optional): The handler for the model,
             defaults to ModelHandler.SENTENCE_TRANSFORMERS.
+        model_cache_dir (Path | None, optional): Directory to cache downloaded models.
+            If None, uses the default cache directory. Defaults to None.
+        embedding_engine_config (EmbeddingEngineConfig, optional): Configuration for the embedding engine.
+            Defaults to EmbeddingEngineConfig().
 
     Raises:
         InvalidSpaceParamException: If the image and description fields are not
@@ -83,6 +93,7 @@ class ImageSpace(Space[Vector, ImageData]):
         model: str = "clip-ViT-B-32",
         model_handler: ModelHandler = ModelHandler.SENTENCE_TRANSFORMERS,
         model_cache_dir: Path | None = None,
+        embedding_engine_config: EmbeddingEngineConfig | None = None,
     ) -> None:
         """
         Initialize the ImageSpace instance for generating vector representations
@@ -97,16 +108,23 @@ class ImageSpace(Space[Vector, ImageData]):
                 defaults to ModelHandler.SENTENCE_TRANSFORMERS.
             model_cache_dir (Path | None, optional): Directory to cache downloaded models.
                 If None, uses the default cache directory. Defaults to None.
+            embedding_engine_config (EmbeddingEngineConfig, optional): Configuration for the embedding engine.
+                Defaults to EmbeddingEngineConfig().
 
         Raises:
             InvalidSpaceParamException: If the image and description fields are not
                 from the same schema.
         """
+        if embedding_engine_config is None:
+            embedding_engine_config = EmbeddingEngineConfig()
         non_none_image: list[Blob | DescribedBlob] = self._fields_to_non_none_sequence(image)
         self.__validate_field_schemas(non_none_image)
+        self.__validate_model_handler(model_handler, embedding_engine_config)
         image_fields, description_fields = self._split_images_from_descriptions(non_none_image)
         super().__init__(image_fields, Blob)
-        length = SingletonEmbeddingEngineManager().calculate_length(model_handler, model, model_cache_dir)
+        length = SingletonEmbeddingEngineManager().calculate_length(
+            model_handler, model, model_cache_dir, embedding_engine_config
+        )
         self.image = ImageSpaceFieldSet(self, set(image_fields), allowed_param_types=[str, Image])
         self.description = ImageDescriptionSpaceFieldSet(
             self,
@@ -114,7 +132,9 @@ class ImageSpace(Space[Vector, ImageData]):
             allowed_param_types=[str],
         )
         self._all_fields = self.image.fields | self.description.fields
-        self._transformation_config = self._init_transformation_config(model, model_cache_dir, model_handler, length)
+        self._transformation_config = self._init_transformation_config(
+            model, model_cache_dir, model_handler, length, embedding_engine_config
+        )
         self.__embedding_node_by_schema = self._init_embedding_node_by_schema(
             image_fields, description_fields, self._all_fields, self.transformation_config
         )
@@ -127,6 +147,17 @@ class ImageSpace(Space[Vector, ImageData]):
             if isinstance(image, DescribedBlob)
         ):
             raise InvalidSpaceParamException("ImageSpace image and description field must be in the same schema.")
+
+    def __validate_model_handler(
+        self, model_handler: ModelHandler, embedding_engine_config: EmbeddingEngineConfig
+    ) -> None:
+        if model_handler == ModelHandler.MODAL and not isinstance(embedding_engine_config, ModalEngineConfig):
+            raise ValueError(
+                (
+                    f"When using {ModelHandler.MODAL} as model_handler, embedding_engine_config must "
+                    f"be an instance of ModalEngineConfig, but got {type(embedding_engine_config).__name__}"
+                )
+            )
 
     def _split_images_from_descriptions(
         self, images: Sequence[Blob | DescribedBlob]
@@ -173,13 +204,19 @@ class ImageSpace(Space[Vector, ImageData]):
         return False
 
     def _init_transformation_config(
-        self, model: str, model_cache_dir: Path | None, model_handler: ModelHandler, length: int
+        self,
+        model: str,
+        model_cache_dir: Path | None,
+        model_handler: ModelHandler,
+        length: int,
+        embedding_engine_config: EmbeddingEngineConfig,
     ) -> TransformationConfig[Vector, ImageData]:
         embedding_config = ImageEmbeddingConfig(
             ImageData,
             model,
             model_cache_dir,
             length,
+            embedding_engine_config,
             model_handler,
         )
         aggregation_config = VectorAggregationConfig(Vector)
