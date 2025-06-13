@@ -15,6 +15,9 @@ Classes
 
     ### Methods
 
+    `async_query(self, query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor, **params: Any) ‑> superlinked.framework.dsl.query.result.QueryResult`
+    :
+
     `query(self, query_descriptor: superlinked.framework.dsl.query.query_descriptor.QueryDescriptor, **params: Any) ‑> superlinked.framework.dsl.query.result.QueryResult`
     :   Execute a query using the provided QueryDescriptor and additional parameters.
         
