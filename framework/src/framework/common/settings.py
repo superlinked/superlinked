@@ -50,7 +50,6 @@ class Settings(BaseSettings):
     SUPERLINKED_CONCURRENT_HUGGINGFACE_EMBEDDING: bool = True
     SUPERLINKED_CONCURRENT_EFFECT_EVALUATION: bool = True
     SUPERLINKED_CONCURRENT_ONLINE_DAG_EVALUATION: bool = False
-    SUPERLINKED_CONCURRENT_QUERY_DAG_EVALUATION: bool = False
     # hugging face api embedding specific params
     HUGGING_FACE_API_TOKEN: str | None = None
     # modal api embedding specific params
@@ -60,7 +59,6 @@ class Settings(BaseSettings):
     MODAL_IMAGE_FORMAT: str | None = "WebP"
     MODAL_IMAGE_QUALITY: int = 95
     MODAL_BATCH_SIZE: int = 5000
-    MODAL_MAX_CONCURRENT_BATCHES: int = 1
     MODAL_MAX_RETRIES: int = 10
     MODAL_RETRY_DELAY: float = 0.2
     # redis specific params

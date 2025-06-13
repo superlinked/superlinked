@@ -47,7 +47,7 @@ class QdrantSearch(Search[QdrantVDBKNNSearchParams, QdrantQuery, QueryResponse, 
         return self._query_builder.build(search_params)
 
     @override
-    def knn_search(
+    async def knn_search(
         self,
         index_config: IndexConfig,
         query: QdrantQuery,

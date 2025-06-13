@@ -87,7 +87,7 @@ class QdrantVDBConnector(VDBConnector[VDBKNNSearchConfig]):
         self._vector_field_names = list[str]()
 
     @override
-    def close_connection(self) -> None:
+    async def close_connection(self) -> None:
         self._client.close()
 
     @property
@@ -108,7 +108,7 @@ class QdrantVDBConnector(VDBConnector[VDBKNNSearchConfig]):
         )
 
     @override
-    def write_entities(self, entity_data: Sequence[EntityData]) -> None:
+    async def write_entities(self, entity_data: Sequence[EntityData]) -> None:
         if not self.search_index_manager._index_configs:
             raise IndexConfigNotFoundException(
                 f"{type(self).__name__} can work properly only after initializing " + "the search indices."
@@ -171,7 +171,7 @@ class QdrantVDBConnector(VDBConnector[VDBKNNSearchConfig]):
         return non_existing_points, existing_points
 
     @override
-    def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
+    async def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
         returned_field_names = {field.name for entity in entities for field in entity.fields.values()} | {
             ID_PAYLOAD_FIELD_NAME
         }
@@ -216,7 +216,7 @@ class QdrantVDBConnector(VDBConnector[VDBKNNSearchConfig]):
         )
 
     @override
-    def _knn_search(
+    async def _knn_search(
         self,
         index_name: str,
         schema_name: str,
@@ -226,7 +226,7 @@ class QdrantVDBConnector(VDBConnector[VDBKNNSearchConfig]):
     ) -> Sequence[ResultEntityData]:
         index_config = self._get_index_config(index_name)
         extended_fields_to_return = list(vdb_knn_search_params.fields_to_return) + [ID_PAYLOAD_FIELD]
-        result: QueryResponse = self._search.knn_search_with_checks(
+        result: QueryResponse = await self._search.knn_search_with_checks(
             index_config,
             QdrantVDBKNNSearchParams.from_base(vdb_knn_search_params, self.collection_name, extended_fields_to_return),
             search_config,

@@ -83,7 +83,7 @@ class VDBConnector(ABC, Generic[VDBKNNSearchConfigT]):
         return self._app_id
 
     @abstractmethod
-    def close_connection(self) -> None:
+    async def close_connection(self) -> None:
         pass
 
     @property
@@ -115,15 +115,15 @@ class VDBConnector(ABC, Generic[VDBKNNSearchConfigT]):
         )
 
     @abstractmethod
-    def write_entities(self, entity_data: Sequence[EntityData]) -> None:
+    async def write_entities(self, entity_data: Sequence[EntityData]) -> None:
         pass
 
     @abstractmethod
-    def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
+    async def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
         pass
 
     @time_execution
-    def knn_search(
+    async def knn_search(
         self,
         index_name: str,
         schema_name: str,
@@ -144,10 +144,10 @@ class VDBConnector(ABC, Generic[VDBKNNSearchConfigT]):
             filters=vdb_knn_search_params.filters,
             radius=vdb_knn_search_params.radius,
         )
-        return self._knn_search(index_name, schema_name, search_params, search_config, **params)
+        return await self._knn_search(index_name, schema_name, search_params, search_config, **params)
 
     @abstractmethod
-    def _knn_search(
+    async def _knn_search(
         self,
         index_name: str,
         schema_name: str,

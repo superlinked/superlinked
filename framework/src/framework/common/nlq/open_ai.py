@@ -19,10 +19,10 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 
 import instructor
+import openai as openAILib
 import structlog
 from beartype.typing import Any, Generator
 from instructor.exceptions import InstructorRetryException
-from openai import OpenAI
 from pydantic import BaseModel
 
 from superlinked.framework.common.settings import Settings
@@ -77,15 +77,14 @@ def suppress_tokenizer_warnings() -> Generator[None, Any, None]:
 class OpenAIClient:
     def __init__(self, config: OpenAIClientConfig) -> None:
         super().__init__()
-        open_ai = OpenAI(api_key=config.api_key)
-        self._client = instructor.from_openai(open_ai)
+        self._client = instructor.from_openai(openAILib.AsyncOpenAI(api_key=config.api_key))
         self._openai_model = config.model
 
-    def query(self, prompt: str, instructor_prompt: str, response_model: type[BaseModel]) -> dict[str, Any]:
+    async def query(self, prompt: str, instructor_prompt: str, response_model: type[BaseModel]) -> dict[str, Any]:
         max_retries = Settings().SUPERLINKED_NLQ_MAX_RETRIES
         with suppress_tokenizer_warnings():
             try:
-                response = self._client.chat.completions.create(
+                response = await self._client.chat.completions.create(
                     model=self._openai_model,
                     response_model=response_model,
                     max_retries=max_retries,

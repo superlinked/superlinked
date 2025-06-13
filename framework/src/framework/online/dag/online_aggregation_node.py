@@ -34,6 +34,7 @@ from superlinked.framework.common.storage_manager.storage_manager import Storage
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
 )
+from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
 from superlinked.framework.online.dag.evaluation_result import SingleEvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
@@ -85,9 +86,11 @@ class OnlineAggregationNode(DefaultOnlineNode[AggregationNode, Vector], HasLengt
         not_empty_weighted_vectors = self._get_not_empty_weighted_vectors(list(parent_results.values()))
         if self._no_event_present(not_empty_weighted_vectors):
             return not_empty_weighted_vectors[0].item
-        return self._aggregation_transformation.transform(
-            not_empty_weighted_vectors,
-            context,
+        return AsyncUtil.run(
+            self._aggregation_transformation.transform(
+                not_empty_weighted_vectors,
+                context,
+            )
         )
 
     def _check_evaluation_inputs(

@@ -30,7 +30,7 @@ StepCombinedOutputT = TypeVar("StepCombinedOutputT")
 
 class Step(ABC, Generic[StepInputT, StepOutputT]):
     @abstractmethod
-    def transform(
+    async def transform(
         self,
         input_: StepInputT,
         context: ExecutionContext,
@@ -55,12 +55,12 @@ class Transform(Generic[StepInputT, StepOutputT], Step[StepInputT, StepOutputT])
         self._step2 = step2
 
     @override
-    def transform(
+    async def transform(
         self,
         input_: StepInputT,
         context: ExecutionContext,
     ) -> StepOutputT:
-        return self._step2.transform(self._step1.transform(input_, context), context)
+        return await self._step2.transform(await self._step1.transform(input_, context), context)
 
 
 WrapperInputT = TypeVar("WrapperInputT")
@@ -84,9 +84,9 @@ class WrapperStep(
         self._step = step
 
     @override
-    def transform(self, input_: WrapperInputT, context: ExecutionContext) -> WrapperOutputT:
+    async def transform(self, input_: WrapperInputT, context: ExecutionContext) -> WrapperOutputT:
         wrapper_context = self.wrap(input_)
-        return self.unwrap(self._step.transform(wrapper_context.value, context), wrapper_context)
+        return self.unwrap(await self._step.transform(wrapper_context.value, context), wrapper_context)
 
     @abstractmethod
     def wrap(self, input_: WrapperInputT) -> WrappingResult[StepInputT, WrappingContextT]:

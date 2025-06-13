@@ -33,6 +33,7 @@ from superlinked.framework.common.transform.transform import Step
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
 )
+from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
 
@@ -87,4 +88,4 @@ class OnlineNumberEmbeddingNode(
     ) -> Vector:
         if parent_result is None:
             return Vector.init_zero_vector(self.node.length)
-        return self.embedding_transformation.transform(parent_result.main.value, context)
+        return AsyncUtil.run(self.embedding_transformation.transform(parent_result.main.value, context))

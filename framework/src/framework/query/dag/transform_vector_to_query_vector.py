@@ -34,9 +34,9 @@ class TransformVectorToQueryVector(Step[Vector, Vector]):
         self._embedding = EmbeddingFactory.create_embedding(embedding_config, SingletonEmbeddingEngineManager())
 
     @override
-    def transform(
+    async def transform(
         self,
         input_: Vector,
         context: ExecutionContext,
     ) -> Vector:
-        return self._embedding._to_query_vector(input_, context)
+        return await self._embedding._to_query_vector(input_, context)

@@ -26,7 +26,6 @@ class ModalEngineConfig(EmbeddingEngineConfig):  # pylint: disable=too-many-inst
     modal_class_name: str = Settings().MODAL_CLASS_NAME
     modal_environment_name: str = Settings().MODAL_ENVIRONMENT_NAME
     modal_batch_size: int = Settings().MODAL_BATCH_SIZE
-    modal_max_concurrent_batches: int = Settings().MODAL_MAX_CONCURRENT_BATCHES
     modal_max_retries: int = Settings().MODAL_MAX_RETRIES
     modal_retry_delay: float = Settings().MODAL_RETRY_DELAY
     modal_image_format: str | None = Settings().MODAL_IMAGE_FORMAT

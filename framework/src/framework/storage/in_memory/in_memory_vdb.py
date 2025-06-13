@@ -55,7 +55,7 @@ class InMemoryVDB(VDBConnector[VDBKNNSearchConfig]):
         self.__search_index_manager = InMemorySearchIndexManager()
 
     @override
-    def close_connection(self) -> None:
+    async def close_connection(self) -> None:
         self._vdb = defaultdict[str, dict[str, Any]](dict)
         self.search_index_manager.clear_configs()
 
@@ -65,13 +65,13 @@ class InMemoryVDB(VDBConnector[VDBKNNSearchConfig]):
         return self.__search_index_manager
 
     @override
-    def write_entities(self, entity_data: Sequence[EntityData]) -> None:
+    async def write_entities(self, entity_data: Sequence[EntityData]) -> None:
         for ed in entity_data:
             row_id = InMemoryVDB._get_row_id_from_entity_id(ed.id_)
             self._vdb[row_id].update({name: fd.value for name, fd in ed.field_data.items()})
 
     @override
-    def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
+    async def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
         return [
             EntityData(
                 entity.id_,
@@ -107,7 +107,7 @@ class InMemoryVDB(VDBConnector[VDBKNNSearchConfig]):
         ]
 
     @override
-    def _knn_search(
+    async def _knn_search(
         self,
         index_name: str,
         schema_name: str,
@@ -116,7 +116,7 @@ class InMemoryVDB(VDBConnector[VDBKNNSearchConfig]):
         **params: Any,
     ) -> Sequence[ResultEntityData]:
         index_config = self._get_index_config(index_name)
-        sorted_scores = self._search.knn_search(index_config, self._vdb, vdb_knn_search_params)
+        sorted_scores = await self._search.knn_search(index_config, self._vdb, vdb_knn_search_params)
         return [
             self._get_result_entity_data(row_id, score, vdb_knn_search_params.fields_to_return)
             for row_id, score in sorted_scores

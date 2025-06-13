@@ -49,7 +49,7 @@ class InMemorySearch:
     ) -> Sequence[str]:
         return [row_id for row_id, values in vdb.items() if InMemorySearch._is_subset(values, filters, has_fields)]
 
-    def knn_search(
+    async def knn_search(
         self,
         index_config: IndexConfig,
         vdb: defaultdict[str, dict[str, Any]],

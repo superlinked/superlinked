@@ -33,13 +33,14 @@ class QueryDag:
     def leaf_node(self) -> QueryIndexNode:
         return self.__leaf_node
 
-    def evaluate(
+    async def evaluate(
         self,
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,
     ) -> Vector:
         with context.dag_output_recorder.visualize_dag_context(self.__base_nodes):
-            result = self.leaf_node.evaluate_with_validation(inputs, context).value
+            evaluation_result = await self.leaf_node.evaluate_with_validation(inputs, context)
+            result = evaluation_result.value
             if not isinstance(result, Vector):
                 raise QueryEvaluationException(
                     f"{type(self.leaf_node).__name__} must return a vector, " + f"got {type(result).__name__}."

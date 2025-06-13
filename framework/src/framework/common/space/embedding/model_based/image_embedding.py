@@ -37,12 +37,12 @@ from superlinked.framework.common.util.image_util import ImageUtil
 
 class ImageEmbedding(ModelEmbedding[ImageData, ImageEmbeddingConfig]):
     @override
-    def embed_multiple(self, inputs: Sequence[ImageData], context: ExecutionContext) -> list[Vector]:
+    async def embed_multiple(self, inputs: Sequence[ImageData], context: ExecutionContext) -> list[Vector]:
         images, descriptions = self._prepare_images_and_descriptions(inputs)
         valid_inputs = [inp for inp in (images + descriptions) if inp is not None]
         if not valid_inputs:
             return [Vector.init_zero_vector(self._config.length)] * len(inputs)
-        valid_embeddings = self._embedding_engine_manager.embed(
+        valid_embeddings = await self._embedding_engine_manager.embed(
             self._config.model_handler,
             self._config.model_name,
             valid_inputs,

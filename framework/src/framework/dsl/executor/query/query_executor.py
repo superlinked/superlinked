@@ -83,7 +83,7 @@ class QueryExecutor:
         self._logger = logger.bind(schema=self._query_descriptor.schema._schema_name)
 
     @time_execution
-    def query(self, **params: ParamInputType | None) -> QueryResult:
+    async def query(self, **params: ParamInputType | None) -> QueryResult:
         """
         Execute a query with keyword parameters.
 
@@ -97,9 +97,9 @@ class QueryExecutor:
             QueryException: If the query index is not amongst the executor's indices.
         """
         self.__check_executor_has_index()
-        query_descriptor: QueryDescriptor = QueryParamValueSetter.set_values(self._query_descriptor, params)
-        knn_search_params: KNNSearchParams = self._produce_knn_search_params(query_descriptor)
-        entities = self._knn_search(
+        query_descriptor: QueryDescriptor = await QueryParamValueSetter.set_values(self._query_descriptor, params)
+        knn_search_params: KNNSearchParams = await self._produce_knn_search_params(query_descriptor)
+        entities = await self._knn_search(
             knn_search_params,
             query_descriptor,
             knn_search_params.should_return_index_vector or query_descriptor.with_metadata,
@@ -200,8 +200,8 @@ class QueryExecutor:
         }
 
     @time_execution
-    def _produce_knn_search_params(self, query_descriptor: QueryDescriptor) -> KNNSearchParams:
-        query_vector = self._produce_query_vector(query_descriptor)
+    async def _produce_knn_search_params(self, query_descriptor: QueryDescriptor) -> KNNSearchParams:
+        query_vector = await self._produce_query_vector(query_descriptor)
         partial_knn_search_params = reduce(
             lambda params, clause: clause.get_altered_knn_search_params(params),
             query_descriptor.clauses,
@@ -209,7 +209,7 @@ class QueryExecutor:
         )
         return KNNSearchParams.from_clause_params(query_vector, partial_knn_search_params)
 
-    def _produce_query_vector(self, query_descriptor: QueryDescriptor) -> Vector:
+    async def _produce_query_vector(self, query_descriptor: QueryDescriptor) -> Vector:
         query_vector_params = reduce(
             lambda params, clause: clause.get_altered_query_vector_params(
                 params, query_descriptor.index._node_id, query_descriptor.schema, self.app.storage_manager
@@ -218,7 +218,7 @@ class QueryExecutor:
             QueryVectorClauseParams(),
         )
         context = self._create_query_context_base(query_vector_params.context_time)
-        return self.query_vector_factory.produce_vector(
+        return await self.query_vector_factory.produce_vector(
             query_vector_params.query_node_inputs_by_node_id,
             query_vector_params.weight_by_space,
             query_descriptor.schema,
@@ -235,13 +235,13 @@ class QueryExecutor:
         eval_context.update_data({CONTEXT_COMMON: {CONTEXT_COMMON_NOW: context_time}})
         return eval_context
 
-    def _knn_search(
+    async def _knn_search(
         self,
         knn_search_params: KNNSearchParams,
         query_descriptor: QueryDescriptor,
         should_return_index_vector: bool,
     ) -> Sequence[SearchResultItem]:
-        return self.app.storage_manager.knn_search(
+        return await self.app.storage_manager.knn_search(
             query_descriptor.index._node,
             query_descriptor.schema,
             knn_search_params,

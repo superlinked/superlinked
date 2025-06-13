@@ -30,6 +30,7 @@ from superlinked.framework.common.transform.transform import Step
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
 )
+from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
 from superlinked.framework.online.dag.evaluation_result import SingleEvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
@@ -91,4 +92,4 @@ class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasL
         return embedded_texts
 
     def __embed_texts(self, texts: Sequence[str], context: ExecutionContext) -> list[Vector]:
-        return self.embedding_transformation.transform(texts, context)
+        return AsyncUtil.run(self.embedding_transformation.transform(texts, context))

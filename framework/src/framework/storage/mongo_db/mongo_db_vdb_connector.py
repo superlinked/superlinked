@@ -62,7 +62,7 @@ class MongoDBVDBConnector(VDBConnector[VDBKNNSearchConfig]):
         self._search = MongoDBSearch(self._db, self._encoder)
 
     @override
-    def close_connection(self) -> None:
+    async def close_connection(self) -> None:
         # Due to pymongo overwriting __getattr__ and __getitem__
         # type-checkers mistake 'close' for a database.
         self._client.close()  # type: ignore
@@ -73,7 +73,7 @@ class MongoDBVDBConnector(VDBConnector[VDBKNNSearchConfig]):
         return self._search_index_manager
 
     @override
-    def write_entities(self, entity_data: Sequence[EntityData]) -> None:
+    async def write_entities(self, entity_data: Sequence[EntityData]) -> None:
         if not entity_data:
             return
         docs = [
@@ -87,7 +87,7 @@ class MongoDBVDBConnector(VDBConnector[VDBKNNSearchConfig]):
             [UpdateOne({"_id": doc["_id"]}, {"$set": doc}, upsert=True) for doc in docs]
         )
 
-    def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
+    async def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
         if not entities:
             return []
 
@@ -109,7 +109,7 @@ class MongoDBVDBConnector(VDBConnector[VDBKNNSearchConfig]):
         ]
 
     @override
-    def _knn_search(
+    async def _knn_search(
         self,
         index_name: str,
         schema_name: str,
@@ -118,7 +118,7 @@ class MongoDBVDBConnector(VDBConnector[VDBKNNSearchConfig]):
         **params: Any,
     ) -> Sequence[ResultEntityData]:
         index_config = self._get_index_config(index_name)
-        results = self._search.knn_search_with_checks(
+        results = await self._search.knn_search_with_checks(
             index_config,
             MongoDBVDBKNNSearchParams.from_base(
                 vdb_knn_search_params,

@@ -42,14 +42,14 @@ class QueryNode(ABC, Generic[NT, QueryEvaluationResultT]):
     def node_id(self) -> str:
         return self.node.node_id
 
-    def evaluate_with_validation(
+    async def evaluate_with_validation(
         self,
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,
     ) -> QueryEvaluationResult[QueryEvaluationResultT]:
         with context.dag_output_recorder.record_evaluation_exception(self.node_id):
             self._validate_evaluation_inputs(inputs)
-            result = self._evaluate(inputs, context)
+            result = await self._evaluate(inputs, context)
         context.dag_output_recorder.record(self.node_id, list(result) if isinstance(result, Iterable) else [result])
         return result
 
@@ -63,7 +63,7 @@ class QueryNode(ABC, Generic[NT, QueryEvaluationResultT]):
         pass
 
     @abstractmethod
-    def _evaluate(
+    async def _evaluate(
         self,
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,

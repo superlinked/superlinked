@@ -71,25 +71,26 @@ class QueryEmbeddingNode(
         ).combine(vector_to_query_vector_step)
 
     @override
-    def _evaluate(
+    async def _evaluate(
         self,
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,
     ) -> QueryEvaluationResult[Vector]:
         weighted_node_inputs, weighted_node_input_vectors = self._validate_and_cast_node_inputs(inputs)
-        weighted_parent_results = self._validate_and_cast_parent_results(self._evaluate_parents(inputs, context))
+        weighted_parent_results = self._validate_and_cast_parent_results(await self._evaluate_parents(inputs, context))
         weighted_embeddings = (
-            self._embed_inputs(weighted_node_inputs, weighted_parent_results, context) + weighted_node_input_vectors
+            await self._embed_inputs(weighted_node_inputs, weighted_parent_results, context)
+            + weighted_node_input_vectors
         )
         if weighted_embeddings:
             return QueryEvaluationResult(
-                self._aggregation_transformation.transform(cast(Sequence[Weighted], weighted_embeddings), context)
+                await self._aggregation_transformation.transform(cast(Sequence[Weighted], weighted_embeddings), context)
             )
 
         return QueryEvaluationResult(self.node.transformation_config.embedding_config.default_vector)
 
     @abstractmethod
-    def _evaluate_parents(
+    async def _evaluate_parents(
         self,
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,
@@ -158,7 +159,7 @@ class QueryEmbeddingNode(
         ]
         return cast(list[Weighted[T]], weighted_items)
 
-    def _embed_inputs(
+    async def _embed_inputs(
         self,
         weighted_node_inputs: Sequence[Weighted],
         weighted_parent_results: Sequence[Weighted],
@@ -167,7 +168,7 @@ class QueryEmbeddingNode(
         if weighted_node_inputs or weighted_parent_results:
             weighted_items = list(weighted_node_inputs) + list(weighted_parent_results)
             embedding_inputs = [weighted_item.item for weighted_item in weighted_items]
-            embeddings = self._multi_embedding_transformation.transform(embedding_inputs, context)
+            embeddings = await self._multi_embedding_transformation.transform(embedding_inputs, context)
             return [
                 Weighted(embedding, weighted_item.weight)
                 for weighted_item, embedding in zip(weighted_items, embeddings)

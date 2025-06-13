@@ -38,6 +38,7 @@ from superlinked.framework.common.space.embedding.model_based.singleton_embeddin
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
 )
+from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.dsl.space.recency_space import RecencySpace
 
 
@@ -120,11 +121,14 @@ class RecencyPlotter:
     def _generate_recency_scores(self, oldest_ts_to_plot: int, now_ts: int, num_points: int) -> pd.DataFrame:
         plot_timestamps: np.ndarray = np.linspace(start=oldest_ts_to_plot, stop=now_ts, num=num_points)
         recency_vectors: list[Vector] = [
-            self._embedding_transformation.transform(plot_ts, self.context) for plot_ts in plot_timestamps
+            AsyncUtil.run(self._embedding_transformation.transform(plot_ts, self.context))
+            for plot_ts in plot_timestamps
         ]
-        now_vector: Vector = self._embedding_transformation.transform(
-            now_ts,
-            ExecutionContext.from_context_data(self.context.data, environment=ExecutionEnvironment.QUERY),
+        now_vector: Vector = AsyncUtil.run(
+            self._embedding_transformation.transform(
+                now_ts,
+                ExecutionContext.from_context_data(self.context.data, environment=ExecutionEnvironment.QUERY),
+            )
         )
         recency_scores: list[float] = [
             self.vector_similarity_calculator.calculate_similarity(now_vector, vec) for vec in recency_vectors

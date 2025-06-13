@@ -38,5 +38,5 @@ class CustomEmbedding(Embedding[Vector, CustomEmbeddingConfig]):
         return self._config.length
 
     @override
-    def embed(self, input_: Vector, context: ExecutionContext) -> Vector:
+    async def embed(self, input_: Vector, context: ExecutionContext) -> Vector:
         return input_

@@ -60,8 +60,8 @@ class RedisVDBConnector(VDBConnector[RedisVDBKNNSearchConfig]):
         self._search = RedisSearch(self._client, self._encoder)
 
     @override
-    def close_connection(self) -> None:
-        self._client.client.close()
+    async def close_connection(self) -> None:
+        await self._client.client.close()
 
     @property
     @override
@@ -69,7 +69,7 @@ class RedisVDBConnector(VDBConnector[RedisVDBKNNSearchConfig]):
         return self.__search_index_manager
 
     @override
-    def write_entities(self, entity_data: Sequence[EntityData]) -> None:
+    async def write_entities(self, entity_data: Sequence[EntityData]) -> None:
         if entity_data:
             _pipeline = self._client.client.pipeline(transaction=False)
             for ed in entity_data:
@@ -80,10 +80,10 @@ class RedisVDBConnector(VDBConnector[RedisVDBKNNSearchConfig]):
                             field_name: self._encoder.encode_field(field) for field_name, field in ed.field_data.items()
                         },
                     )
-            _pipeline.execute()
+            await _pipeline.execute()
 
     @override
-    def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
+    async def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
         valid_entities = [entity for entity in entities if entity.fields]
         if not valid_entities:
             return []
@@ -96,7 +96,7 @@ class RedisVDBConnector(VDBConnector[RedisVDBKNNSearchConfig]):
                 [field.name for field in entity.fields.values()],
             )
 
-        all_encoded_values = pipeline.execute()
+        all_encoded_values = await pipeline.execute()
 
         return [
             EntityData(
@@ -111,7 +111,7 @@ class RedisVDBConnector(VDBConnector[RedisVDBKNNSearchConfig]):
         ]
 
     @override
-    def _knn_search(
+    async def _knn_search(
         self,
         index_name: str,
         schema_name: str,
@@ -121,7 +121,7 @@ class RedisVDBConnector(VDBConnector[RedisVDBKNNSearchConfig]):
     ) -> Sequence[ResultEntityData]:
         index_config = self._get_index_config(index_name)
         result = self._encoder.convert_bytes_keys_dict(
-            self._search.knn_search_with_checks(index_config, vdb_knn_search_params, search_config)
+            await self._search.knn_search_with_checks(index_config, vdb_knn_search_params, search_config)
         )
         return [
             ResultEntityData(

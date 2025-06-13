@@ -40,10 +40,10 @@ class TextEmbedding(ModelEmbedding[str, TextSimilarityEmbeddingConfig]):
         self._cache = TextEmbeddingCache(self._config.cache_size)
 
     @override
-    def embed_multiple(self, inputs: Sequence[str], context: ExecutionContext) -> list[Vector]:
+    async def embed_multiple(self, inputs: Sequence[str], context: ExecutionContext) -> list[Vector]:
         unique_inputs = list(dict.fromkeys(inputs))  # used instead of set() to keep original order
         inputs_to_embed, found_indices, existing_vectors = self._cache.calculate_cache_info(unique_inputs)
-        new_vectors = self._embedding_engine_manager.embed(
+        new_vectors = await self._embedding_engine_manager.embed(
             self._config.model_handler,
             self._config.model_name,
             inputs_to_embed,

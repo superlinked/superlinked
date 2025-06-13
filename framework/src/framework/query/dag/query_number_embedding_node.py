@@ -61,13 +61,13 @@ class QueryNumberEmbeddingNode(QueryEmbeddingOrphanNode[float, NumberEmbeddingNo
         )
 
     @override
-    def _evaluate(
+    async def _evaluate(
         self,
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,
     ) -> QueryEvaluationResult[Vector]:
         if self._embedding_config.mode not in (Mode.MINIMUM, Mode.MAXIMUM):
-            return super()._evaluate(inputs, context)
+            return await super()._evaluate(inputs, context)
         if self._min_or_max_weight_is_zero(inputs):
             return QueryEvaluationResult(Vector.init_zero_vector(self.node.length))
         return QueryEvaluationResult(self._embedding_config.default_vector)

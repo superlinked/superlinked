@@ -32,6 +32,7 @@ from superlinked.framework.common.transform.transform import Step
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
 )
+from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
 
@@ -82,4 +83,4 @@ class OnlineCategoricalSimilarityNode(OnlineNode[CategoricalSimilarityNode, Vect
             return Vector.init_zero_vector(self.node.length)
         input_ = parent_result.main.value
         categories = input_ if isinstance(input_, list) else [input_]
-        return self.embedding_transformation.transform(categories, context)
+        return AsyncUtil.run(self.embedding_transformation.transform(categories, context))

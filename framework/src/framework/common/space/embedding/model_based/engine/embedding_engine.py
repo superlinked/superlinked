@@ -23,7 +23,7 @@ from superlinked.framework.common.space.embedding.model_based.embedding_input im
 from superlinked.framework.common.space.embedding.model_based.engine.embedding_engine_config import (
     EmbeddingEngineConfig,
 )
-from superlinked.framework.common.util.lazy_property import lazy_property
+from superlinked.framework.common.util.lazy_property import async_lazy_property
 
 EmbeddingEngineConfigT = TypeVar("EmbeddingEngineConfigT", bound=EmbeddingEngineConfig)
 
@@ -35,8 +35,9 @@ class EmbeddingEngine(Generic[EmbeddingEngineConfigT]):
         self._config = config
 
     @abstractmethod
-    def embed(self, inputs: Sequence[ModelEmbeddingInputT], is_query_context: bool) -> list[list[float]]: ...
+    async def embed(self, inputs: Sequence[ModelEmbeddingInputT], is_query_context: bool) -> list[list[float]]: ...
 
-    @lazy_property
-    def length(self) -> int:
-        return len(self.embed([""], is_query_context=True)[0])
+    @async_lazy_property
+    async def length(self) -> int:
+        embedding_results = await self.embed([""], is_query_context=True)
+        return len(embedding_results[0])

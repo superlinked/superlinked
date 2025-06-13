@@ -35,7 +35,7 @@ class QueryEmbeddingOrphanNode(
     Generic[AggregationInputT, EmbeddingNodeT, NodeDataT],
 ):
     @override
-    def _evaluate_parents(
+    async def _evaluate_parents(
         self,
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,

@@ -26,11 +26,12 @@ from superlinked.framework.common.storage.search_index.search_algorithm import (
 
 
 class InMemorySearchIndexManager(DynamicSearchIndexManager):
-    @override
     @property
+    @override
     def supported_vector_indexing(self) -> Sequence[SearchAlgorithm]:
         return [SearchAlgorithm.FLAT]
 
+    @override
     def _list_search_index_names_from_vdb(self, collection_name: str) -> Sequence[str]:
         return list(self._index_configs.keys())
 

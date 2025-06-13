@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from abc import abstractmethod
 
 from beartype.typing import Generic, Mapping, Sequence
@@ -21,8 +22,6 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import NT
-from superlinked.framework.common.settings import Settings
-from superlinked.framework.common.util.concurrent_executor import ConcurrentExecutor
 from superlinked.framework.query.dag.exception import QueryEvaluationException
 from superlinked.framework.query.dag.query_evaluation_data_types import (
     QueryEvaluationResult,
@@ -34,13 +33,13 @@ from superlinked.framework.query.query_node_input import QueryNodeInput
 
 class QueryNodeWithParent(QueryNode[NT, QueryEvaluationResultT], Generic[NT, QueryEvaluationResultT]):
     @override
-    def _evaluate(
+    async def _evaluate(
         self,
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,
     ) -> QueryEvaluationResult[QueryEvaluationResultT]:
         propagated_inputs = self._propagate_inputs_to_invert(inputs, context)
-        parent_results = self._evaluate_parents(propagated_inputs, context)
+        parent_results = await self._evaluate_parents(propagated_inputs, context)
         self._validate_parent_results(parent_results)
         return self._evaluate_parent_results(parent_results, context)
 
@@ -60,14 +59,10 @@ class QueryNodeWithParent(QueryNode[NT, QueryEvaluationResultT], Generic[NT, Que
                 return self._merge_inputs([inputs, {self.parents[0].node_id: inputs_to_invert}])
         return dict(inputs)
 
-    def _evaluate_parents(
+    async def _evaluate_parents(
         self, inputs: Mapping[str, Sequence[QueryNodeInput]], context: ExecutionContext
     ) -> Sequence[QueryEvaluationResult]:
-        return ConcurrentExecutor().execute(
-            lambda parent: parent.evaluate_with_validation(inputs, context),
-            args_list=[(parent,) for parent in self.parents],
-            condition=Settings().SUPERLINKED_CONCURRENT_QUERY_DAG_EVALUATION,
-        )
+        return await asyncio.gather(*[parent.evaluate_with_validation(inputs, context) for parent in self.parents])
 
     def _validate_parent_results(self, parent_results: Sequence[QueryEvaluationResult]) -> None:
         if len(parent_results) != len(self.parents):

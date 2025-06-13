@@ -59,6 +59,7 @@ from superlinked.framework.common.storage_manager.search_result_item import (
     SearchResultItem,
 )
 from superlinked.framework.common.storage_manager.storage_naming import StorageNaming
+from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.common.util.execution_timer import time_execution
 from superlinked.framework.dsl.query.query_user_config import QueryUserConfig
 
@@ -83,10 +84,9 @@ class StorageManager:
         self._storage_naming = StorageNaming()
         self._entity_builder = EntityBuilder(self._storage_naming)
 
-    def close_connection(self) -> None:
-        self._vdb_connector.close_connection()
+    async def close_connection(self) -> None:
+        await self._vdb_connector.close_connection()
 
-    @time_execution
     def init_search_indices(
         self,
         params_list: Sequence[SearchIndexParams],
@@ -107,7 +107,7 @@ class StorageManager:
             index_field_descriptors,
         )
 
-    def knn_search(
+    async def knn_search(
         self,
         index_node: IndexNode,
         schema: IdSchemaObject,
@@ -127,7 +127,7 @@ class StorageManager:
         if should_return_index_vector:
             fields_to_return.append(self._entity_builder.compose_field(index_node.node_id, Vector))
         search_config = self._vdb_connector.init_search_config(query_user_config)
-        search_result: Sequence[ResultEntityData] = self._vdb_connector.knn_search(
+        search_result: Sequence[ResultEntityData] = await self._vdb_connector.knn_search(
             index_name,
             schema._schema_name,
             VDBKNNSearchParams(
@@ -217,14 +217,14 @@ class StorageManager:
             self._entity_builder.compose_entity_data_from_parsed_schema(parsed_schema)
             for parsed_schema in parsed_schemas
         ]
-        self._vdb_connector.write_entities(entities_to_write)
+        AsyncUtil.run(self._vdb_connector.write_entities(entities_to_write))
 
     @time_execution
     def write_node_results(self, node_data_items: Sequence[NodeResultData]) -> None:
         entities_to_write = [
             self._entity_builder.compose_entity_data_from_node_result(node_data) for node_data in node_data_items
         ]
-        self._vdb_connector.write_entities(entities_to_write)
+        AsyncUtil.run(self._vdb_connector.write_entities(entities_to_write))
 
     @time_execution
     def write_node_data(
@@ -234,7 +234,7 @@ class StorageManager:
             self._compose_entity_data(schema, object_id, node_id, node_data)
             for object_id, node_data in node_data_by_object_id.items()
         ]
-        self._vdb_connector.write_entities(entity_data_items)
+        AsyncUtil.run(self._vdb_connector.write_entities(entity_data_items))
 
     def _compose_entity_data(
         self, schema: SchemaObject, object_id: str, node_id: str, node_data: dict[str, PythonTypes]
@@ -243,32 +243,6 @@ class StorageManager:
         field_data = list(self._entity_builder._admin_fields.create_header_field_data(entity_id))
         field_data.extend(list(self._entity_builder.compose_field_data_from_node_data(node_id, node_data)))
         return EntityData(entity_id, {fd.name: fd for fd in field_data})
-
-    @time_execution
-    def read_schema_field_values(self, object_id: str, schema_fields: Sequence[SchemaField]) -> ParsedSchema:
-        schema = self._get_schema_of_schema_fields(schema_fields)
-        entity_id = self._entity_builder.compose_entity_id(schema._schema_name, object_id)
-        fields = {
-            self._entity_builder.convert_schema_field_to_field(schema_field): schema_field
-            for schema_field in schema_fields
-        }
-        entity = self._entity_builder.compose_entity(entity_id, list(fields.keys()))
-        entity_data = self._vdb_connector.read_entities([entity])[0]
-
-        schema_field_by_field_name = self._create_schema_field_by_field_name(fields)
-        return self._entity_builder.parse_entity_data(schema, entity_data, schema_field_by_field_name)
-
-    def _get_schema_of_schema_fields(
-        self,
-        schema_fields: Sequence[SchemaField],
-    ) -> IdSchemaObject:
-        schemas = {schema_field.schema_obj for schema_field in schema_fields}
-        if len(schemas) != 1:
-            raise InvalidSchemaException(f"`schema_fields` must have the same root schema, got {schemas}")
-        schema = schemas.pop()
-        if not isinstance(schema, IdSchemaObject):
-            raise InvalidSchemaException(f"The root schema of `schema_fields` must be an {IdSchemaObject.__name__}")
-        return schema
 
     @time_execution
     def read_node_results(
@@ -283,7 +257,7 @@ class StorageManager:
         ]
         result_field = self._entity_builder.compose_field(node_id, result_type)
         entities = [self._entity_builder.compose_entity(entity_id, [result_field]) for entity_id in entity_ids]
-        entity_data = self._vdb_connector.read_entities(entities)
+        entity_data = AsyncUtil.run(self._vdb_connector.read_entities(entities))
 
         def cast_value_if_not_none(field_data: FieldData | None) -> ResultTypeT | None:
             return cast(ResultTypeT, field_data.value) if field_data else None
@@ -314,7 +288,7 @@ class StorageManager:
         node_data_key_by_field_name = {field.name: key for key, field in field_by_node_data_key.items()}
         fields = list(field_by_node_data_key.values())
         entities = [self._compose_entity(schema, object_id, fields) for object_id in object_ids]
-        entity_data_items = self._vdb_connector.read_entities(entities)
+        entity_data_items = AsyncUtil.run(self._vdb_connector.read_entities(entities))
         node_data_items = {
             object_id: {
                 node_data_key_by_field_name[field_data.name]: cast(NDVT, field_data.value)

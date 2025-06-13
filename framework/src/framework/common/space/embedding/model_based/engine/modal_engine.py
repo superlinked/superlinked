@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
 from pathlib import Path
-from time import sleep
 
 import modal
 import structlog
@@ -30,7 +30,6 @@ from superlinked.framework.common.space.embedding.model_based.engine.embedding_e
 from superlinked.framework.common.space.embedding.model_based.engine.modal_engine_config import (
     ModalEngineConfig,
 )
-from superlinked.framework.common.util.concurrent_executor import ConcurrentExecutor
 from superlinked.framework.common.util.image_util import ImageUtil
 
 logger = structlog.getLogger()
@@ -46,9 +45,9 @@ class ModalEngine(EmbeddingEngine[ModalEngineConfig]):
         )
 
     @override
-    def embed(self, inputs: Sequence[ModelEmbeddingInputT], is_query_context: bool) -> list[list[float]]:
+    async def embed(self, inputs: Sequence[ModelEmbeddingInputT], is_query_context: bool) -> list[list[float]]:
         pre_processed_inputs = self._pre_process_inputs(inputs)
-        embeddings = self.__send_request(pre_processed_inputs)
+        embeddings = await self.__send_request(pre_processed_inputs)
         return embeddings
 
     def _pre_process_inputs(self, inputs: Sequence[ModelEmbeddingInputT]) -> list[str | bytes]:
@@ -61,17 +60,18 @@ class ModalEngine(EmbeddingEngine[ModalEngineConfig]):
             for input_ in inputs
         ]
 
-    def __send_request(self, inputs: Sequence[str | bytes]) -> list[list[float]]:
+    async def __send_request(self, inputs: Sequence[str | bytes]) -> list[list[float]]:
         retry_count = 0
         current_delay = self._config.modal_retry_delay
+        batches = [
+            inputs[i : i + self._config.modal_batch_size] for i in range(0, len(inputs), self._config.modal_batch_size)
+        ]
         while True:
             try:
-                return ConcurrentExecutor(max_workers=self._config.modal_max_concurrent_batches).execute_batched(
-                    func=self._modal_cls().embed.remote,
-                    items=inputs,
-                    batch_size=self._config.modal_batch_size,
-                    additional_args=[self._model_name],
+                batch_results = await asyncio.gather(
+                    *[self._modal_cls().embed.aio(batch, self._model_name) for batch in batches]
                 )
+                return [embedding for batch_result in batch_results for embedding in batch_result]
             except Exception as e:  # pylint: disable=broad-exception-caught
                 retry_count += 1
                 if retry_count >= self._config.modal_max_retries:
@@ -84,5 +84,5 @@ class ModalEngine(EmbeddingEngine[ModalEngineConfig]):
                     error=str(e),
                     retry_delay=current_delay,
                 )
-                sleep(current_delay)
+                await asyncio.sleep(current_delay)
                 current_delay = current_delay * 2

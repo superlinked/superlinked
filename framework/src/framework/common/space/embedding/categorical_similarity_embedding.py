@@ -46,7 +46,7 @@ class CategoricalSimilarityEmbedding(InvertibleEmbedding[list[str], CategoricalS
         self._default_n_hot_encoding = np.full(self.length, self._config.negative_filter, dtype=VectorItemT)
 
     @override
-    def embed(self, input_: list[str], context: ExecutionContext) -> Vector:
+    async def embed(self, input_: list[str], context: ExecutionContext) -> Vector:
         n_hot_encoding: NPArray = self._n_hot_encode(input_, context.is_query_context)
         negative_filter_indices = set(i for i in range(self.length) if i not in self._get_category_indices(input_))
         return Vector(n_hot_encoding, negative_filter_indices)
@@ -100,9 +100,9 @@ class CategoricalSimilarityEmbedding(InvertibleEmbedding[list[str], CategoricalS
         return vector
 
     @override
-    def _to_query_vector(self, input_: Vector, context: ExecutionContext) -> Vector:
+    async def _to_query_vector(self, input_: Vector, context: ExecutionContext) -> Vector:
         category_vector_values: dict[int, float] = self._get_scaling_factors_for_vector(input_)
-        raw_vector: Vector = self.embed(self.inverse_embed(input_, context), context)
+        raw_vector: Vector = await self.embed(self.inverse_embed(input_, context), context)
         reallocated_vector: Vector = self._reallocate_vector_values(raw_vector, category_vector_values)
         return reallocated_vector
 

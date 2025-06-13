@@ -18,6 +18,7 @@ from pydantic import BaseModel
 
 from superlinked.framework.common.exception import QueryException
 from superlinked.framework.common.nlq.open_ai import OpenAIClient, OpenAIClientConfig
+from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.common.util.execution_timer import time_execution
 from superlinked.framework.dsl.query.nlq.nlq_clause_collector import NLQClauseCollector
 from superlinked.framework.dsl.query.nlq.param_filler.query_param_model_builder import (
@@ -43,7 +44,7 @@ class NLQHandler:
     ) -> None:
         self.__client_config = client_config
 
-    def fill_params(
+    async def fill_params(
         self,
         natural_query: str,
         clauses: Sequence[QueryClause],
@@ -55,7 +56,7 @@ class NLQHandler:
             return {}
         model_class = QueryParamModelBuilder.build(clause_collector)
         instructor_prompt = QueryParamPromptBuilder.calculate_instructor_prompt(clause_collector, system_prompt)
-        return self._execute_query(natural_query, instructor_prompt, model_class)
+        return await self._execute_query(natural_query, instructor_prompt, model_class)
 
     def suggest_improvements(
         self,
@@ -74,18 +75,20 @@ class NLQHandler:
             feedback,
             natural_query,
         )
-        result = self._execute_query(
-            "Analyze the parameter definitions and provide specific improvements.",
-            instructor_prompt,
-            QuerySuggestionsModel,
+        result = AsyncUtil.run(
+            self._execute_query(
+                "Analyze the parameter definitions and provide specific improvements.",
+                instructor_prompt,
+                QuerySuggestionsModel,
+            )
         )
         return QuerySuggestionsModel(**result)
 
     @time_execution
-    def _execute_query(self, query: str, instructor_prompt: str, model_class: type[BaseModel]) -> dict[str, Any]:
+    async def _execute_query(self, query: str, instructor_prompt: str, model_class: type[BaseModel]) -> dict[str, Any]:
         try:
             client = OpenAIClient(self.__client_config)
-            result = client.query(query, instructor_prompt, model_class)
+            result = await client.query(query, instructor_prompt, model_class)
             return result
         except Exception as e:
             raise QueryException(f"Error executing natural language query: {str(e)}") from e

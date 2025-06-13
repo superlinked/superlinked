@@ -30,13 +30,13 @@ logger = structlog.getLogger()
 
 class QueryParamValueSetter:
     @classmethod
-    def set_values(
+    async def set_values(
         cls, query_descriptor: QueryDescriptor, params: Mapping[str, ParamInputType | None]
     ) -> QueryDescriptor:
         query_descriptor_with_all_clauses = query_descriptor.append_missing_mandatory_clauses()
         cls.validate_params(query_descriptor_with_all_clauses, params)
         altered_query_descriptor = cls.__alter_query_descriptor(query_descriptor_with_all_clauses, params, True)
-        nlq_params = cls.__calculate_nlq_params(altered_query_descriptor)
+        nlq_params = await cls.__calculate_nlq_params(altered_query_descriptor)
         nlq_altered_query_descriptor = cls.__alter_query_descriptor(altered_query_descriptor, nlq_params, False)
         default_params = cls.__calculate_default_params(nlq_altered_query_descriptor)
         default_altered_query_descriptor = cls.__alter_query_descriptor(
@@ -68,12 +68,12 @@ class QueryParamValueSetter:
         return query_descriptor.replace_clauses(altered_clauses)
 
     @classmethod
-    def __calculate_nlq_params(cls, query_descriptor: QueryDescriptor) -> dict[str, Any]:
+    async def __calculate_nlq_params(cls, query_descriptor: QueryDescriptor) -> dict[str, Any]:
         nlq_params = reduce(
             lambda params, clause: clause.get_altered_nql_params(params), query_descriptor.clauses, NLQClauseParams()
         )
         if nlq_params.client_config is not None and nlq_params.natural_query is not None:
-            return NLQHandler(nlq_params.client_config).fill_params(
+            return await NLQHandler(nlq_params.client_config).fill_params(
                 nlq_params.natural_query,
                 query_descriptor.clauses,
                 query_descriptor._space_weight_param_info,

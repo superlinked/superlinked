@@ -63,10 +63,12 @@ class RestHandler:
         source.put([input_schema])
 
     @time_execution_with_arg("path")
-    def _query_handler(self, query_descriptor: dict, path: str, query_user_config: QueryUserConfig) -> QueryResult:
+    async def _query_handler(
+        self, query_descriptor: dict, path: str, query_user_config: QueryUserConfig
+    ) -> QueryResult:
         query = self.__path_to_query_map[path].query_descriptor
         query = query.replace_user_config(query_user_config)
-        result = self.__query_mixin.query(query, **query_descriptor)
+        result = await self.__query_mixin.async_query(query, **query_descriptor)
         return result
 
     def __create_path_to_resource_mapping(

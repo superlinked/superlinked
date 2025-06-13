@@ -52,7 +52,7 @@ class NumberEmbedding(InvertibleEmbedding[NumberT, NumberEmbeddingConfig]):
         return self._config.length
 
     @override
-    def embed(self, input_: float, context: ExecutionContext) -> Vector:
+    async def embed(self, input_: float, context: ExecutionContext) -> Vector:
         if (
             input_ < self._config.min_value
             and self._config.mode

@@ -30,7 +30,7 @@ class NormalizationStep(Step[Vector, Vector], ABC):
         self._denormalize = denormalize
 
     @override
-    def transform(
+    async def transform(
         self,
         input_: Vector,
         context: ExecutionContext,
@@ -47,7 +47,7 @@ class MultiNormalizationStep(Step[Sequence[Vector], list[Vector]], ABC):
         self._denormalize = denormalize
 
     @override
-    def transform(
+    async def transform(
         self,
         input_: Sequence[Vector],
         context: ExecutionContext,

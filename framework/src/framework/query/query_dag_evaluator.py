@@ -37,12 +37,12 @@ class QueryDagEvaluator:
             node_info=[(node.class_name, node.node_id) for node in self._dag.nodes],
         )
 
-    def evaluate(
+    async def evaluate(
         self,
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,
     ) -> Vector:
-        result = self._query_dag.evaluate(inputs, context)
+        result = await self._query_dag.evaluate(inputs, context)
         logger.info(
             "evaluated query",
             pii_inputs=inputs,

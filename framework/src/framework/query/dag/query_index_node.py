@@ -60,11 +60,11 @@ class QueryIndexNode(QueryNodeWithParent[IndexNode, Vector]):
         return dict(inputs)
 
     @override
-    def _evaluate_parents(
+    async def _evaluate_parents(
         self, inputs: Mapping[str, Sequence[QueryNodeInput]], context: ExecutionContext
     ) -> list[QueryEvaluationResult[Vector]]:
         active_parent = self._get_active_parent(context)
-        return [active_parent.evaluate_with_validation(inputs, context)]
+        return [await active_parent.evaluate_with_validation(inputs, context)]
 
     @override
     def _validate_parent_results(self, parent_results: Sequence[QueryEvaluationResult]) -> None:

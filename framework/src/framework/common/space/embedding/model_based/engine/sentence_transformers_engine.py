@@ -61,7 +61,7 @@ class SentenceTransformersEngine(EmbeddingEngine[EmbeddingEngineConfig]):
         self._model = self._initialize_model()
 
     @override
-    def embed(self, inputs: Sequence[ModelEmbeddingInputT], is_query_context: bool) -> list[list[float]]:
+    async def embed(self, inputs: Sequence[ModelEmbeddingInputT], is_query_context: bool) -> list[list[float]]:
         prompt_name = self._calculate_prompt_name(self._model, is_query_context)
         return list(
             self._model.encode(

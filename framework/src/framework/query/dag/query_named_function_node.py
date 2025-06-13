@@ -39,7 +39,7 @@ class QueryNamedFunctionNode(QueryNode[NamedFunctionNode[NodeDataT], NodeDataT],
         super().__init__(node, parents)
 
     @override
-    def _evaluate(
+    async def _evaluate(
         self,
         inputs: Mapping[str, Sequence[QueryNodeInput]],
         context: ExecutionContext,

@@ -36,7 +36,7 @@ class AggregationStep(
         self._aggregation = aggregation
 
     @override
-    def transform(
+    async def transform(
         self,
         input_: Sequence[Weighted[AggregationInputT]],
         context: ExecutionContext,

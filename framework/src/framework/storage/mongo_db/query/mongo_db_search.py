@@ -51,7 +51,7 @@ class MongoDBSearch(Search[MongoDBVDBKNNSearchParams, MongoDBQuery, CommandCurso
         )
 
     @override
-    def knn_search(
+    async def knn_search(
         self,
         index_config: IndexConfig,
         query: MongoDBQuery,

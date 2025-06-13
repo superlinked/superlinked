@@ -35,7 +35,7 @@ QuertT = TypeVar("QuertT")
 
 
 class Search(ABC, Generic[SearchParamsT, QuertT, KNNReturnT, VDBKNNSearchConfigT]):
-    def knn_search_with_checks(
+    async def knn_search_with_checks(
         self,
         index_config: IndexConfig,
         search_params: SearchParamsT,
@@ -44,7 +44,7 @@ class Search(ABC, Generic[SearchParamsT, QuertT, KNNReturnT, VDBKNNSearchConfigT
         self.check_vector_field(index_config, search_params.vector_field)
         self.check_filters(index_config, search_params.filters)
         query = self.build_query(search_params, search_config)
-        return self.knn_search(index_config, query)
+        return await self.knn_search(index_config, query)
 
     @abstractmethod
     def build_query(
@@ -55,7 +55,7 @@ class Search(ABC, Generic[SearchParamsT, QuertT, KNNReturnT, VDBKNNSearchConfigT
         pass
 
     @abstractmethod
-    def knn_search(self, index_config: IndexConfig, query: QuertT) -> KNNReturnT:
+    async def knn_search(self, index_config: IndexConfig, query: QuertT) -> KNNReturnT:
         pass
 
     @staticmethod

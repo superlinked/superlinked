@@ -33,12 +33,12 @@ class EmbeddingStep(Generic[EmbeddingInputT], Step[EmbeddingInputT, Vector]):
         self._embedding = embedding
 
     @override
-    def transform(
+    async def transform(
         self,
         input_: EmbeddingInputT,
         context: ExecutionContext,
     ) -> Vector:
-        return self._embedding.embed(input_, context)
+        return await self._embedding.embed(input_, context)
 
 
 class MultiEmbeddingStep(Generic[EmbeddingInputT], Step[Sequence[EmbeddingInputT], Sequence[Vector]]):
@@ -47,12 +47,12 @@ class MultiEmbeddingStep(Generic[EmbeddingInputT], Step[Sequence[EmbeddingInputT
         self._embedding = embedding
 
     @override
-    def transform(
+    async def transform(
         self,
         input_: Sequence[EmbeddingInputT],
         context: ExecutionContext,
     ) -> Sequence[Vector]:
-        return self._embedding.embed_multiple(input_, context)
+        return await self._embedding.embed_multiple(input_, context)
 
 
 class InverseEmbeddingStep(Generic[EmbeddingInputT], Step[Vector, EmbeddingInputT]):
@@ -61,7 +61,7 @@ class InverseEmbeddingStep(Generic[EmbeddingInputT], Step[Vector, EmbeddingInput
         self._embedding = embedding
 
     @override
-    def transform(
+    async def transform(
         self,
         input_: Vector,
         context: ExecutionContext,
@@ -75,7 +75,7 @@ class InverseMultiEmbeddingStep(Generic[EmbeddingInputT], Step[list[Vector], Seq
         self._embedding = embedding
 
     @override
-    def transform(
+    async def transform(
         self,
         input_: list[Vector],
         context: ExecutionContext,

@@ -41,8 +41,8 @@ class ModelEmbedding(
         super().__init__(embedding_config, embedding_engine_manager)
 
     @override
-    def embed(self, input_: EmbeddingInputT, context: ExecutionContext) -> Vector:
-        return self.embed_multiple([input_], context)[0]
+    async def embed(self, input_: EmbeddingInputT, context: ExecutionContext) -> Vector:
+        return (await self.embed_multiple([input_], context))[0]
 
     @property
     @override

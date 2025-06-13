@@ -14,9 +14,13 @@
 
 import time
 
-from redis import Redis
+from redis import Redis as SyncRedis
+from redis.asyncio import Redis as AsyncRedis
+
+from superlinked.framework.common.util.async_util import AsyncUtil
 
 CONNECTION_REFRESH_INTERVAL_SECONDS = 1800
+REDIS_PROTOCOL = 3
 
 
 class RedisVDBClient:
@@ -25,22 +29,36 @@ class RedisVDBClient:
     def __init__(self, connection_string: str) -> None:
         self._connection_string = connection_string
         self._last_activity_time = time.time()
-        self.__client = self._create_client()
+        self.__async_client = self._create_async_client()
+        self.__sync_client = self._create_sync_client()
 
     @property
-    def client(self) -> Redis:
+    def client(self) -> AsyncRedis:
         """
         Property to access the Redis client with connection refresh.
         """
         self._refresh_connection_if_needed()
-        return self.__client
+        return self.__async_client
 
-    def _create_client(self) -> Redis:
-        return Redis.from_url(self._connection_string, protocol=3)
+    @property
+    def sync_client(self) -> SyncRedis:
+        """
+        Property to access the Redis client with connection refresh.
+        """
+        self._refresh_connection_if_needed()
+        return self.__sync_client
+
+    def _create_sync_client(self) -> SyncRedis:
+        return SyncRedis.from_url(self._connection_string, protocol=REDIS_PROTOCOL)
+
+    def _create_async_client(self) -> AsyncRedis:
+        return AsyncRedis.from_url(self._connection_string, protocol=REDIS_PROTOCOL)
 
     def _refresh_connection_if_needed(self) -> None:
         current_time = time.time()
         if current_time - self._last_activity_time > CONNECTION_REFRESH_INTERVAL_SECONDS:
-            self.__client.close()
-            self.__client = self._create_client()
+            AsyncUtil.run(self.__async_client.close())
+            self.__async_client = self._create_async_client()
+            self.__sync_client.close()
+            self.__sync_client = self._create_sync_client()
         self._last_activity_time = current_time

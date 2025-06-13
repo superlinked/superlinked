@@ -46,6 +46,7 @@ from superlinked.framework.common.space.embedding.model_based.engine.modal_engin
 from superlinked.framework.common.space.embedding.model_based.singleton_embedding_engine_manager import (
     SingletonEmbeddingEngineManager,
 )
+from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.space.has_space_field_set import HasSpaceFieldSet
 from superlinked.framework.dsl.space.space import Space
@@ -178,8 +179,10 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
         model_handler: TextModelHandler,
         embedding_engine_config: EmbeddingEngineConfig,
     ) -> TransformationConfig[Vector, str]:
-        length = SingletonEmbeddingEngineManager().calculate_length(
-            model_handler, model, model_cache_dir, embedding_engine_config
+        length = AsyncUtil.run(
+            SingletonEmbeddingEngineManager().calculate_length(
+                model_handler, model, model_cache_dir, embedding_engine_config
+            )
         )
         embedding_config = TextSimilarityEmbeddingConfig(
             str,

@@ -46,7 +46,7 @@ class QueryVectorFactory:
         self._evaluator = QueryDagEvaluator(dag)
         self._query_weighting = QueryWeighting(dag)
 
-    def produce_vector(
+    async def produce_vector(
         self,
         query_node_inputs_by_node_id: Mapping[str, Sequence[QueryNodeInput]],
         global_space_weight_map: Mapping[Space, float],
@@ -57,7 +57,7 @@ class QueryVectorFactory:
             schema, global_space_weight_map
         )
         context = self._create_query_context(context_base, schema._schema_name, space_node_id_weight_map)
-        result = self._evaluator.evaluate(query_node_inputs_by_node_id, context)
+        result = await self._evaluator.evaluate(query_node_inputs_by_node_id, context)
         return result
 
     def get_vector_parts(

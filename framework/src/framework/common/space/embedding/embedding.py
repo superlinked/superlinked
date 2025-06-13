@@ -35,11 +35,11 @@ class Embedding(HasDefaultVector, Generic[EmbeddingInputT, EmbeddingConfigT], AB
         self._embedding_engine_manager = embedding_engine_manager
 
     @abstractmethod
-    def embed(self, input_: EmbeddingInputT, context: ExecutionContext) -> Vector:
+    async def embed(self, input_: EmbeddingInputT, context: ExecutionContext) -> Vector:
         pass
 
-    def embed_multiple(self, inputs: Sequence[EmbeddingInputT], context: ExecutionContext) -> list[Vector]:
-        return [self.embed(input_, context) for input_ in inputs]
+    async def embed_multiple(self, inputs: Sequence[EmbeddingInputT], context: ExecutionContext) -> list[Vector]:
+        return [await self.embed(input_, context) for input_ in inputs]
 
     @override
     def __eq__(self, other: Any) -> bool:
@@ -55,8 +55,11 @@ class Embedding(HasDefaultVector, Generic[EmbeddingInputT, EmbeddingConfigT], AB
     def __str__(self) -> str:
         return f"{self.__class__.__name__}({self.__dict__ if self.__dict__ else ''})"
 
-    def _to_query_vector(self, input_: Vector, context: ExecutionContext) -> Vector:  # pylint: disable=unused-argument
-        # the pylint ignore is here as the child embeddings do need this argument
+    async def _to_query_vector(
+        self,
+        input_: Vector,
+        context: ExecutionContext,  # pylint: disable=unused-argument  # child embeddings need this argument
+    ) -> Vector:
         return input_
 
 

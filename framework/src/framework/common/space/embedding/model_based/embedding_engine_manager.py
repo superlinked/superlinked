@@ -75,7 +75,7 @@ class EmbeddingEngineManager:
         Get or create an embedding engine based on the provided config.
         Returns existing engine if one with matching parameters exists.
         """
-        engine_key = self.calculate_engine_key(model_handler, model_name, model_cache_dir)
+        engine_key = self.calculate_engine_key(model_handler, model_name, model_cache_dir, config)
         if engine_key in self._engines:
             return self._engines[engine_key]
         if engine_type := ENGINE_BY_HANDLER.get(model_handler):
@@ -86,10 +86,15 @@ class EmbeddingEngineManager:
 
     @classmethod
     def calculate_engine_key(
-        cls, model_handler: ModelHandlerType, model_name: str, model_cache_dir: Path | None
+        cls,
+        model_handler: ModelHandlerType,
+        model_name: str,
+        model_cache_dir: Path | None,
+        config: EmbeddingEngineConfig,
     ) -> str:
         clean_model_name = cls._get_clean_model_name(model_handler, model_name)
-        engine_key = f"{model_handler.value}:{clean_model_name}:{model_cache_dir or ''}"
+        parts = [model_handler.value, clean_model_name, str(hash(config))[:4], model_cache_dir]
+        engine_key = ":".join(str(part) for part in parts if part is not None)
         return engine_key
 
     @classmethod
@@ -101,14 +106,14 @@ class EmbeddingEngineManager:
     @classmethod
     def _is_sentence_transformers_model_without_prefix(cls, model_handler: ModelHandlerType, model_name: str) -> bool:
         return (
-            model_handler in [TextModelHandler.SENTENCE_TRANSFORMERS or ModelHandler.SENTENCE_TRANSFORMERS]
+            model_handler in [TextModelHandler.SENTENCE_TRANSFORMERS, ModelHandler.SENTENCE_TRANSFORMERS]
             and "/" not in model_name
         )
 
     def clear_engines(self) -> None:
         self._engines.clear()
 
-    def embed(  # pylint: disable=too-many-arguments
+    async def embed(  # pylint: disable=too-many-arguments
         self,
         model_handler: ModelHandlerType,
         model_name: str,
@@ -120,10 +125,10 @@ class EmbeddingEngineManager:
         if not inputs:
             return []
         engine = self.get_engine(model_handler, model_name, model_cache_dir, config)
-        embeddings = engine.embed(inputs, is_query_context)
+        embeddings = await engine.embed(inputs, is_query_context)
         return [Vector(embedding) for embedding in embeddings]
 
-    def calculate_length(
+    async def calculate_length(
         self,
         model_handler: ModelHandlerType,
         model_name: str,
@@ -133,4 +138,4 @@ class EmbeddingEngineManager:
         clean_model_name = self._get_clean_model_name(model_handler, model_name)
         if clean_model_name in MODEL_DIMENSION_BY_NAME:
             return MODEL_DIMENSION_BY_NAME[clean_model_name]
-        return self.get_engine(model_handler, model_name, model_cache_dir, config).length
+        return await self.get_engine(model_handler, model_name, model_cache_dir, config).length

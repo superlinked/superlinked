@@ -68,7 +68,7 @@ class OpenCLIPEngine(EmbeddingEngine[EmbeddingEngineConfig]):
         self._tokenizer = get_tokenizer(self._model_name)
 
     @override
-    def embed(self, inputs: Sequence[ModelEmbeddingInputT], is_query_context: bool) -> list[list[float]]:
+    async def embed(self, inputs: Sequence[ModelEmbeddingInputT], is_query_context: bool) -> list[list[float]]:
         text_inputs = [input_ for input_ in inputs if isinstance(input_, str)]
         image_inputs = [input_ for input_ in inputs if isinstance(input_, PILImage)]
         with torch.no_grad():

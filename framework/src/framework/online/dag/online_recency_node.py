@@ -26,6 +26,7 @@ from superlinked.framework.common.transform.transform import Step
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
 )
+from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
 from superlinked.framework.online.dag.evaluation_result import SingleEvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
@@ -70,4 +71,4 @@ class OnlineRecencyNode(DefaultOnlineNode[RecencyNode, Vector], HasLength):
         if len(parent_results.items()) != 1:
             return None
         input_: int = list(parent_results.values())[0].value
-        return self.embedding_transformation.transform(input_, context)
+        return AsyncUtil.run(self.embedding_transformation.transform(input_, context))

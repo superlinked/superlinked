@@ -24,7 +24,22 @@ def lazy_property(fn) -> property:  # type: ignore
     @functools.wraps(fn)
     def _lazy_property(self) -> Any:  # type: ignore
         if not hasattr(self, attr_name):
-            object.__setattr__(self, attr_name, fn(self))
+            value = fn(self)
+            setattr(self, attr_name, value)
         return getattr(self, attr_name)
 
     return _lazy_property  # type: ignore
+
+
+def async_lazy_property(async_fn) -> property:  # type: ignore
+    attr_name = "_lazy_" + async_fn.__name__
+
+    @property  # type: ignore
+    @functools.wraps(async_fn)
+    async def _async_lazy_property(self) -> Any:  # type: ignore
+        if not hasattr(self, attr_name):
+            value = await async_fn(self)
+            setattr(self, attr_name, value)
+        return getattr(self, attr_name)
+
+    return _async_lazy_property  # type: ignore

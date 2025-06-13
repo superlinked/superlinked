@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 from beartype.typing import Any, Sequence
 
 from superlinked.framework.common.exception import QueryException
+from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.executor.query.query_executor import QueryExecutor
 from superlinked.framework.dsl.index.index import Index
@@ -68,9 +70,12 @@ class QueryMixin:
         Raises:
             QueryException: If the query index is not found among the executor's indices.
         """
+        return AsyncUtil.run(self.async_query(query_descriptor, **params))
+
+    async def async_query(self, query_descriptor: QueryDescriptor, **params: Any) -> QueryResult:
         if query_vector_factory := self._query_vector_factory_by_index.get(query_descriptor.index):
             # 'self' is an App instance; MyPy can't infer the inheriting class.
-            query_result: QueryResult = QueryExecutor(
+            query_result: QueryResult = await QueryExecutor(
                 self, query_descriptor, query_vector_factory  # type: ignore
             ).query(**params)
             return self._query_result_converter.convert(query_result)

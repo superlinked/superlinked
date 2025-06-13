@@ -53,6 +53,7 @@ from superlinked.framework.common.space.embedding.model_based.engine.modal_engin
 from superlinked.framework.common.space.embedding.model_based.singleton_embedding_engine_manager import (
     SingletonEmbeddingEngineManager,
 )
+from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.dsl.space.exception import InvalidSpaceParamException
 from superlinked.framework.dsl.space.image_space_field_set import (
     ImageDescriptionSpaceFieldSet,
@@ -122,8 +123,10 @@ class ImageSpace(Space[Vector, ImageData]):
         self.__validate_model_handler(model_handler, embedding_engine_config)
         image_fields, description_fields = self._split_images_from_descriptions(non_none_image)
         super().__init__(image_fields, Blob)
-        length = SingletonEmbeddingEngineManager().calculate_length(
-            model_handler, model, model_cache_dir, embedding_engine_config
+        length = AsyncUtil.run(
+            SingletonEmbeddingEngineManager().calculate_length(
+                model_handler, model, model_cache_dir, embedding_engine_config
+            )
         )
         self.image = ImageSpaceFieldSet(self, set(image_fields), allowed_param_types=[str, Image])
         self.description = ImageDescriptionSpaceFieldSet(

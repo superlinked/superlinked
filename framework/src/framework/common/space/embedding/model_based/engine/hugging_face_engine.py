@@ -35,7 +35,7 @@ HTTP_PREFIXES = ("http://", "https://")
 
 class HuggingFaceEngine(EmbeddingEngine[EmbeddingEngineConfig]):
     @override
-    def embed(self, inputs: Sequence[ModelEmbeddingInputT], is_query_context: bool) -> list[list[float]]:
+    async def embed(self, inputs: Sequence[ModelEmbeddingInputT], is_query_context: bool) -> list[list[float]]:
         inputs_to_embed = self._validate_and_cast_inputs(inputs)
         client = self._init_inference_client(self._model_name)
         embedding_results = [client.feature_extraction(text=input_) for input_ in inputs_to_embed]

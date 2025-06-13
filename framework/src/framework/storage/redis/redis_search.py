@@ -43,10 +43,10 @@ class RedisSearch(Search[VDBKNNSearchParams, VectorQueryObj, dict[bytes, Any], R
         return self._query_builder.build_query(search_params, search_config)
 
     @override
-    def knn_search(
+    async def knn_search(
         self,
         index_config: IndexConfig,
         query: VectorQueryObj,
     ) -> dict[bytes, Any]:
-        result = self._client.client.ft(index_config.index_name).search(query.query, query.params)
+        result = await self._client.client.ft(index_config.index_name).search(query.query, query.params)
         return cast(dict[bytes, Any], result)

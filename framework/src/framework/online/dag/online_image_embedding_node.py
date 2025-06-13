@@ -32,6 +32,7 @@ from superlinked.framework.common.transform.transform import Step
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
 )
+from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.common.util.image_util import ImageUtil
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
@@ -77,7 +78,7 @@ class OnlineImageEmbeddingNode(OnlineNode[ImageEmbeddingNode, Vector], HasLength
         context: ExecutionContext,
     ) -> list[EvaluationResult[Vector] | None]:
         image_data_list = [self._get_image_data(parsed_schema) for parsed_schema in parsed_schemas]
-        embedded_images = self.embedding_transformation.transform(image_data_list, context)
+        embedded_images = AsyncUtil.run(self.embedding_transformation.transform(image_data_list, context))
 
         return [
             EvaluationResult(self._get_single_evaluation_result(embedded_image)) for embedded_image in embedded_images
