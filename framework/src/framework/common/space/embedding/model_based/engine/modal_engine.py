@@ -69,7 +69,7 @@ class ModalEngine(EmbeddingEngine[ModalEngineConfig]):
         while True:
             try:
                 batch_results = await asyncio.gather(
-                    *[self._modal_cls().embed.aio(batch, self._model_name) for batch in batches]
+                    *[self._modal_cls().embed.remote.aio(batch, model_name=self._model_name) for batch in batches]
                 )
                 return [embedding for batch_result in batch_results for embedding in batch_result]
             except Exception as e:  # pylint: disable=broad-exception-caught
