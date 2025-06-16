@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import torch
 
 from superlinked.framework.common.settings import Settings
@@ -27,10 +26,6 @@ class GpuEmbeddingUtil:
     def get_device(cls) -> str:
         if torch.cuda.is_available():
             return CUDA_DEVICE_TYPE
-        if Settings().PREFER_MPS_OVER_CPU_IF_AVAILABLE and torch.backends.mps.is_available():
+        if Settings().ENABLE_MPS and torch.backends.mps.is_available():
             return MPS_DEVICE_TYPE
         return CPU_DEVICE_TYPE
-
-    @classmethod
-    def should_disable_half_precision(cls) -> bool:
-        return not Settings().PREFER_MPS_OVER_CPU_IF_AVAILABLE and torch.backends.mps.is_available()

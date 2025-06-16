@@ -19,7 +19,6 @@ from enum import Enum
 import numpy as np
 
 from superlinked.framework.common.settings import Settings
-from superlinked.framework.common.util.gpu_embedding_util import GpuEmbeddingUtil
 
 
 class VectorComponentPrecision(Enum):
@@ -43,7 +42,4 @@ class VectorComponentPrecision(Enum):
 
     @staticmethod
     def use_half_precision() -> bool:
-        return (
-            not Settings().SUPERLINKED_DISABLE_HALF_PRECISION_EMBEDDING
-            and not GpuEmbeddingUtil.should_disable_half_precision()
-        )
+        return not Settings().SUPERLINKED_DISABLE_HALF_PRECISION_EMBEDDING

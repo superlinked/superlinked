@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     QUERY_TO_RETURN_ORIGIN_ID: bool = False
     # embedding specific params
     MODEL_CACHE_DIR: str | None = None
-    PREFER_MPS_OVER_CPU_IF_AVAILABLE: bool = False
+    ENABLE_MPS: bool = False
     SUPERLINKED_RESIZE_IMAGES: bool = False
     SUPERLINKED_DISABLE_HALF_PRECISION_EMBEDDING: bool = False
     # model downloading specific params
