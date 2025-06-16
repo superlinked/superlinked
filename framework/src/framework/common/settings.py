@@ -62,6 +62,7 @@ class Settings(BaseSettings):
     MODAL_MAX_RETRIES: int = 10
     MODAL_RETRY_DELAY: float = 0.2
     # redis specific params
+    REDIS_MAX_CONNECTIONS: int = 1600  # Good for 8 workers
     REDIS_DEFAULT_HYBRID_POLICY: str | None = None
     REDIS_DEFAULT_BATCH_SIZE: int | None = 250
     # profiling specific params
