@@ -14,11 +14,14 @@
 
 import asyncio
 import threading
+from concurrent.futures import ThreadPoolExecutor
 
 import nest_asyncio
 from beartype.typing import Any, Coroutine, TypeVar
 
 T = TypeVar("T")
+
+NEST_ASYNCIO_ATTR = "_nest_asyncio_patched"
 
 
 class AsyncUtil:
@@ -35,7 +38,7 @@ class AsyncUtil:
     @classmethod
     def _apply_nest_asyncio(cls, loop: Any) -> None:
         """Apply nest_asyncio to handle nested execution"""
-        if not hasattr(loop, "_nest_asyncio_patched"):
+        if not hasattr(loop, NEST_ASYNCIO_ATTR):
             nest_asyncio.apply(loop)
 
     @classmethod
@@ -48,8 +51,16 @@ class AsyncUtil:
     @classmethod
     def _handle_async_context(cls, loop: Any, coroutine: Coroutine[Any, Any, T]) -> T:
         cls._apply_nest_asyncio(loop)
-        future = asyncio.ensure_future(coroutine, loop=loop)
-        return loop.run_until_complete(future)
+        try:
+            future = asyncio.ensure_future(coroutine, loop=loop)
+            if hasattr(loop, NEST_ASYNCIO_ATTR) and loop._nest_asyncio_patched:
+                return asyncio.get_event_loop().run_until_complete(asyncio.gather(future))[0]
+            return loop.run_until_complete(future)
+        except RuntimeError as e:
+            if "This event loop is already running" in str(e):
+                with ThreadPoolExecutor(max_workers=1) as executor:
+                    return executor.submit(lambda: asyncio.run(coroutine)).result()
+            raise
 
     @classmethod
     def _handle_sync_context(cls, loop: Any, coroutine: Coroutine[Any, Any, T]) -> T:

@@ -56,7 +56,7 @@ class BaseLooksLikeFilterClause(NLQCompatible, SingleValueParamQueryClause, ABC)
         BaseLooksLikeFilterClause._validate_schema_object(self.schema_field)
 
     @override
-    def get_altered_query_vector_params(
+    async def get_altered_query_vector_params(
         self,
         query_vector_params: QueryVectorClauseParams,
         index_node_id: str,
@@ -70,7 +70,9 @@ class BaseLooksLikeFilterClause(NLQCompatible, SingleValueParamQueryClause, ABC)
             list, query_vector_params.query_node_inputs_by_node_id
         )
         object_id, weight = result
-        vector = self.__get_looks_like_vector(index_node_id, self.schema_field.schema_obj, object_id, storage_manager)
+        vector = await self.__get_looks_like_vector(
+            index_node_id, self.schema_field.schema_obj, object_id, storage_manager
+        )
         node_input = QueryNodeInput(
             QueryNodeInputValue(cast(NodeDataTypes, vector), weight),
             True,
@@ -104,10 +106,10 @@ class BaseLooksLikeFilterClause(NLQCompatible, SingleValueParamQueryClause, ABC)
             return None
         return cast(str, value), weight
 
-    def __get_looks_like_vector(
+    async def __get_looks_like_vector(
         self, index_node_id: str, schema_obj: SchemaObject, object_id: str, storage_manager: StorageManager
     ) -> Vector:
-        vector: Vector | None = storage_manager.read_node_result(schema_obj, object_id, index_node_id, Vector)
+        vector: Vector | None = await storage_manager.read_node_result(schema_obj, object_id, index_node_id, Vector)
         if vector is None:
             raise QueryException(f"Entity not found object_id: {object_id} node_id: {index_node_id}")
         return vector

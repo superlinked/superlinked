@@ -54,10 +54,15 @@ class RedisVDBClient:
         return SyncRedis.from_url(self._connection_string, protocol=REDIS_PROTOCOL)
 
     def _create_async_client(self) -> AsyncRedis:
+        settings = Settings()
         pool: ConnectionPool = ConnectionPool.from_url(
             self._connection_string,
             protocol=REDIS_PROTOCOL,
-            max_connections=Settings().REDIS_MAX_CONNECTIONS,
+            max_connections=settings.REDIS_MAX_CONNECTIONS,
+            socket_timeout=settings.REDIS_SOCKET_TIMEOUT_SECONDS,
+            socket_connect_timeout=settings.REDIS_SOCKET_CONNECT_TIMEOUT_SECONDS,
+            retry_on_timeout=settings.REDIS_RETRY_ON_TIMEOUT,
+            health_check_interval=settings.REDIS_HEALTH_CHECK_INTERVAL_SECONDS,
         )
         return AsyncRedis(connection_pool=pool)
 

@@ -24,7 +24,7 @@ class Constants:
     DEFAULT_LIMIT: int = -1
     RADIUS_MIN: int = 0
     RADIUS_MAX: int = 1
-    REDIS_TIMEOUT: int = 10000  # ms
+    REDIS_TIMEOUT: int = 60000  # 60s
     EFFECT_COUNT_KEY = "effect_count"
     EFFECT_OLDEST_TS_KEY = "effect_oldest_age"
     EFFECT_AVG_TS_KEY = "average_age"

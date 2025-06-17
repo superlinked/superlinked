@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import structlog
 from beartype.typing import Any, Sequence
 from typing_extensions import override
 
@@ -30,6 +31,10 @@ from superlinked.framework.common.storage.search_index.manager.search_index_mana
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
 from superlinked.framework.dsl.query.query_user_config import QueryUserConfig
 from superlinked.framework.storage.common.vdb_settings import VDBSettings
+from superlinked.framework.storage.redis.exception import (
+    RedisResultException,
+    RedisTimeoutException,
+)
 from superlinked.framework.storage.redis.query.redis_vector_query_params import (
     DISTANCE_ID,
 )
@@ -45,6 +50,9 @@ from superlinked.framework.storage.redis.redis_search_index_manager import (
     RedisSearchIndexManager,
 )
 from superlinked.framework.storage.redis.redis_vdb_client import RedisVDBClient
+
+logger = structlog.getLogger()
+UNAFFECTING_DISTANCE = 0.0
 
 
 class RedisVDBConnector(VDBConnector[RedisVDBKNNSearchConfig]):
@@ -120,9 +128,18 @@ class RedisVDBConnector(VDBConnector[RedisVDBKNNSearchConfig]):
         **params: Any,
     ) -> Sequence[ResultEntityData]:
         index_config = self._get_index_config(index_name)
-        result = self._encoder.convert_bytes_keys_dict(
-            await self._search.knn_search_with_checks(index_config, vdb_knn_search_params, search_config)
-        )
+        result = await self._search.knn_search_with_checks(index_config, vdb_knn_search_params, search_config)
+
+        if isinstance(result, list):
+            raise RedisTimeoutException()
+
+        encoded_result = self._encoder.convert_bytes_keys_dict(result)
+        result_entities = encoded_result["results"]
+        filtered_result_entities = [result_entity for result_entity in result_entities if result_entity is not None]
+
+        if len(filtered_result_entities) < len(result_entities):
+            raise RedisResultException()
+
         return [
             ResultEntityData(
                 RedisVDBConnector._get_entity_id_from_redis_id(self._encoder._decode_string(document["id"])),
@@ -130,10 +147,12 @@ class RedisVDBConnector(VDBConnector[RedisVDBKNNSearchConfig]):
                     document["extra_attributes"], vdb_knn_search_params.fields_to_return
                 ),
                 self._convert_distance_to_score(
-                    self._encoder._decode_double(document["extra_attributes"][DISTANCE_ID])
+                    self._encoder._decode_double(
+                        document.get("extra_attributes", {}).get(DISTANCE_ID, UNAFFECTING_DISTANCE)
+                    )
                 ),
             )
-            for document in result["results"]
+            for document in filtered_result_entities
         ]
 
     @override
@@ -146,10 +165,14 @@ class RedisVDBConnector(VDBConnector[RedisVDBKNNSearchConfig]):
     def _extract_fields_from_document(
         self, document: dict[str, Any], fields_to_return: Sequence[Field]
     ) -> dict[str, FieldData]:
+        if not document:
+            raise RedisResultException()
+        if any(field.name not in document for field in fields_to_return):
+            raise RedisResultException()
         return {
-            returned_field.name: self._encoder.decode_field(returned_field, document[returned_field.name])
-            for returned_field in fields_to_return
-            if document.get(returned_field.name) is not None
+            field.name: self._encoder.decode_field(field, document[field.name])
+            for field in fields_to_return
+            if field.name in document
         }
 
     @staticmethod

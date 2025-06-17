@@ -251,27 +251,35 @@ class StorageManager:
         node_id: str,
         result_type: type[ResultTypeT],
     ) -> list[ResultTypeT | None]:
+        return AsyncUtil.run(self.read_node_results_async(schemas_with_object_ids, node_id, result_type))
+
+    async def read_node_results_async(
+        self,
+        schemas_with_object_ids: Sequence[tuple[SchemaObject, str]],
+        node_id: str,
+        result_type: type[ResultTypeT],
+    ) -> list[ResultTypeT | None]:
         entity_ids = [
             self._entity_builder.compose_entity_id(schema._schema_name, object_id)
             for schema, object_id in schemas_with_object_ids
         ]
         result_field = self._entity_builder.compose_field(node_id, result_type)
         entities = [self._entity_builder.compose_entity(entity_id, [result_field]) for entity_id in entity_ids]
-        entity_data = AsyncUtil.run(self._vdb_connector.read_entities(entities))
+        entity_data = await self._vdb_connector.read_entities(entities)
 
         def cast_value_if_not_none(field_data: FieldData | None) -> ResultTypeT | None:
             return cast(ResultTypeT, field_data.value) if field_data else None
 
         return [cast_value_if_not_none(ed.field_data.get(result_field.name)) for ed in entity_data]
 
-    def read_node_result(
+    async def read_node_result(
         self,
         schema: SchemaObject,
         object_id: str,
         node_id: str,
         result_type: type[ResultTypeT],
     ) -> ResultTypeT | None:
-        return next(iter(self.read_node_results([(schema, object_id)], node_id, result_type)))
+        return next(iter(await self.read_node_results_async([(schema, object_id)], node_id, result_type)))
 
     # TODO FAI-2737 to solve the parameters
     @time_execution

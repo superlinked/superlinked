@@ -32,7 +32,7 @@ from superlinked.framework.dsl.query.query_clause.single_value_param_query_claus
 @dataclass(frozen=True)
 class OverriddenNowClause(SingleValueParamQueryClause):
     @override
-    def get_altered_query_vector_params(
+    async def get_altered_query_vector_params(
         self,
         query_vector_params: QueryVectorClauseParams,
         index_node_id: str,

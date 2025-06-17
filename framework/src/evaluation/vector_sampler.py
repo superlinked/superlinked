@@ -19,6 +19,7 @@ from superlinked.framework.common.data_types import NPArray, Vector
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.storage_manager.header import Header
+from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.dsl.executor.in_memory.in_memory_executor import InMemoryApp
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.storage.in_memory.in_memory_vdb import InMemoryVDB
@@ -131,8 +132,10 @@ class VectorSampler:
         entity_vectors: list[NPArray] = []
         entity_ids: list[str] = []
         for identification, readable_id in zip(ids, readable_ids):
-            vector: Vector | None = self.__app.storage_manager.read_node_result(
-                schema, identification, index._node.node_id, index._node.node_data_type
+            vector: Vector | None = AsyncUtil.run(
+                self.__app.storage_manager.read_node_result(
+                    schema, identification, index._node.node_id, index._node.node_data_type
+                )
             )
             if vector is None:
                 raise VectorNotFoundError(

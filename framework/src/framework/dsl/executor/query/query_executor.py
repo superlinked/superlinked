@@ -210,13 +210,11 @@ class QueryExecutor:
         return KNNSearchParams.from_clause_params(query_vector, partial_knn_search_params)
 
     async def _produce_query_vector(self, query_descriptor: QueryDescriptor) -> Vector:
-        query_vector_params = reduce(
-            lambda params, clause: clause.get_altered_query_vector_params(
-                params, query_descriptor.index._node_id, query_descriptor.schema, self.app.storage_manager
-            ),
-            query_descriptor.clauses,
-            QueryVectorClauseParams(),
-        )
+        query_vector_params = QueryVectorClauseParams()
+        for clause in query_descriptor.clauses:
+            query_vector_params = await clause.get_altered_query_vector_params(
+                query_vector_params, query_descriptor.index._node_id, query_descriptor.schema, self.app.storage_manager
+            )
         context = self._create_query_context_base(query_vector_params.context_time)
         return await self.query_vector_factory.produce_vector(
             query_vector_params.query_node_inputs_by_node_id,

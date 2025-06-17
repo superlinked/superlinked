@@ -63,6 +63,10 @@ class Settings(BaseSettings):
     MODAL_RETRY_DELAY: float = 0.2
     # redis specific params
     REDIS_MAX_CONNECTIONS: int = 1600  # Good for 8 workers
+    REDIS_SOCKET_TIMEOUT_SECONDS: float | None = 5.0
+    REDIS_SOCKET_CONNECT_TIMEOUT_SECONDS: float | None = 2.0
+    REDIS_RETRY_ON_TIMEOUT: bool = True
+    REDIS_HEALTH_CHECK_INTERVAL_SECONDS: float = 30.0
     REDIS_DEFAULT_HYBRID_POLICY: str | None = None
     REDIS_DEFAULT_BATCH_SIZE: int | None = 250
     # profiling specific params

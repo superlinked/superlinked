@@ -74,7 +74,7 @@ class SimilarFilterClause(SingleValueParamQueryClause, NLQCompatible):
         return {self.field_set.space.annotation: self.__get_annotation()}
 
     @override
-    def get_altered_query_vector_params(
+    async def get_altered_query_vector_params(
         self,
         query_vector_params: QueryVectorClauseParams,
         index_node_id: str,
