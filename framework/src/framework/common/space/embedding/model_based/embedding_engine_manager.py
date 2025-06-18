@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import structlog
 from beartype.typing import Mapping, Sequence
 
 from superlinked.framework.common.data_types import Vector
@@ -35,6 +36,7 @@ from superlinked.framework.common.space.embedding.model_based.engine.modal_engin
     ModalEngine,
 )
 from superlinked.framework.common.space.embedding.model_based.engine.open_clip_engine import (
+    HF_HUB_PREFIX,
     OpenCLIPEngine,
 )
 from superlinked.framework.common.space.embedding.model_based.engine.sentence_transformers_engine import (
@@ -58,6 +60,8 @@ ENGINE_BY_HANDLER: Mapping[ModelHandlerType, type[EmbeddingEngine]] = {
     ModelHandler.OPEN_CLIP: OpenCLIPEngine,
     ModelHandler.MODAL: ModalEngine,
 }
+
+logger = structlog.getLogger()
 
 
 class EmbeddingEngineManager:
@@ -101,7 +105,7 @@ class EmbeddingEngineManager:
     def _get_clean_model_name(cls, model_handler: ModelHandlerType, model_name: str) -> str:
         if cls._is_sentence_transformers_model_without_prefix(model_handler, model_name):
             return f"sentence-transformers/{model_name}"
-        return model_name
+        return model_name.replace(HF_HUB_PREFIX, "")
 
     @classmethod
     def _is_sentence_transformers_model_without_prefix(cls, model_handler: ModelHandlerType, model_name: str) -> bool:
@@ -137,5 +141,8 @@ class EmbeddingEngineManager:
     ) -> int:
         clean_model_name = self._get_clean_model_name(model_handler, model_name)
         if clean_model_name in MODEL_DIMENSION_BY_NAME:
-            return MODEL_DIMENSION_BY_NAME[clean_model_name]
-        return await self.get_engine(model_handler, model_name, model_cache_dir, config).length
+            length = MODEL_DIMENSION_BY_NAME[clean_model_name]
+            return length
+        length = await self.get_engine(model_handler, model_name, model_cache_dir, config).length
+        logger.info("Consider caching model dimension.", model_name=clean_model_name, dimension=length)
+        return length

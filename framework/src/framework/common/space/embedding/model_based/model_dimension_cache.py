@@ -21,4 +21,6 @@ MODEL_DIMENSION_BY_NAME: Mapping[str, int] = {
     "Alibaba-NLP/gte-Qwen2-1.5B-instruct": 1536,
     "clip-ViT-B-32": 512,
     "RN50": 1024,
+    "Marqo/marqo-fashionSigLIP": 768,
+    "pySilver/marqo-fashionSigLIP-ST": 768,
 }
