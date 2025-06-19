@@ -19,7 +19,6 @@ from redis.asyncio import Redis as AsyncRedis
 from redis.asyncio.connection import ConnectionPool
 
 from superlinked.framework.common.settings import Settings
-from superlinked.framework.common.util.async_util import AsyncUtil
 
 CONNECTION_REFRESH_INTERVAL_SECONDS = 1800
 REDIS_PROTOCOL = 3
@@ -47,7 +46,6 @@ class RedisVDBClient:
         """
         Property to access the Redis client with connection refresh.
         """
-        self._refresh_connection_if_needed()
         return self.__sync_client
 
     def _create_sync_client(self) -> SyncRedis:
@@ -69,8 +67,6 @@ class RedisVDBClient:
     def _refresh_connection_if_needed(self) -> None:
         current_time = time.time()
         if current_time - self._last_activity_time > CONNECTION_REFRESH_INTERVAL_SECONDS:
-            AsyncUtil.run(self.__async_client.close())
-            self.__async_client = self._create_async_client()
             self.__sync_client.close()
             self.__sync_client = self._create_sync_client()
         self._last_activity_time = current_time
