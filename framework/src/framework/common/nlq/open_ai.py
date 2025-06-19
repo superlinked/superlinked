@@ -36,6 +36,9 @@ TEMPERATURE_VALUE: float = 0.0
 class OpenAIClientConfig:
     api_key: str
     model: str
+    organization: str | None = None
+    project: str | None = None
+    base_url: str | None = None
 
 
 @contextmanager
@@ -77,7 +80,14 @@ def suppress_tokenizer_warnings() -> Generator[None, Any, None]:
 class OpenAIClient:
     def __init__(self, config: OpenAIClientConfig) -> None:
         super().__init__()
-        self._client = instructor.from_openai(openAILib.AsyncOpenAI(api_key=config.api_key))
+        self._client = instructor.from_openai(
+            openAILib.AsyncOpenAI(
+                api_key=config.api_key,
+                organization=config.organization,
+                project=config.project,
+                base_url=config.base_url,
+            )
+        )
         self._openai_model = config.model
 
     async def query(self, prompt: str, instructor_prompt: str, response_model: type[BaseModel]) -> dict[str, Any]:
