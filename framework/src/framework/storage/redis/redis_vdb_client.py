@@ -60,7 +60,6 @@ class RedisVDBClient:
             socket_timeout=settings.REDIS_SOCKET_TIMEOUT_SECONDS,
             socket_connect_timeout=settings.REDIS_SOCKET_CONNECT_TIMEOUT_SECONDS,
             retry_on_timeout=settings.REDIS_RETRY_ON_TIMEOUT,
-            health_check_interval=settings.REDIS_HEALTH_CHECK_INTERVAL_SECONDS,
         )
         return AsyncRedis(connection_pool=pool)
 
