@@ -24,3 +24,4 @@ Classes
     * superlinked.framework.dsl.storage.mongo_db_vector_database.MongoDBVectorDatabase
     * superlinked.framework.dsl.storage.qdrant_vector_database.QdrantVectorDatabase
     * superlinked.framework.dsl.storage.redis_vector_database.RedisVectorDatabase
+    * superlinked.framework.dsl.storage.topk_vector_database.TopKVectorDatabase
