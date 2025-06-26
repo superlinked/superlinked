@@ -8,6 +8,8 @@ icon: cart-shopping
 🚀 Try it out: [recsys-nlq-demo.superlinked.io/](https://recsys-nlq-demo.superlinked.io/)
 {% endhint %}
 
+{% hint style="info" %} 💻 Github repo: here [https://github.com/superlinked/superlinked-recipes/tree/main/projects/e-commerce] (full version with natural language search coming soon) {% endhint %}
+
 ## Overview
 
 In modern retail and e-commerce websites, personalized and immediate product recommendations can significantly boost customer engagement and drive sales conversions. In this demo, we showcase an example of such a website that uses Superlinked's ability to do real time recommendations. When a user lands on the store’s website, they are greeted by a web interface displaying various products. As they move around the page, whether clicking product details, scrolling through suggested items, or switching categories, every interaction is tracked in real time. 
@@ -20,9 +22,9 @@ Additionally, we use [item2vec](https://arxiv.org/vc/arxiv/papers/1603/1603.0425
 
 ### Key features
 
-- **Example of how to train item2vec on your event data:** - Use events data to extract custom product realtions.
-- **Events based system:** - Have a session based recommendation that adjust recommendations in realtime while user surfs the site.
-- **Multi modal features:** - Support images, text and categories out of the box with SL.
+- **Example of how to train item2vec on your event data** - Use events data to extract custom product realtions.
+- **Events based system** - Have a session based recommendation that adjust recommendations in realtime while user surfs the site.
+- **Multi modal features** - Support images, text and categories out of the box with SL.
 
 ![image](https://github.com/user-attachments/assets/17cc39fb-f007-4878-8e68-9d723d09aee2)
 
@@ -35,6 +37,25 @@ Additionally, we use [item2vec](https://arxiv.org/vc/arxiv/papers/1603/1603.0425
 
 ### Hard-filters
 - **Stock** - use `is_active` indicator that will make sure only in stock products are recommended.
+
+### Data example
+
+For a complex query like *a mens shirt with stripes and under 90 $* the following
+superlinked parameters are infered from the query:
+
+```json
+{
+  "image_space_weight": 1.0,
+  "popularity_space_weight": 0.0,
+  "description_space_weight": 0.2,
+  "brand_text_space_weight": 0.0,
+  "price_max": 90,
+  "price_min": null,
+  "category_level_1": "Men",
+  "description": "mens shirt with stripes",
+  "brand": ""
+}
+```
 
 The user events reach a Wrapper API, which sits on top of the main Superlinked server. It:
 -  Records which products users click or view.
@@ -58,8 +79,7 @@ If the user starts exploring a particular category, brand, or price range, the s
 
 ##  Get in touch and build this on your own data! 
 
-We will soon publish the repo so you can host an app like this yourself, however if you want early access in the meantime, please contact our developer realtions team at: 
-```filip@superlinked.com```
+We will soon publish the repo so you can host an app like this yourself, however if you want early access in the meantime, please [get in touch here](https://getdemo.superlinked.com/?utm_source=ecomm-recsys-recipe&utm_campaign=ecomm-recsys-nlq&utm_medium=docs).
 
 {% hint style="info" %}
 🚀 Try it out: [e-commerce-recsys-recipe.superlinked.io](https://e-commerce-recsys-recipe.superlinked.io)
