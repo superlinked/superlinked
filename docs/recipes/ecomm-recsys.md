@@ -8,7 +8,7 @@ icon: cart-shopping
 🚀 Try it out: [recsys-nlq-demo.superlinked.io/](https://recsys-nlq-demo.superlinked.io/)
 {% endhint %}
 
-{% hint style="info" %} 💻 Github repo: here [https://github.com/superlinked/superlinked-recipes/tree/main/projects/e-commerce] (full version with natural language search coming soon) {% endhint %}
+{% hint style="info" %} 💻 Github repo: [here](https://github.com/superlinked/superlinked-recipes/tree/main/projects/e-commerce) (full version with natural language search coming soon) {% endhint %}
 
 ## Overview
 
