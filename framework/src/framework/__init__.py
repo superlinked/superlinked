@@ -225,8 +225,13 @@ __all__ = [
     "BlobHandlerConfig",
 ]
 
+
+from superlinked.framework.common.metrics.metric_configurator import (
+    SuperlinkedMetricConfigurator,
+)
 from superlinked.framework.common.superlinked_logging import (
     SuperlinkedLoggerConfigurator,
 )
 
 SuperlinkedLoggerConfigurator.configure_default_logger()
+SuperlinkedMetricConfigurator.configure_default_metrics()

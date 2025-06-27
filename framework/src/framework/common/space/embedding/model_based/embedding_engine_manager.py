@@ -20,6 +20,7 @@ import structlog
 from beartype.typing import Mapping, Sequence
 
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.metrics.metric_registry import MetricRegistry
 from superlinked.framework.common.space.embedding.model_based.embedding_input import (
     ModelEmbeddingInputT,
 )
@@ -67,6 +68,7 @@ logger = structlog.getLogger()
 class EmbeddingEngineManager:
     def __init__(self) -> None:
         self._engines: dict[str, EmbeddingEngine] = {}
+        self._metric_registry = MetricRegistry()
 
     def get_engine(
         self,
@@ -129,6 +131,8 @@ class EmbeddingEngineManager:
         if not inputs:
             return []
         engine = self.get_engine(model_handler, model_name, model_cache_dir, config)
+        labels = {"model_name": model_name, "handler": model_handler.value, "is_query_context": str(is_query_context)}
+        self._metric_registry.record_metric("embeddings_total", len(inputs), labels=labels)
         embeddings = await engine.embed(inputs, is_query_context)
         return [Vector(embedding) for embedding in embeddings]
 
