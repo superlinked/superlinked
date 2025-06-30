@@ -84,7 +84,7 @@ If the user starts exploring a particular category, brand, or price range, the s
 We will soon publish the repo so you can host an app like this yourself, however if you want early access in the meantime, please [get in touch here](https://getdemo.superlinked.com/?utm_source=ecomm-recsys-recipe&utm_campaign=ecomm-recsys-nlq&utm_medium=docs).
 
 {% hint style="info" %}
-🚀 Try it out: [e-commerce-recsys-recipe.superlinked.io](https://e-commerce-recsys-recipe.superlinked.io)
+🚀 Try it out: [e-commerce-recsys-recipe.superlinked.io](https://recsys-nlq-demo.superlinked.io/)
 {% endhint %}
 
 <!-- Link to the public repo (which we don't have for hotel search I think)
