@@ -81,7 +81,7 @@ class EventEffectHandler:
         self, affecting_schema: SchemaObjectReference, event_parsed_schema: EventParsedSchema
     ) -> ParsedSchema:
         return next(
-            ParsedSchema(affecting_schema.schema, field.value, [])
+            ParsedSchema(affecting_schema.schema, id_=field.value, fields=[])
             for field in event_parsed_schema.fields
             if field.schema_field == affecting_schema.reference_field
         )

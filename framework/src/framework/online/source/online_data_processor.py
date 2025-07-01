@@ -17,9 +17,13 @@ from itertools import chain
 
 import structlog
 from beartype.typing import Mapping, Sequence, cast
+from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.dag_effect import DagEffect
+from superlinked.framework.common.dag.resolved_schema_reference import (
+    ResolvedSchemaReference,
+)
 from superlinked.framework.common.exception import InvalidDagEffectException
 from superlinked.framework.common.observable import Subscriber
 from superlinked.framework.common.parser.exception import MissingFieldException
@@ -40,8 +44,6 @@ logger = structlog.get_logger()
 
 
 class OnlineDataProcessor(Subscriber[ParsedSchema]):
-    MAX_SAVE_DEPTH = 10
-
     def __init__(
         self,
         evaluator: OnlineDagEvaluator,
@@ -68,10 +70,11 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
         for field in index.non_nullable_fields:
             field_name = field.name
             field_schema = field.schema_obj
-            if id_field_names_by_schema.get(field_schema) != field_name:
+            if id_field_names_by_schema[field_schema] != field_name:
                 mandatory_field_names_by_schema[field_schema].append(field_name)
         return mandatory_field_names_by_schema
 
+    @override
     def update(self, messages: Sequence[ParsedSchema]) -> None:
         for message in messages:
             self._validate_mandatory_fields_are_present(message)
@@ -87,7 +90,7 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
             self.evaluator.evaluate(regular_msgs, self.context)
 
         if event_msgs:
-            self._process_events(cast(list[EventParsedSchema], event_msgs))
+            self._process_events(event_msgs)
         logger.info(
             "stored input data",
             schemas=list({parsed_schema.schema._schema_name for parsed_schema in messages}),
@@ -95,7 +98,7 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
         )
 
     def _validate_mandatory_fields_are_present(self, message: ParsedSchema) -> None:
-        field_names = [field.schema_field.name for field in message.fields]
+        field_names = [field.schema_field.name for field in message.fields if field.value is not None]
         missing_fields = [
             field_name
             for field_name in self._mandatory_field_names_by_schema.get(message.schema, [])
@@ -118,12 +121,6 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
             condition=Settings().SUPERLINKED_CONCURRENT_EFFECT_EVALUATION,
         )
 
-    def _process_effect_group(
-        self, effects: Sequence[DagEffect], schemas: Sequence[ParsedSchemaWithEvent], context: ExecutionContext
-    ) -> None:
-        for effect in effects:
-            self.evaluator.evaluate_by_dag_effect(schemas, context, effect)
-
     def _map_event_parsed_schemas_by_dag_effects(
         self, event_parsed_schemas: Sequence[EventParsedSchema]
     ) -> dict[DagEffect, list[ParsedSchemaWithEvent]]:
@@ -133,9 +130,34 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
                 effect for effect in self._dag_effects if effect.event_schema == event_parsed_schema.schema
             ]
             for effect in matching_effects:
-                if parsed_schema_with_event := self._create_parsed_schema_with_event(effect, event_parsed_schema):
+                if parsed_schema_with_event := self._create_parsed_schema_with_event(
+                    effect.resolved_affected_schema_reference, event_parsed_schema
+                ):
                     parsed_schemas_by_effect[effect].append(parsed_schema_with_event)
         return parsed_schemas_by_effect
+
+    def _create_parsed_schema_with_event(
+        self,
+        affected_schema_reference: ResolvedSchemaReference,
+        event_parsed_schema: EventParsedSchema,
+    ) -> ParsedSchemaWithEvent | None:
+        affected_schema_ids = [
+            reference.value
+            for reference in event_parsed_schema.fields
+            if reference.schema_field == affected_schema_reference.reference_field and reference.value is not None
+        ]
+        if not affected_schema_ids:
+            return None
+
+        if len(affected_schema_ids) > 1:
+            raise InvalidDagEffectException(f"Affected schema reference: {affected_schema_reference}")
+        return ParsedSchemaWithEvent(affected_schema_reference.schema, affected_schema_ids[0], [], event_parsed_schema)
+
+    def _process_effect_group(
+        self, effects: Sequence[DagEffect], schemas: Sequence[ParsedSchemaWithEvent], context: ExecutionContext
+    ) -> None:
+        for effect in effects:
+            self.evaluator.evaluate_by_dag_effect(schemas, context, effect)
 
     def _group_similar_effects(
         self, parsed_schemas_by_effect: Mapping[DagEffect, list[ParsedSchemaWithEvent]]
@@ -149,33 +171,12 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
         unprocessed_effects = set(parsed_schemas_by_effect)
         while unprocessed_effects:
             effect = next(iter(unprocessed_effects))
-            similar_group = [effect]
-            unprocessed_effects.remove(effect)
             similar_effects = [
                 other for other in unprocessed_effects if effect.is_same_effect_except_for_multiplier(other)
             ]
-            similar_group.extend(similar_effects)
             unprocessed_effects.difference_update(similar_effects)
             combined_parsed_schemas = list(
-                chain.from_iterable(parsed_schemas_by_effect[effect] for effect in similar_group)
+                chain.from_iterable(parsed_schemas_by_effect[effect] for effect in similar_effects)
             )
-            result.append((similar_group, combined_parsed_schemas))
+            result.append((similar_effects, combined_parsed_schemas))
         return result
-
-    def _create_parsed_schema_with_event(
-        self, effect: DagEffect, event_parsed_schema: EventParsedSchema
-    ) -> ParsedSchemaWithEvent | None:
-        affected_schema_ids = [
-            reference.value
-            for reference in event_parsed_schema.fields
-            if reference.schema_field == effect.resolved_affected_schema_reference.reference_field
-            and reference.value is not None
-        ]
-        if not affected_schema_ids:
-            return None
-
-        if len(affected_schema_ids) > 1:
-            raise InvalidDagEffectException(f"DagEffect: {effect}")
-        return ParsedSchemaWithEvent(
-            effect.resolved_affected_schema_reference.schema, affected_schema_ids[0], [], event_parsed_schema
-        )

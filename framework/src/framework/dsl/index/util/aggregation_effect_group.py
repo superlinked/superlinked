@@ -31,7 +31,7 @@ from superlinked.framework.dsl.index.util.effect_with_referenced_schema_object i
 from superlinked.framework.dsl.space.space import Space
 
 
-@dataclass
+@dataclass(frozen=True)
 class AggregationEffectGroup(Generic[AggregationInputT, EmbeddingInputT]):
     """
     Group of effects with the same space and affected schema.
@@ -40,15 +40,3 @@ class AggregationEffectGroup(Generic[AggregationInputT, EmbeddingInputT]):
     space: Space[AggregationInputT, EmbeddingInputT]
     affected_schema: SchemaObject
     effects: Sequence[EffectWithReferencedSchemaObject[AggregationInputT, EmbeddingInputT]]
-
-    @classmethod
-    def from_filtered_effects(
-        cls,
-        filtered_effects: Sequence[EffectWithReferencedSchemaObject[AggregationInputT, EmbeddingInputT]],
-    ) -> AggregationEffectGroup[AggregationInputT, EmbeddingInputT]:
-        effect_sample = filtered_effects[0]
-        return cls(
-            effect_sample.base_effect.space,
-            effect_sample.resolved_affected_schema_reference.schema,
-            filtered_effects,
-        )

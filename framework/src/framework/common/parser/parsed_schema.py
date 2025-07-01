@@ -38,18 +38,18 @@ class ParsedSchemaField(Generic[SFT]):
         return self.__str__()
 
 
-@dataclass
+@dataclass(frozen=True)
 class ParsedSchema:
     schema: IdSchemaObject
     id_: str
     fields: Sequence[ParsedSchemaField]
 
 
-@dataclass
+@dataclass(frozen=True)
 class ParsedSchemaWithEvent(ParsedSchema):
     event_parsed_schema: EventParsedSchema
 
 
-@dataclass
+@dataclass(frozen=True)
 class EventParsedSchema(ParsedSchema):
     created_at: int

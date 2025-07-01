@@ -22,6 +22,9 @@ from beartype.typing import Generic, Sequence, cast
 from superlinked.framework.common.dag.resolved_schema_reference import (
     ResolvedSchemaReference,
 )
+from superlinked.framework.common.dag.schema_object_reference import (
+    SchemaObjectReference,
+)
 from superlinked.framework.common.schema.event_schema_object import (
     EventSchemaObject,
     SchemaReference,
@@ -36,19 +39,31 @@ from superlinked.framework.common.space.config.embedding.embedding_config import
 from superlinked.framework.dsl.index.util.effect_with_referenced_schema_object import (
     EffectWithReferencedSchemaObject,
 )
-from superlinked.framework.dsl.space.space import Space
 
 
 @dataclass(frozen=True)
 class GroupKey(Generic[AggregationInputT, EmbeddingInputT]):
-    space: Space[AggregationInputT, EmbeddingInputT]
     event_schema: EventSchemaObject
     resolved_affected_schema_reference: ResolvedSchemaReference
     resolved_affecting_schema: IdSchemaObject
     resolved_affecting_reference_field: SchemaReference
 
+    @property
+    def affected_schema_object_reference(self) -> SchemaObjectReference:
+        return SchemaObjectReference(
+            self.resolved_affected_schema_reference.schema,
+            self.resolved_affected_schema_reference.reference_field,
+        )
 
-@dataclass
+    @property
+    def affecting_schema_object_reference(self) -> SchemaObjectReference:
+        return SchemaObjectReference(
+            self.resolved_affecting_schema,
+            self.resolved_affecting_reference_field,
+        )
+
+
+@dataclass(frozen=True)
 class EventAggregationEffectGroup(Generic[AggregationInputT, EmbeddingInputT]):
     """
     Group of effects with the same space, event schema, affected schema and affecting schema.
@@ -76,7 +91,6 @@ class EventAggregationEffectGroup(Generic[AggregationInputT, EmbeddingInputT]):
     @staticmethod
     def __get_group_key(effect_: EffectWithReferencedSchemaObject) -> GroupKey:
         return GroupKey(
-            effect_.base_effect.space,
             effect_.event_schema,
             effect_.resolved_affected_schema_reference,
             effect_.resolved_affecting_schema_reference.schema,

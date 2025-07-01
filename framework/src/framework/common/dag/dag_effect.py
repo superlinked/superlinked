@@ -36,6 +36,8 @@ class DagEffect:
         )
 
     def is_same_effect_except_for_multiplier(self, other: Any) -> bool:
+        if other == self:
+            return True
         if isinstance(other, DagEffect):
             return bool(
                 self.resolved_affected_schema_reference == other.resolved_affected_schema_reference

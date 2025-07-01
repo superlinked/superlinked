@@ -46,7 +46,7 @@ from superlinked.framework.common.space.interface.has_transformation_config impo
 )
 
 
-@dataclass
+@dataclass(frozen=True)
 class EventAggregationNodeInitParams(Generic[AggregationInputT, EmbeddingInputT]):
     input_to_aggregate: EmbeddingNode[AggregationInputT, EmbeddingInputT]
     event_schema: EventSchemaObject

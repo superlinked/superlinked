@@ -14,7 +14,6 @@
 
 from superlinked.framework.common.dag.aggregation_node import AggregationNode
 from superlinked.framework.common.dag.effect_modifier import EffectModifier
-from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import InitializationException
@@ -48,17 +47,13 @@ class AggregationNodeUtil:
             aggregation_effect_group.effects
         )
         eans = [
-            EventAggregationNodeUtil.init_event_aggregation_node(eg, effect_modifier)
-            for eg in event_aggregation_effect_groups
-        ]
-        weighted_eans: list[Weighted[Node[Vector]]] = [
-            Weighted(parent, effect_modifier.event_influence) for parent in eans
-        ]
-        affected_node = aggregation_effect_group.space._get_embedding_node(aggregation_effect_group.affected_schema)
-        if not isinstance(affected_node, EmbeddingNode):
-            raise InitializationException(
-                f"AggregationNode affected node of type {type(affected_node).__name__} does not have aggregation set."
+            EventAggregationNodeUtil.init_event_aggregation_node(
+                aggregation_effect_group.space, effect_group, effect_modifier
             )
+            for effect_group in event_aggregation_effect_groups
+        ]
+        weighted_eans: list[Weighted[Node[Vector]]] = [Weighted(ean, effect_modifier.event_influence) for ean in eans]
+        affected_node = aggregation_effect_group.space._get_embedding_node(aggregation_effect_group.affected_schema)
         weighted_affected_node: Weighted[Node[Vector]] = Weighted(affected_node, 1 - effect_modifier.event_influence)
 
         aggregation_node = AggregationNode(

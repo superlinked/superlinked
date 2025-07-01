@@ -99,7 +99,7 @@ class OnlineApp(App[OnlineSourceT], Generic[OnlineSourceT], QueryMixin):
         return OnlineDataProcessor(
             OnlineDagEvaluator(
                 index._dag,
-                set(index._space_schemas).union(index._effect_schemas),
+                index._space_schemas.union(index._effect_schemas),
                 self.storage_manager,
             ),
             self.storage_manager,
