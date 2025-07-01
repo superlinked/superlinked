@@ -24,14 +24,20 @@ Classes
     `key: superlinked.framework.dsl.index.util.event_aggregation_effect_group.GroupKey[~AggregationInputT, ~EmbeddingInputT]`
     :
 
-`GroupKey(space: Space[AggregationInputT, EmbeddingInputT], event_schema: EventSchemaObject, resolved_affected_schema_reference: ResolvedSchemaReference, resolved_affecting_schema: IdSchemaObject, resolved_affecting_reference_field: SchemaReference)`
-:   GroupKey(space: 'Space[AggregationInputT, EmbeddingInputT]', event_schema: 'EventSchemaObject', resolved_affected_schema_reference: 'ResolvedSchemaReference', resolved_affecting_schema: 'IdSchemaObject', resolved_affecting_reference_field: 'SchemaReference')
+`GroupKey(event_schema: EventSchemaObject, resolved_affected_schema_reference: ResolvedSchemaReference, resolved_affecting_schema: IdSchemaObject, resolved_affecting_reference_field: SchemaReference)`
+:   GroupKey(event_schema: 'EventSchemaObject', resolved_affected_schema_reference: 'ResolvedSchemaReference', resolved_affecting_schema: 'IdSchemaObject', resolved_affecting_reference_field: 'SchemaReference')
 
     ### Ancestors (in MRO)
 
     * typing.Generic
 
     ### Instance variables
+
+    `affected_schema_object_reference: SchemaObjectReference`
+    :
+
+    `affecting_schema_object_reference: SchemaObjectReference`
+    :
 
     `event_schema: superlinked.framework.common.schema.event_schema_object.EventSchemaObject`
     :
@@ -43,7 +49,4 @@ Classes
     :
 
     `resolved_affecting_schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject`
-    :
-
-    `space: superlinked.framework.dsl.space.space.Space[~AggregationInputT, ~EmbeddingInputT]`
     :
