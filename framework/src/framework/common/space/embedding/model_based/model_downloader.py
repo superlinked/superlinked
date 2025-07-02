@@ -39,17 +39,17 @@ class ModelDownloader:
     _lock: Lock = Lock()
     _download_locks: dict[str, Lock] = {}
     _download_locks_lock: Lock = Lock()
-    _settings = Settings()
+    _framework_settings = Settings()
 
     def __new__(cls) -> ModelDownloader:
         with cls._lock:
             if cls._instance is None:
                 cls._instance = super().__new__(cls)
-                cls._instance._settings = Settings()
+                cls._instance._framework_settings = Settings()
         return cls._instance
 
     def get_cache_dir(self, model_cache_dir: Path | None) -> Path:
-        return model_cache_dir or Path(self._settings.MODEL_CACHE_DIR or DEFAULT_MODEL_CACHE_DIR)
+        return model_cache_dir or Path(self._framework_settings.MODEL_CACHE_DIR or DEFAULT_MODEL_CACHE_DIR)
 
     def ensure_model_downloaded(
         self, model_name: str, model_cache_dir: Path | None, force_download: bool = False
@@ -67,13 +67,14 @@ class ModelDownloader:
             return self._get_model_folder_path(model_name, cache_dir)
 
         model_lock = self._get_model_lock(model_name)
-        max_retries = self._settings.SENTENCE_TRANSFORMERS_MODEL_LOCK_MAX_RETRIES
-        retry_delay = self._settings.SENTENCE_TRANSFORMERS_MODEL_LOCK_RETRY_DELAY
+        max_retries = self._framework_settings.SENTENCE_TRANSFORMERS_MODEL_LOCK_MAX_RETRIES
+        retry_delay = self._framework_settings.SENTENCE_TRANSFORMERS_MODEL_LOCK_RETRY_DELAY
         timeout = max(
-            (max_retries * retry_delay) - self._settings.SENTENCE_TRANSFORMERS_MODEL_LOCK_TIMEOUT_BUFFER_SECONDS,
-            self._settings.SENTENCE_TRANSFORMERS_MODEL_LOCK_TIMEOUT_MIN_SECONDS,
+            (max_retries * retry_delay)
+            - self._framework_settings.SENTENCE_TRANSFORMERS_MODEL_LOCK_TIMEOUT_BUFFER_SECONDS,
+            self._framework_settings.SENTENCE_TRANSFORMERS_MODEL_LOCK_TIMEOUT_MIN_SECONDS,
         )
-        model_lock_timeout = self._settings.MODEL_LOCK_TIMEOUT_SECONDS
+        model_lock_timeout = self._framework_settings.MODEL_LOCK_TIMEOUT_SECONDS
 
         if not self._acquire_lock_with_timeout(model_lock, model_lock_timeout):
             logger.warning(f"Timeout acquiring model lock for {model_name} after {model_lock_timeout} seconds")

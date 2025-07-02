@@ -16,11 +16,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import ResourceSettings
 
 
 @dataclass(frozen=True)
 class QueryUserConfig:
     with_metadata: bool = False
-    redis_hybrid_policy: str | None = Settings().REDIS_DEFAULT_HYBRID_POLICY
-    redis_batch_size: int | None = Settings().REDIS_DEFAULT_BATCH_SIZE
+    redis_hybrid_policy: str | None = ResourceSettings().vector_database.REDIS_DEFAULT_HYBRID_POLICY
+    redis_batch_size: int | None = ResourceSettings().vector_database.REDIS_DEFAULT_BATCH_SIZE

@@ -18,7 +18,7 @@ from redis import Redis as SyncRedis
 from redis.asyncio import Redis as AsyncRedis
 from redis.asyncio.connection import ConnectionPool
 
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import ResourceSettings
 
 CONNECTION_REFRESH_INTERVAL_SECONDS = 1800
 REDIS_PROTOCOL = 3
@@ -52,7 +52,7 @@ class RedisVDBClient:
         return SyncRedis.from_url(self._connection_string, protocol=REDIS_PROTOCOL)
 
     def _create_async_client(self) -> AsyncRedis:
-        settings = Settings()
+        settings = ResourceSettings().vector_database
         pool: ConnectionPool = ConnectionPool.from_url(
             self._connection_string,
             protocol=REDIS_PROTOCOL,

@@ -18,7 +18,7 @@ from beartype.typing import Generic, Sequence
 from superlinked.framework.blob.blob_handler import BlobHandler
 from superlinked.framework.blob.blob_handler_subscriber import BlobHandlerSubscriber
 from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import ResourceSettings
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.app.app import App
@@ -123,7 +123,7 @@ class OnlineApp(App[OnlineSourceT], Generic[OnlineSourceT], QueryMixin):
                 QueueSubscriber(
                     queue,
                     source._schema._schema_name,
-                    Settings().INGESTION_TOPIC_NAME,
+                    ResourceSettings().external_message_bus.INGESTION_TOPIC_NAME,
                     OnlineApp.INGEST_MESSAGE_TYPE,
                 )
             )

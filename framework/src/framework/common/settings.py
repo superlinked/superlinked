@@ -13,46 +13,60 @@
 # limitations under the License.
 
 
-import json
-
 import structlog
 from beartype.typing import Any
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import BaseModel
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+    YamlConfigSettingsSource,
+)
 from typing_extensions import override
 
 from superlinked.framework.common.util.singleton_decorator import singleton
 
 logger = structlog.getLogger()
 
+YAML_FILENAME = "config.yaml"
+FRAMEWORK_SECTION = "framework"
+RESOURCE_SECTION = "resource"
+
+
+class YamlBasedSettings(BaseSettings):
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        try:
+            return (init_settings, env_settings, YamlConfigSettingsSource(settings_cls), file_secret_settings)
+        except KeyError:
+            return (init_settings, env_settings, dotenv_settings, file_secret_settings)
+
 
 @singleton
-class Settings(BaseSettings):
+class Settings(YamlBasedSettings):
+    """Common settings"""
+
     APP_ID: str = "default"
-    # misc params
-    ONLINE_PUT_CHUNK_SIZE: int = 10000
-    ONLINE_EVENT_AGGREGATION_NODE_MAX_RETRY_COUNT: int = 5
-    QUERY_TO_RETURN_ORIGIN_ID: bool = False
-    # embedding specific params
-    MODEL_CACHE_DIR: str | None = None
+    # Embedding specific settings
     ENABLE_MPS: bool = False
     SUPERLINKED_RESIZE_IMAGES: bool = False
     SUPERLINKED_DISABLE_HALF_PRECISION_EMBEDDING: bool = False
-    # model downloading specific params
+    # Embedding specific settings - model
+    MODEL_CACHE_DIR: str | None = None
     MODEL_LOCK_TIMEOUT_SECONDS: int = 120
     SENTENCE_TRANSFORMERS_MODEL_LOCK_MAX_RETRIES: int = 10
     SENTENCE_TRANSFORMERS_MODEL_LOCK_RETRY_DELAY: int = 1
     SENTENCE_TRANSFORMERS_MODEL_LOCK_TIMEOUT_BUFFER_SECONDS: int = 10
     SENTENCE_TRANSFORMERS_MODEL_LOCK_TIMEOUT_MIN_SECONDS: int = 5
-    # nlq specific params
-    SUPERLINKED_NLQ_MAX_RETRIES: int = 3
-    # concurrency specific params
-    SUPERLINKED_CONCURRENT_BLOB_LOADING: bool = True
-    SUPERLINKED_CONCURRENT_HUGGINGFACE_EMBEDDING: bool = True
-    SUPERLINKED_CONCURRENT_EFFECT_EVALUATION: bool = True
-    SUPERLINKED_CONCURRENT_ONLINE_DAG_EVALUATION: bool = False
-    # hugging face api embedding specific params
-    HUGGING_FACE_API_TOKEN: str | None = None
-    # modal api embedding specific params
+    HUGGING_FACE_API_TOKEN: str | None = None  # TODO FAB-3560 - secret
+    # Embedding specific settings - modal
     MODAL_APP_NAME: str = "App"
     MODAL_CLASS_NAME: str = "Embedder"
     MODAL_ENVIRONMENT_NAME: str = "main"
@@ -61,77 +75,44 @@ class Settings(BaseSettings):
     MODAL_BATCH_SIZE: int = 5000
     MODAL_MAX_RETRIES: int = 10
     MODAL_RETRY_DELAY: float = 0.2
-    # redis specific params
-    REDIS_MAX_CONNECTIONS: int = 1600  # Good for 8 workers
-    REDIS_SOCKET_TIMEOUT_SECONDS: float | None = 5.0
-    REDIS_SOCKET_CONNECT_TIMEOUT_SECONDS: float | None = 2.0
-    REDIS_RETRY_ON_TIMEOUT: bool = True
-    REDIS_DEFAULT_HYBRID_POLICY: str | None = None
-    REDIS_DEFAULT_BATCH_SIZE: int | None = 250
-    # profiling specific params
+    # Blob loading settings
+    SUPERLINKED_CONCURRENT_BLOB_LOADING: bool = True
+    BLOB_HANDLER_MODULE_PATH: str | None = None
+    BLOB_HANDLER_CLASS_NAME: str | None = None
+    BLOB_HANDLER_CLASS_ARGS: dict[str, Any] | None = None
+    REQUEST_TIMEOUT: int = 600  # 10min
+    # Profiling specific params
     ENABLE_PROFILING: bool = False
     SUPERLINKED_EXECUTION_TIMER_INTERVAL_MS: int = 10
-    SUPERLINKED_EXECUTION_TIMER_FILE_PATH: str | None = None  # path for profiling output json
-    # logging specific params
+    SUPERLINKED_EXECUTION_TIMER_FILE_PATH: str | None = None  # path to profiling output json
+    # Logging specific params
     SUPERLINKED_LOG_LEVEL: int | str | None = None
     SUPERLINKED_LOG_AS_JSON: bool = False
     SUPERLINKED_LOG_FILE_PATH: str | None = None
     SUPERLINKED_EXPOSE_PII: bool = False
     DISABLE_RICH_TRACEBACK: bool = False
-    # QUEUE specific params
-    QUEUE_MODULE_PATH: str | None = None
-    QUEUE_CLASS_NAME: str | None = None
-    QUEUE_CLASS_ARGS_STR: str | None = None
-    QUEUE_CLASS_ARGS: dict[str, Any] | None = None
-    INGESTION_TOPIC_NAME: str | None = None
-    QUEUE_MESSAGE_VERSION: int = 1
-    REQUEST_TIMEOUT: int = 600  # 10min
-    # STORAGE specific params
-    BLOB_HANDLER_MODULE_PATH: str | None = None
-    BLOB_HANDLER_CLASS_NAME: str | None = None
-    BLOB_HANDLER_CLASS_ARGS_STR: str | None = None
-    BLOB_HANDLER_CLASS_ARGS: dict[str, Any] | None = None
-    INIT_SEARCH_INDICES: bool = True
     # DAG visualization
     ENABLE_DAG_VISUALIZATION: bool = False
     DAG_VISUALIZATION_OUTPUT_DIR: str | None = None
 
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    """Online settings"""
+    ONLINE_PUT_CHUNK_SIZE: int = 10000
+    ONLINE_EVENT_AGGREGATION_NODE_MAX_RETRY_COUNT: int = 5
+    SUPERLINKED_CONCURRENT_EFFECT_EVALUATION: bool = True
+    SUPERLINKED_CONCURRENT_ONLINE_DAG_EVALUATION: bool = False
 
-    # TODO: FAB-3308 fix linter disables
+    """Query settings"""
+    QUERY_TO_RETURN_ORIGIN_ID: bool = False
+    # NLQ specific params
+    SUPERLINKED_NLQ_MAX_RETRIES: int = 3
+
+    model_config = SettingsConfigDict(
+        yaml_file=YAML_FILENAME, yaml_config_section=FRAMEWORK_SECTION, extra="ignore", frozen=True
+    )
+
     @override
     def model_post_init(self, __context: Any, /) -> None:
-        self.QUEUE_CLASS_ARGS = self.__parse_class_args(self.QUEUE_CLASS_ARGS_STR)  # pylint: disable=invalid-name
-        self.__warn_for_incomplete_queue_params()
-
-        self.BLOB_HANDLER_CLASS_ARGS = self.__parse_class_args(  # pylint: disable=invalid-name
-            self.BLOB_HANDLER_CLASS_ARGS_STR
-        )
         self.__warn_for_incomplete_blob_params()
-
-    def __parse_class_args(self, string_args: str | None) -> dict | None:
-        if string_args:
-            try:
-                return json.loads(string_args)
-            except json.JSONDecodeError as e:
-                logger.warning(e)
-        return None
-
-    def __warn_for_incomplete_queue_params(self) -> None:
-        queue_params = {
-            "QUEUE_MODULE_PATH": self.QUEUE_MODULE_PATH,
-            "QUEUE_CLASS_NAME": self.QUEUE_CLASS_NAME,
-            "QUEUE_CLASS_ARGS": self.QUEUE_CLASS_ARGS,
-            "INGESTION_TOPIC_NAME": self.INGESTION_TOPIC_NAME,
-        }
-        if any(value is not None for value in queue_params.values()) and not all(
-            value is not None for value in queue_params.values()
-        ):
-            logger.warning(
-                "Queue configuration warning: Incomplete queue parameters detected. "
-                "Ensure all parameters are set for proper queue functionality.",
-                params=queue_params,
-            )
 
     def __warn_for_incomplete_blob_params(self) -> None:
         blob_params = {
@@ -147,3 +128,52 @@ class Settings(BaseSettings):
                 "Ensure all parameters are set for proper blob handler functionality.",
                 params=blob_params,
             )
+
+
+class ExternalMessageBusSettings(BaseModel):
+    QUEUE_MODULE_PATH: str | None = None
+    QUEUE_CLASS_NAME: str | None = None
+    QUEUE_CLASS_ARGS: dict[str, Any] | None = None
+    INGESTION_TOPIC_NAME: str | None = None
+    QUEUE_MESSAGE_VERSION: int = 1
+
+    @override
+    def model_post_init(self, __context: Any, /) -> None:
+        self.__warn_for_incomplete_queue_params()
+
+    def __warn_for_incomplete_queue_params(self) -> None:
+        queue_params = {
+            "QUEUE_MODULE_PATH": self.QUEUE_MODULE_PATH,
+            "QUEUE_CLASS_NAME": self.QUEUE_CLASS_NAME,
+            "QUEUE_CLASS_ARGS": self.QUEUE_CLASS_ARGS,
+            "INGESTION_TOPIC_NAME": self.INGESTION_TOPIC_NAME,
+        }
+        if any(value is not None for value in queue_params.values()) and any(
+            value is None for value in queue_params.values()
+        ):
+            logger.warning(
+                "Queue configuration warning: Incomplete queue parameters detected. "
+                "Ensure all parameters are set for proper queue functionality.",
+                params=queue_params,
+            )
+
+
+class VectorDatabaseSettings(BaseModel):
+    INIT_SEARCH_INDICES: bool = True
+    # Redis specific params
+    REDIS_MAX_CONNECTIONS: int = 1600  # Good for 8 workers
+    REDIS_SOCKET_TIMEOUT_SECONDS: float | None = 5.0
+    REDIS_SOCKET_CONNECT_TIMEOUT_SECONDS: float | None = 2.0
+    REDIS_RETRY_ON_TIMEOUT: bool = True
+    REDIS_DEFAULT_HYBRID_POLICY: str | None = None
+    REDIS_DEFAULT_BATCH_SIZE: int | None = 250
+
+
+@singleton
+class ResourceSettings(YamlBasedSettings):
+    external_message_bus: ExternalMessageBusSettings = ExternalMessageBusSettings()
+    vector_database: VectorDatabaseSettings = VectorDatabaseSettings()
+
+    model_config = SettingsConfigDict(
+        yaml_file=YAML_FILENAME, yaml_config_section=RESOURCE_SECTION, extra="ignore", frozen=True
+    )

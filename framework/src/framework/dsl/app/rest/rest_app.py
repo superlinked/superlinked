@@ -17,7 +17,7 @@ from beartype.typing import Sequence
 
 from superlinked.framework.blob.blob_handler import BlobHandler
 from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import ResourceSettings
 from superlinked.framework.dsl.app.online.online_app import OnlineApp
 from superlinked.framework.dsl.executor.rest.rest_configuration import (
     RestEndpointConfiguration,
@@ -70,7 +70,7 @@ class RestApp(OnlineApp[RestSource | DataLoaderSource]):
             indices,
             vector_database,
             context,
-            Settings().INIT_SEARCH_INDICES,
+            ResourceSettings().vector_database.INIT_SEARCH_INDICES,
             queue,
             blob_handler,
             SerializableQueryResultConverter(),

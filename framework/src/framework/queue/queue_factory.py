@@ -15,7 +15,7 @@
 import structlog
 from beartype.typing import cast
 
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import ResourceSettings
 from superlinked.framework.common.util.class_helper import ClassHelper
 from superlinked.framework.queue.interface.queue import Queue
 from superlinked.framework.queue.interface.queue_message import MessageBody, PayloadT
@@ -26,8 +26,8 @@ logger = structlog.getLogger()
 class QueueFactory:
     @staticmethod
     def create_queue(_: type[PayloadT]) -> Queue[MessageBody[PayloadT]] | None:
-        module_path = Settings().QUEUE_MODULE_PATH
-        class_name = Settings().QUEUE_CLASS_NAME
+        module_path = ResourceSettings().external_message_bus.QUEUE_MODULE_PATH
+        class_name = ResourceSettings().external_message_bus.QUEUE_CLASS_NAME
         if module_path is None or class_name is None:
             return None
         queue_class = ClassHelper.get_class(module_path, class_name)
@@ -38,7 +38,7 @@ class QueueFactory:
                 class_name=class_name,
             )
             return None
-        class_args = Settings().QUEUE_CLASS_ARGS or {}
+        class_args = ResourceSettings().external_message_bus.QUEUE_CLASS_ARGS or {}
         initialized_class = queue_class(**class_args)
         logger.info(
             "initialized queue",

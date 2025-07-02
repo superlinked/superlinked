@@ -18,7 +18,7 @@ from beartype.typing import Generic, Sequence, cast
 from typing_extensions import override
 
 from superlinked.framework.common.observable import Subscriber
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import ResourceSettings
 from superlinked.framework.common.util import time_util
 from superlinked.framework.queue.interface.queue import Queue
 from superlinked.framework.queue.interface.queue_message import (
@@ -46,7 +46,7 @@ class QueueSubscriber(Generic[PayloadT], Subscriber[PayloadT]):
         self.__schema_id = schema_id
         self.__topic_name = topic_name
         self.__message_type = message_type
-        self.__queue_message_version = Settings().QUEUE_MESSAGE_VERSION
+        self.__queue_message_version = ResourceSettings().external_message_bus.QUEUE_MESSAGE_VERSION
 
     @override
     def update(self, messages: Sequence[PayloadT]) -> None:
