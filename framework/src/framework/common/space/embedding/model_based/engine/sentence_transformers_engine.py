@@ -20,6 +20,7 @@ import structlog
 from beartype.typing import Any, Sequence
 from typing_extensions import override
 
+from superlinked.framework.common.precision import Precision
 from superlinked.framework.common.space.embedding.model_based.embedding_input import (
     ModelEmbeddingInputT,
 )
@@ -32,9 +33,6 @@ from superlinked.framework.common.space.embedding.model_based.engine.embedding_e
 from superlinked.framework.common.space.embedding.model_based.model_downloader import (
     SENTENCE_TRANSFORMERS_ORG_NAME,
     ModelDownloader,
-)
-from superlinked.framework.common.storage.search_index.vector_component_precision import (
-    VectorComponentPrecision,
 )
 from superlinked.framework.common.util.gpu_embedding_util import GpuEmbeddingUtil
 
@@ -100,9 +98,11 @@ class SentenceTransformersEngine(EmbeddingEngine[EmbeddingEngineConfig]):
         return model
 
     def _get_model_kwargs(self) -> dict[str, Any]:
-        if VectorComponentPrecision.use_half_precision():
+        if self._config.precision == Precision.FLOAT16:
             return {"torch_dtype": "float16"}
-        return {}
+        if self._config.precision == Precision.FLOAT32:
+            return {}
+        raise ValueError(f"Unsupported precision: {self._config.precision.value}.")
 
     def _calculate_prompt_name(self, model: SentenceTransformer, is_query_context: bool) -> str | None:
         return (

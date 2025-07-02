@@ -37,7 +37,7 @@ logger = structlog.getLogger()
 
 class ModalEngine(EmbeddingEngine[ModalEngineConfig]):
     def __init__(self, model_name: str, model_cache_dir: Path | None, config: ModalEngineConfig) -> None:
-        super().__init__(model_name, model_cache_dir, config=config)
+        super().__init__(model_name, model_cache_dir, config)
         self._modal_cls = modal.Cls.from_name(
             app_name=self._config.modal_app_name,
             name=self._config.modal_class_name,

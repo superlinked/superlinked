@@ -171,7 +171,7 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
     def _allow_empty_fields(self) -> bool:
         return False
 
-    def _init_transformation_config(
+    def _init_transformation_config(  # pylint: disable=too-many-arguments
         self,
         model: str,
         model_cache_dir: Path | None,

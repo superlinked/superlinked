@@ -12,15 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 from beartype.typing import Sequence, TypeAlias
 from redisvl.query.filter import FilterExpression
 from redisvl.query.query import VectorQuery, VectorRangeQuery
-
-from superlinked.framework.common.storage.search_index.vector_component_precision import (
-    VectorComponentPrecision,
-)
 
 VectorQueryObj: TypeAlias = VectorQuery | VectorRangeQuery
 DISTANCE_ID: str = "vector_distance"
@@ -35,20 +33,21 @@ class RedisVectorQueryParams:  # pylint: disable=too-many-instance-attributes
     vector_field_name: str
     return_fields: Sequence[str]
     filter_expression: FilterExpression
+    dtype: str
     num_results: int
     return_score: bool = True
     dialect: int = 2
     sort_by: str = DISTANCE_ID
     hybrid_policy: str | None = None
     batch_size: int | None = None
-    dtype: str = VectorComponentPrecision.init_from_settings().value.lower()
 
-    def with_radius(self, radius: float) -> "RedisVectorRangeQueryParams":
+    def with_radius(self, radius: float) -> RedisVectorRangeQueryParams:
         return RedisVectorRangeQueryParams(
             vector=self.vector,
             vector_field_name=self.vector_field_name,
             return_fields=self.return_fields,
             filter_expression=self.filter_expression,
+            dtype=self.dtype,
             num_results=self.num_results,
             return_score=self.return_score,
             dialect=self.dialect,

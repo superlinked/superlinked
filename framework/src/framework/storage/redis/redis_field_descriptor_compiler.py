@@ -61,12 +61,12 @@ class RedisFieldDescriptorCompiler:
         if field_descriptor.field_data_type == FieldDataType.VECTOR:
             if isinstance(field_descriptor, VectorIndexFieldDescriptor):
                 algorithm = field_descriptor.search_algorithm.value
-                coordinate_type = field_descriptor.coordinate_type.value
+                vector_precision = field_descriptor.vector_precision.value
                 return RedisVectorField(
                     field_descriptor.field_name,
                     algorithm,
                     {
-                        "TYPE": coordinate_type,
+                        "TYPE": vector_precision,
                         "DIM": field_descriptor.field_size,
                         "DISTANCE_METRIC": DistanceMetricMap[field_descriptor.distance_metric],
                     },

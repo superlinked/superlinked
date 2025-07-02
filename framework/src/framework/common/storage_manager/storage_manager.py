@@ -319,7 +319,7 @@ class StorageManager:
             params.length,
             self._vdb_connector.distance_metric,
             self._vdb_connector.search_algorithm,
-            self._vdb_connector.vector_coordinate_type,
+            self._vdb_connector.vector_precision,
         )
 
         return (

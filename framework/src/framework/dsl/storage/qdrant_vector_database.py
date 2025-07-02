@@ -15,6 +15,7 @@
 
 from beartype.typing import Any
 
+from superlinked.framework.common.precision import Precision
 from superlinked.framework.common.storage.search_index.search_algorithm import (
     SearchAlgorithm,
 )
@@ -41,6 +42,7 @@ class QdrantVectorDatabase(VectorDatabase[QdrantVDBConnector]):
         default_query_limit: int = 10,
         timeout: int | None = None,
         search_algorithm: SearchAlgorithm = SearchAlgorithm.FLAT,
+        vector_precision: Precision = Precision.FLOAT16,
         prefer_grpc: bool | None = None,
         **extra_params: Any
     ) -> None:
@@ -52,12 +54,17 @@ class QdrantVectorDatabase(VectorDatabase[QdrantVDBConnector]):
             api_key (str): The api key of the Qdrant cluster.
             default_query_limit (int): Default vector search limit, set to Qdrant's default of 10.
             timeout (int | None): Timeout in seconds for Qdrant operations. Default is 5 seconds.
+            vector_precision (Precision): Precision to use for storing vectors. Defaults to FLOAT16.
             prefer_grpc (bool | None): Whether to prefer gRPC for Qdrant operations. Default is False.
             **extra_params (Any): Additional parameters for the Qdrant connection.
         """
         super().__init__()
         self._connection_params = QdrantConnectionParams(url, api_key, timeout, prefer_grpc, **extra_params)
-        self._settings = VDBSettings(default_query_limit=default_query_limit, search_algorithm=search_algorithm)
+        self._settings = VDBSettings(
+            default_query_limit=default_query_limit,
+            search_algorithm=search_algorithm,
+            vector_precision=vector_precision,
+        )
 
     @property
     def _vdb_connector(self) -> QdrantVDBConnector:

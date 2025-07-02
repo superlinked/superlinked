@@ -14,7 +14,21 @@
 
 from dataclasses import dataclass
 
+from typing_extensions import override
+
+from superlinked.framework.common.precision import Precision
+
 
 @dataclass(frozen=True)
 class EmbeddingEngineConfig:
-    pass
+    """
+    Args:
+        precision (Precision, optional): The desired precision (data type) for the embedding
+            computation. Supported values include float32, float16. Defaults to Precision.FLOAT16.
+    """
+
+    precision: Precision = Precision.FLOAT16
+
+    @override
+    def __str__(self) -> str:
+        return self.precision.name

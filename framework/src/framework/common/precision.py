@@ -12,20 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from dataclasses import dataclass
+from enum import Enum
 
-from superlinked.framework.common.space.config.embedding.model_based_embedding_config import (
-    ModelBasedEmbeddingConfig,
-)
-from superlinked.framework.common.space.embedding.model_based.model_handler import (
-    TextModelHandler,
-)
+import numpy as np
 
 
-@dataclass(frozen=True)
-class TextSimilarityEmbeddingConfig(ModelBasedEmbeddingConfig[str, TextModelHandler]):
-    cache_size: int = 0
+class Precision(Enum):
+    FLOAT32 = "FLOAT32"
+    FLOAT16 = "FLOAT16"
 
-    def __post_init__(self) -> None:
-        if self.cache_size < 0:
-            raise ValueError("cache_size must be non-negative")
+    def to_np_type(self) -> type[np.float32] | type[np.float16]:
+        if self is Precision.FLOAT32:
+            return np.float32
+        if self is Precision.FLOAT16:
+            return np.float16
+        raise ValueError(f"Unsupported vector component precision: {self}")

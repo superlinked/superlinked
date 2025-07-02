@@ -14,6 +14,8 @@
 
 from dataclasses import dataclass
 
+from typing_extensions import override
+
 from superlinked.framework.common.settings import Settings
 from superlinked.framework.common.space.embedding.model_based.engine.embedding_engine_config import (
     EmbeddingEngineConfig,
@@ -30,3 +32,17 @@ class ModalEngineConfig(EmbeddingEngineConfig):  # pylint: disable=too-many-inst
     modal_retry_delay: float = Settings().MODAL_RETRY_DELAY
     modal_image_format: str | None = Settings().MODAL_IMAGE_FORMAT
     modal_image_quality: int = Settings().MODAL_IMAGE_QUALITY
+
+    @override
+    def __str__(self) -> str:
+        attributes = [
+            f"modal_app_name={self.modal_app_name}",
+            f"modal_class_name={self.modal_class_name}",
+            f"modal_environment_name={self.modal_environment_name}",
+            f"modal_batch_size={self.modal_batch_size}",
+            f"modal_max_retries={self.modal_max_retries}",
+            f"modal_retry_delay={self.modal_retry_delay}",
+            f"modal_image_format={self.modal_image_format}",
+            f"modal_image_quality={self.modal_image_quality}",
+        ]
+        return f"{super().__str__()}, " + ", ".join(attributes)

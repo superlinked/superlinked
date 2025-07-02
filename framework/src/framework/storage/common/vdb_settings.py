@@ -15,6 +15,7 @@
 from attr import dataclass
 
 from superlinked.framework.common.calculation.distance_metric import DistanceMetric
+from superlinked.framework.common.precision import Precision
 from superlinked.framework.common.storage.search_index.search_algorithm import (
     SearchAlgorithm,
 )
@@ -25,3 +26,4 @@ class VDBSettings:
     default_query_limit: int
     search_algorithm: SearchAlgorithm = SearchAlgorithm.FLAT
     distance_metric: DistanceMetric = DistanceMetric.INNER_PRODUCT
+    vector_precision: Precision = Precision.FLOAT16

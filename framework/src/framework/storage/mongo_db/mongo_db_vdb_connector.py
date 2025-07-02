@@ -57,7 +57,7 @@ class MongoDBVDBConnector(VDBConnector[VDBKNNSearchConfig]):
         super().__init__(vdb_settings=vdb_settings)
         self._client = MongoClient(connection_params.connection_string)
         self._db = self._client[connection_params.db_name]
-        self._encoder = MongoDBFieldEncoder()
+        self._encoder = MongoDBFieldEncoder(self.vector_precision)
         self._search_index_manager = MongoDBSearchIndexManager(self._db.name, connection_params.admin_params)
         self._search = MongoDBSearch(self._db, self._encoder)
 

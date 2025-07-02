@@ -63,9 +63,9 @@ class RedisVDBConnector(VDBConnector[RedisVDBKNNSearchConfig]):
     ) -> None:
         super().__init__(vdb_settings=vdb_settings)
         self._client = RedisVDBClient(connection_params.connection_string)
-        self._encoder = RedisFieldEncoder()
+        self._encoder = RedisFieldEncoder(self.vector_precision)
         self.__search_index_manager = RedisSearchIndexManager(self._client, self._encoder)
-        self._search = RedisSearch(self._client, self._encoder)
+        self._search = RedisSearch(self._client, self._encoder, self.vector_precision)
 
     @override
     async def close_connection(self) -> None:

@@ -45,7 +45,8 @@ class YamlBasedSettings(BaseSettings):
     ) -> tuple[PydanticBaseSettingsSource, ...]:
         try:
             return (init_settings, env_settings, YamlConfigSettingsSource(settings_cls), file_secret_settings)
-        except KeyError:
+        except (FileNotFoundError, KeyError) as e:
+            logger.debug("YAML configuration not available, falling back to dotenv", error=e)
             return (init_settings, env_settings, dotenv_settings, file_secret_settings)
 
 
@@ -57,7 +58,6 @@ class Settings(YamlBasedSettings):
     # Embedding specific settings
     ENABLE_MPS: bool = False
     SUPERLINKED_RESIZE_IMAGES: bool = False
-    SUPERLINKED_DISABLE_HALF_PRECISION_EMBEDDING: bool = False
     # Embedding specific settings - model
     MODEL_CACHE_DIR: str | None = None
     MODEL_LOCK_TIMEOUT_SECONDS: int = 120

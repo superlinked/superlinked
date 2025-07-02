@@ -81,7 +81,7 @@ class QdrantVDBConnector(VDBConnector[VDBKNNSearchConfig]):
             timeout=connection_params.timeout,
             prefer_grpc=connection_params.prefer_grpc,
         )
-        self._encoder = QdrantFieldEncoder()
+        self._encoder = QdrantFieldEncoder(self.vector_precision)
         self.__search_index_manager = QdrantSearchIndexManager(self._client)
         self._search = QdrantSearch(self._client, self._encoder)
         self._vector_field_names = list[str]()

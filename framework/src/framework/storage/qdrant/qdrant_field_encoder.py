@@ -17,21 +17,19 @@ import numpy as np
 from beartype.typing import Any, Callable, Sequence, TypeVar
 
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.precision import Precision
 from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.storage.exception import EncoderException
 from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.field.field_data import FieldData
 from superlinked.framework.common.storage.field.field_data_type import FieldDataType
-from superlinked.framework.common.storage.search_index.vector_component_precision import (
-    VectorComponentPrecision,
-)
 
 QdrantEncodedTypes = str | float | int | Sequence[float] | dict[str, Any] | Sequence[str]
 QdrantEncodedT = TypeVar("QdrantEncodedT", bound=QdrantEncodedTypes)
 
 
 class QdrantFieldEncoder:
-    def __init__(self) -> None:
+    def __init__(self, vector_precision: Precision) -> None:
         self._encode_map: dict[FieldDataType, Callable[..., Any]] = {
             FieldDataType.BLOB: self._encode_blob,
             FieldDataType.DOUBLE: self._encode_base_type,
@@ -56,7 +54,7 @@ class QdrantFieldEncoder:
             FieldDataType.STRING_LIST: self._decode_base_type,
             FieldDataType.VECTOR: self._decode_vector,
         }
-        self.__vector_precision_type = VectorComponentPrecision.init_from_settings().to_np_type()
+        self.__vector_precision_type = vector_precision.to_np_type()
 
     def _encode_base_type(self, base_type: QdrantEncodedT) -> QdrantEncodedT:
         return base_type

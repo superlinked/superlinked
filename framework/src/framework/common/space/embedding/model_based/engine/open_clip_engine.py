@@ -23,6 +23,7 @@ from PIL.Image import Image as PILImage
 from torchvision.transforms.transforms import Compose
 from typing_extensions import override
 
+from superlinked.framework.common.precision import Precision
 from superlinked.framework.common.settings import Settings
 from superlinked.framework.common.space.embedding.model_based.embedding_input import (
     ModelEmbeddingInputT,
@@ -35,9 +36,6 @@ from superlinked.framework.common.space.embedding.model_based.engine.embedding_e
 )
 from superlinked.framework.common.space.embedding.model_based.model_downloader import (
     ModelDownloader,
-)
-from superlinked.framework.common.storage.search_index.vector_component_precision import (
-    VectorComponentPrecision,
 )
 from superlinked.framework.common.util.collection_util import CollectionUtil
 from superlinked.framework.common.util.gpu_embedding_util import GpuEmbeddingUtil
@@ -59,6 +57,8 @@ with warnings.catch_warnings():
     from open_clip.model import CLIP
 
 logger = structlog.getLogger()
+
+SUPPORTED_PRECISIONS = [Precision.FLOAT16, Precision.FLOAT32]
 
 
 class OpenCLIPEngine(EmbeddingEngine[EmbeddingEngineConfig]):
@@ -109,7 +109,7 @@ class OpenCLIPEngine(EmbeddingEngine[EmbeddingEngineConfig]):
         finally:
             model_lock.release()
         model, _, preprocess_val = cast(tuple[CLIP, Any, Compose], model_and_transforms)
-        if VectorComponentPrecision.use_half_precision():
+        if self._use_half_precision():
             model = model.half()
         return model, preprocess_val
 
@@ -131,10 +131,15 @@ class OpenCLIPEngine(EmbeddingEngine[EmbeddingEngineConfig]):
             return torch.Tensor()
         combined_images_tensor = torch.stack([cast(torch.Tensor, self._preprocess_val(input_)) for input_ in inputs])
         tokenized_images = self._move_tensor_to_model_device(self._embedding_model, combined_images_tensor)
-        if VectorComponentPrecision.use_half_precision():
+        if self._use_half_precision():
             tokenized_images = tokenized_images.half()
         results = self._embedding_model.encode_image(tokenized_images)
         return results
+
+    def _use_half_precision(self) -> bool:
+        if self._config.precision not in SUPPORTED_PRECISIONS:
+            raise ValueError(f"Unsupported precision: {self._config.precision.value}.")
+        return self._config.precision == Precision.FLOAT16
 
     def _move_tensor_to_model_device(self, embedding_model: CLIP, tensor: torch.Tensor) -> torch.Tensor:
         model_device = next(embedding_model.parameters()).device

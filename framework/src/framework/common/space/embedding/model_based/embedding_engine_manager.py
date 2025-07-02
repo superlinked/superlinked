@@ -99,7 +99,7 @@ class EmbeddingEngineManager:
         config: EmbeddingEngineConfig,
     ) -> str:
         clean_model_name = cls._get_clean_model_name(model_handler, model_name)
-        parts = [model_handler.value, clean_model_name, str(hash(config))[:4], model_cache_dir]
+        parts = [model_handler.value, clean_model_name, config, model_cache_dir]
         engine_key = ":".join(str(part) for part in parts if part is not None)
         return engine_key
 
@@ -131,7 +131,12 @@ class EmbeddingEngineManager:
         if not inputs:
             return []
         engine = self.get_engine(model_handler, model_name, model_cache_dir, config)
-        labels = {"model_name": model_name, "handler": model_handler.value, "is_query_context": str(is_query_context)}
+        labels = {
+            "model_name": model_name,
+            "handler": model_handler.value,
+            "is_query_context": str(is_query_context),
+            "precision": config.precision.value,
+        }
         self._metric_registry.record_metric("embeddings_total", len(inputs), labels=labels)
         embeddings = await engine.embed(inputs, is_query_context)
         return [Vector(embedding) for embedding in embeddings]

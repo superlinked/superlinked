@@ -19,6 +19,7 @@ from beartype.typing import Any, Generic, Sequence, TypeVar
 from superlinked.framework.common.calculation.distance_metric import DistanceMetric
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.exception import InitializationException
+from superlinked.framework.common.precision import Precision
 from superlinked.framework.common.settings import Settings
 from superlinked.framework.common.storage.entity.entity import Entity
 from superlinked.framework.common.storage.entity.entity_data import EntityData
@@ -36,9 +37,6 @@ from superlinked.framework.common.storage.search_index.manager.search_index_mana
 from superlinked.framework.common.storage.search_index.search_algorithm import (
     SearchAlgorithm,
 )
-from superlinked.framework.common.storage.search_index.vector_component_precision import (
-    VectorComponentPrecision,
-)
 from superlinked.framework.common.util.execution_timer import time_execution
 from superlinked.framework.dsl.query.query_user_config import QueryUserConfig
 from superlinked.framework.storage.common.vdb_settings import VDBSettings
@@ -50,7 +48,6 @@ VDBKNNSearchConfigT = TypeVar("VDBKNNSearchConfigT", bound=VDBKNNSearchConfig)
 class VDBConnector(ABC, Generic[VDBKNNSearchConfigT]):
     def __init__(self, vdb_settings: VDBSettings, index_configs: Sequence[IndexConfig] | None = None) -> None:
         self.__vdb_settings = vdb_settings
-        self._vector_coordinate_type = VectorComponentPrecision.init_from_settings()
         self._index_configs: dict[str, IndexConfig] = {
             index_config.index_name: index_config for index_config in (index_configs or [])
         }
@@ -69,8 +66,8 @@ class VDBConnector(ABC, Generic[VDBKNNSearchConfigT]):
         return self.__vdb_settings.default_query_limit
 
     @property
-    def vector_coordinate_type(self) -> VectorComponentPrecision:
-        return self._vector_coordinate_type
+    def vector_precision(self) -> Precision:
+        return self.__vdb_settings.vector_precision
 
     @property
     def collection_name(self) -> str:

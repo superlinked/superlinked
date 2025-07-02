@@ -18,6 +18,7 @@ from beartype.typing import cast
 from redisvl.query.query import VectorQuery, VectorRangeQuery
 
 from superlinked.framework.common.const import Constants
+from superlinked.framework.common.precision import Precision
 from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
@@ -36,9 +37,10 @@ from superlinked.framework.storage.redis.redis_field_encoder import RedisFieldEn
 
 
 class RedisQueryBuilder:
-    def __init__(self, encoder: RedisFieldEncoder) -> None:
+    def __init__(self, encoder: RedisFieldEncoder, vector_precision: Precision) -> None:
         self._encoder = encoder
         self.filter_builder = RedisFilterBuilder(self._encoder)
+        self._vector_precision = vector_precision
         self._timeout = Constants().REDIS_TIMEOUT
 
     def build_query(self, search_params: VDBKNNSearchParams, search_config: RedisVDBKNNSearchConfig) -> VectorQueryObj:
@@ -60,6 +62,7 @@ class RedisQueryBuilder:
             num_results=search_params.limit,
             hybrid_policy=hybrid_policy,
             batch_size=search_config.batch_size,
+            dtype=self._vector_precision.value.lower(),
         )
 
     def _override_hybrid_policy(

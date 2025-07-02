@@ -92,8 +92,8 @@ class ImageSpace(Space[Vector, ImageData]):
         self,
         image: Blob | DescribedBlob | None | Sequence[Blob | DescribedBlob | None],
         model: str = "clip-ViT-B-32",
-        model_handler: ModelHandler = ModelHandler.SENTENCE_TRANSFORMERS,
         model_cache_dir: Path | None = None,
+        model_handler: ModelHandler = ModelHandler.SENTENCE_TRANSFORMERS,
         embedding_engine_config: EmbeddingEngineConfig | None = None,
     ) -> None:
         """

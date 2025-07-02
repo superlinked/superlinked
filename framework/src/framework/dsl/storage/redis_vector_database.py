@@ -15,6 +15,7 @@
 
 from beartype.typing import Any
 
+from superlinked.framework.common.precision import Precision
 from superlinked.framework.common.storage.search_index.search_algorithm import (
     SearchAlgorithm,
 )
@@ -39,6 +40,7 @@ class RedisVectorDatabase(VectorDatabase[RedisVDBConnector]):
         port: int,
         default_query_limit: int = 10,
         search_algorithm: SearchAlgorithm = SearchAlgorithm.FLAT,
+        vector_precision: Precision = Precision.FLOAT16,
         **extra_params: Any
     ) -> None:
         """
@@ -49,11 +51,12 @@ class RedisVectorDatabase(VectorDatabase[RedisVDBConnector]):
             port (int): The port number of the Redis server.
             default_query_limit (int): Default vector search limit, set to Redis's default of 10.
             search_algorithm (SearchAlgorithm): The algorithm to use for vector search. Defaults to FLAT.
+            vector_precision (Precision): Precision to use for storing vectors. Defaults to FLOAT16.
             **extra_params (Any): Additional parameters for the Redis connection.
         """
         super().__init__()
         self._connection_params = RedisConnectionParams(host, port, **extra_params)
-        self._settings = VDBSettings(default_query_limit, search_algorithm)
+        self._settings = VDBSettings(default_query_limit, search_algorithm, vector_precision=vector_precision)
 
     @property
     def _vdb_connector(self) -> RedisVDBConnector:

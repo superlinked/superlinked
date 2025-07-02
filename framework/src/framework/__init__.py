@@ -50,6 +50,7 @@ from superlinked.framework.common.dag.period_time import PeriodTime
 from superlinked.framework.common.nlq.open_ai import OpenAIClientConfig
 from superlinked.framework.common.parser.dataframe_parser import DataFrameParser
 from superlinked.framework.common.parser.json_parser import JsonParser
+from superlinked.framework.common.precision import Precision
 from superlinked.framework.common.schema.event_schema import EventSchema, event_schema
 from superlinked.framework.common.schema.event_schema_object import (
     CreatedAtField,
@@ -223,6 +224,7 @@ __all__ = [
     # misc
     "SuperlinkedRegistry",
     "BlobHandlerConfig",
+    "Precision",
 ]
 
 

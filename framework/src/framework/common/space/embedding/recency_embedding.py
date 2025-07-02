@@ -21,7 +21,7 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.period_time import PeriodTime
-from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.data_types import Vector, VectorItemT
 from superlinked.framework.common.space.config.embedding.recency_embedding_config import (
     RecencyEmbeddingConfig,
 )
@@ -125,7 +125,7 @@ class RecencyEmbedding(InvertibleEmbedding[int, RecencyEmbeddingConfig]):
         return z_value
 
     def _build_vector(self, x_value: float, y_value: float, z_value: float | None) -> Vector:
-        vector_input = np.array([x_value, y_value])
+        vector_input = np.array([x_value, y_value], dtype=VectorItemT)
         negative_filter_indices = set()
         if z_value is not None:
             vector_input = np.append(vector_input, np.array([z_value]))

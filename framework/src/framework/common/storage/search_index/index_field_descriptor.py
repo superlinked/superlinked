@@ -15,12 +15,10 @@
 from dataclasses import dataclass
 
 from superlinked.framework.common.calculation.distance_metric import DistanceMetric
+from superlinked.framework.common.precision import Precision
 from superlinked.framework.common.storage.field.field_data_type import FieldDataType
 from superlinked.framework.common.storage.search_index.search_algorithm import (
     SearchAlgorithm,
-)
-from superlinked.framework.common.storage.search_index.vector_component_precision import (
-    VectorComponentPrecision,
 )
 
 
@@ -37,10 +35,10 @@ class VectorIndexFieldDescriptor(IndexFieldDescriptor):
         field_size: int,
         distance_metric: DistanceMetric,
         search_algorithm: SearchAlgorithm,
-        coordinate_type: VectorComponentPrecision,
+        vector_precision: Precision,
     ) -> None:
         super().__init__(FieldDataType.VECTOR, field_name)
         self.field_size = field_size
         self.distance_metric = distance_metric
         self.search_algorithm = search_algorithm
-        self.coordinate_type = coordinate_type
+        self.vector_precision = vector_precision

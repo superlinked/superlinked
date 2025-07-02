@@ -24,13 +24,10 @@ from superlinked.framework.common.exception import (
 )
 from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.schema.image_data import ImageData
-from superlinked.framework.common.storage.search_index.vector_component_precision import (
-    VectorComponentPrecision,
-)
 
 Json = Mapping[str, Any]
-VectorItemT = VectorComponentPrecision.init_from_settings().to_np_type()
-NPArray = np.ndarray[VectorItemT]  # type: ignore[valid-type] # it is valid
+VectorItemT = np.float32
+NPArray = np.ndarray[VectorItemT]
 NP_PRINT_PRECISION = 6
 
 
@@ -211,7 +208,7 @@ class Vector:
 
     def shallow_copy_with_new(
         self,
-        value: list[float] | list[np.floating] | NPArray | None = None,
+        value: list[float] | list[VectorItemT] | list[np.floating] | NPArray | None = None,
         negative_filter_indices: set[int] | frozenset[int] | None = None,
         denormalizer: float | None = None,
     ) -> Vector:
