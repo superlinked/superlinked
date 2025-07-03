@@ -228,12 +228,12 @@ __all__ = [
 ]
 
 
-from superlinked.framework.common.metrics.metric_configurator import (
-    SuperlinkedMetricConfigurator,
-)
 from superlinked.framework.common.superlinked_logging import (
     SuperlinkedLoggerConfigurator,
 )
+from superlinked.framework.common.telemetry.telemetry_configurator import (
+    SuperlinkedTelemetryConfigurator,
+)
 
 SuperlinkedLoggerConfigurator.configure_default_logger()
-SuperlinkedMetricConfigurator.configure_default_metrics()
+SuperlinkedTelemetryConfigurator.configure_default_metrics()
