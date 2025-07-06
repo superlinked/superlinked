@@ -208,7 +208,7 @@ Our github contains many helpful notebooks that show how to configure superlinke
 This file sets the following components:
 
 - vector database: in current application we are using Redis.
-  We also support [MongoDB and Qdrant](https://docs.superlinked.com/run-in-production/index-1).
+  We also support [MongoDB, Qdrant and TopK](https://docs.superlinked.com/run-in-production/index-1).
 - data loader: our data is ingested from gcp bucket
 - REST API: our app will provide endpoints for ingestion (bulk and one-by-one) and for querying. More information is in [our docs](https://docs.superlinked.com/run-in-production/index/interacting-with-app-via-api).
 

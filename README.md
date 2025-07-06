@@ -234,6 +234,7 @@ Superlinked stores *your vectors* in *your vector database*, with deep integrati
 - [Redis](https://docs.superlinked.com/run-in-production/index-1/redis)
 - [MongoDB](https://docs.superlinked.com/run-in-production/index-1/mongodb)
 - [Qdrant](https://docs.superlinked.com/run-in-production/index-1/qdrant)
+- [TopK](https://docs.superlinked.com/run-in-production/index-1/topk)
 - [Which one should we support next?](https://github.com/superlinked/superlinked/discussions/41)
 
 Curious about vector database pros & cons in general? Our community [compared 44 Vector Databases on 30+ features](https://superlinked.com/vector-db-comparison/).
