@@ -16,8 +16,8 @@ To integrate TopK, you need to add the `TopKVectorDatabase` class and include it
 from superlinked import framework as sl
 
 vector_database = sl.TopKVectorDatabase(
-    "<your_api_key>", # (Mandatory) This is your TopK API key
-    "<your_region>", # (Mandatory) This is your TopK region
+    api_key="<your_api_key>", # (Mandatory) This is your TopK API key
+    region="<your_region>", # (Mandatory) This is your TopK region
     default_query_limit=10, # (Optional) This parameter specifies the maximum number of query results returned. If not set, it defaults to 10.
 )
 
