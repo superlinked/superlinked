@@ -91,7 +91,7 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
         ):
             raise QueryEvaluationException(
                 "The inputs that need to be inverted must have the same dimension "
-                + f"as the concatenation node, got {invalid_inputs_lengths}"
+                + f"as the concatenation node ({self.node.length}), got {invalid_inputs_lengths}"
             )
 
     def _split_weighted_vector(self, weighted_vector: QueryNodeInputValue[Vector]) -> list[QueryNodeInputValue[Vector]]:

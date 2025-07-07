@@ -109,8 +109,9 @@ class LooksLikeFilterClauseWeightBySpace(BaseLooksLikeFilterClause):
             return float(value) if value is not None else constants.DEFAULT_WEIGHT
 
         weight_by_node_id = {
-            space._get_embedding_node(self.schema_field.schema_obj).node_id: calculate_weight(weight_param)
+            space._get_embedding_node(schema_obj).node_id: calculate_weight(weight_param)
             for space, weight_param in self.space_weight_map.items()
+            for schema_obj in space._embedding_node_by_schema.keys()
         }
         return weight_by_node_id
 

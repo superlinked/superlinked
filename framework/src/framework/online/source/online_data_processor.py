@@ -165,7 +165,8 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
         """
         Groups effects that are identical except for their multipliers to avoid concurrency problems
         during the evaluation of event DAGs. Effects that are the same except for the multiplier
-        would otherwise cause race conditions when processed concurrently.
+        would otherwise cause race conditions when processed concurrently
+        by updating the stored result and metadata values of the OEAN potentially at the same time.
         """
         result = []
         unprocessed_effects = set(parsed_schemas_by_effect)
