@@ -67,6 +67,9 @@ setup(
         # Utility libraries
         "furl",
         "modal",
+        # OpenTelemetry dependencies
+        "opentelemetry-api",
+        "opentelemetry-sdk",
     ],
     zip_safe=False,
 )
