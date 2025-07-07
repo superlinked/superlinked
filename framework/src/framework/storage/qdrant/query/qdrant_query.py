@@ -30,10 +30,14 @@ from superlinked.framework.storage.qdrant.qdrant_field_encoder import QdrantFiel
 from superlinked.framework.storage.qdrant.query.qdrant_filter import (
     ClauseType,
     ContainsAllFilter,
+    GeoBoxFilter,
+    GeoRadiusFilter,
+    GeoPolygonFilter,
     MatchAnyFilter,
     MatchRangeFilter,
     MatchValueFilter,
     QdrantFilter,
+    RangeFilter,
 )
 from superlinked.framework.storage.qdrant.query.qdrant_vdb_knn_search_params import (
     QdrantVDBKNNSearchParams,
@@ -58,11 +62,15 @@ FILTER_BY_OP_TYPE: dict[ComparisonOperationType, QdrantFilter] = {
     ComparisonOperationType.LESS_THAN: MatchRangeFilter(ClauseType.MUST),
     ComparisonOperationType.GREATER_EQUAL: MatchRangeFilter(ClauseType.MUST),
     ComparisonOperationType.LESS_EQUAL: MatchRangeFilter(ClauseType.MUST),
+    ComparisonOperationType.RANGE: RangeFilter(ClauseType.MUST),
     ComparisonOperationType.IN: MatchAnyFilter(ClauseType.MUST),
     ComparisonOperationType.NOT_IN: MatchAnyFilter(ClauseType.MUST_NOT),
     ComparisonOperationType.CONTAINS: MatchAnyFilter(ClauseType.MUST),
     ComparisonOperationType.NOT_CONTAINS: MatchAnyFilter(ClauseType.MUST_NOT),
     ComparisonOperationType.CONTAINS_ALL: ContainsAllFilter(ClauseType.MUST),
+    ComparisonOperationType.GEO_BOX: GeoBoxFilter(ClauseType.MUST),
+    ComparisonOperationType.GEO_RADIUS: GeoRadiusFilter(ClauseType.MUST),
+    ComparisonOperationType.GEO_POLYGON: GeoPolygonFilter(ClauseType.MUST),
 }
 
 

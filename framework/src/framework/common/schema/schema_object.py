@@ -332,11 +332,109 @@ class StringList(SchemaField[list[str]]):
         return [str(val) for val in CollectionUtil.convert_single_item_to_list(value)]
 
 
+class GeoLocation(SchemaField[dict[str, float]]):
+    """
+    Field of a schema that represents a geographic location with longitude and latitude.
+    
+    Expected format: {"lon": float, "lat": float}
+    Compatible with Qdrant geo data format.
+    """
+
+    def __init__(self, name: str, schema_obj: SchemaObjectT, nullable: bool) -> None:
+        super().__init__(name, schema_obj, dict[str, float], nullable)
+
+    @override
+    def parse(self, value: dict[str, float]) -> dict[str, float]:
+        if isinstance(value, dict):
+            # Ensure we have both lon and lat keys
+            if 'lon' in value and 'lat' in value:
+                return {'lon': float(value['lon']), 'lat': float(value['lat'])}
+            elif 'longitude' in value and 'latitude' in value:
+                # Support alternative key names
+                return {'lon': float(value['longitude']), 'lat': float(value['latitude'])}
+        
+        # If it's a tuple or list with two elements (lon, lat)
+        if isinstance(value, (tuple, list)) and len(value) == 2:
+            return {'lon': float(value[0]), 'lat': float(value[1])}
+        
+        raise ValueError(f"GeoLocation value must be a dict with 'lon'/'lat' keys or a 2-element tuple/list, got: {value}")
+
+    @property
+    @override
+    def supported_comparison_operation_types(self) -> Sequence[ComparisonOperationType]:
+        # GeoLocation supports custom geo operations like bounding box, radius, and polygon
+        return [ComparisonOperationType.GEO_BOX, ComparisonOperationType.GEO_RADIUS, ComparisonOperationType.GEO_POLYGON]
+
+    @override
+    def as_type(self, value: Any) -> dict[str, float]:
+        return self.parse(value)
+    
+    def geo_box(self, min_lat: Any, max_lat: Any, min_lon: Any, max_lon: Any) -> ComparisonOperation:
+        """
+        Create a geographic bounding box filter operation.
+        
+        Args:
+            min_lat: Minimum latitude
+            max_lat: Maximum latitude  
+            min_lon: Minimum longitude
+            max_lon: Maximum longitude
+            
+        Returns:
+            ComparisonOperation for use in query filters
+        """
+        # Store geo parameters as a dictionary for parameter extraction
+        geo_params = {
+            "min_lat": min_lat,
+            "max_lat": max_lat, 
+            "min_lon": min_lon,
+            "max_lon": max_lon
+        }
+        return ComparisonOperation(ComparisonOperationType.GEO_BOX, self, geo_params)
+
+    def geo_radius(self, center_lat: Any, center_lon: Any, radius: Any) -> ComparisonOperation:
+        """
+        Create a geographic radius filter operation.
+        
+        Args:
+            center_lat: Center point latitude
+            center_lon: Center point longitude  
+            radius: Radius in meters
+            
+        Returns:
+            ComparisonOperation for use in query filters
+        """
+        # Store geo parameters as a dictionary for parameter extraction
+        geo_params = {
+            "center_lat": center_lat,
+            "center_lon": center_lon,
+            "radius": radius
+        }
+        return ComparisonOperation(ComparisonOperationType.GEO_RADIUS, self, geo_params)
+
+    def geo_polygon(self, polygon: Any) -> ComparisonOperation:
+        """
+        Create a geographic polygon filter operation.
+        
+        Args:
+            polygon: List of coordinate pairs defining the polygon vertices.
+                    Expected format: [[lon1, lat1], [lon2, lat2], ..., [lon1, lat1]]
+                    The polygon should be closed (first point equals last point).
+            
+        Returns:
+            ComparisonOperation for use in query filters
+        """
+        # Store polygon parameters as a dictionary for parameter extraction 
+        geo_params = {
+            "polygon": polygon
+        }
+        return ComparisonOperation(ComparisonOperationType.GEO_POLYGON, self, geo_params)
+
+
 @dataclass(frozen=True)
 class DescribedBlob:
     blob: Blob
     description: String
 
 
-ConcreteSchemaField = String | Timestamp | Float | Integer | Boolean | FloatList | StringList | Blob
+ConcreteSchemaField = String | Timestamp | Float | Integer | Boolean | FloatList | StringList | Blob | GeoLocation
 ConcreteSchemaFieldT = TypeVar("ConcreteSchemaFieldT", bound="ConcreteSchemaField")

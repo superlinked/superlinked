@@ -21,6 +21,7 @@ from superlinked.framework.common.interface.comparison_operand import (
 )
 from superlinked.framework.common.interface.comparison_operation_type import (
     LIST_TYPE_COMPATIBLE_TYPES,
+    ComparisonOperationType,
 )
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import SchemaField
@@ -33,9 +34,15 @@ class QueryFilterValidator:
 
     @staticmethod
     def validate_operation_operand_type(comparison_operation: ComparisonOperation, allow_param: bool) -> None:
+        # Skip validation for GEO_BOX, GEO_RADIUS, and GEO_POLYGON operations as they have custom format
+        if comparison_operation._op in [ComparisonOperationType.GEO_BOX, ComparisonOperationType.GEO_RADIUS, ComparisonOperationType.GEO_POLYGON]:
+            return
+            
         expected_type = GenericClassUtil.get_single_generic_type_extended(comparison_operation._operand)
         if comparison_operation._op in LIST_TYPE_COMPATIBLE_TYPES:
             QueryFilterValidator._validate_list_type(comparison_operation, expected_type, allow_param)
+        elif comparison_operation._op == ComparisonOperationType.RANGE:
+            QueryFilterValidator._validate_range_type(comparison_operation, expected_type, allow_param)
         else:
             QueryFilterValidator._validate_single_type(comparison_operation, expected_type, allow_param)
 
@@ -61,6 +68,29 @@ class QueryFilterValidator:
         if not isinstance(field, SchemaField):
             raise QueryException("ComparisonOperation operand must be a SchemaField")
         return field
+
+    @staticmethod
+    def _validate_range_type(comparison_operation: ComparisonOperation, expected_type: Any, allow_param: bool) -> None:
+        other = comparison_operation._other
+        if allow_param and isinstance(other, Param):
+            return
+
+        if not isinstance(other, tuple) or len(other) != 2:
+            raise QueryException("Range operation requires a tuple (min_value, max_value).")
+        
+        min_val, max_val = other
+        
+        # Validate min_value type (can be None, Param, or expected_type)
+        if min_val is not None and not isinstance(min_val, Param) and not isinstance(min_val, expected_type):
+            raise QueryException(
+                f"Range min_value type mismatch: expected {expected_type.__name__} or None, got {type(min_val).__name__}."
+            )
+        
+        # Validate max_value type (can be None, Param, or expected_type)
+        if max_val is not None and not isinstance(max_val, Param) and not isinstance(max_val, expected_type):
+            raise QueryException(
+                f"Range max_value type mismatch: expected {expected_type.__name__} or None, got {type(max_val).__name__}."
+            )
 
     @staticmethod
     def _validate_list_type(comparison_operation: ComparisonOperation, expected_type: Any, allow_param: bool) -> None:

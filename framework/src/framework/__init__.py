@@ -71,6 +71,7 @@ from superlinked.framework.common.schema.schema_object import (
     DescribedBlob,
     Float,
     FloatList,
+    GeoLocation,
     Integer,
     String,
     StringList,

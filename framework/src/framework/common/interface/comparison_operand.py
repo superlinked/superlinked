@@ -59,6 +59,9 @@ class ComparisonOperand(ABC, Generic[COT]):
     def contains_all(self, __value: object) -> ComparisonOperation[COT]:
         return ComparisonOperation(ComparisonOperationType.CONTAINS_ALL, self, __value)
 
+    def range(self, min_value: object, max_value: object) -> ComparisonOperation[COT]:
+        return ComparisonOperation(ComparisonOperationType.RANGE, self, (min_value, max_value))
+
     def _get_built_in_operation(
         self, operation_type: ComparisonOperationType
     ) -> Callable[[ComparisonOperand[COT], object], bool]:
@@ -222,6 +225,8 @@ class ComparisonOperation(Generic[COT]):
                 result = self.__evaluate_not_contains(value)
             case ComparisonOperationType.CONTAINS_ALL:
                 result = self.__evaluate_contains_all(value)
+            case ComparisonOperationType.RANGE:
+                result = self.__evaluate_range(value)
             case _:
                 raise ValueError(f"Unsupported operation type: {self._op}")
         return result
@@ -260,6 +265,14 @@ class ComparisonOperation(Generic[COT]):
     def __evaluate_contains_all(self, value: Any) -> bool:
         other = self._get_other_as_sequence()
         return value is None or all(other in value for other in other)
+
+    def __evaluate_range(self, value: Any) -> bool:
+        if value is None:
+            return False
+        if not isinstance(self._other, tuple) or len(self._other) != 2:
+            raise ValueError("Range operation requires a tuple (min_value, max_value)")
+        min_val, max_val = self._other
+        return min_val <= value <= max_val
 
     def _get_other_as_sequence(self) -> Sequence[Any]:
         if TypeValidator.is_sequence_safe(self._other):

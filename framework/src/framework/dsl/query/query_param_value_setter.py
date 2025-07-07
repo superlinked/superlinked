@@ -47,9 +47,30 @@ class QueryParamValueSetter:
 
     @classmethod
     def validate_params(cls, query_descriptor: QueryDescriptor, params_to_set: Mapping[str, Any]) -> None:
-        all_params_names = {
-            QueryClause.get_param(param).name for clause in query_descriptor.clauses for param in clause.params
-        }
+        all_params_names = set()
+        
+        for clause in query_descriptor.clauses:
+            for param in clause.params:
+                param_obj = QueryClause.get_param(param)
+                param_name = param_obj.name
+                all_params_names.add(param_name)
+                
+                # Special handling for RANGE operations
+                if hasattr(clause, 'op') and hasattr(clause.op, 'value') and clause.op.value == "be_in_range":
+                    all_params_names.update({f"min_{clause.operand.name}", f"max_{clause.operand.name}"})
+
+                # Special handling for GEO_BOX operations
+                if hasattr(clause, 'op') and hasattr(clause.op, 'value') and clause.op.value == "be_in_geo_bounding_box":
+                    all_params_names.update({"min_lat", "max_lat", "min_lon", "max_lon"})
+
+                # Special handling for GEO_RADIUS operations
+                if hasattr(clause, 'op') and hasattr(clause.op, 'value') and clause.op.value == "be_within_geo_radius":
+                    all_params_names.update({"center_lat", "center_lon", "radius"})
+
+                # Special handling for GEO_POLYGON operations  
+                if hasattr(clause, 'op') and hasattr(clause.op, 'value') and clause.op.value == "be_within_geo_polygon":
+                    all_params_names.add("polygon")
+        
         unknown_params = set(params_to_set.keys()).difference(all_params_names)
         if unknown_params:
             unknown_params_text = ", ".join(unknown_params)

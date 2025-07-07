@@ -32,6 +32,7 @@ PAYLOAD_SCHEMA_BY_FIELD_DATA_TYPE = {
     FieldDataType.STRING: PayloadSchemaType.KEYWORD,
     FieldDataType.METADATA_STRING: PayloadSchemaType.KEYWORD,
     FieldDataType.STRING_LIST: PayloadSchemaType.KEYWORD,
+    FieldDataType.JSON: PayloadSchemaType.GEO,
 }
 INDEXABLE_PAYLOAD_FIELD_TYPES = list(PAYLOAD_SCHEMA_BY_FIELD_DATA_TYPE.keys())
 

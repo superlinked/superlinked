@@ -22,11 +22,15 @@ class ComparisonOperationType(Enum):
     LESS_THAN = "be_less_than"
     GREATER_EQUAL = "be_greater_than_or_equal_to"
     LESS_EQUAL = "be_less_than_or_equal_to"
+    RANGE = "be_in_range"
     IN = "be_in"
     NOT_IN = "not_be_in"
     CONTAINS = "contain"
     NOT_CONTAINS = "not_contain"
     CONTAINS_ALL = "contain_all_of"
+    GEO_BOX = "be_in_geo_bounding_box"
+    GEO_RADIUS = "be_within_geo_radius"
+    GEO_POLYGON = "be_within_geo_polygon"
 
 
 COMPARABLE_COMPARISON_OPERATION_TYPES = [
@@ -34,6 +38,7 @@ COMPARABLE_COMPARISON_OPERATION_TYPES = [
     ComparisonOperationType.LESS_THAN,
     ComparisonOperationType.GREATER_EQUAL,
     ComparisonOperationType.LESS_EQUAL,
+    ComparisonOperationType.RANGE,
 ]
 
 ITERABLE_COMPARISON_OPERATION_TYPES = [
@@ -45,6 +50,12 @@ CONTAINS_COMPARISON_OPERATION_TYPES = [
     ComparisonOperationType.CONTAINS,
     ComparisonOperationType.NOT_CONTAINS,
     ComparisonOperationType.CONTAINS_ALL,
+]
+
+GEO_COMPARISON_OPERATION_TYPES = [
+    ComparisonOperationType.GEO_BOX,
+    ComparisonOperationType.GEO_RADIUS,
+    ComparisonOperationType.GEO_POLYGON,
 ]
 
 EQUALITY_COMPARISON_OPERATION_TYPES = [

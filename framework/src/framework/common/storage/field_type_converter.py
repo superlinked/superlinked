@@ -24,6 +24,7 @@ from superlinked.framework.common.schema.schema_object import (
     ConcreteSchemaField,
     Float,
     FloatList,
+    GeoLocation,
     Integer,
     SchemaField,
     String,
@@ -42,6 +43,7 @@ FIELD_DATA_TYPE_BY_SCHEMA_FIELD_TYPE: dict[type[ConcreteSchemaField | IdField], 
     Boolean: FieldDataType.BOOLEAN,
     String: FieldDataType.STRING,
     Timestamp: FieldDataType.INT,
+    GeoLocation: FieldDataType.JSON,
     IdField: FieldDataType.METADATA_STRING,
 }
 
