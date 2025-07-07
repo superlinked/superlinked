@@ -124,6 +124,7 @@ sl.RestExecutor(
     # vector_database = sl.MongoDBVectorDatabase(...),
     # vector_database = sl.RedisVectorDatabase(...),
     # vector_database = sl.QdrantVectorDatabase(...),
+    # vector_database = sl.TopKVectorDatabase(...),
 )
 
 # SparkExecutor()   <-- Coming soon in Superlinked Cloud

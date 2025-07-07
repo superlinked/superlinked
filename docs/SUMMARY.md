@@ -13,6 +13,7 @@
   * [Redis](run-in-production/vdbs/redis.md)
   * [Mongo DB](run-in-production/vdbs/mongodb.md)
   * [Qdrant](run-in-production/vdbs/qdrant.md)
+  * [TopK](run-in-production/vdbs/topk.md)
 
 
 ## Concepts
