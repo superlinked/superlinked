@@ -42,6 +42,13 @@ try:
     )
 except ImportError:
     pass
+try:
+    # topk dependency is optional
+    from superlinked.framework.dsl.storage.topk_vector_database import (
+        TopKVectorDatabase,
+    )
+except ImportError:
+    pass
 from superlinked.evaluation.pandas_converter import PandasConverter
 from superlinked.evaluation.vector_sampler import VectorSampler
 from superlinked.framework.blob.blob_handler_factory import BlobHandlerConfig
@@ -180,6 +187,7 @@ __all__ = [
     "MongoDBVectorDatabase",
     "QdrantVectorDatabase",
     "RedisVectorDatabase",
+    "TopKVectorDatabase",
     # Data loader
     "DataFormat",
     "DataLoaderConfig",
