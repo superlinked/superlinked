@@ -27,7 +27,7 @@ from superlinked.framework.blob.blob_handler_factory import (
     BlobHandlerFactory,
 )
 from superlinked.framework.common.schema.blob_information import BlobInformation
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import settings
 from superlinked.framework.common.util.concurrent_executor import ConcurrentExecutor
 from superlinked.framework.common.util.image_util import ImageUtil
 
@@ -78,7 +78,7 @@ class BlobLoader:
         results = ConcurrentExecutor().execute(
             func=self.load,
             args_list=[(blob_like_input,) for blob_like_input in blob_like_inputs],
-            condition=Settings().SUPERLINKED_CONCURRENT_BLOB_LOADING,
+            condition=settings.SUPERLINKED_CONCURRENT_BLOB_LOADING,
         )
         logger_to_use.info("finished blob loading")
         return results
@@ -102,7 +102,7 @@ class BlobLoader:
     @staticmethod
     def load_from_url(url: str) -> bytes:
         try:
-            response = requests.get(url, timeout=Settings().REQUEST_TIMEOUT)
+            response = requests.get(url, timeout=settings.REQUEST_TIMEOUT)
             response.raise_for_status()
             BlobLoader._validate_response_content(url, response)
             loaded_file: bytes | Any = response.content

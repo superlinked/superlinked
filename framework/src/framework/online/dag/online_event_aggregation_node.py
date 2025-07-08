@@ -33,7 +33,7 @@ from superlinked.framework.common.parser.parsed_schema import (
     ParsedSchemaWithEvent,
 )
 from superlinked.framework.common.schema.schema_object import SchemaObject
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import settings
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.event_aggregator import (
@@ -111,7 +111,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         ]
 
         remaining_ids = set(unique_object_ids)
-        for _ in itertools.repeat(None, Settings().ONLINE_EVENT_AGGREGATION_NODE_MAX_RETRY_COUNT):
+        for _ in itertools.repeat(None, settings.ONLINE_EVENT_AGGREGATION_NODE_MAX_RETRY_COUNT):
             if not remaining_ids:
                 break
             object_id_to_metadata = self._event_metadata_handler.read(schema, list(remaining_ids))

@@ -25,7 +25,7 @@ from superlinked.framework.common.dag.node import NT, Node, NodeDataT
 from superlinked.framework.common.exception import DagEvaluationException
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.schema_object import SchemaObject
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import settings
 from superlinked.framework.common.storage_manager.node_result_data import NodeResultData
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.util.concurrent_executor import ConcurrentExecutor
@@ -119,7 +119,7 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
         parent_results = ConcurrentExecutor().execute(
             lambda parent: parent.evaluate_next(parsed_schemas, context),
             args_list=[(parent,) for parent in parents],
-            condition=Settings().SUPERLINKED_CONCURRENT_ONLINE_DAG_EVALUATION,
+            condition=settings.SUPERLINKED_CONCURRENT_ONLINE_DAG_EVALUATION,
         )
         return dict(zip(parents, parent_results))
 

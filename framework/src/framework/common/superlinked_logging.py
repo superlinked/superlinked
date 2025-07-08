@@ -15,13 +15,12 @@
 import logging
 
 from superlinked.framework.common.logging import PACKAGE_NAME, LoggerConfigurator
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import settings
 
 
 class SuperlinkedLoggerConfigurator:
     @staticmethod
     def configure_default_logger() -> None:
-        settings = Settings()
         if settings.SUPERLINKED_LOG_LEVEL:
             logging.getLogger(PACKAGE_NAME).setLevel(settings.SUPERLINKED_LOG_LEVEL)
         LoggerConfigurator.configure_default_logger(
@@ -30,7 +29,6 @@ class SuperlinkedLoggerConfigurator:
 
     @staticmethod
     def configure_structlog_logger() -> None:
-        settings = Settings()
         if settings.SUPERLINKED_LOG_LEVEL:
             logging.getLogger(PACKAGE_NAME).setLevel(settings.SUPERLINKED_LOG_LEVEL)
         LoggerConfigurator.configure_structlog_logger(

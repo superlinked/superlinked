@@ -20,7 +20,7 @@ from superlinked.framework.common.calculation.distance_metric import DistanceMet
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.exception import InitializationException
 from superlinked.framework.common.precision import Precision
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import settings
 from superlinked.framework.common.storage.entity.entity import Entity
 from superlinked.framework.common.storage.entity.entity_data import EntityData
 from superlinked.framework.common.storage.index_config import IndexConfig
@@ -51,7 +51,7 @@ class VDBConnector(ABC, Generic[VDBKNNSearchConfigT]):
         self._index_configs: dict[str, IndexConfig] = {
             index_config.index_name: index_config for index_config in (index_configs or [])
         }
-        self._app_id = Settings().APP_ID
+        self._app_id = settings.APP_ID
 
     @property
     def distance_metric(self) -> DistanceMetric:

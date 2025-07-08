@@ -22,7 +22,7 @@ from superlinked.framework.common.observable import TransformerPublisher
 from superlinked.framework.common.parser.data_parser import DataParser
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObjectT
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import settings
 from superlinked.framework.common.source.source import Source
 from superlinked.framework.common.source.types import SourceTypeT
 
@@ -39,7 +39,7 @@ class OnlineSource(
         schema: IdSchemaObjectT,
         parser: DataParser[IdSchemaObjectT, SourceTypeT],
     ) -> None:
-        TransformerPublisher.__init__(self, chunk_size=Settings().ONLINE_PUT_CHUNK_SIZE)
+        TransformerPublisher.__init__(self, chunk_size=settings.ONLINE_PUT_CHUNK_SIZE)
         Source.__init__(self, schema, parser)
         self._logger = logger.bind(
             schema=schema._schema_name,

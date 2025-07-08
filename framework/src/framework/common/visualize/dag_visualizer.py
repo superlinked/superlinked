@@ -20,7 +20,7 @@ from beartype.typing import Any, Mapping, Sequence
 from graphviz import Digraph
 
 from superlinked.framework.common.dag.node import Node
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import settings
 
 
 class DagVisualizer:
@@ -44,7 +44,7 @@ class DagVisualizer:
     def _calculate_file_path(self) -> str:
         timestamp = datetime.now().isoformat(timespec="milliseconds").replace(":", "_")
         filename = f"dag_eval_{self.__visualization_id}_{timestamp}"
-        output_dir = Settings().DAG_VISUALIZATION_OUTPUT_DIR or os.getcwd()
+        output_dir = settings.DAG_VISUALIZATION_OUTPUT_DIR or os.getcwd()
         filepath = f"{output_dir}/{filename}"
         return filepath
 

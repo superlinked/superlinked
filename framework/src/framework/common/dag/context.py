@@ -25,7 +25,7 @@ from superlinked.framework.common.exception import (
     NotImplementedException,
     QueryException,
 )
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import settings
 from superlinked.framework.common.util import time_util
 from superlinked.framework.common.visualize.ingestion_output_recorder import (
     IngestionOutputRecorder,
@@ -150,7 +150,7 @@ class ExecutionContext:
         return self.__data[node_id]
 
     def __init_output_recorder(self) -> OutputRecorder:
-        if not Settings().ENABLE_DAG_VISUALIZATION:
+        if not settings.ENABLE_DAG_VISUALIZATION:
             return NoOpOutputRecorder()
         if self.is_query_context:
             return QueryOutputRecorder()

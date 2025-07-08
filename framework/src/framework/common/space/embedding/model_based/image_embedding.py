@@ -21,7 +21,7 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.schema.image_data import ImageData
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import settings
 from superlinked.framework.common.space.aggregation.aggregation import VectorAggregation
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     VectorAggregationConfig,
@@ -73,6 +73,6 @@ class ImageEmbedding(ModelEmbedding[ImageData, ImageEmbeddingConfig]):
     ) -> tuple[list[PILImage | None], list[str | None]]:
         images = [input_.image for input_ in inputs]
         descriptions = [input_.description for input_ in inputs]
-        if Settings().SUPERLINKED_RESIZE_IMAGES:
+        if settings.SUPERLINKED_RESIZE_IMAGES:
             images = [ImageUtil.resize_for_embedding(image) if image is not None else None for image in images]
         return images, descriptions

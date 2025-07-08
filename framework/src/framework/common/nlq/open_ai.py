@@ -25,7 +25,7 @@ from beartype.typing import Any, Generator
 from instructor.exceptions import InstructorRetryException
 from pydantic import BaseModel
 
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import settings
 
 logger = structlog.getLogger()
 
@@ -91,7 +91,7 @@ class OpenAIClient:
         self._openai_model = config.model
 
     async def query(self, prompt: str, instructor_prompt: str, response_model: type[BaseModel]) -> dict[str, Any]:
-        max_retries = Settings().SUPERLINKED_NLQ_MAX_RETRIES
+        max_retries = settings.SUPERLINKED_NLQ_MAX_RETRIES
         with suppress_tokenizer_warnings():
             try:
                 response = await self._client.chat.completions.create(

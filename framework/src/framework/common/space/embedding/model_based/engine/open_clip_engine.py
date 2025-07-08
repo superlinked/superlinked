@@ -24,7 +24,7 @@ from torchvision.transforms.transforms import Compose
 from typing_extensions import override
 
 from superlinked.framework.common.precision import Precision
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import settings
 from superlinked.framework.common.space.embedding.model_based.embedding_input import (
     ModelEmbeddingInputT,
 )
@@ -87,7 +87,7 @@ class OpenCLIPEngine(EmbeddingEngine[EmbeddingEngineConfig]):
             clean_model_name = self._model_name.replace(HF_HUB_PREFIX, "")
             model_downloader.ensure_model_downloaded(clean_model_name, cache_dir)
         model_lock = model_downloader._get_model_lock(self._model_name)
-        model_lock_timeout = Settings().MODEL_LOCK_TIMEOUT_SECONDS
+        model_lock_timeout = settings.MODEL_LOCK_TIMEOUT_SECONDS
         if not model_downloader._acquire_lock_with_timeout(model_lock, model_lock_timeout):
             logger.warning(f"Timeout acquiring model lock for {self._model_name} after {model_lock_timeout} seconds")
             raise TimeoutError(f"Timeout acquiring model lock for {self._model_name}")

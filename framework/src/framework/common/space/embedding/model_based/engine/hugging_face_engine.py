@@ -18,7 +18,7 @@ from huggingface_hub import InferenceClient
 from huggingface_hub.inference._providers import PROVIDER_T
 from typing_extensions import override
 
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import settings
 from superlinked.framework.common.space.embedding.model_based.embedding_input import (
     ModelEmbeddingInputT,
 )
@@ -48,7 +48,7 @@ class HuggingFaceEngine(EmbeddingEngine[EmbeddingEngineConfig]):
         return cast(Sequence[str], inputs)
 
     def _init_inference_client(self, model_name: str) -> InferenceClient:
-        token = Settings().HUGGING_FACE_API_TOKEN
+        token = settings.HUGGING_FACE_API_TOKEN
         if model_name.startswith(HTTP_PREFIXES):
             return InferenceClient(base_url=model_name, token=token, provider=PROVIDER)
         return InferenceClient(model=model_name, token=token, provider=PROVIDER)

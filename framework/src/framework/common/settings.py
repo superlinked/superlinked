@@ -173,3 +173,9 @@ class ResourceSettings(YamlBasedSettings):
     model_config = SettingsConfigDict(
         yaml_file=YAML_FILENAME, yaml_config_section=RESOURCE_SECTION, extra="ignore", frozen=True
     )
+
+
+settings = Settings()
+resource_settings = ResourceSettings()
+
+__all__ = ["settings", "resource_settings"]

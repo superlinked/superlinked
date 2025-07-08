@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from beartype.typing import Sequence, cast
 
 from superlinked.framework.common.data_types import PythonTypes
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import settings
 from superlinked.framework.common.storage.entity.entity_id import EntityId
 from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.field.field_data import FT, FieldData
@@ -60,7 +60,7 @@ class AdminFields:
         self.origin_id = AdminFieldDescriptor(
             Field(FieldDataType.STRING, StorageNaming.ORIGIN_ID_INDEX_NAME),
             True,
-            should_be_returned=Settings().QUERY_TO_RETURN_ORIGIN_ID,
+            should_be_returned=settings.QUERY_TO_RETURN_ORIGIN_ID,
         )
         admin_field_descriptors = [
             self.schema_id,

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import settings
 from superlinked.framework.common.telemetry.telemetry_registry import (
     MetricType,
     TelemetryRegistry,
@@ -22,7 +22,6 @@ from superlinked.framework.common.telemetry.telemetry_registry import (
 class SuperlinkedTelemetryConfigurator:
     @staticmethod
     def configure_default_metrics() -> None:
-        settings = Settings()
         telemetry = TelemetryRegistry()
 
         labels = {

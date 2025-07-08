@@ -14,7 +14,7 @@
 
 import torch
 
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import settings
 
 CPU_DEVICE_TYPE = "cpu"
 CUDA_DEVICE_TYPE = "cuda"
@@ -26,6 +26,6 @@ class GpuEmbeddingUtil:
     def get_device(cls) -> str:
         if torch.cuda.is_available():
             return CUDA_DEVICE_TYPE
-        if Settings().ENABLE_MPS and torch.backends.mps.is_available():
+        if settings.ENABLE_MPS and torch.backends.mps.is_available():
             return MPS_DEVICE_TYPE
         return CPU_DEVICE_TYPE

@@ -26,7 +26,7 @@ from huggingface_hub.errors import HfHubHTTPError, LocalEntryNotFoundError
 from huggingface_hub.file_download import repo_folder_name
 from requests.exceptions import ReadTimeout
 
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import settings
 
 logger = structlog.getLogger()
 
@@ -39,13 +39,13 @@ class ModelDownloader:
     _lock: Lock = Lock()
     _download_locks: dict[str, Lock] = {}
     _download_locks_lock: Lock = Lock()
-    _framework_settings = Settings()
+    _framework_settings = settings
 
     def __new__(cls) -> ModelDownloader:
         with cls._lock:
             if cls._instance is None:
                 cls._instance = super().__new__(cls)
-                cls._instance._framework_settings = Settings()
+                cls._instance._framework_settings = settings
         return cls._instance
 
     def get_cache_dir(self, model_cache_dir: Path | None) -> Path:

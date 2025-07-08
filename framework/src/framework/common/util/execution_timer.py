@@ -25,7 +25,7 @@ from asgi_correlation_id.context import correlation_id
 from beartype.typing import Any, Callable
 from typing_extensions import override
 
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import settings
 
 
 class ExecutionTimer:
@@ -47,7 +47,7 @@ class ExecutionTimer:
             )  # In-memory data store
             dir_path = os.path.dirname(output_path) or "."
             os.makedirs(dir_path, exist_ok=True)
-            self._flush_interval = Settings().SUPERLINKED_EXECUTION_TIMER_INTERVAL_MS
+            self._flush_interval = settings.SUPERLINKED_EXECUTION_TIMER_INTERVAL_MS
             self._flush_thread = Thread(target=self._flush_periodically, daemon=True)
             self._flush_thread.start()
             self.__dict__["_initialized"] = True
@@ -207,7 +207,6 @@ def getTimer() -> ExecutionTimer:  # pylint: disable=invalid-name
     Returns:
         The ExecutionTimer instance for the given output path
     """
-    settings = Settings()
     if not settings.ENABLE_PROFILING:
         return NullExecutionTimer("None")
     output_path: str | None = settings.SUPERLINKED_EXECUTION_TIMER_FILE_PATH
@@ -222,7 +221,7 @@ def getTimer() -> ExecutionTimer:  # pylint: disable=invalid-name
 def time_execution(func: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
-        if not Settings().ENABLE_PROFILING:
+        if not settings.ENABLE_PROFILING:
             return func(*args, **kwargs)
 
         timer = getTimer()
@@ -244,7 +243,7 @@ def time_execution_with_arg(arg_name: str) -> Callable[..., Any]:
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             timer = getTimer()
-            if not Settings().ENABLE_PROFILING:
+            if not settings.ENABLE_PROFILING:
                 return func(*args, **kwargs)
 
             if args and hasattr(args[0], "__class__"):

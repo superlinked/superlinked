@@ -16,7 +16,7 @@ from dataclasses import dataclass
 
 from typing_extensions import override
 
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import settings
 from superlinked.framework.common.space.embedding.model_based.engine.embedding_engine_config import (
     EmbeddingEngineConfig,
 )
@@ -24,14 +24,14 @@ from superlinked.framework.common.space.embedding.model_based.engine.embedding_e
 
 @dataclass(frozen=True)
 class ModalEngineConfig(EmbeddingEngineConfig):  # pylint: disable=too-many-instance-attributes
-    modal_app_name: str = Settings().MODAL_APP_NAME
-    modal_class_name: str = Settings().MODAL_CLASS_NAME
-    modal_environment_name: str = Settings().MODAL_ENVIRONMENT_NAME
-    modal_batch_size: int = Settings().MODAL_BATCH_SIZE
-    modal_max_retries: int = Settings().MODAL_MAX_RETRIES
-    modal_retry_delay: float = Settings().MODAL_RETRY_DELAY
-    modal_image_format: str | None = Settings().MODAL_IMAGE_FORMAT
-    modal_image_quality: int = Settings().MODAL_IMAGE_QUALITY
+    modal_app_name: str = settings.MODAL_APP_NAME
+    modal_class_name: str = settings.MODAL_CLASS_NAME
+    modal_environment_name: str = settings.MODAL_ENVIRONMENT_NAME
+    modal_batch_size: int = settings.MODAL_BATCH_SIZE
+    modal_max_retries: int = settings.MODAL_MAX_RETRIES
+    modal_retry_delay: float = settings.MODAL_RETRY_DELAY
+    modal_image_format: str | None = settings.MODAL_IMAGE_FORMAT
+    modal_image_quality: int = settings.MODAL_IMAGE_QUALITY
 
     @override
     def __str__(self) -> str:

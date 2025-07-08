@@ -33,7 +33,7 @@ from superlinked.framework.common.parser.parsed_schema import (
 )
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import SchemaObject
-from superlinked.framework.common.settings import Settings
+from superlinked.framework.common.settings import settings
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.util.concurrent_executor import ConcurrentExecutor
 from superlinked.framework.dsl.index.index import Index
@@ -120,7 +120,7 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
         ConcurrentExecutor().execute(
             func=self.evaluator.evaluate_by_dag_effect_group,
             args_list=execution_args,
-            condition=Settings().SUPERLINKED_CONCURRENT_EFFECT_EVALUATION,
+            condition=settings.SUPERLINKED_CONCURRENT_EFFECT_EVALUATION,
         )
 
     def _map_effects_to_parsed_schemas(
