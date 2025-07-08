@@ -16,11 +16,13 @@
 from functools import partial
 
 import structlog
-from beartype.typing import Sequence
+from beartype.typing import Mapping, Sequence
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.dag import Dag
 from superlinked.framework.common.dag.dag_effect import DagEffect
+from superlinked.framework.common.dag.node import Node
+from superlinked.framework.common.dag.schema_dag import SchemaDag
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import (
     InvalidDagEffectException,
@@ -38,6 +40,7 @@ from superlinked.framework.compiler.online.online_schema_dag_compiler import (
 )
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_schema_dag import OnlineSchemaDag
+from superlinked.framework.online.dag_effect_group import DagEffectGroup
 
 logger = structlog.get_logger()
 
@@ -52,13 +55,17 @@ class OnlineDagEvaluator:
         super().__init__()
         self._dag = dag
         self._schemas = schemas
+        self._storage_manager = storage_manager
         self._schema_online_schema_dag_mapper = self.__init_schema_online_schema_dag_mapper(
             self._schemas, self._dag, storage_manager
         )
-        self._dag_effect_online_schema_dag_mapper = self.__init_dag_effect_online_schema_dag_mapper(
-            self._dag, storage_manager
-        )
+        self._dag_effect_group_to_online_schema_dag = self.__map_dag_effect_group_to_online_schema_dag(self._dag)
+        self.__effect_to_group = self.__map_effect_to_group(self._dag_effect_group_to_online_schema_dag)
         self._log_dag_init()
+
+    @property
+    def effect_to_group(self) -> Mapping[DagEffect, DagEffectGroup]:
+        return self.__effect_to_group
 
     def _log_dag_init(self) -> None:
         for schema, online_schema_dag in self._schema_online_schema_dag_mapper.items():
@@ -67,14 +74,11 @@ class OnlineDagEvaluator:
                 schema=schema._schema_name,
                 node_info=[(node.class_name, node.node_id) for node in online_schema_dag.nodes],
             )
-        for (
-            dag_effect,
-            online_schema_dag,
-        ) in self._dag_effect_online_schema_dag_mapper.items():
+        for dag_effect_group, online_schema_dag in self._dag_effect_group_to_online_schema_dag.items():
             logger.info(
                 "initialized event dag",
-                affected_schema=dag_effect.resolved_affected_schema_reference.schema._schema_name,
-                affecting_schema=dag_effect.resolved_affecting_schema_reference.schema._schema_name,
+                affected_schema=dag_effect_group.affected_schema._schema_name,
+                affecting_schema=dag_effect_group.affecting_schema._schema_name,
                 node_info=[(node.class_name, node.node_id) for node in online_schema_dag.nodes],
             )
 
@@ -106,17 +110,17 @@ class OnlineDagEvaluator:
 
         raise InvalidSchemaException(f"Schema ({index_schema._schema_name}) isn't present in the index.")
 
-    def evaluate_by_dag_effect(
+    def evaluate_by_dag_effect_group(
         self,
         parsed_schema_with_events: Sequence[ParsedSchemaWithEvent],
         context: ExecutionContext,
-        dag_effect: DagEffect,
+        dag_effect_group: DagEffectGroup,
     ) -> list[EvaluationResult[Vector] | None]:
-        if (online_schema_dag := self._dag_effect_online_schema_dag_mapper.get(dag_effect)) is not None:
+        if (online_schema_dag := self._dag_effect_group_to_online_schema_dag.get(dag_effect_group)) is not None:
             results = online_schema_dag.evaluate(parsed_schema_with_events, context)
             logger.info("evaluated events", n_records=len(results))
             return results
-        raise InvalidDagEffectException(f"DagEffect ({dag_effect}) isn't present in the index.")
+        raise InvalidDagEffectException(f"DagEffectGroup ({dag_effect_group}) isn't present in the index.")
 
     def __init_schema_online_schema_dag_mapper(
         self,
@@ -131,15 +135,31 @@ class OnlineDagEvaluator:
             for schema in schemas
         }
 
-    def __init_dag_effect_online_schema_dag_mapper(
-        self,
-        dag: Dag,
-        storage_manager: StorageManager,
-    ) -> dict[DagEffect, OnlineSchemaDag]:
-        dag_effect_schema_dag_map = {
-            dag_effect: dag.project_to_dag_effect(dag_effect) for dag_effect in dag.dag_effects
-        }
+    def __map_dag_effect_group_to_online_schema_dag(self, dag: Dag) -> dict[DagEffectGroup, OnlineSchemaDag]:
         return {
-            dag_effect: OnlineSchemaDagCompiler(set(schema_dag.nodes)).compile_schema_dag(schema_dag, storage_manager)
-            for dag_effect, schema_dag in dag_effect_schema_dag_map.items()
+            dag_effect_group: self.__compile_online_schema_dag(dag, dag_effect_group)
+            for dag_effect_group in DagEffectGroup.group_similar_effects(dag.dag_effects)
         }
+
+    def __compile_online_schema_dag(self, dag: Dag, dag_effect_group: DagEffectGroup) -> OnlineSchemaDag:
+        nodes = self.__get_nodes_for_effect_group(dag, dag_effect_group)
+        schema_dag = SchemaDag(dag_effect_group.event_schema, list(nodes))
+        return OnlineSchemaDagCompiler(nodes).compile_schema_dag(schema_dag, self._storage_manager)
+
+    def __get_nodes_for_effect_group(self, dag: Dag, dag_effect_group: DagEffectGroup) -> set[Node]:
+        return {node for effect in dag_effect_group.effects for node in self.__get_nodes_for_effect(dag, effect)}
+
+    def __get_nodes_for_effect(self, dag: Dag, dag_effect: DagEffect) -> set[Node]:
+        nodes_to_visit: list[Node] = [dag.index_node]
+        visited_nodes: set[Node] = set()
+        while nodes_to_visit:
+            current_node = nodes_to_visit.pop()
+            visited_nodes.add(current_node)
+            parent_nodes = current_node.project_parents_for_dag_effect(dag_effect)
+            nodes_to_visit.extend(node for node in parent_nodes if node not in visited_nodes)
+        return visited_nodes
+
+    def __map_effect_to_group(
+        self, dag_effect_group_to_online_schema_dag: Mapping[DagEffectGroup, OnlineSchemaDag]
+    ) -> dict[DagEffect, DagEffectGroup]:
+        return {effect: group for group in dag_effect_group_to_online_schema_dag for effect in group.effects}

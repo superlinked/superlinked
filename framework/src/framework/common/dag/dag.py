@@ -20,7 +20,6 @@ from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_dag import SchemaDag
 from superlinked.framework.common.exception import (
     DuplicateNodeIdException,
-    InvalidDagEffectException,
     InvalidSchemaException,
 )
 from superlinked.framework.common.schema.schema_object import SchemaObject
@@ -37,7 +36,6 @@ class Dag:
         self.__schema_dag_map: dict[SchemaObject, SchemaDag] = self.__init_schema_schema_dag_map(
             self.__schemas, node_id_schema_map
         )
-        self.__dag_effect_dag_map: dict[DagEffect, SchemaDag] = self.__init_dag_effect_schema_dag_map(self.dag_effects)
 
     @property
     def schemas(self) -> set[SchemaObject]:
@@ -51,14 +49,6 @@ class Dag:
         if (dag := self.__schema_dag_map.get(schema)) is not None:
             return dag
         raise InvalidSchemaException(f"SchemaDag for the given schema ({schema._base_class_name}) doesn't exist.")
-
-    def project_to_dag_effect(self, dag_effect: DagEffect) -> SchemaDag:
-        if (dag := self.__dag_effect_dag_map.get(dag_effect)) is not None:
-            return dag
-        raise InvalidDagEffectException(
-            f"SchemaDag for the given dag effect ({dag_effect} "
-            + f"- {dag_effect.event_schema._base_class_name}) doesn't exist."
-        )
 
     def __init_index_node(self, nodes: Sequence[Node]) -> IndexNode:
         if index_node := next((node for node in nodes if isinstance(node, IndexNode)), None):
@@ -84,26 +74,6 @@ class Dag:
         return SchemaDag(
             schema,
             list(projected_parents.union(filtered_nodes)),
-        )
-
-    def __init_dag_effect_schema_dag_map(self, dag_effects: set[DagEffect]) -> dict[DagEffect, SchemaDag]:
-        return {dag_effect: self.__project_to_dag_effect(dag_effect) for dag_effect in dag_effects}
-
-    def __project_to_dag_effect(self, dag_effect: DagEffect) -> SchemaDag:
-        def project_node_parents(node: Node) -> set[Node]:
-            return set(node.project_parents_for_dag_effect(dag_effect))
-
-        index_node = next(iter(node for node in self.nodes if isinstance(node, IndexNode)))
-        unvisited_nodes: list[Node] = [index_node]
-        visited_nodes = list[Node]()
-        while unvisited_nodes:
-            node = unvisited_nodes.pop()
-            visited_nodes.append(node)
-            parent_nodes = project_node_parents(node)
-            unvisited_nodes.extend([parent_node for parent_node in parent_nodes if parent_node not in visited_nodes])
-        return SchemaDag(
-            dag_effect.event_schema,
-            list(visited_nodes),
         )
 
     def __check_for_node_id_duplication(self) -> None:

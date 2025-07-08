@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from collections import defaultdict
-from itertools import chain
 
 import structlog
 from beartype.typing import Mapping, Sequence, cast
@@ -38,6 +37,7 @@ from superlinked.framework.common.settings import Settings
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.util.concurrent_executor import ConcurrentExecutor
 from superlinked.framework.dsl.index.index import Index
+from superlinked.framework.online.dag_effect_group import DagEffectGroup
 from superlinked.framework.online.online_dag_evaluator import OnlineDagEvaluator
 
 logger = structlog.get_logger()
@@ -111,30 +111,41 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
             )
 
     def _process_events(self, event_parsed_schemas: Sequence[EventParsedSchema]) -> None:
-        parsed_schemas_by_effect = self._map_event_parsed_schemas_by_dag_effects(event_parsed_schemas)
+        effects_to_parsed_schemas = self._map_effects_to_parsed_schemas(event_parsed_schemas)
+        effect_groups_to_parsed_schemas = self._map_effect_groups_to_parsed_schemas(effects_to_parsed_schemas)
+        execution_args = [
+            (parsed_schemas, self.context, effect_group)
+            for effect_group, parsed_schemas in effect_groups_to_parsed_schemas.items()
+        ]
         ConcurrentExecutor().execute(
-            func=self._process_effect_group,
-            args_list=[
-                (similar_effects, schemas, self.context)
-                for similar_effects, schemas in self._group_similar_effects(parsed_schemas_by_effect)
-            ],
+            func=self.evaluator.evaluate_by_dag_effect_group,
+            args_list=execution_args,
             condition=Settings().SUPERLINKED_CONCURRENT_EFFECT_EVALUATION,
         )
 
-    def _map_event_parsed_schemas_by_dag_effects(
+    def _map_effects_to_parsed_schemas(
         self, event_parsed_schemas: Sequence[EventParsedSchema]
     ) -> dict[DagEffect, list[ParsedSchemaWithEvent]]:
-        parsed_schemas_by_effect: dict[DagEffect, list[ParsedSchemaWithEvent]] = defaultdict(list)
+        effects_to_parsed_schemas: dict[DagEffect, list[ParsedSchemaWithEvent]] = defaultdict(list)
         for event_parsed_schema in event_parsed_schemas:
-            matching_effects = [
-                effect for effect in self._dag_effects if effect.event_schema == event_parsed_schema.schema
-            ]
-            for effect in matching_effects:
-                if parsed_schema_with_event := self._create_parsed_schema_with_event(
+            for effect in self._get_matching_effects(event_parsed_schema):
+                if schema_with_event := self._create_parsed_schema_with_event(
                     effect.resolved_affected_schema_reference, event_parsed_schema
                 ):
-                    parsed_schemas_by_effect[effect].append(parsed_schema_with_event)
-        return parsed_schemas_by_effect
+                    effects_to_parsed_schemas[effect].append(schema_with_event)
+        return effects_to_parsed_schemas
+
+    def _get_matching_effects(self, event_schema: EventParsedSchema) -> list[DagEffect]:
+        return [effect for effect in self._dag_effects if effect.event_schema == event_schema.schema]
+
+    def _map_effect_groups_to_parsed_schemas(
+        self, effects_to_parsed_schemas: Mapping[DagEffect, Sequence[ParsedSchemaWithEvent]]
+    ) -> dict[DagEffectGroup, list[ParsedSchemaWithEvent]]:
+        effect_groups_to_parsed_schemas: dict[DagEffectGroup, list[ParsedSchemaWithEvent]] = defaultdict(list)
+        for effect, parsed_schemas in effects_to_parsed_schemas.items():
+            effect_group = self.evaluator.effect_to_group[effect]
+            effect_groups_to_parsed_schemas[effect_group].extend(parsed_schemas)
+        return dict(effect_groups_to_parsed_schemas)
 
     def _create_parsed_schema_with_event(
         self,
@@ -152,32 +163,3 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
         if len(affected_schema_ids) > 1:
             raise InvalidDagEffectException(f"Affected schema reference: {affected_schema_reference}")
         return ParsedSchemaWithEvent(affected_schema_reference.schema, affected_schema_ids[0], [], event_parsed_schema)
-
-    def _process_effect_group(
-        self, effects: Sequence[DagEffect], schemas: Sequence[ParsedSchemaWithEvent], context: ExecutionContext
-    ) -> None:
-        for effect in effects:
-            self.evaluator.evaluate_by_dag_effect(schemas, context, effect)
-
-    def _group_similar_effects(
-        self, parsed_schemas_by_effect: Mapping[DagEffect, list[ParsedSchemaWithEvent]]
-    ) -> list[tuple[list[DagEffect], list[ParsedSchemaWithEvent]]]:
-        """
-        Groups effects that are identical except for their multipliers to avoid concurrency problems
-        during the evaluation of event DAGs. Effects that are the same except for the multiplier
-        would otherwise cause race conditions when processed concurrently
-        by updating the stored result and metadata values of the OEAN potentially at the same time.
-        """
-        result = []
-        unprocessed_effects = set(parsed_schemas_by_effect)
-        while unprocessed_effects:
-            effect = next(iter(unprocessed_effects))
-            similar_effects = [
-                other for other in unprocessed_effects if effect.is_same_effect_except_for_multiplier(other)
-            ]
-            unprocessed_effects.difference_update(similar_effects)
-            combined_parsed_schemas = list(
-                chain.from_iterable(parsed_schemas_by_effect[effect] for effect in similar_effects)
-            )
-            result.append((similar_effects, combined_parsed_schemas))
-        return result
