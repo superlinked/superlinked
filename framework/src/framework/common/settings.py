@@ -24,8 +24,6 @@ from pydantic_settings import (
 )
 from typing_extensions import override
 
-from superlinked.framework.common.util.singleton_decorator import singleton
-
 logger = structlog.getLogger()
 
 YAML_FILENAME = "config.yaml"
@@ -50,7 +48,6 @@ class YamlBasedSettings(BaseSettings):
             return (init_settings, env_settings, dotenv_settings, file_secret_settings)
 
 
-@singleton
 class Settings(YamlBasedSettings):
     """Common settings"""
 
@@ -169,7 +166,6 @@ class VectorDatabaseSettings(BaseModel):
     REDIS_DEFAULT_BATCH_SIZE: int | None = 250
 
 
-@singleton
 class ResourceSettings(YamlBasedSettings):
     external_message_bus: ExternalMessageBusSettings = ExternalMessageBusSettings()
     vector_database: VectorDatabaseSettings = VectorDatabaseSettings()
