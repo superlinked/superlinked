@@ -17,9 +17,8 @@ from __future__ import annotations
 from superlinked.framework.common.space.embedding.model_based.embedding_engine_manager import (
     EmbeddingEngineManager,
 )
-from superlinked.framework.common.util.singleton_decorator import singleton
+from superlinked.framework.common.util.singleton_meta import SingletonMeta
 
 
-@singleton
-class SingletonEmbeddingEngineManager(EmbeddingEngineManager):
+class SingletonEmbeddingEngineManager(EmbeddingEngineManager, metaclass=SingletonMeta):
     pass

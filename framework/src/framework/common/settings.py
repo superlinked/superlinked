@@ -78,10 +78,6 @@ class Settings(YamlBasedSettings):
     BLOB_HANDLER_CLASS_NAME: str | None = None
     BLOB_HANDLER_CLASS_ARGS: dict[str, Any] | None = None
     REQUEST_TIMEOUT: int = 600  # 10min
-    # Profiling specific params
-    ENABLE_PROFILING: bool = False
-    SUPERLINKED_EXECUTION_TIMER_INTERVAL_MS: int = 10
-    SUPERLINKED_EXECUTION_TIMER_FILE_PATH: str | None = None  # path to profiling output json
     # Logging specific params
     SUPERLINKED_LOG_LEVEL: int | str | None = None
     SUPERLINKED_LOG_AS_JSON: bool = False

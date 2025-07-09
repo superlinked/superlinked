@@ -24,8 +24,6 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.trace import NoOpTracer
 from typing_extensions import override
 
-from superlinked.framework.common.util.singleton_decorator import singleton
-
 logger = structlog.getLogger(__name__)
 
 DEFAULT_NAME = "superlinked"
@@ -109,7 +107,6 @@ class CounterMetric(Metric):
             self._instance.add(value, attributes=labels)
 
 
-@singleton
 class TelemetryRegistry:
     METRIC_CONSTRUCTORS: dict[MetricType, Type[Metric]] = {
         MetricType.COUNTER: CounterMetric,
@@ -183,3 +180,8 @@ class TelemetryRegistry:
         tracer = self._get_tracer()
         merged_attributes = {**self._default_labels, **(attributes or {})}
         return tracer.start_as_current_span(name, attributes=merged_attributes)
+
+
+telemetry = TelemetryRegistry()
+
+__all__ = ["telemetry", "MetricType", "Metric", "HistogramMetric", "CounterMetric", "TelemetryRegistry"]

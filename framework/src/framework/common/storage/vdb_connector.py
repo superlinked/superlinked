@@ -37,7 +37,6 @@ from superlinked.framework.common.storage.search_index.manager.search_index_mana
 from superlinked.framework.common.storage.search_index.search_algorithm import (
     SearchAlgorithm,
 )
-from superlinked.framework.common.util.execution_timer import time_execution
 from superlinked.framework.dsl.query.query_user_config import QueryUserConfig
 from superlinked.framework.storage.common.vdb_settings import VDBSettings
 from superlinked.framework.storage.in_memory.object_serializer import ObjectSerializer
@@ -119,7 +118,6 @@ class VDBConnector(ABC, Generic[VDBKNNSearchConfigT]):
     async def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
         pass
 
-    @time_execution
     async def knn_search(
         self,
         index_name: str,

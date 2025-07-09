@@ -15,7 +15,6 @@
 from beartype.typing import Sequence, TypeVar
 from furl import furl
 
-from superlinked.framework.common.util.execution_timer import time_execution_with_arg
 from superlinked.framework.dsl.executor.exception import DuplicateEndpointException
 from superlinked.framework.dsl.executor.rest.rest_configuration import (
     RestEndpointConfiguration,
@@ -57,12 +56,10 @@ class RestHandler:
     def query_paths(self) -> list[str]:
         return list(self.__path_to_query_map.keys())
 
-    @time_execution_with_arg("path")
     def _ingest_handler(self, input_schema: dict, path: str) -> None:
         source = self.__path_to_source_map[path]
         source.put([input_schema])
 
-    @time_execution_with_arg("path")
     async def _query_handler(
         self, query_descriptor: dict, path: str, query_user_config: QueryUserConfig
     ) -> QueryResult:

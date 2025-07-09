@@ -60,7 +60,6 @@ from superlinked.framework.common.storage_manager.search_result_item import (
 )
 from superlinked.framework.common.storage_manager.storage_naming import StorageNaming
 from superlinked.framework.common.util.async_util import AsyncUtil
-from superlinked.framework.common.util.execution_timer import time_execution
 from superlinked.framework.dsl.query.query_user_config import QueryUserConfig
 
 ResultTypeT = TypeVar("ResultTypeT")
@@ -211,7 +210,6 @@ class StorageManager:
             index_vector,
         )
 
-    @time_execution
     def write_parsed_schema_fields(self, parsed_schemas: Sequence[ParsedSchema]) -> None:
         entities_to_write = [
             self._entity_builder.compose_entity_data_from_parsed_schema(parsed_schema)
@@ -219,14 +217,12 @@ class StorageManager:
         ]
         AsyncUtil.run(self._vdb_connector.write_entities(entities_to_write))
 
-    @time_execution
     def write_node_results(self, node_data_items: Sequence[NodeResultData]) -> None:
         entities_to_write = [
             self._entity_builder.compose_entity_data_from_node_result(node_data) for node_data in node_data_items
         ]
         AsyncUtil.run(self._vdb_connector.write_entities(entities_to_write))
 
-    @time_execution
     def write_node_data(
         self, schema: SchemaObject, node_data_by_object_id: Mapping[str, dict[str, PythonTypes]], node_id: str
     ) -> None:
@@ -244,7 +240,6 @@ class StorageManager:
         field_data.extend(list(self._entity_builder.compose_field_data_from_node_data(node_id, node_data)))
         return EntityData(entity_id, {fd.name: fd for fd in field_data})
 
-    @time_execution
     def read_node_results(
         self,
         schemas_with_object_ids: Sequence[tuple[SchemaObject, str]],
@@ -282,7 +277,6 @@ class StorageManager:
         return next(iter(await self.read_node_results_async([(schema, object_id)], node_id, result_type)))
 
     # TODO FAI-2737 to solve the parameters
-    @time_execution
     def read_node_data(
         self,
         schema: SchemaObject,

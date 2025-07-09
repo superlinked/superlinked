@@ -12,20 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from superlinked.framework.common.settings import settings
-from superlinked.framework.common.telemetry.telemetry_registry import (
-    MetricType,
-    telemetry,
-)
+import threading
+
+from beartype.typing import Any
 
 
-class SuperlinkedTelemetryConfigurator:
-    @staticmethod
-    def configure_default_metrics() -> None:
+class SingletonMeta(type):
+    _instances: dict[Any, Any] = {}
+    _lock = threading.Lock()
 
-        labels = {
-            "app_id": settings.APP_ID,
-        }
-        telemetry.add_labels(labels)
-
-        telemetry.create_metric(MetricType.COUNTER, "embeddings_total", "Total number of embeddings calculated", "1")
+    def __call__(cls, *args: Any, **kwargs: Any) -> Any:
+        with cls._lock:
+            if cls not in cls._instances:
+                cls._instances[cls] = super().__call__(*args, **kwargs)
+        return cls._instances[cls]

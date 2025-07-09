@@ -14,7 +14,6 @@
 
 import os
 
-from superlinked.framework.common.util.execution_timer import time_execution
 from superlinked.framework.dsl.query.nlq.nlq_clause_collector import NLQClauseCollector
 from superlinked.framework.dsl.query.nlq.param_filler.query_param_prompt_builder import (
     QueryParamPromptBuilder,
@@ -25,7 +24,6 @@ NLQ_SUGGESTION_BASE_TXT_PATH: str = os.path.join(os.path.dirname(__file__), "nlq
 
 class QuerySuggestionsPromptBuilder:
     @classmethod
-    @time_execution
     def calculate_instructor_prompt(
         cls,
         clause_collector: NLQClauseCollector,

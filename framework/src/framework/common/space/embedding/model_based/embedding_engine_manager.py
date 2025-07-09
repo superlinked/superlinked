@@ -50,7 +50,7 @@ from superlinked.framework.common.space.embedding.model_based.model_handler impo
     ModelHandlerType,
     TextModelHandler,
 )
-from superlinked.framework.common.telemetry.telemetry_registry import TelemetryRegistry
+from superlinked.framework.common.telemetry.telemetry_registry import telemetry
 
 ENGINE_BY_HANDLER: Mapping[ModelHandlerType, type[EmbeddingEngine]] = {
     TextModelHandler.SENTENCE_TRANSFORMERS: SentenceTransformersEngine,
@@ -68,7 +68,6 @@ logger = structlog.getLogger()
 class EmbeddingEngineManager:
     def __init__(self) -> None:
         self._engines: dict[str, EmbeddingEngine] = {}
-        self._telemetry = TelemetryRegistry()
 
     def get_engine(
         self,
@@ -137,8 +136,8 @@ class EmbeddingEngineManager:
             "is_query_context": str(is_query_context),
             "precision": config.precision.value,
         }
-        self._telemetry.record_metric("embeddings_total", len(inputs), labels=labels)
-        with self._telemetry.span("embedding_engine.embed", attributes=labels):
+        telemetry.record_metric("embeddings_total", len(inputs), labels=labels)
+        with telemetry.span("embedding_engine.embed", attributes=labels):
             embeddings = await engine.embed(inputs, is_query_context)
         return [Vector(embedding) for embedding in embeddings]
 

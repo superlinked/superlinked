@@ -35,7 +35,6 @@ from superlinked.framework.common.storage_manager.knn_search_params import (
 from superlinked.framework.common.storage_manager.search_result_item import (
     SearchResultItem,
 )
-from superlinked.framework.common.util.execution_timer import time_execution
 from superlinked.framework.dsl.executor.executor import App
 from superlinked.framework.dsl.query.clause_params import (
     KNNSearchClauseParams,
@@ -82,7 +81,6 @@ class QueryExecutor:
         self.query_vector_factory = query_vector_factory
         self._logger = logger.bind(schema=self._query_descriptor.schema._schema_name)
 
-    @time_execution
     async def query(self, **params: ParamInputType | None) -> QueryResult:
         """
         Execute a query with keyword parameters.
@@ -199,7 +197,6 @@ class QueryExecutor:
             for item, value in clause.get_param_value_by_param_name().items()
         }
 
-    @time_execution
     async def _produce_knn_search_params(self, query_descriptor: QueryDescriptor) -> KNNSearchParams:
         query_vector = await self._produce_query_vector(query_descriptor)
         partial_knn_search_params = reduce(

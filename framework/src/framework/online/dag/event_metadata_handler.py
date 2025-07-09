@@ -20,6 +20,7 @@ from dataclasses import dataclass
 from beartype.typing import Mapping, Sequence
 
 from superlinked.framework.common.const import constants
+from superlinked.framework.common.data_types import PythonTypes
 from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 
@@ -76,7 +77,7 @@ class EventMetadataHandler:
         }
 
     def write(self, schema: SchemaObject, event_metadata_items: Mapping[str, EventMetadata]) -> None:
-        node_data_by_object_id = {
+        node_data_by_object_id: dict[str, dict[str, PythonTypes]] = {
             object_id: {
                 constants.EFFECT_COUNT_KEY: event_metadata.effect_count,
                 constants.EFFECT_AVG_TS_KEY: event_metadata.effect_avg_ts,
