@@ -20,7 +20,6 @@ from redis.asyncio.connection import ConnectionPool
 
 from superlinked.framework.common.settings import ResourceSettings
 
-CONNECTION_REFRESH_INTERVAL_SECONDS = 1800
 REDIS_PROTOCOL = 3
 
 
@@ -38,7 +37,6 @@ class RedisVDBClient:
         """
         Property to access the Redis client with connection refresh.
         """
-        self._refresh_connection_if_needed()
         return self.__async_client
 
     @property
@@ -62,10 +60,3 @@ class RedisVDBClient:
             retry_on_timeout=settings.REDIS_RETRY_ON_TIMEOUT,
         )
         return AsyncRedis(connection_pool=pool)
-
-    def _refresh_connection_if_needed(self) -> None:
-        current_time = time.time()
-        if current_time - self._last_activity_time > CONNECTION_REFRESH_INTERVAL_SECONDS:
-            self.__sync_client.close()
-            self.__sync_client = self._create_sync_client()
-        self._last_activity_time = current_time
