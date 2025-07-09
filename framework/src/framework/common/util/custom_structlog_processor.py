@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import json
+import reprlib
 
 from beartype.typing import Any
 from structlog.typing import EventDict, Processor, WrappedLogger
@@ -61,3 +62,21 @@ class CustomStructlogProcessor:
             if callable(value):
                 event_dict[key] = value()
         return event_dict
+
+    @staticmethod
+    def recursion_handler(_: WrappedLogger, __: str, event_dict: EventDict) -> EventDict:
+        """
+        Prevents infinite recursion during JSON serialization of log events.
+        For any event dictionary values that cause RecursionError during string
+        representation (typically due to circular references), replaces them with
+        abbreviated string representations using reprlib. This ensures we can still
+        log objects with self-referential structures without crashing.
+        """
+        safe_dict: EventDict = {}
+        for key, value in event_dict.items():
+            try:
+                repr(value)
+                safe_dict[key] = value
+            except RecursionError:
+                safe_dict[key] = reprlib.Repr().repr(value)
+        return safe_dict

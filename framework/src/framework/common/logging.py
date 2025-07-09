@@ -51,7 +51,6 @@ class LoggerConfigurator:
         expose_pii: bool = False,
         log_as_json: bool = False,
     ) -> None:
-
         if not processors:
             processors = LoggerConfigurator._get_structlog_processors(json_log_file_path, expose_pii, log_as_json)
         log_level = logging.getLogger(PACKAGE_NAME).level
@@ -127,6 +126,7 @@ class LoggerConfigurator:
             structlog.stdlib.add_log_level,
             structlog.stdlib.PositionalArgumentsFormatter(),
             structlog.stdlib.ExtraAdder(),
+            CustomStructlogProcessor.recursion_handler,
             structlog.processors.TimeStamper(fmt="iso"),
             CustomStructlogProcessor._set_log_var("process_id", os.getpid()),
             structlog.processors.StackInfoRenderer(),
