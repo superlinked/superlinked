@@ -9,5 +9,5 @@ Classes
 
     ### Static methods
 
-    `calculate_instructor_prompt(cls, clause_collector: superlinked.framework.dsl.query.nlq.nlq_clause_collector.NLQClauseCollector, system_prompt: str | None, feedback: str | None, natural_query: str | None) ‑> str`
+    `calculate_instructor_prompt(clause_collector: superlinked.framework.dsl.query.nlq.nlq_clause_collector.NLQClauseCollector, system_prompt: str | None, feedback: str | None, natural_query: str | None) ‑> str`
     :
