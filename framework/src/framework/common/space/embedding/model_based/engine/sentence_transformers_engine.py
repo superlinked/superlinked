@@ -65,6 +65,7 @@ class SentenceTransformersEngine(EmbeddingEngine[EmbeddingEngineConfig]):
             self._model.encode(
                 list(inputs),  # type: ignore[arg-type] # it also accepts Image
                 prompt_name=prompt_name,
+                show_progress_bar=False,
             )
         )
 

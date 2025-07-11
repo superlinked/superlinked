@@ -13,30 +13,47 @@
 # limitations under the License.
 
 
-from beartype.typing import Any, cast
+from beartype.typing import Any, Sequence
 from typing_extensions import override
 
+from superlinked.framework.common.const import constants
 from superlinked.framework.common.precision import Precision
+from superlinked.framework.common.storage.entity.entity_id import EntityId
 from superlinked.framework.common.storage.index_config import IndexConfig
 from superlinked.framework.common.storage.query.vdb_knn_search_params import (
     VDBKNNSearchParams,
 )
 from superlinked.framework.common.storage.search import Search
+from superlinked.framework.common.util.type_validator import TypeValidator
+from superlinked.framework.storage.redis.exception import (
+    RedisResultException,
+    RedisTimeoutException,
+)
 from superlinked.framework.storage.redis.query.redis_query_builder import (
     RedisQueryBuilder,
     VectorQueryObj,
+)
+from superlinked.framework.storage.redis.query.redis_vector_query_params import (
+    DISTANCE_ID,
 )
 from superlinked.framework.storage.redis.query.vdb_knn_search_params import (
     RedisVDBKNNSearchConfig,
 )
 from superlinked.framework.storage.redis.redis_field_encoder import RedisFieldEncoder
+from superlinked.framework.storage.redis.redis_knn_result import RedisKNNResult
 from superlinked.framework.storage.redis.redis_vdb_client import RedisVDBClient
 
+EXTRA_ATTRIBUTES_BYTES_KEY = b"extra_attributes"
+RESULTS_BYTES_KEY = b"results"
+ID_BYTES_KEY = b"id"
+UTF_8 = "utf-8"
 
-class RedisSearch(Search[VDBKNNSearchParams, VectorQueryObj, dict[bytes, Any], RedisVDBKNNSearchConfig]):
+
+class RedisSearch(Search[VDBKNNSearchParams, VectorQueryObj, list[RedisKNNResult], RedisVDBKNNSearchConfig]):
     def __init__(self, client: RedisVDBClient, encoder: RedisFieldEncoder, vector_precision: Precision) -> None:
         super().__init__()
         self._client = client
+        self._encoder = encoder
         self._query_builder = RedisQueryBuilder(encoder, vector_precision)
 
     @override
@@ -48,6 +65,68 @@ class RedisSearch(Search[VDBKNNSearchParams, VectorQueryObj, dict[bytes, Any], R
         self,
         index_config: IndexConfig,
         query: VectorQueryObj,
-    ) -> dict[bytes, Any]:
+    ) -> list[RedisKNNResult]:
         result = await self._client.client.ft(index_config.index_name).search(query.query, query.params)
-        return cast(dict[bytes, Any], result)
+        return self._parse_knn_results(result, query._return_fields)
+
+    def _parse_knn_results(
+        self, knn_response: dict[bytes, Any] | Any, field_names: Sequence[str]
+    ) -> list[RedisKNNResult]:
+        self._validate_knn_response_format(knn_response)
+        return [self._parse_knn_result(knn_result, field_names) for knn_result in knn_response[RESULTS_BYTES_KEY]]
+
+    def _validate_knn_response_format(self, knn_response: dict[bytes, Any]) -> None:
+        if not isinstance(knn_response, dict):
+            raise RedisTimeoutException(f"Redis timeout ({constants.REDIS_TIMEOUT}ms) exceeded.")
+        if RESULTS_BYTES_KEY not in knn_response:
+            raise RedisResultException("Redis response missing results key.")
+
+    def _parse_knn_result(self, knn_result: dict[bytes, Any] | None, field_names: Sequence[str]) -> RedisKNNResult:
+        if knn_result is None:
+            raise RedisResultException("Redis returned incomplete results.")
+        entity_id = self._get_entity_id_from_redis_id(knn_result.get(ID_BYTES_KEY))
+        extra_attributes = self._normalize_extra_attributes(knn_result.get(EXTRA_ATTRIBUTES_BYTES_KEY))
+        score = self._extract_score(extra_attributes.get(DISTANCE_ID))
+        field_name_to_data = self._extract_field_data(extra_attributes, field_names)
+        return RedisKNNResult(entity_id=entity_id, score=score, field_name_to_data=field_name_to_data)
+
+    def _normalize_extra_attributes(
+        self, extra_attributes: dict[bytes, bytes] | Sequence[bytes] | None
+    ) -> dict[str, bytes]:
+        if not extra_attributes:
+            raise RedisResultException("Redis result missing extra attributes.")
+        if isinstance(extra_attributes, dict):
+            return self._convert_extra_attributes_keys_to_str(extra_attributes)
+        if TypeValidator.is_sequence_safe(extra_attributes):
+            return self._convert_sequence_to_dict(extra_attributes)
+        raise RedisResultException(f"Redis returned unsupported extra attributes format: {type(extra_attributes)}.")
+
+    def _convert_extra_attributes_keys_to_str(self, attributes: dict[bytes, bytes]) -> dict[str, bytes]:
+        if not all(isinstance(key, bytes) for key in attributes.keys()):
+            raise RedisResultException("Redis returned malformed extra attributes keys.")
+        if not all(isinstance(value, bytes) for value in attributes.values()):
+            raise RedisResultException("Redis returned malformed extra attributes values.")
+        return {key.decode(UTF_8): attribute for key, attribute in attributes.items()}
+
+    def _convert_sequence_to_dict(self, attributes: Sequence[bytes]) -> dict[str, bytes]:
+        if len(attributes) % 2 != 0:
+            raise RedisResultException("Redis returned malformed extra attributes sequence.")
+        if not all(isinstance(item, bytes) for item in attributes):
+            raise RedisResultException("Redis returned invalid attribute format.")
+        return {attributes[i].decode(UTF_8): attributes[i + 1] for i in range(0, len(attributes), 2)}
+
+    def _extract_field_data(self, attributes: dict[str, bytes], field_names: Sequence[str]) -> dict[str, Any]:
+        return {field_name: attributes.get(field_name) for field_name in field_names}
+
+    def _extract_score(self, distance: bytes | None) -> float:
+        if distance is None:
+            raise RedisResultException("Redis result is missing distance key.")
+        return self._convert_distance_to_score(self._encoder._decode_double(distance))
+
+    def _convert_distance_to_score(self, distance: float) -> float:
+        return 1 - distance
+
+    def _get_entity_id_from_redis_id(self, redis_id: bytes | None) -> EntityId:
+        if redis_id is None:
+            raise RedisResultException("Redis result is missing ID key.")
+        return self._encoder.decode_redis_id_to_entity_id(redis_id)

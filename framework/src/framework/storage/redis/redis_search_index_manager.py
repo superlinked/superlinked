@@ -14,7 +14,7 @@
 
 
 from beartype.typing import Sequence, cast
-from redis.commands.search.indexDefinition import IndexDefinition, IndexType
+from redis.commands.search.index_definition import IndexDefinition, IndexType
 from typing_extensions import override
 
 from superlinked.framework.common.storage.index_config import IndexConfig

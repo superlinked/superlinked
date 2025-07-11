@@ -13,9 +13,14 @@
 # limitations under the License.
 
 
-class RedisTimeoutException(Exception):
-    pass
+from attr import dataclass
+from beartype.typing import Mapping
+
+from superlinked.framework.common.storage.entity.entity_id import EntityId
 
 
-class RedisResultException(Exception):
-    pass
+@dataclass(frozen=True)
+class RedisKNNResult:
+    entity_id: EntityId
+    score: float
+    field_name_to_data: Mapping[str, bytes]

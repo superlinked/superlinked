@@ -21,6 +21,7 @@ from beartype.typing import Any, Callable, cast
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.precision import Precision
 from superlinked.framework.common.schema.blob_information import BlobInformation
+from superlinked.framework.common.storage.entity.entity_id import EntityId
 from superlinked.framework.common.storage.exception import EncoderException
 from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.field.field_data import FieldData
@@ -141,3 +142,11 @@ class RedisFieldEncoder:
         if isinstance(data, tuple):
             return tuple(self.convert_bytes_keys(item) for item in data)
         return data
+
+    def decode_redis_id_to_entity_id(self, encoded_redis_id: bytes) -> EntityId:
+        decoded_redis_id = self._decode_string(encoded_redis_id)
+        schema_id, object_id = decoded_redis_id.split(":", 1)
+        return EntityId(schema_id=schema_id, object_id=object_id)
+
+    def encode_entity_id_to_redis_id(self, entity_id: EntityId) -> str:
+        return f"{entity_id.schema_id}:{entity_id.object_id}"
