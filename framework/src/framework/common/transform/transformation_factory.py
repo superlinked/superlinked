@@ -68,7 +68,11 @@ from superlinked.framework.common.transform.exception import (
 from superlinked.framework.common.transform.temp_lift_weighting_wrapper import (
     TempLiftWeightingWrapper,
 )
-from superlinked.framework.common.transform.transform import Step, Transform
+from superlinked.framework.common.transform.transform import (
+    FilterPredicate,
+    Step,
+    Transform,
+)
 
 
 @dataclass(frozen=True)
@@ -118,7 +122,6 @@ class TransformationFactory:
         base_transformations = TransformationFactory.__create_base_transformations(
             transformation_config, embedding_engine_manager
         )
-        aggregation_step = AggregationStep(base_transformations.aggregation)
         transformation: Step[Sequence[Weighted[Vector]], Vector]
         if (
             isinstance(base_transformations.embedding, InvertibleEmbedding)
@@ -133,10 +136,17 @@ class TransformationFactory:
                     "Cannot create non-vector aggregation step without an invertible embedding. "
                     + f"Got {transformation_config.embedding_config}"
                 )
+            aggregation_step = AggregationStep(base_transformations.aggregation)
             transformation = cast(
                 Step[Sequence[Weighted[Vector]], Vector],
-                aggregation_step,
-            ).combine(NormalizationStep(base_transformations.normalization))
+                aggregation_step.combine_if(
+                    cast(Step[AggregationInputT, Vector], NormalizationStep(base_transformations.normalization)),
+                    predicate=FilterPredicate(
+                        base_transformations.aggregation.filter_predicate,
+                        Vector.init_zero_vector(transformation_config.embedding_config.default_vector.dimension),
+                    ),
+                ),
+            )
         return transformation
 
     @staticmethod
@@ -165,7 +175,17 @@ class TransformationFactory:
         normalization_step = NormalizationStep(base_transformations.normalization)
         aggregation_step = AggregationStep(base_transformations.aggregation)
         embedding_step = EmbeddingStep(base_transformations.embedding)
-        return temp_lift_weighting_wrapper.combine(aggregation_step).combine(embedding_step).combine(normalization_step)
+        return temp_lift_weighting_wrapper.combine(
+            aggregation_step.combine_if(
+                embedding_step.combine(normalization_step),
+                predicate=FilterPredicate(
+                    filter_=base_transformations.aggregation.filter_predicate,
+                    default_value=Vector.init_zero_vector(
+                        transformation_config.embedding_config.default_vector.dimension
+                    ),
+                ),
+            ),
+        )
 
     @staticmethod
     def __create_base_transformations(

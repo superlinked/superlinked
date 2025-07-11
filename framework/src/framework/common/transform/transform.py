@@ -17,7 +17,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from beartype.typing import Generic, TypeVar
+from beartype.typing import Callable, Generic, TypeVar
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
@@ -40,8 +40,19 @@ class Step(ABC, Generic[StepInputT, StepOutputT]):
     def combine(self, step: Step[StepOutputT, StepCombinedOutputT]) -> Transform[StepInputT, StepCombinedOutputT]:
         return Transform(self, step)
 
+    def combine_if(
+        self, step: Step[StepOutputT, StepCombinedOutputT], predicate: FilterPredicate[StepInputT, StepCombinedOutputT]
+    ) -> Transform[StepInputT, StepCombinedOutputT]:
+        return Transform(self, step, predicate)
+
     def __mul__(self, step: Step[StepOutputT, StepCombinedOutputT]) -> Transform[StepInputT, StepCombinedOutputT]:
         return self.combine(step)
+
+
+@dataclass(frozen=True)
+class FilterPredicate(Generic[StepInputT, StepCombinedOutputT]):
+    filter_: Callable[[StepInputT], StepInputT | None]
+    default_value: StepCombinedOutputT
 
 
 class Transform(Generic[StepInputT, StepOutputT], Step[StepInputT, StepOutputT]):
@@ -49,10 +60,12 @@ class Transform(Generic[StepInputT, StepOutputT], Step[StepInputT, StepOutputT])
         self,
         step1: Step[StepInputT, StepInbetweenT],
         step2: Step[StepInbetweenT, StepOutputT],
+        predicate: FilterPredicate | None = None,
     ) -> None:
         super().__init__()
         self._step1 = step1
         self._step2 = step2
+        self._predicate = predicate
 
     @override
     async def transform(
@@ -60,6 +73,11 @@ class Transform(Generic[StepInputT, StepOutputT], Step[StepInputT, StepOutputT])
         input_: StepInputT,
         context: ExecutionContext,
     ) -> StepOutputT:
+        if self._predicate:
+            result = self._predicate.filter_(input_)
+            if result is None:
+                return self._predicate.default_value
+            input_ = result
         return await self._step2.transform(await self._step1.transform(input_, context), context)
 
 

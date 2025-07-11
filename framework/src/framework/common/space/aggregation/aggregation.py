@@ -38,6 +38,15 @@ class Aggregation(ABC, Generic[AggregationInputT]):
         self._config = config
 
     @abstractmethod
+    def filter_predicate(
+        self, weighted_items: Sequence[Weighted[AggregationInputT]]
+    ) -> Sequence[Weighted[AggregationInputT]] | None:
+        """
+        Returns a list of weighted items that should be included in the aggregation.
+        This is used to filter out aggregations that are not needed.
+        """
+
+    @abstractmethod
     def aggregate_weighted(
         self,
         weighted_items: Sequence[Weighted[AggregationInputT]],
@@ -47,6 +56,18 @@ class Aggregation(ABC, Generic[AggregationInputT]):
 
 class VectorAggregation(Aggregation[Vector]):
     @override
+    def filter_predicate(self, weighted_items: Sequence[Weighted[Vector]]) -> Sequence[Weighted[Vector]] | None:
+        if filtered_items := [
+            weighted
+            for weighted in weighted_items
+            if weighted.weight != constants.DEFAULT_NOT_AFFECTING_WEIGHT
+            and weighted.item is not None
+            and not weighted.item.is_empty
+        ]:
+            return filtered_items
+        return None
+
+    @override
     def aggregate_weighted(
         self,
         weighted_items: Sequence[Weighted[Vector]],
@@ -55,7 +76,7 @@ class VectorAggregation(Aggregation[Vector]):
         weighted_vectors = [
             weighted
             for weighted in weighted_items
-            if not weighted.item.is_empty and weighted.weight is not constants.DEFAULT_NOT_AFFECTING_WEIGHT
+            if not weighted.item.is_empty and weighted.weight != constants.DEFAULT_NOT_AFFECTING_WEIGHT
         ]
         vectors_with_negative_filters_replaced = (
             weighted.item.replace_negative_filters(constants.DEFAULT_NOT_AFFECTING_EMBEDDING_VALUE) * weighted.weight
@@ -109,6 +130,18 @@ class VectorAggregation(Aggregation[Vector]):
 
 class NumberAggregation(Generic[NumberAggregationInputT], Aggregation[NumberAggregationInputT], ABC):
     @override
+    def filter_predicate(
+        self, weighted_items: Sequence[Weighted[NumberAggregationInputT]]
+    ) -> Sequence[Weighted[NumberAggregationInputT]] | None:
+        if filtered_items := [
+            weighted
+            for weighted in weighted_items
+            if weighted.weight != constants.DEFAULT_NOT_AFFECTING_WEIGHT and weighted.item is not None
+        ]:
+            return filtered_items
+        return None
+
+    @override
     def aggregate_weighted(
         self,
         weighted_items: Sequence[Weighted[NumberAggregationInputT]],
@@ -117,7 +150,7 @@ class NumberAggregation(Generic[NumberAggregationInputT], Aggregation[NumberAggr
         weighted_items = [
             weighted
             for weighted in weighted_items
-            if weighted.weight is not constants.DEFAULT_NOT_AFFECTING_WEIGHT and weighted.item is not None
+            if weighted.weight != constants.DEFAULT_NOT_AFFECTING_WEIGHT and weighted.item is not None
         ]
         if len(weighted_items) == 0:
             raise ValueError("Cannot aggregate 0 items.")
