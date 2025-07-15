@@ -22,6 +22,7 @@ from superlinked.framework.common.storage_manager.storage_manager import (
     SearchIndexParams,
     StorageManager,
 )
+from superlinked.framework.common.telemetry.telemetry_registry import telemetry
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.dsl.source.types import SourceT
 from superlinked.framework.dsl.storage.vector_database import VectorDatabase
@@ -78,4 +79,11 @@ class App(ABC, Generic[SourceT]):
             )
             for index in self._indices
         ]
-        self.storage_manager.init_search_indices(search_index_params, create_search_indices)
+        with telemetry.span(
+            "storage.index.init",
+            attributes={
+                "n_search_indices": len(search_index_params),
+                "create_search_indices": create_search_indices,
+            },
+        ):
+            self.storage_manager.init_search_indices(search_index_params, create_search_indices)

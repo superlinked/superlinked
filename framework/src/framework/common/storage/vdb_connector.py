@@ -37,6 +37,7 @@ from superlinked.framework.common.storage.search_index.manager.search_index_mana
 from superlinked.framework.common.storage.search_index.search_algorithm import (
     SearchAlgorithm,
 )
+from superlinked.framework.common.telemetry.telemetry_registry import telemetry
 from superlinked.framework.dsl.query.query_user_config import QueryUserConfig
 from superlinked.framework.storage.common.vdb_settings import VDBSettings
 from superlinked.framework.storage.in_memory.object_serializer import ObjectSerializer
@@ -110,12 +111,22 @@ class VDBConnector(ABC, Generic[VDBKNNSearchConfigT]):
             override_existing,
         )
 
-    @abstractmethod
     async def write_entities(self, entity_data: Sequence[EntityData]) -> None:
+        labels = {"entity_data_count": len(entity_data), "vdb_type": type(self).__name__}
+        telemetry.record_metric("vdb.write.count", 1, labels)
+        return await self._write_entities(entity_data)
+
+    async def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
+        labels = {"entity_count": len(entities), "vdb_type": type(self).__name__}
+        telemetry.record_metric("vdb.read.count", 1, labels)
+        return await self._read_entities(entities)
+
+    @abstractmethod
+    async def _write_entities(self, entity_data: Sequence[EntityData]) -> None:
         pass
 
     @abstractmethod
-    async def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
+    async def _read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
         pass
 
     async def knn_search(
@@ -139,6 +150,16 @@ class VDBConnector(ABC, Generic[VDBKNNSearchConfigT]):
             filters=vdb_knn_search_params.filters,
             radius=vdb_knn_search_params.radius,
         )
+        labels = {
+            "index_name": index_name,
+            "schema_name": schema_name,
+            "distance_metric": self.distance_metric.value,
+            "search_algorithm": self.search_algorithm.value,
+            "vector_precision": self.vector_precision.value,
+            "limit": search_params.limit,
+            "radius": search_params.radius,
+        }
+        telemetry.record_metric("vdb.knn.count", 1, labels)
         return await self._knn_search(index_name, schema_name, search_params, search_config, **params)
 
     @abstractmethod

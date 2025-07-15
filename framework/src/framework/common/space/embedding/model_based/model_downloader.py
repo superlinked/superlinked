@@ -27,6 +27,7 @@ from huggingface_hub.file_download import repo_folder_name
 from requests.exceptions import ReadTimeout
 
 from superlinked.framework.common.settings import settings
+from superlinked.framework.common.telemetry.telemetry_registry import telemetry
 
 logger = structlog.getLogger()
 
@@ -92,7 +93,10 @@ class ModelDownloader:
                         if not force_download and self._is_model_downloaded(model_name, cache_dir):
                             return self._get_model_folder_path(model_name, cache_dir)
                         logger.info(f"Downloading model {model_name} to {cache_dir}")
-                        snapshot_download(repo_id=model_name, cache_dir=str(cache_dir))
+                        with telemetry.span(
+                            "model.download", attributes={"model_name": model_name, "cache_dir": str(cache_dir)}
+                        ):
+                            snapshot_download(repo_id=model_name, cache_dir=str(cache_dir))
                         model_path = self._get_model_folder_path(model_name, cache_dir)
                         if not model_path.exists():
                             raise RuntimeError(f"Model download completed but path {model_path} does not exist")

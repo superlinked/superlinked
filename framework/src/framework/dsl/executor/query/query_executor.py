@@ -35,6 +35,7 @@ from superlinked.framework.common.storage_manager.knn_search_params import (
 from superlinked.framework.common.storage_manager.search_result_item import (
     SearchResultItem,
 )
+from superlinked.framework.common.telemetry.telemetry_registry import telemetry
 from superlinked.framework.dsl.executor.executor import App
 from superlinked.framework.dsl.query.clause_params import (
     KNNSearchClauseParams,
@@ -236,13 +237,24 @@ class QueryExecutor:
         query_descriptor: QueryDescriptor,
         should_return_index_vector: bool,
     ) -> Sequence[SearchResultItem]:
-        return await self.app.storage_manager.knn_search(
-            query_descriptor.index._node,
-            query_descriptor.schema,
-            knn_search_params,
-            query_descriptor.query_user_config,
-            should_return_index_vector,
-        )
+        with telemetry.span(
+            "storage.knn",
+            attributes={
+                "index": query_descriptor.index._node_id,
+                "schema": query_descriptor.schema._schema_name,
+                "n_clauses": len(query_descriptor.clauses),
+                "limit": knn_search_params.limit,
+                "radius": knn_search_params.radius,
+                "should_return_index_vector": should_return_index_vector,
+            },
+        ):
+            return await self.app.storage_manager.knn_search(
+                query_descriptor.index._node,
+                query_descriptor.schema,
+                knn_search_params,
+                query_descriptor.query_user_config,
+                should_return_index_vector,
+            )
 
     def _calculate_partial_scores(self, query_vector: Vector, result_vectors: Sequence[Vector]) -> list[list[float]]:
         if not result_vectors:

@@ -18,6 +18,7 @@ from pydantic import BaseModel
 
 from superlinked.framework.common.exception import QueryException
 from superlinked.framework.common.nlq.open_ai import OpenAIClient, OpenAIClientConfig
+from superlinked.framework.common.telemetry.telemetry_registry import telemetry
 from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.dsl.query.nlq.nlq_clause_collector import NLQClauseCollector
 from superlinked.framework.dsl.query.nlq.param_filler.query_param_model_builder import (
@@ -55,7 +56,14 @@ class NLQHandler:
             return {}
         model_class = QueryParamModelBuilder.build(clause_collector)
         instructor_prompt = QueryParamPromptBuilder.calculate_instructor_prompt(clause_collector, system_prompt)
-        return await self._execute_query(natural_query, instructor_prompt, model_class)
+        with telemetry.span(
+            "nlq.execute",
+            attributes={
+                "n_clauses": len(clauses),
+                "model_class": model_class.__name__,
+            },
+        ):
+            return await self._execute_query(natural_query, instructor_prompt, model_class)
 
     def suggest_improvements(
         self,

@@ -28,6 +28,7 @@ from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.settings import settings
 from superlinked.framework.common.storage_manager.node_result_data import NodeResultData
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
+from superlinked.framework.common.telemetry.telemetry_registry import telemetry
 from superlinked.framework.common.util.concurrent_executor import ConcurrentExecutor
 from superlinked.framework.online.dag.evaluation_result import (
     EvaluationResult,
@@ -147,6 +148,8 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
         results: Sequence[EvaluationResult[NodeDataT] | None],
         parsed_schemas: Sequence[ParsedSchema],
     ) -> None:
+        if not parsed_schemas:
+            return
         node_data_items = [
             data
             for i, result in enumerate(results)
@@ -167,12 +170,11 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
                 ],
             ]
         ]
-        self.storage_manager.write_node_results(node_data_items)
-        logger.debug(
-            "stored online node data",
-            schemas=lambda: {parsed_schema.schema._schema_name for parsed_schema in parsed_schemas},
-            n_results=len(node_data_items),
-        )
+        schemas = {parsed_schema.schema._schema_name for parsed_schema in parsed_schemas}
+        labels = {"node_id": self.node_id, "n_results": len(node_data_items), "schemas": schemas}
+        with telemetry.span("storage.write.node.result", attributes=labels):
+            self.storage_manager.write_node_results(node_data_items)
+        logger.debug("stored online node data", schemas=schemas, n_results=len(node_data_items))
 
     def load_stored_results(
         self, schemas_with_object_ids: Sequence[tuple[SchemaObject, str]]
@@ -180,11 +182,19 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
         if not schemas_with_object_ids:
             return []
         distinct_keys = list(set(schemas_with_object_ids))
-        distinct_stored_results = self.storage_manager.read_node_results(
-            distinct_keys,
-            self.node_id,
-            self.node.node_data_type,
-        )
+        with telemetry.span(
+            "storage.read.node.result",
+            attributes={
+                "node_id": self.node_id,
+                "n_results": len(distinct_keys),
+                "data_type": self.node.node_data_type.__name__,
+            },
+        ):
+            distinct_stored_results = self.storage_manager.read_node_results(
+                distinct_keys,
+                self.node_id,
+                self.node.node_data_type,
+            )
         distinct_stored_result_by_key = dict(zip(distinct_keys, distinct_stored_results))
         return [distinct_stored_result_by_key[key] for key in schemas_with_object_ids]
 

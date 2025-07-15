@@ -65,13 +65,13 @@ class InMemoryVDB(VDBConnector[VDBKNNSearchConfig]):
         return self.__search_index_manager
 
     @override
-    async def write_entities(self, entity_data: Sequence[EntityData]) -> None:
+    async def _write_entities(self, entity_data: Sequence[EntityData]) -> None:
         for ed in entity_data:
             row_id = InMemoryVDB._get_row_id_from_entity_id(ed.id_)
             self._vdb[row_id].update({name: fd.value for name, fd in ed.field_data.items()})
 
     @override
-    async def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
+    async def _read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
         return [
             EntityData(
                 entity.id_,

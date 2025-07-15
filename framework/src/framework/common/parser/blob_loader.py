@@ -28,6 +28,7 @@ from superlinked.framework.blob.blob_handler_factory import (
 )
 from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.settings import settings
+from superlinked.framework.common.telemetry.telemetry_registry import telemetry
 from superlinked.framework.common.util.concurrent_executor import ConcurrentExecutor
 from superlinked.framework.common.util.image_util import ImageUtil
 
@@ -75,11 +76,18 @@ class BlobLoader:
     def load_multiple(self, blob_like_inputs: Sequence[str | Image | None | Any]) -> Sequence[BlobInformation]:
         logger_to_use = logger.bind(n_blobs=len(blob_like_inputs))
         logger_to_use.info("started blob loading")
-        results = ConcurrentExecutor().execute(
-            func=self.load,
-            args_list=[(blob_like_input,) for blob_like_input in blob_like_inputs],
-            condition=settings.SUPERLINKED_CONCURRENT_BLOB_LOADING,
-        )
+        with telemetry.span(
+            "blob.load",
+            attributes={
+                "n_blob_like_inputs": len(blob_like_inputs),
+                "allow_bytes": self.allow_bytes,
+            },
+        ):
+            results = ConcurrentExecutor().execute(
+                func=self.load,
+                args_list=[(blob_like_input,) for blob_like_input in blob_like_inputs],
+                condition=settings.SUPERLINKED_CONCURRENT_BLOB_LOADING,
+            )
         logger_to_use.info("finished blob loading")
         return results
 

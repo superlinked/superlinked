@@ -79,7 +79,7 @@ class TopKVDBConnector(VDBConnector):
         return self.__vdb_settings.default_query_limit
 
     @override
-    async def write_entities(self, entity_data: Sequence[EntityData]) -> None:
+    async def _write_entities(self, entity_data: Sequence[EntityData]) -> None:
         if not entity_data:
             return
 
@@ -94,7 +94,7 @@ class TopKVDBConnector(VDBConnector):
         self._client.upsert_partial(self.collection_name, docs)
 
     @override
-    async def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
+    async def _read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
         if not entities:
             return []
 

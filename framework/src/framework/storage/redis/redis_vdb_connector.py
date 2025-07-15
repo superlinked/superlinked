@@ -66,7 +66,7 @@ class RedisVDBConnector(VDBConnector[RedisVDBKNNSearchConfig]):
         return self.__search_index_manager
 
     @override
-    async def write_entities(self, entity_data: Sequence[EntityData]) -> None:
+    async def _write_entities(self, entity_data: Sequence[EntityData]) -> None:
         if entity_data:
             _pipeline = self._client.client.pipeline(transaction=False)
             for ed in entity_data:
@@ -80,7 +80,7 @@ class RedisVDBConnector(VDBConnector[RedisVDBKNNSearchConfig]):
             await _pipeline.execute()
 
     @override
-    async def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
+    async def _read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
         valid_entities = [entity for entity in entities if entity.fields]
         if not valid_entities:
             return []

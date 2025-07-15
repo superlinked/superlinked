@@ -136,8 +136,8 @@ class EmbeddingEngineManager:
             "is_query_context": str(is_query_context),
             "precision": config.precision.value,
         }
-        telemetry.record_metric("embeddings_total", len(inputs), labels=labels)
-        with telemetry.span("embedding_engine.embed", attributes=labels):
+        telemetry.record_metric("engine.embed.count", len(inputs), labels=labels)
+        with telemetry.span("engine.embed", attributes=labels):
             embeddings = await engine.embed(inputs, is_query_context)
         return [Vector(embedding) for embedding in embeddings]
 

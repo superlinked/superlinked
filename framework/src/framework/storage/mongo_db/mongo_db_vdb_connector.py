@@ -73,7 +73,7 @@ class MongoDBVDBConnector(VDBConnector[VDBKNNSearchConfig]):
         return self._search_index_manager
 
     @override
-    async def write_entities(self, entity_data: Sequence[EntityData]) -> None:
+    async def _write_entities(self, entity_data: Sequence[EntityData]) -> None:
         if not entity_data:
             return
         docs = [
@@ -87,7 +87,7 @@ class MongoDBVDBConnector(VDBConnector[VDBKNNSearchConfig]):
             [UpdateOne({"_id": doc["_id"]}, {"$set": doc}, upsert=True) for doc in docs]
         )
 
-    async def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
+    async def _read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
         if not entities:
             return []
 

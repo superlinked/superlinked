@@ -32,6 +32,7 @@ from superlinked.framework.common.schema.id_field import IdField
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
+from superlinked.framework.common.telemetry.telemetry_registry import telemetry
 from superlinked.framework.dsl.query.clause_params import QueryVectorClauseParams
 from superlinked.framework.dsl.query.query_clause.query_clause import (
     NLQCompatible,
@@ -109,7 +110,16 @@ class BaseLooksLikeFilterClause(NLQCompatible, SingleValueParamQueryClause, ABC)
     async def __get_looks_like_vector(
         self, index_node_id: str, schema_obj: SchemaObject, object_id: str, storage_manager: StorageManager
     ) -> Vector:
-        vector: Vector | None = await storage_manager.read_node_result(schema_obj, object_id, index_node_id, Vector)
+        with telemetry.span(
+            "storage.read.node.result",
+            attributes={
+                "schema": schema_obj._schema_name,
+                "object_id": object_id,
+                "node_id": index_node_id,
+                "data_type": Vector.__name__,
+            },
+        ):
+            vector: Vector | None = await storage_manager.read_node_result(schema_obj, object_id, index_node_id, Vector)
         if vector is None:
             raise QueryException(f"Entity not found object_id: {object_id} node_id: {index_node_id}")
         return vector

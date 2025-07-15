@@ -23,6 +23,7 @@ from superlinked.framework.common.const import constants
 from superlinked.framework.common.data_types import PythonTypes
 from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
+from superlinked.framework.common.telemetry.telemetry_registry import telemetry
 
 
 @dataclass(frozen=True)
@@ -61,12 +62,24 @@ class EventMetadataHandler:
         return min(previous_oldest_ts, created_at) if previous_oldest_ts else created_at
 
     def read(self, schema: SchemaObject, object_ids: Sequence[str]) -> dict[str, EventMetadata]:
-        metadata_by_object_id = self._storage_manager.read_node_data(
-            schema,
-            object_ids,
-            self._metadata_key,
-            {constants.EFFECT_COUNT_KEY: int, constants.EFFECT_AVG_TS_KEY: int, constants.EFFECT_OLDEST_TS_KEY: int},
-        )
+        with telemetry.span(
+            "storage.read.node.data",
+            attributes={
+                "schema": schema._schema_name,
+                "n_object_ids": len(object_ids),
+                "node_id": self._metadata_key,
+            },
+        ):
+            metadata_by_object_id = self._storage_manager.read_node_data(
+                schema,
+                object_ids,
+                self._metadata_key,
+                {
+                    constants.EFFECT_COUNT_KEY: int,
+                    constants.EFFECT_AVG_TS_KEY: int,
+                    constants.EFFECT_OLDEST_TS_KEY: int,
+                },
+            )
         return {
             object_id: EventMetadata(
                 metadata.get(constants.EFFECT_COUNT_KEY, 0),
@@ -85,4 +98,12 @@ class EventMetadataHandler:
             }
             for object_id, event_metadata in event_metadata_items.items()
         }
-        self._storage_manager.write_node_data(schema, node_data_by_object_id, self._metadata_key)
+        with telemetry.span(
+            "storage.write.node.data",
+            attributes={
+                "schema": schema._schema_name,
+                "n_object_ids": len(node_data_by_object_id),
+                "node_id": self._metadata_key,
+            },
+        ):
+            self._storage_manager.write_node_data(schema, node_data_by_object_id, self._metadata_key)

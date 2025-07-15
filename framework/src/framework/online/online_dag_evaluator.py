@@ -35,6 +35,7 @@ from superlinked.framework.common.parser.parsed_schema import (
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
+from superlinked.framework.common.telemetry.telemetry_registry import telemetry
 from superlinked.framework.compiler.online.online_schema_dag_compiler import (
     OnlineSchemaDagCompiler,
 )
@@ -97,7 +98,11 @@ class OnlineDagEvaluator:
     ) -> list[EvaluationResult[Vector] | None]:
         index_schema = self.__get_single_schema(parsed_schemas)
         if (online_schema_dag := self._schema_online_schema_dag_mapper.get(index_schema)) is not None:
-            results = online_schema_dag.evaluate(parsed_schemas, context)
+            with telemetry.span(
+                "dag.evaluate",
+                attributes={"schema": index_schema._schema_name, "n_entities": len(parsed_schemas), "is_event": False},
+            ):
+                results = online_schema_dag.evaluate(parsed_schemas, context)
             logger_to_use = logger.bind(schema=index_schema._schema_name)
             logger_to_use.info("evaluated entities", n_entities=len(results))
             for i, result in enumerate(results):
@@ -117,7 +122,13 @@ class OnlineDagEvaluator:
         dag_effect_group: DagEffectGroup,
     ) -> list[EvaluationResult[Vector] | None]:
         if (online_schema_dag := self._dag_effect_group_to_online_schema_dag.get(dag_effect_group)) is not None:
-            results = online_schema_dag.evaluate(parsed_schema_with_events, context)
+            labels = {
+                "schema": dag_effect_group.affected_schema._schema_name,
+                "n_entities": len(parsed_schema_with_events),
+                "is_event": True,
+            }
+            with telemetry.span("dag.evaluate", attributes=labels):
+                results = online_schema_dag.evaluate(parsed_schema_with_events, context)
             logger.info("evaluated events", n_records=len(results))
             return results
         raise InvalidDagEffectException(f"DagEffectGroup ({dag_effect_group}) isn't present in the index.")

@@ -108,7 +108,7 @@ class QdrantVDBConnector(VDBConnector[VDBKNNSearchConfig]):
         )
 
     @override
-    async def write_entities(self, entity_data: Sequence[EntityData]) -> None:
+    async def _write_entities(self, entity_data: Sequence[EntityData]) -> None:
         if not self.search_index_manager._index_configs:
             raise IndexConfigNotFoundException(
                 f"{type(self).__name__} can work properly only after initializing " + "the search indices."
@@ -171,7 +171,7 @@ class QdrantVDBConnector(VDBConnector[VDBKNNSearchConfig]):
         return non_existing_points, existing_points
 
     @override
-    async def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
+    async def _read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
         returned_field_names = {field.name for entity in entities for field in entity.fields.values()} | {
             ID_PAYLOAD_FIELD_NAME
         }
