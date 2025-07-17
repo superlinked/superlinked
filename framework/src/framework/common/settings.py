@@ -56,6 +56,7 @@ class Settings(YamlBasedSettings):
     ENABLE_MPS: bool = False
     SUPERLINKED_RESIZE_IMAGES: bool = False
     # Embedding specific settings - model
+    MODEL_WARMUP: bool = False
     MODEL_CACHE_DIR: str | None = None
     MODEL_LOCK_TIMEOUT_SECONDS: int = 120
     SENTENCE_TRANSFORMERS_MODEL_LOCK_MAX_RETRIES: int = 10

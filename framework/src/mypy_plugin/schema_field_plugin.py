@@ -16,7 +16,7 @@
 
 from beartype.typing import Any, Callable
 from mypy.options import Options
-from mypy.plugin import AttributeContext, MethodContext, Plugin
+from mypy.plugin import AttributeContext, Plugin
 from mypy.types import Instance, NoneType, Type
 from mypy.types import UnionType as MypyUnionType
 
@@ -64,21 +64,6 @@ class SchemaFieldPlugin(Plugin):
 
         return self._create_attribute_hook()
 
-    def get_method_hook(self, fullname: str) -> Callable[[MethodContext], Type] | None:
-        """
-        Hook for method calls during MyPy type checking.
-        Enables comparison operators (__eq__, __ne__, etc.) on SchemaField | None types.
-        Called when MyPy encounters method calls (e.g., obj.method()). The returned callable
-        receives MethodContext with:
-        - ctx.type: Object type whose method is called
-        - ctx.default_return_type: MyPy's inferred return type
-        """
-
-        # Only hook into comparison operators
-        if fullname.split(".")[-1] in COMPARISON_OPERATORS:
-            return self._create_method_hook()
-        return None
-
     def _create_attribute_hook(self) -> Callable[[AttributeContext], Type]:
         """Create attribute hook with access to plugin caches"""
 
@@ -86,14 +71,6 @@ class SchemaFieldPlugin(Plugin):
             return self._handle_attribute_access(ctx)
 
         return schema_field_attribute_hook
-
-    def _create_method_hook(self) -> Callable[[MethodContext], Type]:
-        """Create method hook with access to plugin caches"""
-
-        def schema_field_method_hook(ctx: MethodContext) -> Type:
-            return self._handle_method_call(ctx)
-
-        return schema_field_method_hook
 
     def _is_schema_subclass(self, instance_type: Instance) -> bool:
         if not isinstance(instance_type, Instance):
@@ -167,25 +144,6 @@ class SchemaFieldPlugin(Plugin):
 
         # Transform with caching
         return self._transform_union_type(ctx.default_attr_type)
-
-    def _handle_method_call(self, ctx: MethodContext) -> Type:
-        """Handle method calls with optimizations"""
-        # Only process union types
-        if not isinstance(ctx.type, MypyUnionType):
-            return ctx.default_return_type
-
-        # Quick check: does this union contain a schema field?
-        has_schema_field = any(
-            isinstance(item, Instance) and item.type.fullname in SCHEMA_FIELD_TYPES for item in ctx.type.items
-        )
-
-        has_none = any(isinstance(item, NoneType) for item in ctx.type.items)
-
-        # Allow operation if we have SchemaField | None
-        if has_schema_field and has_none:
-            return ctx.default_return_type
-
-        return ctx.default_return_type
 
 
 def plugin(version: str) -> type[SchemaFieldPlugin]:

@@ -20,6 +20,7 @@ import structlog
 from beartype.typing import Mapping, Sequence
 
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.settings import settings
 from superlinked.framework.common.space.embedding.model_based.embedding_input import (
     ModelEmbeddingInputT,
 )
@@ -149,7 +150,7 @@ class EmbeddingEngineManager:
         config: EmbeddingEngineConfig,
     ) -> int:
         clean_model_name = self._get_clean_model_name(model_handler, model_name)
-        if clean_model_name in MODEL_DIMENSION_BY_NAME:
+        if not settings.MODEL_WARMUP and clean_model_name in MODEL_DIMENSION_BY_NAME:
             length = MODEL_DIMENSION_BY_NAME[clean_model_name]
             return length
         length = await self.get_engine(model_handler, model_name, model_cache_dir, config).length
