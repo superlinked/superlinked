@@ -145,7 +145,7 @@ Classes
         Returns:
             QueryDescriptor: A new query descriptor with the updated configuration.
 
-    `select(self, fields: superlinked.framework.common.schema.schema_object.SchemaField | str | superlinked.framework.dsl.query.param.Param | collections.abc.Sequence[superlinked.framework.common.schema.schema_object.SchemaField | str | superlinked.framework.dsl.query.param.Param] | None = None, metadata: collections.abc.Sequence[superlinked.framework.dsl.space.space.Space] | None = None) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
+    `select(self, fields: superlinked.framework.common.schema.schema_object.SchemaField | None | str | superlinked.framework.dsl.query.param.Param | collections.abc.Sequence[superlinked.framework.common.schema.schema_object.SchemaField | None | str | superlinked.framework.dsl.query.param.Param] = None, metadata: collections.abc.Sequence[superlinked.framework.dsl.space.space.Space] | None = None) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :   Select specific fields from the schema to be returned in the query results.
         
         Args:
