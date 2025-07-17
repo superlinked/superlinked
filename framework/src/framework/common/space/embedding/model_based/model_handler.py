@@ -19,14 +19,12 @@ from beartype.typing import TypeVar
 
 class ModelHandler(Enum):
     SENTENCE_TRANSFORMERS = "sentence_transformers"
-    HUGGING_FACE = "hugging_face"
     OPEN_CLIP = "open_clip"
     MODAL = "modal"
 
 
 class TextModelHandler(Enum):
     SENTENCE_TRANSFORMERS = "sentence_transformers"
-    HUGGING_FACE = "hugging_face"
     MODAL = "modal"
 
 

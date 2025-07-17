@@ -30,9 +30,6 @@ from superlinked.framework.common.space.embedding.model_based.engine.embedding_e
 from superlinked.framework.common.space.embedding.model_based.engine.embedding_engine_config import (
     EmbeddingEngineConfig,
 )
-from superlinked.framework.common.space.embedding.model_based.engine.hugging_face_engine import (
-    HuggingFaceEngine,
-)
 from superlinked.framework.common.space.embedding.model_based.engine.modal_engine import (
     ModalEngine,
 )
@@ -55,10 +52,8 @@ from superlinked.framework.common.telemetry.telemetry_registry import telemetry
 
 ENGINE_BY_HANDLER: Mapping[ModelHandlerType, type[EmbeddingEngine]] = {
     TextModelHandler.SENTENCE_TRANSFORMERS: SentenceTransformersEngine,
-    TextModelHandler.HUGGING_FACE: HuggingFaceEngine,
     TextModelHandler.MODAL: ModalEngine,
     ModelHandler.SENTENCE_TRANSFORMERS: SentenceTransformersEngine,
-    ModelHandler.HUGGING_FACE: HuggingFaceEngine,
     ModelHandler.OPEN_CLIP: OpenCLIPEngine,
     ModelHandler.MODAL: ModalEngine,
 }

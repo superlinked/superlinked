@@ -63,16 +63,6 @@ class Settings(YamlBasedSettings):
     SENTENCE_TRANSFORMERS_MODEL_LOCK_RETRY_DELAY: int = 1
     SENTENCE_TRANSFORMERS_MODEL_LOCK_TIMEOUT_BUFFER_SECONDS: int = 10
     SENTENCE_TRANSFORMERS_MODEL_LOCK_TIMEOUT_MIN_SECONDS: int = 5
-    HUGGING_FACE_API_TOKEN: str | None = None  # TODO FAB-3560 - secret
-    # Embedding specific settings - modal
-    MODAL_APP_NAME: str = "App"
-    MODAL_CLASS_NAME: str = "Embedder"
-    MODAL_ENVIRONMENT_NAME: str = "main"
-    MODAL_IMAGE_FORMAT: str | None = "WebP"
-    MODAL_IMAGE_QUALITY: int = 95
-    MODAL_BATCH_SIZE: int = 5000
-    MODAL_MAX_RETRIES: int = 10
-    MODAL_RETRY_DELAY: float = 0.2
     # Blob loading settings
     SUPERLINKED_CONCURRENT_BLOB_LOADING: bool = True
     BLOB_HANDLER_MODULE_PATH: str | None = None
