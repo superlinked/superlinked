@@ -95,7 +95,7 @@ from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
 logger = structlog.getLogger()
 
-SchemaFieldSelector = SchemaField | str | Param
+SchemaFieldSelector = SchemaField | None | str | Param
 
 
 class QueryDescriptor:  # pylint: disable=too-many-public-methods
@@ -216,7 +216,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
     @TypeValidator.wrap
     def select(
         self,
-        fields: SchemaFieldSelector | Sequence[SchemaFieldSelector] | None = None,
+        fields: SchemaFieldSelector | Sequence[SchemaFieldSelector] = None,
         metadata: Sequence[Space] | None = None,
     ) -> QueryDescriptor:
         """
@@ -249,7 +249,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         altered_query_descriptor = self.__append_clauses([clause])
         return altered_query_descriptor
 
-    def __handle_select_param(self, fields: Sequence[SchemaField | str | Param]) -> Param | list[str]:
+    def __handle_select_param(self, fields: Sequence[SchemaFieldSelector]) -> Param | list[str]:
         if len(fields) == 0:
             return []
         if len(fields) == 1 and isinstance(fields[0], Param):
