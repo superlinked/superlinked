@@ -21,12 +21,12 @@ from superlinked.framework.common.dag.chunking_node import ChunkingNode
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
-from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.util.chunking_util import Chunker
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.exception import ChunkException
 from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.dag.parent_validator import ParentValidationType
+from superlinked.framework.online.online_entity_cache import OnlineEntityCache
 
 
 class OnlineChunkingNode(OnlineNode[ChunkingNode, str]):
@@ -34,14 +34,8 @@ class OnlineChunkingNode(OnlineNode[ChunkingNode, str]):
         self,
         node: ChunkingNode,
         parents: list[OnlineNode[Node[str], str]],
-        storage_manager: StorageManager,
     ) -> None:
-        super().__init__(
-            node,
-            parents,
-            storage_manager,
-            ParentValidationType.EXACTLY_ONE_PARENT,
-        )
+        super().__init__(node, parents, ParentValidationType.EXACTLY_ONE_PARENT)
 
     def __chunk(
         self,
@@ -59,15 +53,17 @@ class OnlineChunkingNode(OnlineNode[ChunkingNode, str]):
         self,
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
+        online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult[str] | None]:
-        return [self.evaluate_self_single(schema, context) for schema in parsed_schemas]
+        return [self.evaluate_self_single(schema, context, online_entity_cache) for schema in parsed_schemas]
 
     def evaluate_self_single(
         self,
         parsed_schema: ParsedSchema,
         context: ExecutionContext,
+        online_entity_cache: OnlineEntityCache,
     ) -> EvaluationResult[str] | None:
-        parent_result = self.evaluate_parent(self.parents[0], [parsed_schema], context)[0]
+        parent_result = self.evaluate_parent(self.parents[0], [parsed_schema], context, online_entity_cache)[0]
         if parent_result is None:
             return None
         if len(parent_result.chunks) > 0:

@@ -23,7 +23,6 @@ from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import ValidationException
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
-from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.transform.transform import Step
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
@@ -31,6 +30,7 @@ from superlinked.framework.common.transform.transformation_factory import (
 from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
+from superlinked.framework.online.online_entity_cache import OnlineEntityCache
 
 
 class OnlineCustomVectorEmbeddingNode(OnlineNode[CustomVectorEmbeddingNode, Vector], HasLength):
@@ -38,9 +38,8 @@ class OnlineCustomVectorEmbeddingNode(OnlineNode[CustomVectorEmbeddingNode, Vect
         self,
         node: CustomVectorEmbeddingNode,
         parents: list[OnlineNode],
-        storage_manager: StorageManager,
     ) -> None:
-        super().__init__(node, parents, storage_manager)
+        super().__init__(node, parents)
         self._embedding_transformation = TransformationFactory.create_embedding_transformation(
             self.node.transformation_config
         )
@@ -59,14 +58,16 @@ class OnlineCustomVectorEmbeddingNode(OnlineNode[CustomVectorEmbeddingNode, Vect
         self,
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
+        online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult[Vector] | None]:
         if len(self.parents) == 0:
             results = self.load_stored_results_with_default(
                 [(parsed_schema.schema, parsed_schema.id_) for parsed_schema in parsed_schemas],
                 Vector.init_zero_vector(self.node.length),
+                online_entity_cache,
             )
         else:
-            parent_results = self.evaluate_parent(self.parents[0], parsed_schemas, context)
+            parent_results = self.evaluate_parent(self.parents[0], parsed_schemas, context, online_entity_cache)
             results = [self._evaluate_parent_result(parent_result, context) for parent_result in parent_results]
         return [self._wrap_in_evaluation_result(result) for result in results]
 

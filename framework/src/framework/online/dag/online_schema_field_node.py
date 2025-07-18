@@ -21,11 +21,11 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.schema_object import SFT
-from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.exception import ValueNotProvidedException
 from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.dag.parent_validator import ParentValidationType
+from superlinked.framework.online.online_entity_cache import OnlineEntityCache
 
 
 class OnlineSchemaFieldNode(Generic[SFT], OnlineNode[SchemaFieldNode, SFT]):
@@ -33,28 +33,28 @@ class OnlineSchemaFieldNode(Generic[SFT], OnlineNode[SchemaFieldNode, SFT]):
         self,
         node: SchemaFieldNode,
         parents: list[OnlineNode],
-        storage_manager: StorageManager,
     ) -> None:
-        super().__init__(
-            node,
-            parents,
-            storage_manager,
-            ParentValidationType.NO_PARENTS,
-        )
+        super().__init__(node, parents, ParentValidationType.NO_PARENTS)
 
     @override
     def evaluate_self(
-        self, parsed_schemas: Sequence[ParsedSchema], context: ExecutionContext
+        self,
+        parsed_schemas: Sequence[ParsedSchema],
+        context: ExecutionContext,
+        online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult[SFT] | None]:
         parsed_schema_values = [self._get_parsed_schema_value(parsed_schema) for parsed_schema in parsed_schemas]
-        stored_results = self._calculate_stored_result_by_id(parsed_schemas, parsed_schema_values)
+        stored_results = self._calculate_stored_result_by_id(parsed_schemas, parsed_schema_values, online_entity_cache)
         return [
             self._to_result(stored_results.get(parsed_schema.id_) if value is None else value)
             for parsed_schema, value in zip(parsed_schemas, parsed_schema_values)
         ]
 
     def _calculate_stored_result_by_id(
-        self, parsed_schemas: Sequence[ParsedSchema], parsed_schema_values: Sequence[SFT | None]
+        self,
+        parsed_schemas: Sequence[ParsedSchema],
+        parsed_schema_values: Sequence[SFT | None],
+        online_entity_cache: OnlineEntityCache,
     ) -> dict[str, SFT | None]:
         parsed_schema_ids_without_value = set(
             parsed_schema.id_ for parsed_schema, value in zip(parsed_schemas, parsed_schema_values) if not value
@@ -66,7 +66,9 @@ class OnlineSchemaFieldNode(Generic[SFT], OnlineNode[SchemaFieldNode, SFT]):
             (self.node.schema_field.schema_obj, parsed_schema_id)
             for parsed_schema_id in parsed_schema_ids_without_value
         ]
-        return dict(zip(parsed_schema_ids_without_value, self.load_stored_results(schemas_with_object_ids)))
+        return dict(
+            zip(parsed_schema_ids_without_value, self.load_stored_results(schemas_with_object_ids, online_entity_cache))
+        )
 
     def _get_parsed_schema_value(self, parsed_schema: ParsedSchema) -> SFT | None:
         return next(

@@ -21,7 +21,6 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.recency_node import RecencyNode
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.interface.has_length import HasLength
-from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.transform.transform import Step
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
@@ -39,9 +38,8 @@ class OnlineRecencyNode(DefaultOnlineNode[RecencyNode, Vector], HasLength):
         self,
         node: RecencyNode,
         parents: list[OnlineNode],
-        storage_manager: StorageManager,
     ) -> None:
-        super().__init__(node, parents, storage_manager)
+        super().__init__(node, parents)
         self._embedding_transformation = TransformationFactory.create_embedding_transformation(
             self.node.transformation_config
         )

@@ -25,9 +25,9 @@ from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.schema_object import SchemaObject
-from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
+from superlinked.framework.online.online_entity_cache import OnlineEntityCache
 
 
 class OnlineIndexNode(OnlineNode[IndexNode, Vector], HasLength):
@@ -35,9 +35,8 @@ class OnlineIndexNode(OnlineNode[IndexNode, Vector], HasLength):
         self,
         node: IndexNode,
         parents: Sequence[OnlineNode[Node[Vector], Vector]],
-        storage_manager: StorageManager,
     ) -> None:
-        super().__init__(node, parents, storage_manager)
+        super().__init__(node, parents)
 
     @property
     def length(self) -> int:
@@ -64,9 +63,12 @@ class OnlineIndexNode(OnlineNode[IndexNode, Vector], HasLength):
         self,
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
+        online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult[Vector] | None]:
         parent: OnlineNode = self.__get_parent_for_parsed_schemas(parsed_schemas)
-        parent_results = cast(list[EvaluationResult], self.evaluate_parent(parent, parsed_schemas, context))
+        parent_results = cast(
+            list[EvaluationResult], self.evaluate_parent(parent, parsed_schemas, context, online_entity_cache)
+        )
         return [
             EvaluationResult(
                 self._get_single_evaluation_result(parent_result.main.value),

@@ -30,7 +30,6 @@ from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.space.embedding.model_based.singleton_embedding_engine_manager import (
     SingletonEmbeddingEngineManager,
 )
-from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
 )
@@ -46,14 +45,8 @@ class OnlineAggregationNode(DefaultOnlineNode[AggregationNode, Vector], HasLengt
         self,
         node: AggregationNode,
         parents: list[OnlineNode],
-        storage_manager: StorageManager,
     ) -> None:
-        super().__init__(
-            node,
-            parents,
-            storage_manager,
-            ParentValidationType.AT_LEAST_ONE_PARENT,
-        )
+        super().__init__(node, parents, ParentValidationType.AT_LEAST_ONE_PARENT)
         OnlineAggregationNode._validate_parents(parents)
         self._aggregation_transformation = TransformationFactory.create_aggregation_transformation(
             self.node.transformation_config, SingletonEmbeddingEngineManager()

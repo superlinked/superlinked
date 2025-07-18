@@ -25,7 +25,6 @@ from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.space.embedding.model_based.singleton_embedding_engine_manager import (
     SingletonEmbeddingEngineManager,
 )
-from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.transform.transform import Step
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
@@ -34,6 +33,7 @@ from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
 from superlinked.framework.online.dag.evaluation_result import SingleEvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
+from superlinked.framework.online.online_entity_cache import OnlineEntityCache
 
 
 class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasLength):
@@ -41,9 +41,8 @@ class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasL
         self,
         node: TextEmbeddingNode,
         parents: list[OnlineNode],
-        storage_manager: StorageManager,
     ) -> None:
-        super().__init__(node, parents, storage_manager)
+        super().__init__(node, parents)
         self._embedding_transformation = self._init_embedding_transformation()
 
     def _init_embedding_transformation(self) -> Step[Sequence[str], list[Vector]]:
@@ -64,9 +63,10 @@ class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasL
     def get_fallback_results(
         self,
         parsed_schemas: Sequence[ParsedSchema],
+        online_entity_cache: OnlineEntityCache,
     ) -> list[Vector]:
         schemas_with_object_ids = [(parsed_schema.schema, parsed_schema.id_) for parsed_schema in parsed_schemas]
-        stored_results = self.load_stored_results(schemas_with_object_ids)
+        stored_results = self.load_stored_results(schemas_with_object_ids, online_entity_cache)
         return [
             Vector.init_zero_vector(self.node.length) if stored_result is None else stored_result
             for stored_result in stored_results

@@ -17,13 +17,12 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
-from beartype.typing import Mapping, Sequence
+from beartype.typing import Mapping
 
 from superlinked.framework.common.const import constants
-from superlinked.framework.common.data_types import PythonTypes
 from superlinked.framework.common.schema.schema_object import SchemaObject
-from superlinked.framework.common.storage_manager.storage_manager import StorageManager
-from superlinked.framework.common.telemetry.telemetry_registry import telemetry
+from superlinked.framework.common.storage.entity_key import EntityKey
+from superlinked.framework.online.online_entity_cache import OnlineEntityCache
 
 
 @dataclass(frozen=True)
@@ -34,8 +33,7 @@ class EventMetadata:
 
 
 class EventMetadataHandler:
-    def __init__(self, storage_manager: StorageManager, metadata_key: str) -> None:
-        self._storage_manager = storage_manager
+    def __init__(self, metadata_key: str) -> None:
         self._metadata_key = metadata_key
 
     def recalculate(
@@ -61,49 +59,36 @@ class EventMetadataHandler:
     def _calculate_oldest_ts(self, previous_oldest_ts: int, created_at: int) -> int:
         return min(previous_oldest_ts, created_at) if previous_oldest_ts else created_at
 
-    def read(self, schema: SchemaObject, object_ids: Sequence[str]) -> dict[str, EventMetadata]:
-        with telemetry.span(
-            "storage.read.node.data",
-            attributes={
-                "schema": schema._schema_name,
-                "n_object_ids": len(object_ids),
-                "node_id": self._metadata_key,
-            },
-        ):
-            metadata_by_object_id = self._storage_manager.read_node_data(
-                schema,
-                object_ids,
-                self._metadata_key,
+    def read(self, schema: SchemaObject, object_id: str, online_entity_cache: OnlineEntityCache) -> EventMetadata:
+        def get_event_metadata_item(object_id: str, field_name: str) -> int:
+            entity_key = EntityKey(
+                schema_id=schema._schema_name,
+                object_id=object_id,
+                node_id=self._metadata_key,
+            )
+            event_metadata_item = online_entity_cache.get(entity_key=entity_key, field_name=field_name) or 0
+            if not isinstance(event_metadata_item, int):
+                raise ValueError(f"{field_name} must be int, got {type(event_metadata_item).__name__}.")
+            return event_metadata_item
+
+        return EventMetadata(
+            effect_count=get_event_metadata_item(object_id, constants.EFFECT_COUNT_KEY),
+            effect_avg_ts=get_event_metadata_item(object_id, constants.EFFECT_AVG_TS_KEY),
+            effect_oldest_ts=get_event_metadata_item(object_id, constants.EFFECT_OLDEST_TS_KEY),
+        )
+
+    def write(
+        self,
+        schema: SchemaObject,
+        event_metadata_items: Mapping[str, EventMetadata],
+        online_entity_cache: OnlineEntityCache,
+    ) -> None:
+        for object_id, metadata in event_metadata_items.items():
+            online_entity_cache.set_multiple(
+                EntityKey(schema_id=schema._schema_name, object_id=object_id, node_id=self._metadata_key),
                 {
-                    constants.EFFECT_COUNT_KEY: int,
-                    constants.EFFECT_AVG_TS_KEY: int,
-                    constants.EFFECT_OLDEST_TS_KEY: int,
+                    constants.EFFECT_COUNT_KEY: metadata.effect_count,
+                    constants.EFFECT_AVG_TS_KEY: metadata.effect_avg_ts,
+                    constants.EFFECT_OLDEST_TS_KEY: metadata.effect_oldest_ts,
                 },
             )
-        return {
-            object_id: EventMetadata(
-                metadata.get(constants.EFFECT_COUNT_KEY, 0),
-                metadata.get(constants.EFFECT_AVG_TS_KEY, 0),
-                metadata.get(constants.EFFECT_OLDEST_TS_KEY, 0),
-            )
-            for object_id, metadata in metadata_by_object_id.items()
-        }
-
-    def write(self, schema: SchemaObject, event_metadata_items: Mapping[str, EventMetadata]) -> None:
-        node_data_by_object_id: dict[str, dict[str, PythonTypes]] = {
-            object_id: {
-                constants.EFFECT_COUNT_KEY: event_metadata.effect_count,
-                constants.EFFECT_AVG_TS_KEY: event_metadata.effect_avg_ts,
-                constants.EFFECT_OLDEST_TS_KEY: event_metadata.effect_oldest_ts,
-            }
-            for object_id, event_metadata in event_metadata_items.items()
-        }
-        with telemetry.span(
-            "storage.write.node.data",
-            attributes={
-                "schema": schema._schema_name,
-                "n_object_ids": len(node_data_by_object_id),
-                "node_id": self._metadata_key,
-            },
-        ):
-            self._storage_manager.write_node_data(schema, node_data_by_object_id, self._metadata_key)

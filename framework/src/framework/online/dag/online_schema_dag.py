@@ -31,6 +31,7 @@ from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.dag.online_schema_field_node import (
     OnlineSchemaFieldNode,
 )
+from superlinked.framework.online.online_entity_cache import OnlineEntityCache
 
 
 class OnlineSchemaDag:
@@ -61,9 +62,10 @@ class OnlineSchemaDag:
         self,
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
+        online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult[Vector] | None]:
         with context.dag_output_recorder.visualize_dag_context(self.__base_nodes):
-            results = self.leaf_node.evaluate_next(parsed_schemas, context)
+            results = self.leaf_node.evaluate_next(parsed_schemas, context, online_entity_cache)
         return results
 
     def __validate(self, schema: SchemaObject, nodes: list[OnlineNode]) -> None:

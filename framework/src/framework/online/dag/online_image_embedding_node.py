@@ -27,7 +27,6 @@ from superlinked.framework.common.parser.blob_loader import BlobLoader
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.schema.image_data import ImageData
-from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.transform.transform import Step
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
@@ -36,6 +35,7 @@ from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.common.util.image_util import ImageUtil
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
+from superlinked.framework.online.online_entity_cache import OnlineEntityCache
 
 
 class OnlineImageEmbeddingNode(OnlineNode[ImageEmbeddingNode, Vector], HasLength):
@@ -43,9 +43,8 @@ class OnlineImageEmbeddingNode(OnlineNode[ImageEmbeddingNode, Vector], HasLength
         self,
         node: ImageEmbeddingNode,
         parents: list[OnlineNode],
-        storage_manager: StorageManager,
     ) -> None:
-        super().__init__(node, parents, storage_manager)
+        super().__init__(node, parents)
         self._embedding_transformation = self._init_embedding_transformation()
         self._blob_loader = BlobLoader(allow_bytes=True)
         self._description_node = self._get_schema_field_node(self.node.description_node_id)
@@ -76,6 +75,7 @@ class OnlineImageEmbeddingNode(OnlineNode[ImageEmbeddingNode, Vector], HasLength
         self,
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
+        online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult[Vector] | None]:
         image_data_list = [self._get_image_data(parsed_schema) for parsed_schema in parsed_schemas]
         embedded_images = AsyncUtil.run(self.embedding_transformation.transform(image_data_list, context))

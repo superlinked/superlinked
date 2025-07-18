@@ -25,17 +25,16 @@ from superlinked.framework.common.dag.node import NT, Node, NodeDataT
 from superlinked.framework.common.exception import DagEvaluationException
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.schema_object import SchemaObject
-from superlinked.framework.common.settings import settings
+from superlinked.framework.common.storage.entity_key import EntityKey
 from superlinked.framework.common.storage_manager.node_result_data import NodeResultData
-from superlinked.framework.common.storage_manager.storage_manager import StorageManager
-from superlinked.framework.common.telemetry.telemetry_registry import telemetry
-from superlinked.framework.common.util.concurrent_executor import ConcurrentExecutor
+from superlinked.framework.common.storage_manager.storage_naming import StorageNaming
 from superlinked.framework.online.dag.evaluation_result import (
     EvaluationResult,
     SingleEvaluationResult,
 )
 from superlinked.framework.online.dag.exception import ParentResultException
 from superlinked.framework.online.dag.parent_validator import ParentValidationType
+from superlinked.framework.online.online_entity_cache import OnlineEntityCache
 
 logger = structlog.get_logger()
 
@@ -45,13 +44,11 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
         self,
         node: NT,
         parents: Sequence[OnlineNode],
-        storage_manager: StorageManager,
         parent_validation_type: ParentValidationType = ParentValidationType.NO_VALIDATION,
     ) -> None:
         self.node = node
         self.children: list[OnlineNode] = []
         self.parents = parents
-        self.storage_manager = storage_manager
         self.validate_parents(parent_validation_type)
         for parent in self.parents:
             parent.children.append(self)
@@ -84,11 +81,12 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
         self,
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
+        online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult[NodeDataT] | None]:
         with context.dag_output_recorder.record_evaluation_exception(self.node_id):
-            results = self.evaluate_self(parsed_schemas, context)
+            results = self.evaluate_self(parsed_schemas, context, online_entity_cache)
             if self.node.persist_node_result:
-                self.persist(results, parsed_schemas)
+                self.persist(results, parsed_schemas, online_entity_cache)
         context.dag_output_recorder.record(self.node_id, results)
         return results
 
@@ -96,33 +94,35 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
         self,
         parsed_schema: ParsedSchema,
         context: ExecutionContext,
+        online_entity_cache: OnlineEntityCache,
     ) -> EvaluationResult[NodeDataT] | None:
-        return self.evaluate_next([parsed_schema], context)[0]
+        return self.evaluate_next([parsed_schema], context, online_entity_cache)[0]
 
     def evaluate_parent(
-        self, parent: OnlineNode, parsed_schemas: Sequence[ParsedSchema], context: ExecutionContext
+        self,
+        parent: OnlineNode,
+        parsed_schemas: Sequence[ParsedSchema],
+        context: ExecutionContext,
+        online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult | None]:
-        parents_results = self.evaluate_parents([parent], parsed_schemas, context)
+        parents_results = self.evaluate_parents([parent], parsed_schemas, context, online_entity_cache)
         return [parents_result.get(parent) for parents_result in parents_results]
 
     def evaluate_parents(
-        self, parents: Sequence[OnlineNode], parsed_schemas: Sequence[ParsedSchema], context: ExecutionContext
+        self,
+        parents: Sequence[OnlineNode],
+        parsed_schemas: Sequence[ParsedSchema],
+        context: ExecutionContext,
+        online_entity_cache: OnlineEntityCache,
     ) -> list[dict[OnlineNode, EvaluationResult]]:
-        inverse_parent_results = self._evaluate_parents_concurrently(parents, parsed_schemas, context)
-        parents_results = [
-            {parent: inverse_parent_results[parent][i] for parent in parents} for i in range(len(parsed_schemas))
+        parent_result_map = {
+            parent: parent.evaluate_next(parsed_schemas, context, online_entity_cache) for parent in parents
+        }
+        results_by_schema = [
+            {parent: parent_result_map[parent][schema_idx] for parent in parents}
+            for schema_idx in range(len(parsed_schemas))
         ]
-        return [self._validate_parents_result(parents_result) for parents_result in parents_results]
-
-    def _evaluate_parents_concurrently(
-        self, parents: Sequence[OnlineNode], parsed_schemas: Sequence[ParsedSchema], context: ExecutionContext
-    ) -> dict[OnlineNode, list[EvaluationResult | None]]:
-        parent_results = ConcurrentExecutor().execute(
-            lambda parent: parent.evaluate_next(parsed_schemas, context),
-            args_list=[(parent,) for parent in parents],
-            condition=settings.SUPERLINKED_CONCURRENT_ONLINE_DAG_EVALUATION,
-        )
-        return dict(zip(parents, parent_results))
+        return [self._validate_parents_result(schema_result) for schema_result in results_by_schema]
 
     def _validate_parents_result(
         self, parents_result: Mapping[OnlineNode, EvaluationResult | None]
@@ -140,6 +140,7 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
         self,
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
+        online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult[NodeDataT] | None]:
         pass
 
@@ -147,6 +148,7 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
         self,
         results: Sequence[EvaluationResult[NodeDataT] | None],
         parsed_schemas: Sequence[ParsedSchema],
+        online_entity_cache: OnlineEntityCache,
     ) -> None:
         if not parsed_schemas:
             return
@@ -170,47 +172,54 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
                 ],
             ]
         ]
-        schemas = {parsed_schema.schema._schema_name for parsed_schema in parsed_schemas}
-        labels = {"node_id": self.node_id, "n_results": len(node_data_items), "schemas": schemas}
-        with telemetry.span("storage.write.node.result", attributes=labels):
-            self.storage_manager.write_node_results(node_data_items)
-        logger.debug("stored online node data", schemas=schemas, n_results=len(node_data_items))
+        for node_data_item in node_data_items:
+            entity_key = EntityKey(
+                schema_id=node_data_item.schema_id, object_id=node_data_item.object_id, node_id=node_data_item.node_id
+            )
+            if node_data_item.result is not None:
+                online_entity_cache.set(entity_key, node_data_item.node_id, node_data_item.result)
+            if node_data_item.origin_id is not None:
+                online_entity_cache.set(entity_key, StorageNaming.ORIGIN_ID_INDEX_NAME, node_data_item.origin_id)
+        logger.debug(
+            "stored online node data",
+            schemas=lambda: {parsed_schema.schema._schema_name for parsed_schema in parsed_schemas},
+            n_results=len(node_data_items),
+        )
 
     def load_stored_results(
-        self, schemas_with_object_ids: Sequence[tuple[SchemaObject, str]]
+        self,
+        schemas_with_object_ids: Sequence[tuple[SchemaObject, str]],
+        online_entity_cache: OnlineEntityCache,
     ) -> list[NodeDataT | None]:
-        if not schemas_with_object_ids:
-            return []
-        distinct_keys = list(set(schemas_with_object_ids))
-        with telemetry.span(
-            "storage.read.node.result",
-            attributes={
-                "node_id": self.node_id,
-                "n_results": len(distinct_keys),
-                "data_type": self.node.node_data_type.__name__,
-            },
-        ):
-            distinct_stored_results = self.storage_manager.read_node_results(
-                distinct_keys,
-                self.node_id,
-                self.node.node_data_type,
+        return [
+            cast(
+                NodeDataT | None,
+                online_entity_cache.get(
+                    entity_key=EntityKey(schema_id=schema._schema_name, object_id=object_id, node_id=self.node_id),
+                    field_name=self.node_id,
+                ),
             )
-        distinct_stored_result_by_key = dict(zip(distinct_keys, distinct_stored_results))
-        return [distinct_stored_result_by_key[key] for key in schemas_with_object_ids]
+            for schema, object_id in schemas_with_object_ids
+        ]
 
     def load_stored_results_with_default(
-        self, schemas_with_object_ids: Sequence[tuple[SchemaObject, str]], default_value: NodeDataT
+        self,
+        schemas_with_object_ids: Sequence[tuple[SchemaObject, str]],
+        default_value: NodeDataT,
+        online_entity_cache: OnlineEntityCache,
     ) -> list[NodeDataT]:
         return [
-            default_value if result is None else result for result in self.load_stored_results(schemas_with_object_ids)
+            default_value if result is None else result
+            for result in self.load_stored_results(schemas_with_object_ids, online_entity_cache)
         ]
 
     def load_stored_results_or_raise_exception(
         self,
         parsed_schemas: Sequence[ParsedSchema],
+        online_entity_cache: OnlineEntityCache,
     ) -> list[NodeDataT]:
         schemas_with_object_ids = [(parsed_schema.schema, parsed_schema.id_) for parsed_schema in parsed_schemas]
-        stored_results = self.load_stored_results(schemas_with_object_ids)
+        stored_results = self.load_stored_results(schemas_with_object_ids, online_entity_cache)
         if none_indices := [i for i, stored_result in enumerate(stored_results) if stored_result is None]:
             wrong_parsed_schema_params = [
                 f"{parsed_schemas[index].schema._schema_name}, {parsed_schemas[index].id_}" for index in none_indices

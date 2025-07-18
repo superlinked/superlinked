@@ -23,7 +23,6 @@ from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import ValidationException
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.space.normalization.normalization import ConstantNorm
-from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.util.collection_util import CollectionUtil
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
 from superlinked.framework.online.dag.evaluation_result import SingleEvaluationResult
@@ -36,9 +35,8 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
         self,
         node: ConcatenationNode,
         parents: list[OnlineNode],
-        storage_manager: StorageManager,
     ) -> None:
-        super().__init__(node, parents, storage_manager, ParentValidationType.AT_LEAST_ONE_PARENT)
+        super().__init__(node, parents, ParentValidationType.AT_LEAST_ONE_PARENT)
         self._norm = ConstantNorm(self.node.create_normalization_config([1.0] * len(self.node.parents)))
 
     @property

@@ -33,13 +33,12 @@ from superlinked.framework.common.parser.parsed_schema import (
 )
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import SchemaObject
-from superlinked.framework.common.settings import settings
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.telemetry.telemetry_registry import telemetry
-from superlinked.framework.common.util.concurrent_executor import ConcurrentExecutor
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.online.dag_effect_group import DagEffectGroup
 from superlinked.framework.online.online_dag_evaluator import OnlineDagEvaluator
+from superlinked.framework.online.online_entity_cache import OnlineEntityCache
 
 logger = structlog.get_logger()
 
@@ -77,26 +76,29 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
 
     @override
     def update(self, messages: Sequence[ParsedSchema]) -> None:
+        """Process incoming messages and update vdb"""
+
         for message in messages:
             self._validate_mandatory_fields_are_present(message)
-        event_msgs = list[EventParsedSchema]()
-        regular_msgs = list[ParsedSchema]()
+
+        event_msgs = []
+        regular_msgs = []
         for message in messages:
             if message.schema in self.effect_schemas:
                 event_msgs.append(cast(EventParsedSchema, message))
             else:
                 regular_msgs.append(message)
+
+        online_entity_cache = OnlineEntityCache()
         if regular_msgs:
             with telemetry.span(
-                "storage.write.fields",
+                "processor.process.records",
                 attributes={
                     "n_records": len(regular_msgs),
                     "schemas": list({msg.schema._schema_name for msg in regular_msgs}),
                 },
             ):
-                self.storage_manager.write_parsed_schema_fields(regular_msgs)
-            self.evaluator.evaluate(regular_msgs, self.context)
-
+                self.evaluator.evaluate(regular_msgs, self.context, online_entity_cache)
         if event_msgs:
             with telemetry.span(
                 "processor.process.events",
@@ -105,7 +107,16 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
                     "schemas": list({msg.schema._schema_name for msg in event_msgs}),
                 },
             ):
-                self._process_events(event_msgs)
+                self._process_events(event_msgs, online_entity_cache)
+        with telemetry.span(
+            "storage.write.fields",
+            attributes={
+                "n_records": len(regular_msgs),
+                "n_events": len(event_msgs),
+                "schemas": list({msg.schema._schema_name for msg in regular_msgs}),
+            },
+        ):
+            self.storage_manager.write_combined_ingestion_result(regular_msgs, online_entity_cache.get_changed())
         logger.info(
             "stored input data",
             schemas=list({parsed_schema.schema._schema_name for parsed_schema in messages}),
@@ -125,18 +136,12 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
                 f"Message with id '{message.id_}' is missing mandatory index fields: {missing_fields_text}."
             )
 
-    def _process_events(self, event_parsed_schemas: Sequence[EventParsedSchema]) -> None:
+    def _process_events(
+        self, event_parsed_schemas: Sequence[EventParsedSchema], online_entity_cache: OnlineEntityCache
+    ) -> None:
         effects_to_parsed_schemas = self._map_effects_to_parsed_schemas(event_parsed_schemas)
         effect_groups_to_parsed_schemas = self._map_effect_groups_to_parsed_schemas(effects_to_parsed_schemas)
-        execution_args = [
-            (parsed_schemas, self.context, effect_group)
-            for effect_group, parsed_schemas in effect_groups_to_parsed_schemas.items()
-        ]
-        ConcurrentExecutor().execute(
-            func=self.evaluator.evaluate_by_dag_effect_group,
-            args_list=execution_args,
-            condition=settings.SUPERLINKED_CONCURRENT_EFFECT_EVALUATION,
-        )
+        self.evaluator.evaluate_by_dag_effect_group(effect_groups_to_parsed_schemas, self.context, online_entity_cache)
 
     def _map_effects_to_parsed_schemas(
         self, event_parsed_schemas: Sequence[EventParsedSchema]

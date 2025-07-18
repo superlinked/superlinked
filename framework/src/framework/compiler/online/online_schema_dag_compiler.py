@@ -14,7 +14,6 @@
 
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_dag import SchemaDag
-from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.compiler.online.online_node_registry import (
     OnlineNodeRegistry,
 )
@@ -29,30 +28,16 @@ class OnlineSchemaDagCompiler:
         self.__compiled_node_by_node_id: dict[str, OnlineNode] = {}
         self.__online_node_registry = OnlineNodeRegistry()
 
-    def compile_node(
-        self,
-        node: Node,
-        storage_manager: StorageManager,
-    ) -> OnlineNode:
+    def compile_node(self, node: Node) -> OnlineNode:
         if compiled_node := self.__compiled_node_by_node_id.get(node.node_id):
             return compiled_node
-        compiled_parents = [
-            self.compile_node(parent, storage_manager) for parent in node.parents if parent in self.__nodes
-        ]
-        compiled_node = self.__online_node_registry.init_compiled_node(
-            node=node,
-            parents=compiled_parents,
-            storage_manager=storage_manager,
-        )
+        compiled_parents = [self.compile_node(parent) for parent in node.parents if parent in self.__nodes]
+        compiled_node = self.__online_node_registry.init_compiled_node(node=node, parents=compiled_parents)
         self.__compiled_node_by_node_id[node.node_id] = compiled_node
         return compiled_node
 
-    def compile_schema_dag(
-        self,
-        dag: SchemaDag,
-        storage_manager: StorageManager,
-    ) -> OnlineSchemaDag:
-        compiled_nodes: list[OnlineNode] = [self.compile_node(node, storage_manager) for node in dag.nodes]
+    def compile_schema_dag(self, dag: SchemaDag) -> OnlineSchemaDag:
+        compiled_nodes: list[OnlineNode] = [self.compile_node(node) for node in dag.nodes]
         if not self.__store_compilation_results:
             self.__compiled_node_by_node_id = {}
         return OnlineSchemaDag(dag.schema, compiled_nodes)

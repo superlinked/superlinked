@@ -223,9 +223,10 @@ class Vector:
         return [float(x) for x in self.value.tolist()]
 
     def __str__(self) -> str:
-        return np.array_str(  # type: ignore # numpy stub is missing for mypy-pylance
+        arr_str = np.array_str(  # type: ignore # numpy stub is missing for mypy-pylance
             self.value, precision=NP_PRINT_PRECISION, suppress_small=True
         )
+        return f"{type(self).__name__}({arr_str})"
 
     @override
     def __repr__(self) -> str:

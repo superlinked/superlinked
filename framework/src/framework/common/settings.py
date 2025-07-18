@@ -81,9 +81,6 @@ class Settings(YamlBasedSettings):
 
     """Online settings"""
     ONLINE_PUT_CHUNK_SIZE: int = 10000
-    ONLINE_EVENT_AGGREGATION_NODE_MAX_RETRY_COUNT: int = 5
-    SUPERLINKED_CONCURRENT_EFFECT_EVALUATION: bool = True
-    SUPERLINKED_CONCURRENT_ONLINE_DAG_EVALUATION: bool = False
 
     """Query settings"""
     QUERY_TO_RETURN_ORIGIN_ID: bool = False

@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from beartype.typing import Any, Mapping, Sequence, TypeVar, cast
 
 from superlinked.framework.common.dag.index_node import IndexNode
-from superlinked.framework.common.data_types import PythonTypes, Vector
+from superlinked.framework.common.data_types import NodeDataTypes, PythonTypes, Vector
 from superlinked.framework.common.exception import InvalidSchemaException
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
@@ -31,6 +31,7 @@ from superlinked.framework.common.schema.schema_object import (
 )
 from superlinked.framework.common.storage.entity.entity import Entity
 from superlinked.framework.common.storage.entity.entity_data import EntityData
+from superlinked.framework.common.storage.entity_key import EntityKey
 from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.field.field_data import (
     FieldData,
@@ -51,6 +52,9 @@ from superlinked.framework.common.storage.search_index.index_field_descriptor im
 )
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
 from superlinked.framework.common.storage_manager.entity_builder import EntityBuilder
+from superlinked.framework.common.storage_manager.entity_data_request import (
+    EntityDataRequest,
+)
 from superlinked.framework.common.storage_manager.knn_search_params import (
     KNNSearchParams,
 )
@@ -210,6 +214,22 @@ class StorageManager:
             index_vector,
         )
 
+    def write_combined_ingestion_result(
+        self, parsed_schemas: Sequence[ParsedSchema], cached_items: Mapping[EntityKey, Mapping[str, NodeDataTypes]]
+    ) -> None:
+        entity_data_items = [
+            self._entity_builder.compose_entity_data_from_parsed_schema(parsed_schema)
+            for parsed_schema in parsed_schemas
+        ]
+        cached_entity_data = [
+            self._entity_builder.compose_entity_data_from_mixed_data(
+                entity_key.schema_id, entity_key.object_id, entity_key.node_id, node_data
+            )
+            for entity_key, node_data in cached_items.items()
+        ]
+        entity_data_items.extend(cached_entity_data)
+        AsyncUtil.run(self._vdb_connector.write_entities(entity_data_items))
+
     def write_parsed_schema_fields(self, parsed_schemas: Sequence[ParsedSchema]) -> None:
         entities_to_write = [
             self._entity_builder.compose_entity_data_from_parsed_schema(parsed_schema)
@@ -275,6 +295,38 @@ class StorageManager:
         result_type: type[ResultTypeT],
     ) -> ResultTypeT | None:
         return next(iter(await self.read_node_results_async([(schema, object_id)], node_id, result_type)))
+
+    def read_multiple_node_results(
+        self, entity_data_requests: Sequence[EntityDataRequest]
+    ) -> list[dict[str, NodeDataTypes]]:
+        entities, field_mappings = zip(
+            *[self._create_entity_and_field_mapping(request) for request in entity_data_requests]
+        )
+        entity_data_items = AsyncUtil.run(self._vdb_connector.read_entities(entities))
+        return [
+            {
+                field_mappings[i][field_data.name]: cast(NodeDataTypes, field_data.value)
+                for field_data in entity_data_items[i].field_data.values()
+                if field_data.name in field_mappings[i]
+            }
+            for i in range(len(entity_data_requests))
+        ]
+
+    def _create_entity_and_field_mapping(self, request: EntityDataRequest) -> tuple[Entity, dict[str, str]]:
+        key_to_field = {
+            key: (
+                self._entity_builder.compose_field_from_node_data_descriptor(
+                    request.entity_key.node_id, key, cast(type[PythonTypes], type_)
+                )
+                if key != request.entity_key.node_id
+                else self._entity_builder.compose_field(request.entity_key.node_id, type_)
+            )
+            for key, type_ in request.node_data_name_to_type.items()
+        }
+        field_mapping = {field.name: key for key, field in key_to_field.items()}
+        entity_id = self._entity_builder.compose_entity_id(request.entity_key.schema_id, request.entity_key.object_id)
+        entity = self._entity_builder.compose_entity(entity_id, list(key_to_field.values()))
+        return entity, field_mapping
 
     # TODO FAI-2737 to solve the parameters
     def read_node_data(

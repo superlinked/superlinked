@@ -21,13 +21,13 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.named_function_node import NamedFunctionNode
 from superlinked.framework.common.dag.node import NodeDataT
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
-from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.util.named_function_evaluator import (
     NamedFunctionEvaluator,
 )
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.dag.parent_validator import ParentValidationType
+from superlinked.framework.online.online_entity_cache import OnlineEntityCache
 
 
 class OnlineNamedFunctionNode(OnlineNode[NamedFunctionNode[NodeDataT], NodeDataT]):
@@ -35,20 +35,15 @@ class OnlineNamedFunctionNode(OnlineNode[NamedFunctionNode[NodeDataT], NodeDataT
         self,
         node: NamedFunctionNode,
         parents: list[OnlineNode],
-        storage_manager: StorageManager,
     ) -> None:
-        super().__init__(
-            node,
-            parents,
-            storage_manager,
-            ParentValidationType.NO_PARENTS,
-        )
+        super().__init__(node, parents, ParentValidationType.NO_PARENTS)
 
     @override
     def evaluate_self(
         self,
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
+        online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult[NodeDataT] | None]:
         result = EvaluationResult(self._get_single_evaluation_result(self._evaluate_single(context)))
         return [result] * len(parsed_schemas)

@@ -32,6 +32,7 @@ from superlinked.framework.online.dag.evaluation_result import (
 )
 from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.dag.parent_results import ParentResults
+from superlinked.framework.online.online_entity_cache import OnlineEntityCache
 
 
 class DefaultOnlineNode(OnlineNode[NT, NodeDataT], ABC, Generic[NT, NodeDataT]):
@@ -40,21 +41,22 @@ class DefaultOnlineNode(OnlineNode[NT, NodeDataT], ABC, Generic[NT, NodeDataT]):
         self,
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
+        online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult[NodeDataT] | None]:
         batch_size = len(parsed_schemas)
         if batch_size == 0:
             return []
 
-        parent_results = self.evaluate_parents(self.parents, parsed_schemas, context)
+        parent_results = self.evaluate_parents(self.parents, parsed_schemas, context, online_entity_cache)
         main_inputs: list[ParentResults] = [
             {node: result.main for node, result in parent_result.items()} for parent_result in parent_results
         ]
 
         mains: list[SingleEvaluationResult] = self._get_single_evaluation_results(
-            self._evaluate_single_with_fallback(parsed_schemas, context, main_inputs)
+            self._evaluate_single_with_fallback(parsed_schemas, context, main_inputs, online_entity_cache)
         )
         chunk_results_per_parsed_schema: list[list[NodeDataT]] = self.__get_chunk_results_per_parsed_schema(
-            parsed_schemas, context, parent_results
+            parsed_schemas, context, parent_results, online_entity_cache
         )
         return [
             EvaluationResult(
@@ -72,6 +74,7 @@ class DefaultOnlineNode(OnlineNode[NT, NodeDataT], ABC, Generic[NT, NodeDataT]):
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
         parent_results: Sequence[dict[OnlineNode, EvaluationResult]],
+        online_entity_cache: OnlineEntityCache,
     ) -> list[list[NodeDataT]]:
         batch_size = len(parsed_schemas)
         chunked_parent_results = self.__filter_chunked_parent_results(parent_results)
@@ -88,7 +91,9 @@ class DefaultOnlineNode(OnlineNode[NT, NodeDataT], ABC, Generic[NT, NodeDataT]):
             chunked_batched_parent_results: list[ParentResults] = [
                 batched_input.input_ for batched_input in batched_inputs
             ]
-            batch_results = self._evaluate_single_with_fallback(parsed_schemas, context, chunked_batched_parent_results)
+            batch_results = self._evaluate_single_with_fallback(
+                parsed_schemas, context, chunked_batched_parent_results, online_entity_cache
+            )
 
             for batched_input, batch_result in zip(batched_inputs, batch_results):
                 chunks_per_parsed_schema[batched_input.parsed_schema_index].append(batch_result)
@@ -142,12 +147,13 @@ class DefaultOnlineNode(OnlineNode[NT, NodeDataT], ABC, Generic[NT, NodeDataT]):
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
         parent_results: Sequence[ParentResults],
+        online_entity_cache: OnlineEntityCache,
     ) -> list[NodeDataT]:
         single_results = self._evaluate_singles(parent_results, context)
         parsed_schemas_with_none_result = [
             parsed_schemas[i] for i, single_result in enumerate(single_results) if single_result is None
         ]
-        default_results = deque(self.get_fallback_results(parsed_schemas_with_none_result))
+        default_results = deque(self.get_fallback_results(parsed_schemas_with_none_result, online_entity_cache))
         results = [
             default_results.popleft() if single_result is None else single_result for single_result in single_results
         ]
@@ -164,5 +170,6 @@ class DefaultOnlineNode(OnlineNode[NT, NodeDataT], ABC, Generic[NT, NodeDataT]):
     def get_fallback_results(
         self,
         parsed_schemas: Sequence[ParsedSchema],
+        online_entity_cache: OnlineEntityCache,
     ) -> list[NodeDataT]:
-        return self.load_stored_results_or_raise_exception(parsed_schemas)
+        return self.load_stored_results_or_raise_exception(parsed_schemas, online_entity_cache)

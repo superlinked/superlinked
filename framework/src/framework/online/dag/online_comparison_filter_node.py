@@ -19,7 +19,6 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.comparison_filter_node import ComparisonFilterNode
 from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
 from superlinked.framework.online.dag.evaluation_result import SingleEvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
@@ -31,14 +30,8 @@ class OnlineComparisonFilterNode(DefaultOnlineNode[ComparisonFilterNode, bool]):
         self,
         node: ComparisonFilterNode,
         parents: list[OnlineNode],
-        storage_manager: StorageManager,
     ) -> None:
-        super().__init__(
-            node,
-            parents,
-            storage_manager,
-            ParentValidationType.EXACTLY_ONE_PARENT,
-        )
+        super().__init__(node, parents, ParentValidationType.EXACTLY_ONE_PARENT)
 
     @override
     def _evaluate_singles(
