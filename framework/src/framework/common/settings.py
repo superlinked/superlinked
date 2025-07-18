@@ -142,7 +142,7 @@ class ExternalMessageBusSettings(BaseModel):
 class VectorDatabaseSettings(BaseModel):
     INIT_SEARCH_INDICES: bool = True
     # Redis specific params
-    REDIS_MAX_CONNECTIONS: int = 150  # Aiming for 250 QPS
+    REDIS_MAX_CONNECTIONS: int = 200  # Aiming for 250 QPS
     REDIS_SOCKET_TIMEOUT_SECONDS: float | None = 30.0
     REDIS_SOCKET_CONNECT_TIMEOUT_SECONDS: float | None = 3.0
     REDIS_RETRY_ON_TIMEOUT: bool = True
