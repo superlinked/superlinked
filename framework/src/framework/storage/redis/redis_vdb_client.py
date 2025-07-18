@@ -16,7 +16,7 @@ import time
 
 from redis import Redis as SyncRedis
 from redis.asyncio import Redis as AsyncRedis
-from redis.asyncio.connection import ConnectionPool
+from redis.asyncio.connection import BlockingConnectionPool, ConnectionPool
 
 from superlinked.framework.common.settings import ResourceSettings
 
@@ -51,7 +51,7 @@ class RedisVDBClient:
 
     def _create_async_client(self) -> AsyncRedis:
         settings = ResourceSettings().vector_database
-        pool: ConnectionPool = ConnectionPool.from_url(
+        pool: ConnectionPool = BlockingConnectionPool.from_url(
             self._connection_string,
             protocol=REDIS_PROTOCOL,
             max_connections=settings.REDIS_MAX_CONNECTIONS,
