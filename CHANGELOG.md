@@ -3,6 +3,28 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [31.2.2] - 2025-07-18
+
+### Fixed
+
+- Proper diff handling in change notes
+
+## [31.2.1] - 2025-07-18
+
+### Fixed
+
+- Increase Redis max connections to 170 for improved throughput
+
+## [31.2.0] - 2025-07-18
+
+### Changed
+
+- Reduce Redis max connections from 200 to 150
+
+### Fixed
+
+- Include CHANGELOG.md in build examples and adjust Redis connection pool
+
 ## [31.1.0] - 2025-07-18
 
 ### Changed
@@ -290,6 +312,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Embedding engine manager to be actual singleton
 
+## [28.1.0] - 2025-06-08
+
+### Added
+
+- Add configurable search settings for Redis
+
 ## [28.0.0] - 2025-06-05
 
 ### Changed
@@ -312,6 +340,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rename EngineManager -> EmbeddingEngineManager
 - Introduce EmbeddingEngineManagerFactory
 - Batch alignment related changes
+- Improve caching performance
+- Improve norm and concat performance
 
 ### Fixed
 
@@ -371,6 +401,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update python.yml
 
 ## [27.2.0] - 2025-05-30
+
+### Added
+
+- Add sensible defaults for performant hybrid search in redis
 
 ### Changed
 
@@ -465,6 +499,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Extended weight explanations in feature nb
 
+## [23.7.0] - 2025-05-18
+
+### Changed
+
+- Improve modal image embedding performance
+
 ## [23.6.1] - 2025-05-17
 
 ### Fixed
@@ -508,6 +548,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Removed old code
+
+## [23.2.0] - 2025-05-08
+
+### Changed
+
+- Improved modal performance and added Settings.SUPERLINKED_RESIZE_IMAGES
 
 ## [23.1.0] - 2025-05-06
 
@@ -627,6 +673,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Only embed unique values
+- Performance improvements
 
 ## [22.10.0] - 2025-04-09
 
@@ -753,6 +800,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Image search notebook outputs
+
+## [22.0.1] - 2025-03-19
+
+### Fixed
+
+- Improve logging performance
 
 ## [22.0.0] - 2025-03-19
 
@@ -1516,6 +1569,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Make the ingestion more performant
 - Rethink input parameters of storage manager
 
 ## [17.5.0] - 2024-12-11
@@ -1616,6 +1670,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Update poetry
+- Increase perf treshold
 - Naming
 
 ### Fixed
@@ -1667,6 +1722,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - L1 weights normalization for events
+
+### Removed
+
+- Remove warp value constraint and optimize single item aggregation
 
 ## [15.1.1] - 2024-11-21
 
@@ -2258,6 +2317,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [9.48.1] - 2024-10-03
 
+### Changed
+
+- Improve performance
+
 ### Fixed
 
 - Restrict the data type to only send dict messages
@@ -2363,7 +2426,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cluster label mixup
 - User acq nb summary table
 
+## [9.40.0] - 2024-09-24
+
+### Added
+
+- Add super calls and fix list comprehension
+
 ## [9.38.1] - 2024-09-23
+
+### Added
+
+- Add super calls and fix list comprehension
 
 ### Fixed
 
@@ -2421,6 +2494,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Missing negation
+- Fix performance issue
 
 ## [9.33.0] - 2024-09-10
 
@@ -2661,6 +2735,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Improve performance
 - Rename in and not in
 
 ## [9.13.0] - 2024-08-14
@@ -2679,6 +2754,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Redis init
 - Changed how to check cuda usage with profiler
+- Fixing bad performance on calculating the calls for device type
 
 ## [9.12.0] - 2024-08-14
 
@@ -2973,6 +3049,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Switch to 'Self' from 'typing_extensions'
 - Typing -> beartype.typing
 
 ## [8.1.0] - 2024-07-14
@@ -3495,6 +3572,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Save
 - Rework to align with the requirements
 - WIP benchmarking nb
+- Performance nb skeleteon
 - Moved notebook to research
 
 ### Fixed
@@ -4575,6 +4653,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Replace list with ndarray in vector for performance
 - Replace list with ndarray in VectorField
 - Final touches on RecSys nb
 - Leftover nb change
@@ -4597,6 +4676,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Perf opt for json path parsing
 - Use dict in JsonUtil and return Json
 
 ### Fixed
@@ -4659,6 +4739,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Read poller configs from json instead of baked in global wars
 - User acquisition notebook
 - Import cell
+- Perf opt for vector length calc
 - Split up milestone 3
 
 ### Fixed
@@ -5694,6 +5775,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add tools
 - Added snippets
 - Add initial design doc
+- Add docstring for in memory vdb performance
 - Add check for optional properties in knn
 - Add TODO ticket
 - Add dd for separating vdb implementation from connectors
@@ -5908,494 +5990,502 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove unnecessary call
 - Remove extra field
 
-[31.1.0]: https://github.com/superlinked/superlinked-internal/compare/31.0.0..31.1.0
-[30.2.0]: https://github.com/superlinked/superlinked-internal/compare/30.1.0..30.2.0
-[30.1.0]: https://github.com/superlinked/superlinked-internal/compare/30.0.0..30.1.0
-[30.0.0]: https://github.com/superlinked/superlinked-internal/compare/29.7.0..30.0.0
-[29.6.5]: https://github.com/superlinked/superlinked-internal/compare/29.6.4..29.6.5
-[29.6.4]: https://github.com/superlinked/superlinked-internal/compare/29.6.3..29.6.4
-[29.6.2]: https://github.com/superlinked/superlinked-internal/compare/29.6.1..29.6.2
-[29.6.1]: https://github.com/superlinked/superlinked-internal/compare/29.6.0..29.6.1
-[29.6.0]: https://github.com/superlinked/superlinked-internal/compare/29.5.0..29.6.0
-[29.5.0]: https://github.com/superlinked/superlinked-internal/compare/29.4.0..29.5.0
-[29.4.0]: https://github.com/superlinked/superlinked-internal/compare/29.3.0..29.4.0
-[29.3.0]: https://github.com/superlinked/superlinked-internal/compare/29.2.1..29.3.0
-[29.2.1]: https://github.com/superlinked/superlinked-internal/compare/29.2.0..29.2.1
-[29.1.0]: https://github.com/superlinked/superlinked-internal/compare/29.0.0..29.1.0
-[28.12.0]: https://github.com/superlinked/superlinked-internal/compare/28.11.0..28.12.0
-[28.11.0]: https://github.com/superlinked/superlinked-internal/compare/28.10.0..28.11.0
-[28.10.0]: https://github.com/superlinked/superlinked-internal/compare/28.9.0..28.10.0
-[28.9.0]: https://github.com/superlinked/superlinked-internal/compare/28.8.2..28.9.0
-[28.8.2]: https://github.com/superlinked/superlinked-internal/compare/28.8.1..28.8.2
-[28.8.1]: https://github.com/superlinked/superlinked-internal/compare/28.8.0..28.8.1
-[28.8.0]: https://github.com/superlinked/superlinked-internal/compare/28.7.0..28.8.0
-[28.7.0]: https://github.com/superlinked/superlinked-internal/compare/28.6.0..28.7.0
-[28.6.0]: https://github.com/superlinked/superlinked-internal/compare/28.5.1..28.6.0
-[28.5.1]: https://github.com/superlinked/superlinked-internal/compare/28.5.0..28.5.1
-[28.5.0]: https://github.com/superlinked/superlinked-internal/compare/28.4.1..28.5.0
-[28.4.1]: https://github.com/superlinked/superlinked-internal/compare/28.4.0..28.4.1
-[28.4.0]: https://github.com/superlinked/superlinked-internal/compare/28.3.1..28.4.0
-[28.2.0]: https://github.com/superlinked/superlinked-internal/compare/28.1.5..28.2.0
-[28.1.5]: https://github.com/superlinked/superlinked-internal/compare/28.1.4..28.1.5
-[28.1.4]: https://github.com/superlinked/superlinked-internal/compare/28.1.3..28.1.4
-[28.1.3]: https://github.com/superlinked/superlinked-internal/compare/28.1.2..28.1.3
-[28.1.2]: https://github.com/superlinked/superlinked-internal/compare/28.1.1..28.1.2
-[28.0.0]: https://github.com/superlinked/superlinked-internal/compare/27.6.1..28.0.0
-[27.6.1]: https://github.com/superlinked/superlinked-internal/compare/27.6.0..27.6.1
-[27.6.0]: https://github.com/superlinked/superlinked-internal/compare/27.5.0..27.6.0
-[27.5.0]: https://github.com/superlinked/superlinked-internal/compare/27.4.0..27.5.0
-[27.4.0]: https://github.com/superlinked/superlinked-internal/compare/27.3.0..27.4.0
-[27.3.0]: https://github.com/superlinked/superlinked-internal/compare/27.2.2..27.3.0
-[27.2.2]: https://github.com/superlinked/superlinked-internal/compare/27.2.1..27.2.2
-[27.2.1]: https://github.com/superlinked/superlinked-internal/compare/27.2.0..27.2.1
-[27.2.0]: https://github.com/superlinked/superlinked-internal/compare/27.1.0..27.2.0
-[27.1.0]: https://github.com/superlinked/superlinked-internal/compare/27.0.0..27.1.0
-[27.0.0]: https://github.com/superlinked/superlinked-internal/compare/26.0.0..27.0.0
-[26.0.0]: https://github.com/superlinked/superlinked-internal/compare/25.1.0..26.0.0
-[25.0.0]: https://github.com/superlinked/superlinked-internal/compare/24.0.0..25.0.0
-[24.0.0]: https://github.com/superlinked/superlinked-internal/compare/23.9.0..24.0.0
-[23.9.0]: https://github.com/superlinked/superlinked-internal/compare/23.8.0..23.9.0
-[23.8.0]: https://github.com/superlinked/superlinked-internal/compare/23.7.0..23.8.0
-[23.6.1]: https://github.com/superlinked/superlinked-internal/compare/23.6.0..23.6.1
-[23.6.0]: https://github.com/superlinked/superlinked-internal/compare/23.5.0..23.6.0
-[23.5.0]: https://github.com/superlinked/superlinked-internal/compare/23.4.0..23.5.0
-[23.4.0]: https://github.com/superlinked/superlinked-internal/compare/23.3.0..23.4.0
-[23.3.0]: https://github.com/superlinked/superlinked-internal/compare/23.2.1..23.3.0
-[23.2.1]: https://github.com/superlinked/superlinked-internal/compare/23.2.0..23.2.1
-[23.1.0]: https://github.com/superlinked/superlinked-internal/compare/23.0.1..23.1.0
-[23.0.0]: https://github.com/superlinked/superlinked-internal/compare/22.17.1..23.0.0
-[22.17.1]: https://github.com/superlinked/superlinked-internal/compare/22.17.0..22.17.1
-[22.17.0]: https://github.com/superlinked/superlinked-internal/compare/22.16.1..22.17.0
-[22.16.1]: https://github.com/superlinked/superlinked-internal/compare/22.16.0..22.16.1
-[22.16.0]: https://github.com/superlinked/superlinked-internal/compare/22.15.2..22.16.0
-[22.15.2]: https://github.com/superlinked/superlinked-internal/compare/22.15.1..22.15.2
-[22.15.1]: https://github.com/superlinked/superlinked-internal/compare/22.15.0..22.15.1
-[22.15.0]: https://github.com/superlinked/superlinked-internal/compare/22.14.1..22.15.0
-[22.14.1]: https://github.com/superlinked/superlinked-internal/compare/22.14.0..22.14.1
-[22.13.1]: https://github.com/superlinked/superlinked-internal/compare/22.13.0..22.13.1
-[22.13.0]: https://github.com/superlinked/superlinked-internal/compare/22.12.0..22.13.0
-[22.12.0]: https://github.com/superlinked/superlinked-internal/compare/22.11.0..22.12.0
-[22.11.0]: https://github.com/superlinked/superlinked-internal/compare/22.10.0..22.11.0
-[22.10.0]: https://github.com/superlinked/superlinked-internal/compare/22.9.0..22.10.0
-[22.8.0]: https://github.com/superlinked/superlinked-internal/compare/22.7.1..22.8.0
-[22.7.0]: https://github.com/superlinked/superlinked-internal/compare/22.6.4..22.7.0
-[22.6.4]: https://github.com/superlinked/superlinked-internal/compare/22.6.3..22.6.4
-[22.6.2]: https://github.com/superlinked/superlinked-internal/compare/22.6.1..22.6.2
-[22.6.1]: https://github.com/superlinked/superlinked-internal/compare/22.6.0..22.6.1
-[22.6.0]: https://github.com/superlinked/superlinked-internal/compare/22.5.0..22.6.0
-[22.5.0]: https://github.com/superlinked/superlinked-internal/compare/22.4.0..22.5.0
-[22.4.0]: https://github.com/superlinked/superlinked-internal/compare/22.3.2..22.4.0
-[22.3.1]: https://github.com/superlinked/superlinked-internal/compare/22.3.0..22.3.1
-[22.3.0]: https://github.com/superlinked/superlinked-internal/compare/22.2.0..22.3.0
-[22.2.0]: https://github.com/superlinked/superlinked-internal/compare/22.1.2..22.2.0
-[22.1.2]: https://github.com/superlinked/superlinked-internal/compare/22.1.1..22.1.2
-[22.1.1]: https://github.com/superlinked/superlinked-internal/compare/22.1.0..22.1.1
-[22.1.0]: https://github.com/superlinked/superlinked-internal/compare/22.0.1..22.1.0
-[22.0.0]: https://github.com/superlinked/superlinked-internal/compare/21.3.1..22.0.0
-[21.3.1]: https://github.com/superlinked/superlinked-internal/compare/21.3.0..21.3.1
-[21.3.0]: https://github.com/superlinked/superlinked-internal/compare/21.2.0..21.3.0
-[21.1.0]: https://github.com/superlinked/superlinked-internal/compare/21.0.0..21.1.0
-[21.0.0]: https://github.com/superlinked/superlinked-internal/compare/20.5.0..21.0.0
-[20.5.0]: https://github.com/superlinked/superlinked-internal/compare/20.4.0..20.5.0
-[20.4.0]: https://github.com/superlinked/superlinked-internal/compare/20.3.2..20.4.0
-[20.3.2]: https://github.com/superlinked/superlinked-internal/compare/20.3.1..20.3.2
-[20.3.1]: https://github.com/superlinked/superlinked-internal/compare/20.3.0..20.3.1
-[20.2.0]: https://github.com/superlinked/superlinked-internal/compare/20.1.1..20.2.0
-[20.1.1]: https://github.com/superlinked/superlinked-internal/compare/20.1.0..20.1.1
-[20.1.0]: https://github.com/superlinked/superlinked-internal/compare/20.0.0..20.1.0
-[20.0.0]: https://github.com/superlinked/superlinked-internal/compare/19.22.0..20.0.0
-[19.22.0]: https://github.com/superlinked/superlinked-internal/compare/19.21.2..19.22.0
-[19.21.2]: https://github.com/superlinked/superlinked-internal/compare/19.21.1..19.21.2
-[19.21.1]: https://github.com/superlinked/superlinked-internal/compare/19.21.0..19.21.1
-[19.21.0]: https://github.com/superlinked/superlinked-internal/compare/19.20.0..19.21.0
-[19.19.1]: https://github.com/superlinked/superlinked-internal/compare/19.19.0..19.19.1
-[19.18.0]: https://github.com/superlinked/superlinked-internal/compare/19.17.1..19.18.0
-[19.17.1]: https://github.com/superlinked/superlinked-internal/compare/19.17.0..19.17.1
-[19.16.0]: https://github.com/superlinked/superlinked-internal/compare/19.15.1..19.16.0
-[19.15.1]: https://github.com/superlinked/superlinked-internal/compare/19.15.0..19.15.1
-[19.15.0]: https://github.com/superlinked/superlinked-internal/compare/19.14.3..19.15.0
-[19.14.2]: https://github.com/superlinked/superlinked-internal/compare/19.14.1..19.14.2
-[19.14.1]: https://github.com/superlinked/superlinked-internal/compare/19.14.0..19.14.1
-[19.14.0]: https://github.com/superlinked/superlinked-internal/compare/19.13.0..19.14.0
-[19.13.0]: https://github.com/superlinked/superlinked-internal/compare/19.12.0..19.13.0
-[19.12.0]: https://github.com/superlinked/superlinked-internal/compare/19.11.0..19.12.0
-[19.11.0]: https://github.com/superlinked/superlinked-internal/compare/19.10.0..19.11.0
-[19.10.0]: https://github.com/superlinked/superlinked-internal/compare/19.9.0..19.10.0
-[19.9.0]: https://github.com/superlinked/superlinked-internal/compare/19.8.0..19.9.0
-[19.8.0]: https://github.com/superlinked/superlinked-internal/compare/19.7.3..19.8.0
-[19.7.3]: https://github.com/superlinked/superlinked-internal/compare/19.7.2..19.7.3
-[19.7.2]: https://github.com/superlinked/superlinked-internal/compare/19.7.1..19.7.2
-[19.7.1]: https://github.com/superlinked/superlinked-internal/compare/19.7.0..19.7.1
-[19.7.0]: https://github.com/superlinked/superlinked-internal/compare/19.6.0..19.7.0
-[19.5.0]: https://github.com/superlinked/superlinked-internal/compare/19.4.1..19.5.0
-[19.4.1]: https://github.com/superlinked/superlinked-internal/compare/19.4.0..19.4.1
-[19.4.0]: https://github.com/superlinked/superlinked-internal/compare/19.3.0..19.4.0
-[19.3.0]: https://github.com/superlinked/superlinked-internal/compare/19.2.3..19.3.0
-[19.2.2]: https://github.com/superlinked/superlinked-internal/compare/19.2.1..19.2.2
-[19.2.1]: https://github.com/superlinked/superlinked-internal/compare/19.2.0..19.2.1
-[19.2.0]: https://github.com/superlinked/superlinked-internal/compare/19.1.0..19.2.0
-[19.1.0]: https://github.com/superlinked/superlinked-internal/compare/19.0.1..19.1.0
-[19.0.0]: https://github.com/superlinked/superlinked-internal/compare/18.9.0..19.0.0
-[18.9.0]: https://github.com/superlinked/superlinked-internal/compare/18.8.0..18.9.0
-[18.8.0]: https://github.com/superlinked/superlinked-internal/compare/18.7.1..18.8.0
-[18.7.1]: https://github.com/superlinked/superlinked-internal/compare/18.7.0..18.7.1
-[18.7.0]: https://github.com/superlinked/superlinked-internal/compare/18.6.0..18.7.0
-[18.6.0]: https://github.com/superlinked/superlinked-internal/compare/18.5.0..18.6.0
-[18.5.0]: https://github.com/superlinked/superlinked-internal/compare/18.4.0..18.5.0
-[18.4.0]: https://github.com/superlinked/superlinked-internal/compare/18.3.0..18.4.0
-[18.3.0]: https://github.com/superlinked/superlinked-internal/compare/18.2.0..18.3.0
-[18.2.0]: https://github.com/superlinked/superlinked-internal/compare/18.1.1..18.2.0
-[18.1.1]: https://github.com/superlinked/superlinked-internal/compare/18.1.0..18.1.1
-[18.1.0]: https://github.com/superlinked/superlinked-internal/compare/18.0.1..18.1.0
-[18.0.1]: https://github.com/superlinked/superlinked-internal/compare/18.0.0..18.0.1
-[18.0.0]: https://github.com/superlinked/superlinked-internal/compare/17.9.2..18.0.0
-[17.9.2]: https://github.com/superlinked/superlinked-internal/compare/17.9.1..17.9.2
-[17.9.1]: https://github.com/superlinked/superlinked-internal/compare/17.9.0..17.9.1
-[17.9.0]: https://github.com/superlinked/superlinked-internal/compare/17.8.3..17.9.0
-[17.8.3]: https://github.com/superlinked/superlinked-internal/compare/17.8.2..17.8.3
-[17.8.2]: https://github.com/superlinked/superlinked-internal/compare/17.8.1..17.8.2
-[17.8.1]: https://github.com/superlinked/superlinked-internal/compare/17.8.0..17.8.1
-[17.8.0]: https://github.com/superlinked/superlinked-internal/compare/17.7.1..17.8.0
-[17.7.0]: https://github.com/superlinked/superlinked-internal/compare/17.6.0..17.7.0
-[17.6.0]: https://github.com/superlinked/superlinked-internal/compare/17.5.0..17.6.0
-[17.5.0]: https://github.com/superlinked/superlinked-internal/compare/17.4.0..17.5.0
-[17.4.0]: https://github.com/superlinked/superlinked-internal/compare/17.3.0..17.4.0
-[17.3.0]: https://github.com/superlinked/superlinked-internal/compare/17.2.2..17.3.0
-[17.2.2]: https://github.com/superlinked/superlinked-internal/compare/17.2.1..17.2.2
-[17.2.1]: https://github.com/superlinked/superlinked-internal/compare/17.2.0..17.2.1
-[17.2.0]: https://github.com/superlinked/superlinked-internal/compare/17.1.0..17.2.0
-[17.1.0]: https://github.com/superlinked/superlinked-internal/compare/17.0.1..17.1.0
-[17.0.1]: https://github.com/superlinked/superlinked-internal/compare/17.0.0..17.0.1
-[17.0.0]: https://github.com/superlinked/superlinked-internal/compare/16.3.0..17.0.0
-[16.3.0]: https://github.com/superlinked/superlinked-internal/compare/16.2.0..16.3.0
-[16.2.0]: https://github.com/superlinked/superlinked-internal/compare/16.1.9..16.2.0
-[16.1.8]: https://github.com/superlinked/superlinked-internal/compare/16.1.7..16.1.8
-[16.1.6]: https://github.com/superlinked/superlinked-internal/compare/16.1.5..16.1.6
-[16.1.5]: https://github.com/superlinked/superlinked-internal/compare/16.1.4..16.1.5
-[16.1.4]: https://github.com/superlinked/superlinked-internal/compare/16.1.3..16.1.4
-[16.1.2]: https://github.com/superlinked/superlinked-internal/compare/16.1.1..16.1.2
-[16.1.1]: https://github.com/superlinked/superlinked-internal/compare/16.1.0..16.1.1
-[16.1.0]: https://github.com/superlinked/superlinked-internal/compare/16.0.0..16.1.0
-[16.0.0]: https://github.com/superlinked/superlinked-internal/compare/15.2.0..16.0.0
-[15.2.0]: https://github.com/superlinked/superlinked-internal/compare/15.1.1..15.2.0
-[15.1.1]: https://github.com/superlinked/superlinked-internal/compare/15.1.0..15.1.1
-[15.0.0]: https://github.com/superlinked/superlinked-internal/compare/14.7.1..15.0.0
-[14.7.1]: https://github.com/superlinked/superlinked-internal/compare/14.7.0..14.7.1
-[14.7.0]: https://github.com/superlinked/superlinked-internal/compare/14.6.1..14.7.0
-[14.6.1]: https://github.com/superlinked/superlinked-internal/compare/14.6.0..14.6.1
-[14.6.0]: https://github.com/superlinked/superlinked-internal/compare/14.5.0..14.6.0
-[14.5.0]: https://github.com/superlinked/superlinked-internal/compare/14.4.1..14.5.0
-[14.4.1]: https://github.com/superlinked/superlinked-internal/compare/14.4.0..14.4.1
-[14.4.0]: https://github.com/superlinked/superlinked-internal/compare/14.3.0..14.4.0
-[14.3.0]: https://github.com/superlinked/superlinked-internal/compare/14.2.0..14.3.0
-[14.1.1]: https://github.com/superlinked/superlinked-internal/compare/14.1.0..14.1.1
-[14.1.0]: https://github.com/superlinked/superlinked-internal/compare/14.0.0..14.1.0
-[13.1.3]: https://github.com/superlinked/superlinked-internal/compare/13.1.2..13.1.3
-[13.1.2]: https://github.com/superlinked/superlinked-internal/compare/13.1.1..13.1.2
-[13.1.1]: https://github.com/superlinked/superlinked-internal/compare/13.1.0..13.1.1
-[12.28.1]: https://github.com/superlinked/superlinked-internal/compare/12.28.0..12.28.1
-[12.28.0]: https://github.com/superlinked/superlinked-internal/compare/12.27.0..12.28.0
-[12.27.0]: https://github.com/superlinked/superlinked-internal/compare/12.26.0..12.27.0
-[12.25.0]: https://github.com/superlinked/superlinked-internal/compare/12.24.2..12.25.0
-[12.24.2]: https://github.com/superlinked/superlinked-internal/compare/12.24.1..12.24.2
-[12.24.1]: https://github.com/superlinked/superlinked-internal/compare/12.24.0..12.24.1
-[12.23.0]: https://github.com/superlinked/superlinked-internal/compare/12.22.3..12.23.0
-[12.22.0]: https://github.com/superlinked/superlinked-internal/compare/12.21.0..12.22.0
-[12.21.0]: https://github.com/superlinked/superlinked-internal/compare/12.20.1..12.21.0
-[12.20.1]: https://github.com/superlinked/superlinked-internal/compare/12.20.0..12.20.1
-[12.20.0]: https://github.com/superlinked/superlinked-internal/compare/12.19.1..12.20.0
-[12.19.0]: https://github.com/superlinked/superlinked-internal/compare/12.18.4..12.19.0
-[12.18.3]: https://github.com/superlinked/superlinked-internal/compare/12.18.2..12.18.3
-[12.18.1]: https://github.com/superlinked/superlinked-internal/compare/12.18.0..12.18.1
-[12.18.0]: https://github.com/superlinked/superlinked-internal/compare/12.17.1..12.18.0
-[12.17.0]: https://github.com/superlinked/superlinked-internal/compare/12.16.0..12.17.0
-[12.16.0]: https://github.com/superlinked/superlinked-internal/compare/12.15.0..12.16.0
-[12.14.0]: https://github.com/superlinked/superlinked-internal/compare/12.13.1..12.14.0
-[12.13.1]: https://github.com/superlinked/superlinked-internal/compare/12.13.0..12.13.1
-[12.13.0]: https://github.com/superlinked/superlinked-internal/compare/12.12.0..12.13.0
-[12.10.0]: https://github.com/superlinked/superlinked-internal/compare/12.9.0..12.10.0
-[12.9.0]: https://github.com/superlinked/superlinked-internal/compare/12.8.0..12.9.0
-[12.8.0]: https://github.com/superlinked/superlinked-internal/compare/12.7.3..12.8.0
-[12.7.3]: https://github.com/superlinked/superlinked-internal/compare/12.7.2..12.7.3
-[12.7.2]: https://github.com/superlinked/superlinked-internal/compare/12.7.1..12.7.2
-[12.7.1]: https://github.com/superlinked/superlinked-internal/compare/12.7.0..12.7.1
-[12.6.0]: https://github.com/superlinked/superlinked-internal/compare/12.5.0..12.6.0
-[12.4.0]: https://github.com/superlinked/superlinked-internal/compare/12.3.0..12.4.0
-[12.3.0]: https://github.com/superlinked/superlinked-internal/compare/12.2.0..12.3.0
-[12.2.0]: https://github.com/superlinked/superlinked-internal/compare/12.1.0..12.2.0
-[12.1.0]: https://github.com/superlinked/superlinked-internal/compare/12.0.0..12.1.0
-[11.1.0]: https://github.com/superlinked/superlinked-internal/compare/11.0.0..11.1.0
-[11.0.0]: https://github.com/superlinked/superlinked-internal/compare/10.2.2..11.0.0
-[10.2.2]: https://github.com/superlinked/superlinked-internal/compare/10.2.1..10.2.2
-[10.2.0]: https://github.com/superlinked/superlinked-internal/compare/10.1.1..10.2.0
-[10.1.1]: https://github.com/superlinked/superlinked-internal/compare/10.1.0..10.1.1
-[10.1.0]: https://github.com/superlinked/superlinked-internal/compare/10.0.0..10.1.0
-[10.0.0]: https://github.com/superlinked/superlinked-internal/compare/9.49.0..10.0.0
-[9.48.6]: https://github.com/superlinked/superlinked-internal/compare/9.48.5..9.48.6
-[9.48.4]: https://github.com/superlinked/superlinked-internal/compare/9.48.3..9.48.4
-[9.48.2]: https://github.com/superlinked/superlinked-internal/compare/9.48.1..9.48.2
-[9.48.1]: https://github.com/superlinked/superlinked-internal/compare/9.48.0..9.48.1
-[9.48.0]: https://github.com/superlinked/superlinked-internal/compare/9.47.1..9.48.0
-[9.47.1]: https://github.com/superlinked/superlinked-internal/compare/9.47.0..9.47.1
-[9.47.0]: https://github.com/superlinked/superlinked-internal/compare/9.46.3..9.47.0
-[9.46.3]: https://github.com/superlinked/superlinked-internal/compare/9.46.2..9.46.3
-[9.46.1]: https://github.com/superlinked/superlinked-internal/compare/9.46.0..9.46.1
-[9.46.0]: https://github.com/superlinked/superlinked-internal/compare/9.45.0..9.46.0
-[9.45.0]: https://github.com/superlinked/superlinked-internal/compare/9.44.1..9.45.0
-[9.44.0]: https://github.com/superlinked/superlinked-internal/compare/9.43.1..9.44.0
-[9.43.1]: https://github.com/superlinked/superlinked-internal/compare/9.43.0..9.43.1
-[9.43.0]: https://github.com/superlinked/superlinked-internal/compare/9.42.1..9.43.0
-[9.42.1]: https://github.com/superlinked/superlinked-internal/compare/9.42.0..9.42.1
-[9.42.0]: https://github.com/superlinked/superlinked-internal/compare/9.41.1..9.42.0
-[9.41.1]: https://github.com/superlinked/superlinked-internal/compare/9.41.0..9.41.1
-[9.38.1]: https://github.com/superlinked/superlinked-internal/compare/9.38.0..9.38.1
-[9.38.0]: https://github.com/superlinked/superlinked-internal/compare/9.37.1..9.38.0
-[9.37.0]: https://github.com/superlinked/superlinked-internal/compare/9.36.0..9.37.0
-[9.36.0]: https://github.com/superlinked/superlinked-internal/compare/9.35.1..9.36.0
-[9.35.1]: https://github.com/superlinked/superlinked-internal/compare/9.35.0..9.35.1
-[9.34.0]: https://github.com/superlinked/superlinked-internal/compare/9.33.0..9.34.0
-[9.33.0]: https://github.com/superlinked/superlinked-internal/compare/9.32.2..9.33.0
-[9.32.1]: https://github.com/superlinked/superlinked-internal/compare/9.32.0..9.32.1
-[9.32.0]: https://github.com/superlinked/superlinked-internal/compare/9.31.0..9.32.0
-[9.31.0]: https://github.com/superlinked/superlinked-internal/compare/9.30.0..9.31.0
-[9.30.0]: https://github.com/superlinked/superlinked-internal/compare/9.29.1..9.30.0
-[9.29.0]: https://github.com/superlinked/superlinked-internal/compare/9.28.0..9.29.0
-[9.27.2]: https://github.com/superlinked/superlinked-internal/compare/9.27.1..9.27.2
-[9.27.1]: https://github.com/superlinked/superlinked-internal/compare/9.27.0..9.27.1
-[9.27.0]: https://github.com/superlinked/superlinked-internal/compare/9.26.0..9.27.0
-[9.26.0]: https://github.com/superlinked/superlinked-internal/compare/9.25.1..9.26.0
-[9.25.1]: https://github.com/superlinked/superlinked-internal/compare/9.25.0..9.25.1
-[9.24.0]: https://github.com/superlinked/superlinked-internal/compare/9.23.2..9.24.0
-[9.23.2]: https://github.com/superlinked/superlinked-internal/compare/9.23.1..9.23.2
-[9.23.1]: https://github.com/superlinked/superlinked-internal/compare/9.23.0..9.23.1
-[9.23.0]: https://github.com/superlinked/superlinked-internal/compare/9.22.1..9.23.0
-[9.22.0]: https://github.com/superlinked/superlinked-internal/compare/9.21.2..9.22.0
-[9.21.1]: https://github.com/superlinked/superlinked-internal/compare/9.21.0..9.21.1
-[9.19.1]: https://github.com/superlinked/superlinked-internal/compare/9.19.0..9.19.1
-[9.19.0]: https://github.com/superlinked/superlinked-internal/compare/9.18.0..9.19.0
-[9.18.0]: https://github.com/superlinked/superlinked-internal/compare/9.17.2..9.18.0
-[9.17.0]: https://github.com/superlinked/superlinked-internal/compare/9.16.3..9.17.0
-[9.16.3]: https://github.com/superlinked/superlinked-internal/compare/9.16.2..9.16.3
-[9.16.2]: https://github.com/superlinked/superlinked-internal/compare/9.16.1..9.16.2
-[9.15.0]: https://github.com/superlinked/superlinked-internal/compare/9.14.0..9.15.0
-[9.13.0]: https://github.com/superlinked/superlinked-internal/compare/9.12.1..9.13.0
-[9.12.1]: https://github.com/superlinked/superlinked-internal/compare/9.12.0..9.12.1
-[9.12.0]: https://github.com/superlinked/superlinked-internal/compare/9.11.0..9.12.0
-[9.9.0]: https://github.com/superlinked/superlinked-internal/compare/9.8.0..9.9.0
-[9.8.0]: https://github.com/superlinked/superlinked-internal/compare/9.7.2..9.8.0
-[9.7.2]: https://github.com/superlinked/superlinked-internal/compare/9.7.1..9.7.2
-[9.7.1]: https://github.com/superlinked/superlinked-internal/compare/9.7.0..9.7.1
-[9.7.0]: https://github.com/superlinked/superlinked-internal/compare/9.6.0..9.7.0
-[9.6.0]: https://github.com/superlinked/superlinked-internal/compare/9.5.0..9.6.0
-[9.4.0]: https://github.com/superlinked/superlinked-internal/compare/9.3.1..9.4.0
-[9.3.1]: https://github.com/superlinked/superlinked-internal/compare/9.3.0..9.3.1
-[9.3.0]: https://github.com/superlinked/superlinked-internal/compare/9.2.0..9.3.0
-[9.2.0]: https://github.com/superlinked/superlinked-internal/compare/9.1.1..9.2.0
-[9.1.1]: https://github.com/superlinked/superlinked-internal/compare/9.1.0..9.1.1
-[9.1.0]: https://github.com/superlinked/superlinked-internal/compare/9.0.0..9.1.0
-[8.13.0]: https://github.com/superlinked/superlinked-internal/compare/8.12.2..8.13.0
-[8.12.1]: https://github.com/superlinked/superlinked-internal/compare/8.12.0..8.12.1
-[8.12.0]: https://github.com/superlinked/superlinked-internal/compare/8.11.0..8.12.0
-[8.11.0]: https://github.com/superlinked/superlinked-internal/compare/8.10.0..8.11.0
-[8.10.0]: https://github.com/superlinked/superlinked-internal/compare/8.9.0..8.10.0
-[8.9.0]: https://github.com/superlinked/superlinked-internal/compare/8.8.3..8.9.0
-[8.8.2]: https://github.com/superlinked/superlinked-internal/compare/8.8.1..8.8.2
-[8.8.0]: https://github.com/superlinked/superlinked-internal/compare/8.7.4..8.8.0
-[8.7.4]: https://github.com/superlinked/superlinked-internal/compare/8.7.3..8.7.4
-[8.7.3]: https://github.com/superlinked/superlinked-internal/compare/8.7.2..8.7.3
-[8.7.2]: https://github.com/superlinked/superlinked-internal/compare/8.7.1..8.7.2
-[8.7.1]: https://github.com/superlinked/superlinked-internal/compare/8.7.0..8.7.1
-[8.6.8]: https://github.com/superlinked/superlinked-internal/compare/8.6.7..8.6.8
-[8.6.7]: https://github.com/superlinked/superlinked-internal/compare/8.6.6..8.6.7
-[8.6.5]: https://github.com/superlinked/superlinked-internal/compare/8.6.4..8.6.5
-[8.6.4]: https://github.com/superlinked/superlinked-internal/compare/8.6.3..8.6.4
-[8.5.2]: https://github.com/superlinked/superlinked-internal/compare/8.5.1..8.5.2
-[8.5.1]: https://github.com/superlinked/superlinked-internal/compare/8.5.0..8.5.1
-[8.5.0]: https://github.com/superlinked/superlinked-internal/compare/8.4.1..8.5.0
-[8.4.1]: https://github.com/superlinked/superlinked-internal/compare/8.4.0..8.4.1
-[8.2.0]: https://github.com/superlinked/superlinked-internal/compare/8.1.0..8.2.0
-[8.1.0]: https://github.com/superlinked/superlinked-internal/compare/8.0.1..8.1.0
-[8.0.0]: https://github.com/superlinked/superlinked-internal/compare/7.5.0..8.0.0
-[7.5.0]: https://github.com/superlinked/superlinked-internal/compare/7.4.0..7.5.0
-[7.4.0]: https://github.com/superlinked/superlinked-internal/compare/7.3.0..7.4.0
-[7.3.0]: https://github.com/superlinked/superlinked-internal/compare/7.2.1..7.3.0
-[7.2.0]: https://github.com/superlinked/superlinked-internal/compare/7.1.0..7.2.0
-[7.1.0]: https://github.com/superlinked/superlinked-internal/compare/7.0.6..7.1.0
-[7.0.6]: https://github.com/superlinked/superlinked-internal/compare/7.0.5..7.0.6
-[7.0.5]: https://github.com/superlinked/superlinked-internal/compare/7.0.4..7.0.5
-[7.0.1]: https://github.com/superlinked/superlinked-internal/compare/7.0.0..7.0.1
-[7.0.0]: https://github.com/superlinked/superlinked-internal/compare/6.10.0..7.0.0
-[6.10.0]: https://github.com/superlinked/superlinked-internal/compare/6.9.0..6.10.0
-[6.9.0]: https://github.com/superlinked/superlinked-internal/compare/6.8.0..6.9.0
-[6.8.0]: https://github.com/superlinked/superlinked-internal/compare/6.7.1..6.8.0
-[6.7.1]: https://github.com/superlinked/superlinked-internal/compare/6.7.0..6.7.1
-[6.5.6]: https://github.com/superlinked/superlinked-internal/compare/6.5.5..6.5.6
-[6.5.5]: https://github.com/superlinked/superlinked-internal/compare/6.5.4..6.5.5
-[6.5.3]: https://github.com/superlinked/superlinked-internal/compare/6.5.2..6.5.3
-[6.5.2]: https://github.com/superlinked/superlinked-internal/compare/6.5.1..6.5.2
-[6.5.1]: https://github.com/superlinked/superlinked-internal/compare/6.5.0..6.5.1
-[6.5.0]: https://github.com/superlinked/superlinked-internal/compare/6.4.0..6.5.0
-[6.4.0]: https://github.com/superlinked/superlinked-internal/compare/6.3.0..6.4.0
-[6.3.0]: https://github.com/superlinked/superlinked-internal/compare/6.2.0..6.3.0
-[6.2.0]: https://github.com/superlinked/superlinked-internal/compare/6.1.0..6.2.0
-[6.1.0]: https://github.com/superlinked/superlinked-internal/compare/6.0.1..6.1.0
-[6.0.1]: https://github.com/superlinked/superlinked-internal/compare/6.0.0..6.0.1
-[6.0.0]: https://github.com/superlinked/superlinked-internal/compare/5.11.0..6.0.0
-[5.11.0]: https://github.com/superlinked/superlinked-internal/compare/5.10.0..5.11.0
-[5.10.0]: https://github.com/superlinked/superlinked-internal/compare/5.9.0..5.10.0
-[5.8.1]: https://github.com/superlinked/superlinked-internal/compare/5.8.0..5.8.1
-[5.8.0]: https://github.com/superlinked/superlinked-internal/compare/5.7.0..5.8.0
-[5.5.2]: https://github.com/superlinked/superlinked-internal/compare/5.5.1..5.5.2
-[5.5.1]: https://github.com/superlinked/superlinked-internal/compare/5.5.0..5.5.1
-[5.4.1]: https://github.com/superlinked/superlinked-internal/compare/5.4.0..5.4.1
-[5.4.0]: https://github.com/superlinked/superlinked-internal/compare/5.3.0..5.4.0
-[5.3.0]: https://github.com/superlinked/superlinked-internal/compare/5.2.3..5.3.0
-[5.2.3]: https://github.com/superlinked/superlinked-internal/compare/5.2.2..5.2.3
-[5.2.2]: https://github.com/superlinked/superlinked-internal/compare/5.2.1..5.2.2
-[5.2.1]: https://github.com/superlinked/superlinked-internal/compare/5.2.0..5.2.1
-[5.2.0]: https://github.com/superlinked/superlinked-internal/compare/5.1.0..5.2.0
-[5.0.0]: https://github.com/superlinked/superlinked-internal/compare/4.1.0..5.0.0
-[4.1.0]: https://github.com/superlinked/superlinked-internal/compare/4.0.1..4.1.0
-[4.0.1]: https://github.com/superlinked/superlinked-internal/compare/4.0.0..4.0.1
-[3.46.0]: https://github.com/superlinked/superlinked-internal/compare/3.45.0..3.46.0
-[3.45.0]: https://github.com/superlinked/superlinked-internal/compare/3.44.0..3.45.0
-[3.44.0]: https://github.com/superlinked/superlinked-internal/compare/3.43.0..3.44.0
-[3.42.0]: https://github.com/superlinked/superlinked-internal/compare/3.41.1..3.42.0
-[3.41.1]: https://github.com/superlinked/superlinked-internal/compare/3.41.0..3.41.1
-[3.41.0]: https://github.com/superlinked/superlinked-internal/compare/3.40.0..3.41.0
-[3.40.0]: https://github.com/superlinked/superlinked-internal/compare/3.39.1..3.40.0
-[3.39.1]: https://github.com/superlinked/superlinked-internal/compare/3.39.0..3.39.1
-[3.39.0]: https://github.com/superlinked/superlinked-internal/compare/3.38.0..3.39.0
-[3.38.0]: https://github.com/superlinked/superlinked-internal/compare/3.37.2..3.38.0
-[3.37.2]: https://github.com/superlinked/superlinked-internal/compare/3.37.1..3.37.2
-[3.37.1]: https://github.com/superlinked/superlinked-internal/compare/3.37.0..3.37.1
-[3.36.0]: https://github.com/superlinked/superlinked-internal/compare/3.35.2..3.36.0
-[3.35.2]: https://github.com/superlinked/superlinked-internal/compare/3.35.1..3.35.2
-[3.35.1]: https://github.com/superlinked/superlinked-internal/compare/3.35.0..3.35.1
-[3.35.0]: https://github.com/superlinked/superlinked-internal/compare/3.34.1..3.35.0
-[3.34.1]: https://github.com/superlinked/superlinked-internal/compare/3.34.0..3.34.1
-[3.34.0]: https://github.com/superlinked/superlinked-internal/compare/3.33.0..3.34.0
-[3.33.0]: https://github.com/superlinked/superlinked-internal/compare/3.32.0..3.33.0
-[3.32.0]: https://github.com/superlinked/superlinked-internal/compare/3.31.0..3.32.0
-[3.31.0]: https://github.com/superlinked/superlinked-internal/compare/3.30.0..3.31.0
-[3.29.2]: https://github.com/superlinked/superlinked-internal/compare/3.29.1..3.29.2
-[3.29.1]: https://github.com/superlinked/superlinked-internal/compare/3.29.0..3.29.1
-[3.28.0]: https://github.com/superlinked/superlinked-internal/compare/3.27.0..3.28.0
-[3.27.0]: https://github.com/superlinked/superlinked-internal/compare/3.26.0..3.27.0
-[3.26.0]: https://github.com/superlinked/superlinked-internal/compare/3.25.0..3.26.0
-[3.23.0]: https://github.com/superlinked/superlinked-internal/compare/3.22.0..3.23.0
-[3.22.0]: https://github.com/superlinked/superlinked-internal/compare/3.21.0..3.22.0
-[3.21.0]: https://github.com/superlinked/superlinked-internal/compare/3.20.0..3.21.0
-[3.20.0]: https://github.com/superlinked/superlinked-internal/compare/3.19.0..3.20.0
-[3.18.1]: https://github.com/superlinked/superlinked-internal/compare/3.18.0..3.18.1
-[3.18.0]: https://github.com/superlinked/superlinked-internal/compare/3.17.0..3.18.0
-[3.17.0]: https://github.com/superlinked/superlinked-internal/compare/3.16.0..3.17.0
-[3.16.0]: https://github.com/superlinked/superlinked-internal/compare/3.15.1..3.16.0
-[3.15.1]: https://github.com/superlinked/superlinked-internal/compare/3.15.0..3.15.1
-[3.15.0]: https://github.com/superlinked/superlinked-internal/compare/3.14.4..3.15.0
-[3.14.4]: https://github.com/superlinked/superlinked-internal/compare/3.14.3..3.14.4
-[3.14.3]: https://github.com/superlinked/superlinked-internal/compare/3.14.2..3.14.3
-[3.14.1]: https://github.com/superlinked/superlinked-internal/compare/3.14.0..3.14.1
-[3.14.0]: https://github.com/superlinked/superlinked-internal/compare/3.13.0..3.14.0
-[3.12.0]: https://github.com/superlinked/superlinked-internal/compare/3.11.0..3.12.0
-[3.11.0]: https://github.com/superlinked/superlinked-internal/compare/3.10.0..3.11.0
-[3.8.0]: https://github.com/superlinked/superlinked-internal/compare/3.7.0..3.8.0
-[3.7.0]: https://github.com/superlinked/superlinked-internal/compare/3.6.3..3.7.0
-[3.6.0]: https://github.com/superlinked/superlinked-internal/compare/3.5.0..3.6.0
-[3.5.0]: https://github.com/superlinked/superlinked-internal/compare/3.4.1..3.5.0
-[3.4.0]: https://github.com/superlinked/superlinked-internal/compare/3.3.0..3.4.0
-[3.3.0]: https://github.com/superlinked/superlinked-internal/compare/3.2.1..3.3.0
-[3.2.1]: https://github.com/superlinked/superlinked-internal/compare/3.2.0..3.2.1
-[3.2.0]: https://github.com/superlinked/superlinked-internal/compare/3.1.0..3.2.0
-[3.1.0]: https://github.com/superlinked/superlinked-internal/compare/3.0.0..3.1.0
-[3.0.0]: https://github.com/superlinked/superlinked-internal/compare/2.37.0..3.0.0
-[2.37.0]: https://github.com/superlinked/superlinked-internal/compare/2.36.0..2.37.0
-[2.35.0]: https://github.com/superlinked/superlinked-internal/compare/2.34.0..2.35.0
-[2.33.2]: https://github.com/superlinked/superlinked-internal/compare/2.33.1..2.33.2
-[2.33.0]: https://github.com/superlinked/superlinked-internal/compare/2.32.6..2.33.0
-[2.32.5]: https://github.com/superlinked/superlinked-internal/compare/2.32.4..2.32.5
-[2.32.1]: https://github.com/superlinked/superlinked-internal/compare/2.32.0..2.32.1
-[2.32.0]: https://github.com/superlinked/superlinked-internal/compare/2.31.0..2.32.0
-[2.31.0]: https://github.com/superlinked/superlinked-internal/compare/2.30.0..2.31.0
-[2.30.0]: https://github.com/superlinked/superlinked-internal/compare/2.29.0..2.30.0
-[2.29.0]: https://github.com/superlinked/superlinked-internal/compare/2.28.0..2.29.0
-[2.28.0]: https://github.com/superlinked/superlinked-internal/compare/2.27.1..2.28.0
-[2.27.0]: https://github.com/superlinked/superlinked-internal/compare/2.26.1..2.27.0
-[2.26.0]: https://github.com/superlinked/superlinked-internal/compare/2.25.0..2.26.0
-[2.25.0]: https://github.com/superlinked/superlinked-internal/compare/2.24.0..2.25.0
-[2.24.0]: https://github.com/superlinked/superlinked-internal/compare/2.23.3..2.24.0
-[2.23.3]: https://github.com/superlinked/superlinked-internal/compare/2.23.2..2.23.3
-[2.23.2]: https://github.com/superlinked/superlinked-internal/compare/2.23.1..2.23.2
-[2.23.1]: https://github.com/superlinked/superlinked-internal/compare/2.23.0..2.23.1
-[2.23.0]: https://github.com/superlinked/superlinked-internal/compare/2.22.0..2.23.0
-[2.22.0]: https://github.com/superlinked/superlinked-internal/compare/2.21.0..2.22.0
-[2.21.0]: https://github.com/superlinked/superlinked-internal/compare/2.20.0..2.21.0
-[2.20.0]: https://github.com/superlinked/superlinked-internal/compare/2.19.0..2.20.0
-[2.19.0]: https://github.com/superlinked/superlinked-internal/compare/2.18.0..2.19.0
-[2.17.4]: https://github.com/superlinked/superlinked-internal/compare/2.17.3..2.17.4
-[2.17.2]: https://github.com/superlinked/superlinked-internal/compare/2.17.1..2.17.2
-[2.17.1]: https://github.com/superlinked/superlinked-internal/compare/2.17.0..2.17.1
-[2.17.0]: https://github.com/superlinked/superlinked-internal/compare/2.16.0..2.17.0
-[2.16.0]: https://github.com/superlinked/superlinked-internal/compare/2.15.0..2.16.0
-[2.14.2]: https://github.com/superlinked/superlinked-internal/compare/2.14.1..2.14.2
-[2.14.1]: https://github.com/superlinked/superlinked-internal/compare/2.14.0..2.14.1
-[2.14.0]: https://github.com/superlinked/superlinked-internal/compare/2.13.0..2.14.0
-[2.12.0]: https://github.com/superlinked/superlinked-internal/compare/2.11.0..2.12.0
-[2.11.0]: https://github.com/superlinked/superlinked-internal/compare/2.10.0..2.11.0
-[2.10.0]: https://github.com/superlinked/superlinked-internal/compare/2.9.0..2.10.0
-[2.9.0]: https://github.com/superlinked/superlinked-internal/compare/2.8.0..2.9.0
-[2.8.0]: https://github.com/superlinked/superlinked-internal/compare/2.7.2..2.8.0
-[2.7.1]: https://github.com/superlinked/superlinked-internal/compare/2.7.0..2.7.1
-[2.6.0]: https://github.com/superlinked/superlinked-internal/compare/2.5.0..2.6.0
-[2.5.0]: https://github.com/superlinked/superlinked-internal/compare/2.4.1..2.5.0
-[2.4.1]: https://github.com/superlinked/superlinked-internal/compare/2.4.0..2.4.1
-[2.4.0]: https://github.com/superlinked/superlinked-internal/compare/2.3.0..2.4.0
-[2.3.0]: https://github.com/superlinked/superlinked-internal/compare/2.2.0..2.3.0
-[2.2.0]: https://github.com/superlinked/superlinked-internal/compare/2.1.4..2.2.0
-[2.1.4]: https://github.com/superlinked/superlinked-internal/compare/2.1.3..2.1.4
-[2.1.3]: https://github.com/superlinked/superlinked-internal/compare/2.1.2..2.1.3
-[2.1.2]: https://github.com/superlinked/superlinked-internal/compare/2.1.1..2.1.2
-[2.1.1]: https://github.com/superlinked/superlinked-internal/compare/2.1.0..2.1.1
-[2.1.0]: https://github.com/superlinked/superlinked-internal/compare/2.0.0..2.1.0
-[2.0.0]: https://github.com/superlinked/superlinked-internal/compare/1.11.3..2.0.0
-[1.11.3]: https://github.com/superlinked/superlinked-internal/compare/1.11.2..1.11.3
-[1.11.2]: https://github.com/superlinked/superlinked-internal/compare/1.11.1..1.11.2
-[1.11.1]: https://github.com/superlinked/superlinked-internal/compare/1.11.0..1.11.1
-[1.11.0]: https://github.com/superlinked/superlinked-internal/compare/1.10.1..1.11.0
-[1.10.1]: https://github.com/superlinked/superlinked-internal/compare/1.10.0..1.10.1
-[1.10.0]: https://github.com/superlinked/superlinked-internal/compare/1.9.0..1.10.0
-[1.9.0]: https://github.com/superlinked/superlinked-internal/compare/1.8.1..1.9.0
-[1.8.1]: https://github.com/superlinked/superlinked-internal/compare/1.8.0..1.8.1
-[1.8.0]: https://github.com/superlinked/superlinked-internal/compare/1.7.1..1.8.0
-[1.7.0]: https://github.com/superlinked/superlinked-internal/compare/1.6.0..1.7.0
-[1.6.0]: https://github.com/superlinked/superlinked-internal/compare/1.5.0..1.6.0
-[1.5.0]: https://github.com/superlinked/superlinked-internal/compare/1.4.0..1.5.0
-[1.4.0]: https://github.com/superlinked/superlinked-internal/compare/1.3.0..1.4.0
-[1.3.0]: https://github.com/superlinked/superlinked-internal/compare/1.2.0..1.3.0
-[1.2.0]: https://github.com/superlinked/superlinked-internal/compare/1.1.0..1.2.0
-[1.1.0]: https://github.com/superlinked/superlinked-internal/compare/1.0.0..1.1.0
-[1.0.0]: https://github.com/superlinked/superlinked-internal/compare/0.9.0..1.0.0
-[0.9.0]: https://github.com/superlinked/superlinked-internal/compare/0.8.0..0.9.0
-[0.8.0]: https://github.com/superlinked/superlinked-internal/compare/0.7.0..0.8.0
-[0.7.0]: https://github.com/superlinked/superlinked-internal/compare/0.6.0..0.7.0
-[0.6.0]: https://github.com/superlinked/superlinked-internal/compare/0.5.1..0.6.0
-[0.5.1]: https://github.com/superlinked/superlinked-internal/compare/0.5.0..0.5.1
-[0.5.0]: https://github.com/superlinked/superlinked-internal/compare/0.4.1..0.5.0
-[0.4.1]: https://github.com/superlinked/superlinked-internal/compare/0.4.0..0.4.1
-[0.4.0]: https://github.com/superlinked/superlinked-internal/compare/0.3.0..0.4.0
-[0.3.0]: https://github.com/superlinked/superlinked-internal/compare/0.2.3..0.3.0
-[0.2.3]: https://github.com/superlinked/superlinked-internal/compare/0.2.2..0.2.3
-[0.2.2]: https://github.com/superlinked/superlinked-internal/compare/0.2.1..0.2.2
-[0.2.1]: https://github.com/superlinked/superlinked-internal/compare/0.2.0..0.2.1
-[0.2.0]: https://github.com/superlinked/superlinked-internal/compare/0.1.3..0.2.0
-[0.1.3]: https://github.com/superlinked/superlinked-internal/compare/0.1.1..0.1.3
-[0.1.1]: https://github.com/superlinked/superlinked-internal/compare/0.1.0..0.1.1
-[0.1.0]: https://github.com/superlinked/superlinked-internal/compare/0.0.12..0.1.0
-[0.0.12]: https://github.com/superlinked/superlinked-internal/compare/0.0.11..0.0.12
-[0.0.10]: https://github.com/superlinked/superlinked-internal/compare/0.0.9..0.0.10
-[0.0.9]: https://github.com/superlinked/superlinked-internal/compare/0.0.8..0.0.9
-[0.0.8]: https://github.com/superlinked/superlinked-internal/compare/0.0.7..0.0.8
-[0.0.7]: https://github.com/superlinked/superlinked-internal/compare/0.0.6..0.0.7
-[0.0.6]: https://github.com/superlinked/superlinked-internal/compare/0.0.5..0.0.6
-[0.0.5]: https://github.com/superlinked/superlinked-internal/compare/0.0.4..0.0.5
+[31.2.2]: https://github.com/superlinked/superlinked&compare/v31.2.1..v31.2.2
+[31.2.1]: https://github.com/superlinked/superlinked&compare/v31.2.0..v31.2.1
+[31.2.0]: https://github.com/superlinked/superlinked&compare/v31.1.1..v31.2.0
+[31.1.0]: https://github.com/superlinked/superlinked&compare/v31.0.0..v31.1.0
+[30.2.0]: https://github.com/superlinked/superlinked&compare/v30.1.0..v30.2.0
+[30.1.0]: https://github.com/superlinked/superlinked&compare/v30.0.0..v30.1.0
+[30.0.0]: https://github.com/superlinked/superlinked&compare/v29.7.0..v30.0.0
+[29.6.5]: https://github.com/superlinked/superlinked&compare/v29.6.4..v29.6.5
+[29.6.4]: https://github.com/superlinked/superlinked&compare/v29.6.3..v29.6.4
+[29.6.2]: https://github.com/superlinked/superlinked&compare/v29.6.1..v29.6.2
+[29.6.1]: https://github.com/superlinked/superlinked&compare/v29.6.0..v29.6.1
+[29.6.0]: https://github.com/superlinked/superlinked&compare/v29.5.0..v29.6.0
+[29.5.0]: https://github.com/superlinked/superlinked&compare/v29.4.0..v29.5.0
+[29.4.0]: https://github.com/superlinked/superlinked&compare/v29.3.0..v29.4.0
+[29.3.0]: https://github.com/superlinked/superlinked&compare/v29.2.1..v29.3.0
+[29.2.1]: https://github.com/superlinked/superlinked&compare/v29.2.0..v29.2.1
+[29.1.0]: https://github.com/superlinked/superlinked&compare/v29.0.0..v29.1.0
+[28.12.0]: https://github.com/superlinked/superlinked&compare/v28.11.0..v28.12.0
+[28.11.0]: https://github.com/superlinked/superlinked&compare/v28.10.0..v28.11.0
+[28.10.0]: https://github.com/superlinked/superlinked&compare/v28.9.0..v28.10.0
+[28.9.0]: https://github.com/superlinked/superlinked&compare/v28.8.2..v28.9.0
+[28.8.2]: https://github.com/superlinked/superlinked&compare/v28.8.1..v28.8.2
+[28.8.1]: https://github.com/superlinked/superlinked&compare/v28.8.0..v28.8.1
+[28.8.0]: https://github.com/superlinked/superlinked&compare/v28.7.0..v28.8.0
+[28.7.0]: https://github.com/superlinked/superlinked&compare/v28.6.0..v28.7.0
+[28.6.0]: https://github.com/superlinked/superlinked&compare/v28.5.1..v28.6.0
+[28.5.1]: https://github.com/superlinked/superlinked&compare/v28.5.0..v28.5.1
+[28.5.0]: https://github.com/superlinked/superlinked&compare/v28.4.1..v28.5.0
+[28.4.1]: https://github.com/superlinked/superlinked&compare/v28.4.0..v28.4.1
+[28.4.0]: https://github.com/superlinked/superlinked&compare/v28.3.1..v28.4.0
+[28.2.0]: https://github.com/superlinked/superlinked&compare/v28.1.5..v28.2.0
+[28.1.5]: https://github.com/superlinked/superlinked&compare/v28.1.4..v28.1.5
+[28.1.4]: https://github.com/superlinked/superlinked&compare/v28.1.3..v28.1.4
+[28.1.3]: https://github.com/superlinked/superlinked&compare/v28.1.2..v28.1.3
+[28.1.2]: https://github.com/superlinked/superlinked&compare/v28.1.1..v28.1.2
+[28.1.0]: https://github.com/superlinked/superlinked&compare/v28.0.0..v28.1.0
+[28.0.0]: https://github.com/superlinked/superlinked&compare/v27.6.1..v28.0.0
+[27.6.1]: https://github.com/superlinked/superlinked&compare/v27.6.0..v27.6.1
+[27.6.0]: https://github.com/superlinked/superlinked&compare/v27.5.0..v27.6.0
+[27.5.0]: https://github.com/superlinked/superlinked&compare/v27.4.0..v27.5.0
+[27.4.0]: https://github.com/superlinked/superlinked&compare/v27.3.0..v27.4.0
+[27.3.0]: https://github.com/superlinked/superlinked&compare/v27.2.2..v27.3.0
+[27.2.2]: https://github.com/superlinked/superlinked&compare/v27.2.1..v27.2.2
+[27.2.1]: https://github.com/superlinked/superlinked&compare/v27.2.0..v27.2.1
+[27.2.0]: https://github.com/superlinked/superlinked&compare/v27.1.0..v27.2.0
+[27.1.0]: https://github.com/superlinked/superlinked&compare/v27.0.0..v27.1.0
+[27.0.0]: https://github.com/superlinked/superlinked&compare/v26.0.0..v27.0.0
+[26.0.0]: https://github.com/superlinked/superlinked&compare/v25.1.0..v26.0.0
+[25.0.0]: https://github.com/superlinked/superlinked&compare/v24.0.0..v25.0.0
+[24.0.0]: https://github.com/superlinked/superlinked&compare/v23.9.0..v24.0.0
+[23.9.0]: https://github.com/superlinked/superlinked&compare/v23.8.0..v23.9.0
+[23.8.0]: https://github.com/superlinked/superlinked&compare/v23.7.0..v23.8.0
+[23.7.0]: https://github.com/superlinked/superlinked&compare/v23.6.1..v23.7.0
+[23.6.1]: https://github.com/superlinked/superlinked&compare/v23.6.0..v23.6.1
+[23.6.0]: https://github.com/superlinked/superlinked&compare/v23.5.0..v23.6.0
+[23.5.0]: https://github.com/superlinked/superlinked&compare/v23.4.0..v23.5.0
+[23.4.0]: https://github.com/superlinked/superlinked&compare/v23.3.0..v23.4.0
+[23.3.0]: https://github.com/superlinked/superlinked&compare/v23.2.1..v23.3.0
+[23.2.1]: https://github.com/superlinked/superlinked&compare/v23.2.0..v23.2.1
+[23.2.0]: https://github.com/superlinked/superlinked&compare/v23.1.0..v23.2.0
+[23.1.0]: https://github.com/superlinked/superlinked&compare/v23.0.1..v23.1.0
+[23.0.0]: https://github.com/superlinked/superlinked&compare/v22.17.1..v23.0.0
+[22.17.1]: https://github.com/superlinked/superlinked&compare/v22.17.0..v22.17.1
+[22.17.0]: https://github.com/superlinked/superlinked&compare/v22.16.1..v22.17.0
+[22.16.1]: https://github.com/superlinked/superlinked&compare/v22.16.0..v22.16.1
+[22.16.0]: https://github.com/superlinked/superlinked&compare/v22.15.2..v22.16.0
+[22.15.2]: https://github.com/superlinked/superlinked&compare/v22.15.1..v22.15.2
+[22.15.1]: https://github.com/superlinked/superlinked&compare/v22.15.0..v22.15.1
+[22.15.0]: https://github.com/superlinked/superlinked&compare/v22.14.1..v22.15.0
+[22.14.1]: https://github.com/superlinked/superlinked&compare/v22.14.0..v22.14.1
+[22.13.1]: https://github.com/superlinked/superlinked&compare/v22.13.0..v22.13.1
+[22.13.0]: https://github.com/superlinked/superlinked&compare/v22.12.0..v22.13.0
+[22.12.0]: https://github.com/superlinked/superlinked&compare/v22.11.0..v22.12.0
+[22.11.0]: https://github.com/superlinked/superlinked&compare/v22.10.0..v22.11.0
+[22.10.0]: https://github.com/superlinked/superlinked&compare/v22.9.0..v22.10.0
+[22.8.0]: https://github.com/superlinked/superlinked&compare/v22.7.1..v22.8.0
+[22.7.0]: https://github.com/superlinked/superlinked&compare/v22.6.4..v22.7.0
+[22.6.4]: https://github.com/superlinked/superlinked&compare/v22.6.3..v22.6.4
+[22.6.2]: https://github.com/superlinked/superlinked&compare/v22.6.1..v22.6.2
+[22.6.1]: https://github.com/superlinked/superlinked&compare/v22.6.0..v22.6.1
+[22.6.0]: https://github.com/superlinked/superlinked&compare/v22.5.0..v22.6.0
+[22.5.0]: https://github.com/superlinked/superlinked&compare/v22.4.0..v22.5.0
+[22.4.0]: https://github.com/superlinked/superlinked&compare/v22.3.2..v22.4.0
+[22.3.1]: https://github.com/superlinked/superlinked&compare/v22.3.0..v22.3.1
+[22.3.0]: https://github.com/superlinked/superlinked&compare/v22.2.0..v22.3.0
+[22.2.0]: https://github.com/superlinked/superlinked&compare/v22.1.2..v22.2.0
+[22.1.2]: https://github.com/superlinked/superlinked&compare/v22.1.1..v22.1.2
+[22.1.1]: https://github.com/superlinked/superlinked&compare/v22.1.0..v22.1.1
+[22.1.0]: https://github.com/superlinked/superlinked&compare/v22.0.1..v22.1.0
+[22.0.1]: https://github.com/superlinked/superlinked&compare/v22.0.0..v22.0.1
+[22.0.0]: https://github.com/superlinked/superlinked&compare/v21.3.1..v22.0.0
+[21.3.1]: https://github.com/superlinked/superlinked&compare/v21.3.0..v21.3.1
+[21.3.0]: https://github.com/superlinked/superlinked&compare/v21.2.0..v21.3.0
+[21.1.0]: https://github.com/superlinked/superlinked&compare/v21.0.0..v21.1.0
+[21.0.0]: https://github.com/superlinked/superlinked&compare/v20.5.0..v21.0.0
+[20.5.0]: https://github.com/superlinked/superlinked&compare/v20.4.0..v20.5.0
+[20.4.0]: https://github.com/superlinked/superlinked&compare/v20.3.2..v20.4.0
+[20.3.2]: https://github.com/superlinked/superlinked&compare/v20.3.1..v20.3.2
+[20.3.1]: https://github.com/superlinked/superlinked&compare/v20.3.0..v20.3.1
+[20.2.0]: https://github.com/superlinked/superlinked&compare/v20.1.1..v20.2.0
+[20.1.1]: https://github.com/superlinked/superlinked&compare/v20.1.0..v20.1.1
+[20.1.0]: https://github.com/superlinked/superlinked&compare/v20.0.0..v20.1.0
+[20.0.0]: https://github.com/superlinked/superlinked&compare/v19.22.0..v20.0.0
+[19.22.0]: https://github.com/superlinked/superlinked&compare/v19.21.2..v19.22.0
+[19.21.2]: https://github.com/superlinked/superlinked&compare/v19.21.1..v19.21.2
+[19.21.1]: https://github.com/superlinked/superlinked&compare/v19.21.0..v19.21.1
+[19.21.0]: https://github.com/superlinked/superlinked&compare/v19.20.0..v19.21.0
+[19.19.1]: https://github.com/superlinked/superlinked&compare/v19.19.0..v19.19.1
+[19.18.0]: https://github.com/superlinked/superlinked&compare/v19.17.1..v19.18.0
+[19.17.1]: https://github.com/superlinked/superlinked&compare/v19.17.0..v19.17.1
+[19.16.0]: https://github.com/superlinked/superlinked&compare/v19.15.1..v19.16.0
+[19.15.1]: https://github.com/superlinked/superlinked&compare/v19.15.0..v19.15.1
+[19.15.0]: https://github.com/superlinked/superlinked&compare/v19.14.3..v19.15.0
+[19.14.2]: https://github.com/superlinked/superlinked&compare/v19.14.1..v19.14.2
+[19.14.1]: https://github.com/superlinked/superlinked&compare/v19.14.0..v19.14.1
+[19.14.0]: https://github.com/superlinked/superlinked&compare/v19.13.0..v19.14.0
+[19.13.0]: https://github.com/superlinked/superlinked&compare/v19.12.0..v19.13.0
+[19.12.0]: https://github.com/superlinked/superlinked&compare/v19.11.0..v19.12.0
+[19.11.0]: https://github.com/superlinked/superlinked&compare/v19.10.0..v19.11.0
+[19.10.0]: https://github.com/superlinked/superlinked&compare/v19.9.0..v19.10.0
+[19.9.0]: https://github.com/superlinked/superlinked&compare/v19.8.0..v19.9.0
+[19.8.0]: https://github.com/superlinked/superlinked&compare/v19.7.3..v19.8.0
+[19.7.3]: https://github.com/superlinked/superlinked&compare/v19.7.2..v19.7.3
+[19.7.2]: https://github.com/superlinked/superlinked&compare/v19.7.1..v19.7.2
+[19.7.1]: https://github.com/superlinked/superlinked&compare/v19.7.0..v19.7.1
+[19.7.0]: https://github.com/superlinked/superlinked&compare/v19.6.0..v19.7.0
+[19.5.0]: https://github.com/superlinked/superlinked&compare/v19.4.1..v19.5.0
+[19.4.1]: https://github.com/superlinked/superlinked&compare/v19.4.0..v19.4.1
+[19.4.0]: https://github.com/superlinked/superlinked&compare/v19.3.0..v19.4.0
+[19.3.0]: https://github.com/superlinked/superlinked&compare/v19.2.3..v19.3.0
+[19.2.2]: https://github.com/superlinked/superlinked&compare/v19.2.1..v19.2.2
+[19.2.1]: https://github.com/superlinked/superlinked&compare/v19.2.0..v19.2.1
+[19.2.0]: https://github.com/superlinked/superlinked&compare/v19.1.0..v19.2.0
+[19.1.0]: https://github.com/superlinked/superlinked&compare/v19.0.1..v19.1.0
+[19.0.0]: https://github.com/superlinked/superlinked&compare/v18.9.0..v19.0.0
+[18.9.0]: https://github.com/superlinked/superlinked&compare/v18.8.0..v18.9.0
+[18.8.0]: https://github.com/superlinked/superlinked&compare/v18.7.1..v18.8.0
+[18.7.1]: https://github.com/superlinked/superlinked&compare/v18.7.0..v18.7.1
+[18.7.0]: https://github.com/superlinked/superlinked&compare/v18.6.0..v18.7.0
+[18.6.0]: https://github.com/superlinked/superlinked&compare/v18.5.0..v18.6.0
+[18.5.0]: https://github.com/superlinked/superlinked&compare/v18.4.0..v18.5.0
+[18.4.0]: https://github.com/superlinked/superlinked&compare/v18.3.0..v18.4.0
+[18.3.0]: https://github.com/superlinked/superlinked&compare/v18.2.0..v18.3.0
+[18.2.0]: https://github.com/superlinked/superlinked&compare/v18.1.1..v18.2.0
+[18.1.1]: https://github.com/superlinked/superlinked&compare/v18.1.0..v18.1.1
+[18.1.0]: https://github.com/superlinked/superlinked&compare/v18.0.1..v18.1.0
+[18.0.1]: https://github.com/superlinked/superlinked&compare/v18.0.0..v18.0.1
+[18.0.0]: https://github.com/superlinked/superlinked&compare/v17.9.2..v18.0.0
+[17.9.2]: https://github.com/superlinked/superlinked&compare/v17.9.1..v17.9.2
+[17.9.1]: https://github.com/superlinked/superlinked&compare/v17.9.0..v17.9.1
+[17.9.0]: https://github.com/superlinked/superlinked&compare/v17.8.3..v17.9.0
+[17.8.3]: https://github.com/superlinked/superlinked&compare/v17.8.2..v17.8.3
+[17.8.2]: https://github.com/superlinked/superlinked&compare/v17.8.1..v17.8.2
+[17.8.1]: https://github.com/superlinked/superlinked&compare/v17.8.0..v17.8.1
+[17.8.0]: https://github.com/superlinked/superlinked&compare/v17.7.1..v17.8.0
+[17.7.0]: https://github.com/superlinked/superlinked&compare/v17.6.0..v17.7.0
+[17.6.0]: https://github.com/superlinked/superlinked&compare/v17.5.0..v17.6.0
+[17.5.0]: https://github.com/superlinked/superlinked&compare/v17.4.0..v17.5.0
+[17.4.0]: https://github.com/superlinked/superlinked&compare/v17.3.0..v17.4.0
+[17.3.0]: https://github.com/superlinked/superlinked&compare/v17.2.2..v17.3.0
+[17.2.2]: https://github.com/superlinked/superlinked&compare/v17.2.1..v17.2.2
+[17.2.1]: https://github.com/superlinked/superlinked&compare/v17.2.0..v17.2.1
+[17.2.0]: https://github.com/superlinked/superlinked&compare/v17.1.0..v17.2.0
+[17.1.0]: https://github.com/superlinked/superlinked&compare/v17.0.1..v17.1.0
+[17.0.1]: https://github.com/superlinked/superlinked&compare/v17.0.0..v17.0.1
+[17.0.0]: https://github.com/superlinked/superlinked&compare/v16.3.0..v17.0.0
+[16.3.0]: https://github.com/superlinked/superlinked&compare/v16.2.0..v16.3.0
+[16.2.0]: https://github.com/superlinked/superlinked&compare/v16.1.9..v16.2.0
+[16.1.8]: https://github.com/superlinked/superlinked&compare/v16.1.7..v16.1.8
+[16.1.6]: https://github.com/superlinked/superlinked&compare/v16.1.5..v16.1.6
+[16.1.5]: https://github.com/superlinked/superlinked&compare/v16.1.4..v16.1.5
+[16.1.4]: https://github.com/superlinked/superlinked&compare/v16.1.3..v16.1.4
+[16.1.2]: https://github.com/superlinked/superlinked&compare/v16.1.1..v16.1.2
+[16.1.1]: https://github.com/superlinked/superlinked&compare/v16.1.0..v16.1.1
+[16.1.0]: https://github.com/superlinked/superlinked&compare/v16.0.0..v16.1.0
+[16.0.0]: https://github.com/superlinked/superlinked&compare/v15.2.0..v16.0.0
+[15.2.0]: https://github.com/superlinked/superlinked&compare/v15.1.1..v15.2.0
+[15.1.1]: https://github.com/superlinked/superlinked&compare/v15.1.0..v15.1.1
+[15.0.0]: https://github.com/superlinked/superlinked&compare/v14.7.1..v15.0.0
+[14.7.1]: https://github.com/superlinked/superlinked&compare/v14.7.0..v14.7.1
+[14.7.0]: https://github.com/superlinked/superlinked&compare/v14.6.1..v14.7.0
+[14.6.1]: https://github.com/superlinked/superlinked&compare/v14.6.0..v14.6.1
+[14.6.0]: https://github.com/superlinked/superlinked&compare/v14.5.0..v14.6.0
+[14.5.0]: https://github.com/superlinked/superlinked&compare/v14.4.1..v14.5.0
+[14.4.1]: https://github.com/superlinked/superlinked&compare/v14.4.0..v14.4.1
+[14.4.0]: https://github.com/superlinked/superlinked&compare/v14.3.0..v14.4.0
+[14.3.0]: https://github.com/superlinked/superlinked&compare/v14.2.0..v14.3.0
+[14.1.1]: https://github.com/superlinked/superlinked&compare/v14.1.0..v14.1.1
+[14.1.0]: https://github.com/superlinked/superlinked&compare/v14.0.0..v14.1.0
+[13.1.3]: https://github.com/superlinked/superlinked&compare/v13.1.2..v13.1.3
+[13.1.2]: https://github.com/superlinked/superlinked&compare/v13.1.1..v13.1.2
+[13.1.1]: https://github.com/superlinked/superlinked&compare/v13.1.0..v13.1.1
+[12.28.1]: https://github.com/superlinked/superlinked&compare/v12.28.0..v12.28.1
+[12.28.0]: https://github.com/superlinked/superlinked&compare/v12.27.0..v12.28.0
+[12.27.0]: https://github.com/superlinked/superlinked&compare/v12.26.0..v12.27.0
+[12.25.0]: https://github.com/superlinked/superlinked&compare/v12.24.2..v12.25.0
+[12.24.2]: https://github.com/superlinked/superlinked&compare/v12.24.1..v12.24.2
+[12.24.1]: https://github.com/superlinked/superlinked&compare/v12.24.0..v12.24.1
+[12.23.0]: https://github.com/superlinked/superlinked&compare/v12.22.3..v12.23.0
+[12.22.0]: https://github.com/superlinked/superlinked&compare/v12.21.0..v12.22.0
+[12.21.0]: https://github.com/superlinked/superlinked&compare/v12.20.1..v12.21.0
+[12.20.1]: https://github.com/superlinked/superlinked&compare/v12.20.0..v12.20.1
+[12.20.0]: https://github.com/superlinked/superlinked&compare/v12.19.1..v12.20.0
+[12.19.0]: https://github.com/superlinked/superlinked&compare/v12.18.4..v12.19.0
+[12.18.3]: https://github.com/superlinked/superlinked&compare/v12.18.2..v12.18.3
+[12.18.1]: https://github.com/superlinked/superlinked&compare/v12.18.0..v12.18.1
+[12.18.0]: https://github.com/superlinked/superlinked&compare/v12.17.1..v12.18.0
+[12.17.0]: https://github.com/superlinked/superlinked&compare/v12.16.0..v12.17.0
+[12.16.0]: https://github.com/superlinked/superlinked&compare/v12.15.0..v12.16.0
+[12.14.0]: https://github.com/superlinked/superlinked&compare/v12.13.1..v12.14.0
+[12.13.1]: https://github.com/superlinked/superlinked&compare/v12.13.0..v12.13.1
+[12.13.0]: https://github.com/superlinked/superlinked&compare/v12.12.0..v12.13.0
+[12.10.0]: https://github.com/superlinked/superlinked&compare/v12.9.0..v12.10.0
+[12.9.0]: https://github.com/superlinked/superlinked&compare/v12.8.0..v12.9.0
+[12.8.0]: https://github.com/superlinked/superlinked&compare/v12.7.3..v12.8.0
+[12.7.3]: https://github.com/superlinked/superlinked&compare/v12.7.2..v12.7.3
+[12.7.2]: https://github.com/superlinked/superlinked&compare/v12.7.1..v12.7.2
+[12.7.1]: https://github.com/superlinked/superlinked&compare/v12.7.0..v12.7.1
+[12.6.0]: https://github.com/superlinked/superlinked&compare/v12.5.0..v12.6.0
+[12.4.0]: https://github.com/superlinked/superlinked&compare/v12.3.0..v12.4.0
+[12.3.0]: https://github.com/superlinked/superlinked&compare/v12.2.0..v12.3.0
+[12.2.0]: https://github.com/superlinked/superlinked&compare/v12.1.0..v12.2.0
+[12.1.0]: https://github.com/superlinked/superlinked&compare/v12.0.0..v12.1.0
+[11.1.0]: https://github.com/superlinked/superlinked&compare/v11.0.0..v11.1.0
+[11.0.0]: https://github.com/superlinked/superlinked&compare/v10.2.2..v11.0.0
+[10.2.2]: https://github.com/superlinked/superlinked&compare/v10.2.1..v10.2.2
+[10.2.0]: https://github.com/superlinked/superlinked&compare/v10.1.1..v10.2.0
+[10.1.1]: https://github.com/superlinked/superlinked&compare/v10.1.0..v10.1.1
+[10.1.0]: https://github.com/superlinked/superlinked&compare/v10.0.0..v10.1.0
+[10.0.0]: https://github.com/superlinked/superlinked&compare/v9.49.0..v10.0.0
+[9.48.6]: https://github.com/superlinked/superlinked&compare/v9.48.5..v9.48.6
+[9.48.4]: https://github.com/superlinked/superlinked&compare/v9.48.3..v9.48.4
+[9.48.2]: https://github.com/superlinked/superlinked&compare/v9.48.1..v9.48.2
+[9.48.1]: https://github.com/superlinked/superlinked&compare/v9.48.0..v9.48.1
+[9.48.0]: https://github.com/superlinked/superlinked&compare/v9.47.1..v9.48.0
+[9.47.1]: https://github.com/superlinked/superlinked&compare/v9.47.0..v9.47.1
+[9.47.0]: https://github.com/superlinked/superlinked&compare/v9.46.3..v9.47.0
+[9.46.3]: https://github.com/superlinked/superlinked&compare/v9.46.2..v9.46.3
+[9.46.1]: https://github.com/superlinked/superlinked&compare/v9.46.0..v9.46.1
+[9.46.0]: https://github.com/superlinked/superlinked&compare/v9.45.0..v9.46.0
+[9.45.0]: https://github.com/superlinked/superlinked&compare/v9.44.1..v9.45.0
+[9.44.0]: https://github.com/superlinked/superlinked&compare/v9.43.1..v9.44.0
+[9.43.1]: https://github.com/superlinked/superlinked&compare/v9.43.0..v9.43.1
+[9.43.0]: https://github.com/superlinked/superlinked&compare/v9.42.1..v9.43.0
+[9.42.1]: https://github.com/superlinked/superlinked&compare/v9.42.0..v9.42.1
+[9.42.0]: https://github.com/superlinked/superlinked&compare/v9.41.1..v9.42.0
+[9.41.1]: https://github.com/superlinked/superlinked&compare/v9.41.0..v9.41.1
+[9.40.0]: https://github.com/superlinked/superlinked&compare/v9.39.0..v9.40.0
+[9.38.1]: https://github.com/superlinked/superlinked&compare/v9.38.0..v9.38.1
+[9.38.0]: https://github.com/superlinked/superlinked&compare/v9.37.1..v9.38.0
+[9.37.0]: https://github.com/superlinked/superlinked&compare/v9.36.0..v9.37.0
+[9.36.0]: https://github.com/superlinked/superlinked&compare/v9.35.1..v9.36.0
+[9.35.1]: https://github.com/superlinked/superlinked&compare/v9.35.0..v9.35.1
+[9.34.0]: https://github.com/superlinked/superlinked&compare/v9.33.0..v9.34.0
+[9.33.0]: https://github.com/superlinked/superlinked&compare/v9.32.2..v9.33.0
+[9.32.1]: https://github.com/superlinked/superlinked&compare/v9.32.0..v9.32.1
+[9.32.0]: https://github.com/superlinked/superlinked&compare/v9.31.0..v9.32.0
+[9.31.0]: https://github.com/superlinked/superlinked&compare/v9.30.0..v9.31.0
+[9.30.0]: https://github.com/superlinked/superlinked&compare/v9.29.1..v9.30.0
+[9.29.0]: https://github.com/superlinked/superlinked&compare/v9.28.0..v9.29.0
+[9.27.2]: https://github.com/superlinked/superlinked&compare/v9.27.1..v9.27.2
+[9.27.1]: https://github.com/superlinked/superlinked&compare/v9.27.0..v9.27.1
+[9.27.0]: https://github.com/superlinked/superlinked&compare/v9.26.0..v9.27.0
+[9.26.0]: https://github.com/superlinked/superlinked&compare/v9.25.1..v9.26.0
+[9.25.1]: https://github.com/superlinked/superlinked&compare/v9.25.0..v9.25.1
+[9.24.0]: https://github.com/superlinked/superlinked&compare/v9.23.2..v9.24.0
+[9.23.2]: https://github.com/superlinked/superlinked&compare/v9.23.1..v9.23.2
+[9.23.1]: https://github.com/superlinked/superlinked&compare/v9.23.0..v9.23.1
+[9.23.0]: https://github.com/superlinked/superlinked&compare/v9.22.1..v9.23.0
+[9.22.0]: https://github.com/superlinked/superlinked&compare/v9.21.2..v9.22.0
+[9.21.1]: https://github.com/superlinked/superlinked&compare/v9.21.0..v9.21.1
+[9.19.1]: https://github.com/superlinked/superlinked&compare/v9.19.0..v9.19.1
+[9.19.0]: https://github.com/superlinked/superlinked&compare/v9.18.0..v9.19.0
+[9.18.0]: https://github.com/superlinked/superlinked&compare/v9.17.2..v9.18.0
+[9.17.0]: https://github.com/superlinked/superlinked&compare/v9.16.3..v9.17.0
+[9.16.3]: https://github.com/superlinked/superlinked&compare/v9.16.2..v9.16.3
+[9.16.2]: https://github.com/superlinked/superlinked&compare/v9.16.1..v9.16.2
+[9.15.0]: https://github.com/superlinked/superlinked&compare/v9.14.0..v9.15.0
+[9.13.0]: https://github.com/superlinked/superlinked&compare/v9.12.1..v9.13.0
+[9.12.1]: https://github.com/superlinked/superlinked&compare/v9.12.0..v9.12.1
+[9.12.0]: https://github.com/superlinked/superlinked&compare/v9.11.0..v9.12.0
+[9.9.0]: https://github.com/superlinked/superlinked&compare/v9.8.0..v9.9.0
+[9.8.0]: https://github.com/superlinked/superlinked&compare/v9.7.2..v9.8.0
+[9.7.2]: https://github.com/superlinked/superlinked&compare/v9.7.1..v9.7.2
+[9.7.1]: https://github.com/superlinked/superlinked&compare/v9.7.0..v9.7.1
+[9.7.0]: https://github.com/superlinked/superlinked&compare/v9.6.0..v9.7.0
+[9.6.0]: https://github.com/superlinked/superlinked&compare/v9.5.0..v9.6.0
+[9.4.0]: https://github.com/superlinked/superlinked&compare/v9.3.1..v9.4.0
+[9.3.1]: https://github.com/superlinked/superlinked&compare/v9.3.0..v9.3.1
+[9.3.0]: https://github.com/superlinked/superlinked&compare/v9.2.0..v9.3.0
+[9.2.0]: https://github.com/superlinked/superlinked&compare/v9.1.1..v9.2.0
+[9.1.1]: https://github.com/superlinked/superlinked&compare/v9.1.0..v9.1.1
+[9.1.0]: https://github.com/superlinked/superlinked&compare/v9.0.0..v9.1.0
+[8.13.0]: https://github.com/superlinked/superlinked&compare/v8.12.2..v8.13.0
+[8.12.1]: https://github.com/superlinked/superlinked&compare/v8.12.0..v8.12.1
+[8.12.0]: https://github.com/superlinked/superlinked&compare/v8.11.0..v8.12.0
+[8.11.0]: https://github.com/superlinked/superlinked&compare/v8.10.0..v8.11.0
+[8.10.0]: https://github.com/superlinked/superlinked&compare/v8.9.0..v8.10.0
+[8.9.0]: https://github.com/superlinked/superlinked&compare/v8.8.3..v8.9.0
+[8.8.2]: https://github.com/superlinked/superlinked&compare/v8.8.1..v8.8.2
+[8.8.0]: https://github.com/superlinked/superlinked&compare/v8.7.4..v8.8.0
+[8.7.4]: https://github.com/superlinked/superlinked&compare/v8.7.3..v8.7.4
+[8.7.3]: https://github.com/superlinked/superlinked&compare/v8.7.2..v8.7.3
+[8.7.2]: https://github.com/superlinked/superlinked&compare/v8.7.1..v8.7.2
+[8.7.1]: https://github.com/superlinked/superlinked&compare/v8.7.0..v8.7.1
+[8.6.8]: https://github.com/superlinked/superlinked&compare/v8.6.7..v8.6.8
+[8.6.7]: https://github.com/superlinked/superlinked&compare/v8.6.6..v8.6.7
+[8.6.5]: https://github.com/superlinked/superlinked&compare/v8.6.4..v8.6.5
+[8.6.4]: https://github.com/superlinked/superlinked&compare/v8.6.3..v8.6.4
+[8.5.2]: https://github.com/superlinked/superlinked&compare/v8.5.1..v8.5.2
+[8.5.1]: https://github.com/superlinked/superlinked&compare/v8.5.0..v8.5.1
+[8.5.0]: https://github.com/superlinked/superlinked&compare/v8.4.1..v8.5.0
+[8.4.1]: https://github.com/superlinked/superlinked&compare/v8.4.0..v8.4.1
+[8.2.0]: https://github.com/superlinked/superlinked&compare/v8.1.0..v8.2.0
+[8.1.0]: https://github.com/superlinked/superlinked&compare/v8.0.1..v8.1.0
+[8.0.0]: https://github.com/superlinked/superlinked&compare/v7.5.0..v8.0.0
+[7.5.0]: https://github.com/superlinked/superlinked&compare/v7.4.0..v7.5.0
+[7.4.0]: https://github.com/superlinked/superlinked&compare/v7.3.0..v7.4.0
+[7.3.0]: https://github.com/superlinked/superlinked&compare/v7.2.1..v7.3.0
+[7.2.0]: https://github.com/superlinked/superlinked&compare/v7.1.0..v7.2.0
+[7.1.0]: https://github.com/superlinked/superlinked&compare/v7.0.6..v7.1.0
+[7.0.6]: https://github.com/superlinked/superlinked&compare/v7.0.5..v7.0.6
+[7.0.5]: https://github.com/superlinked/superlinked&compare/v7.0.4..v7.0.5
+[7.0.1]: https://github.com/superlinked/superlinked&compare/v7.0.0..v7.0.1
+[7.0.0]: https://github.com/superlinked/superlinked&compare/v6.10.0..v7.0.0
+[6.10.0]: https://github.com/superlinked/superlinked&compare/v6.9.0..v6.10.0
+[6.9.0]: https://github.com/superlinked/superlinked&compare/v6.8.0..v6.9.0
+[6.8.0]: https://github.com/superlinked/superlinked&compare/v6.7.1..v6.8.0
+[6.7.1]: https://github.com/superlinked/superlinked&compare/v6.7.0..v6.7.1
+[6.5.6]: https://github.com/superlinked/superlinked&compare/v6.5.5..v6.5.6
+[6.5.5]: https://github.com/superlinked/superlinked&compare/v6.5.4..v6.5.5
+[6.5.3]: https://github.com/superlinked/superlinked&compare/v6.5.2..v6.5.3
+[6.5.2]: https://github.com/superlinked/superlinked&compare/v6.5.1..v6.5.2
+[6.5.1]: https://github.com/superlinked/superlinked&compare/v6.5.0..v6.5.1
+[6.5.0]: https://github.com/superlinked/superlinked&compare/v6.4.0..v6.5.0
+[6.4.0]: https://github.com/superlinked/superlinked&compare/v6.3.0..v6.4.0
+[6.3.0]: https://github.com/superlinked/superlinked&compare/v6.2.0..v6.3.0
+[6.2.0]: https://github.com/superlinked/superlinked&compare/v6.1.0..v6.2.0
+[6.1.0]: https://github.com/superlinked/superlinked&compare/v6.0.1..v6.1.0
+[6.0.1]: https://github.com/superlinked/superlinked&compare/v6.0.0..v6.0.1
+[6.0.0]: https://github.com/superlinked/superlinked&compare/v5.11.0..v6.0.0
+[5.11.0]: https://github.com/superlinked/superlinked&compare/v5.10.0..v5.11.0
+[5.10.0]: https://github.com/superlinked/superlinked&compare/v5.9.0..v5.10.0
+[5.8.1]: https://github.com/superlinked/superlinked&compare/v5.8.0..v5.8.1
+[5.8.0]: https://github.com/superlinked/superlinked&compare/v5.7.0..v5.8.0
+[5.5.2]: https://github.com/superlinked/superlinked&compare/v5.5.1..v5.5.2
+[5.5.1]: https://github.com/superlinked/superlinked&compare/v5.5.0..v5.5.1
+[5.4.1]: https://github.com/superlinked/superlinked&compare/v5.4.0..v5.4.1
+[5.4.0]: https://github.com/superlinked/superlinked&compare/v5.3.0..v5.4.0
+[5.3.0]: https://github.com/superlinked/superlinked&compare/v5.2.3..v5.3.0
+[5.2.3]: https://github.com/superlinked/superlinked&compare/v5.2.2..v5.2.3
+[5.2.2]: https://github.com/superlinked/superlinked&compare/v5.2.1..v5.2.2
+[5.2.1]: https://github.com/superlinked/superlinked&compare/v5.2.0..v5.2.1
+[5.2.0]: https://github.com/superlinked/superlinked&compare/v5.1.0..v5.2.0
+[5.0.0]: https://github.com/superlinked/superlinked&compare/v4.1.0..v5.0.0
+[4.1.0]: https://github.com/superlinked/superlinked&compare/v4.0.1..v4.1.0
+[4.0.1]: https://github.com/superlinked/superlinked&compare/v4.0.0..v4.0.1
+[3.46.0]: https://github.com/superlinked/superlinked&compare/v3.45.0..v3.46.0
+[3.45.0]: https://github.com/superlinked/superlinked&compare/v3.44.0..v3.45.0
+[3.44.0]: https://github.com/superlinked/superlinked&compare/v3.43.0..v3.44.0
+[3.42.0]: https://github.com/superlinked/superlinked&compare/v3.41.1..v3.42.0
+[3.41.1]: https://github.com/superlinked/superlinked&compare/v3.41.0..v3.41.1
+[3.41.0]: https://github.com/superlinked/superlinked&compare/v3.40.0..v3.41.0
+[3.40.0]: https://github.com/superlinked/superlinked&compare/v3.39.1..v3.40.0
+[3.39.1]: https://github.com/superlinked/superlinked&compare/v3.39.0..v3.39.1
+[3.39.0]: https://github.com/superlinked/superlinked&compare/v3.38.0..v3.39.0
+[3.38.0]: https://github.com/superlinked/superlinked&compare/v3.37.2..v3.38.0
+[3.37.2]: https://github.com/superlinked/superlinked&compare/v3.37.1..v3.37.2
+[3.37.1]: https://github.com/superlinked/superlinked&compare/v3.37.0..v3.37.1
+[3.36.0]: https://github.com/superlinked/superlinked&compare/v3.35.2..v3.36.0
+[3.35.2]: https://github.com/superlinked/superlinked&compare/v3.35.1..v3.35.2
+[3.35.1]: https://github.com/superlinked/superlinked&compare/v3.35.0..v3.35.1
+[3.35.0]: https://github.com/superlinked/superlinked&compare/v3.34.1..v3.35.0
+[3.34.1]: https://github.com/superlinked/superlinked&compare/v3.34.0..v3.34.1
+[3.34.0]: https://github.com/superlinked/superlinked&compare/v3.33.0..v3.34.0
+[3.33.0]: https://github.com/superlinked/superlinked&compare/v3.32.0..v3.33.0
+[3.32.0]: https://github.com/superlinked/superlinked&compare/v3.31.0..v3.32.0
+[3.31.0]: https://github.com/superlinked/superlinked&compare/v3.30.0..v3.31.0
+[3.29.2]: https://github.com/superlinked/superlinked&compare/v3.29.1..v3.29.2
+[3.29.1]: https://github.com/superlinked/superlinked&compare/v3.29.0..v3.29.1
+[3.28.0]: https://github.com/superlinked/superlinked&compare/v3.27.0..v3.28.0
+[3.27.0]: https://github.com/superlinked/superlinked&compare/v3.26.0..v3.27.0
+[3.26.0]: https://github.com/superlinked/superlinked&compare/v3.25.0..v3.26.0
+[3.23.0]: https://github.com/superlinked/superlinked&compare/v3.22.0..v3.23.0
+[3.22.0]: https://github.com/superlinked/superlinked&compare/v3.21.0..v3.22.0
+[3.21.0]: https://github.com/superlinked/superlinked&compare/v3.20.0..v3.21.0
+[3.20.0]: https://github.com/superlinked/superlinked&compare/v3.19.0..v3.20.0
+[3.18.1]: https://github.com/superlinked/superlinked&compare/v3.18.0..v3.18.1
+[3.18.0]: https://github.com/superlinked/superlinked&compare/v3.17.0..v3.18.0
+[3.17.0]: https://github.com/superlinked/superlinked&compare/v3.16.0..v3.17.0
+[3.16.0]: https://github.com/superlinked/superlinked&compare/v3.15.1..v3.16.0
+[3.15.1]: https://github.com/superlinked/superlinked&compare/v3.15.0..v3.15.1
+[3.15.0]: https://github.com/superlinked/superlinked&compare/v3.14.4..v3.15.0
+[3.14.4]: https://github.com/superlinked/superlinked&compare/v3.14.3..v3.14.4
+[3.14.3]: https://github.com/superlinked/superlinked&compare/v3.14.2..v3.14.3
+[3.14.1]: https://github.com/superlinked/superlinked&compare/v3.14.0..v3.14.1
+[3.14.0]: https://github.com/superlinked/superlinked&compare/v3.13.0..v3.14.0
+[3.12.0]: https://github.com/superlinked/superlinked&compare/v3.11.0..v3.12.0
+[3.11.0]: https://github.com/superlinked/superlinked&compare/v3.10.0..v3.11.0
+[3.8.0]: https://github.com/superlinked/superlinked&compare/v3.7.0..v3.8.0
+[3.7.0]: https://github.com/superlinked/superlinked&compare/v3.6.3..v3.7.0
+[3.6.0]: https://github.com/superlinked/superlinked&compare/v3.5.0..v3.6.0
+[3.5.0]: https://github.com/superlinked/superlinked&compare/v3.4.1..v3.5.0
+[3.4.0]: https://github.com/superlinked/superlinked&compare/v3.3.0..v3.4.0
+[3.3.0]: https://github.com/superlinked/superlinked&compare/v3.2.1..v3.3.0
+[3.2.1]: https://github.com/superlinked/superlinked&compare/v3.2.0..v3.2.1
+[3.2.0]: https://github.com/superlinked/superlinked&compare/v3.1.0..v3.2.0
+[3.1.0]: https://github.com/superlinked/superlinked&compare/v3.0.0..v3.1.0
+[3.0.0]: https://github.com/superlinked/superlinked&compare/v2.37.0..v3.0.0
+[2.37.0]: https://github.com/superlinked/superlinked&compare/v2.36.0..v2.37.0
+[2.35.0]: https://github.com/superlinked/superlinked&compare/v2.34.0..v2.35.0
+[2.33.2]: https://github.com/superlinked/superlinked&compare/v2.33.1..v2.33.2
+[2.33.0]: https://github.com/superlinked/superlinked&compare/v2.32.6..v2.33.0
+[2.32.5]: https://github.com/superlinked/superlinked&compare/v2.32.4..v2.32.5
+[2.32.1]: https://github.com/superlinked/superlinked&compare/v2.32.0..v2.32.1
+[2.32.0]: https://github.com/superlinked/superlinked&compare/v2.31.0..v2.32.0
+[2.31.0]: https://github.com/superlinked/superlinked&compare/v2.30.0..v2.31.0
+[2.30.0]: https://github.com/superlinked/superlinked&compare/v2.29.0..v2.30.0
+[2.29.0]: https://github.com/superlinked/superlinked&compare/v2.28.0..v2.29.0
+[2.28.0]: https://github.com/superlinked/superlinked&compare/v2.27.1..v2.28.0
+[2.27.0]: https://github.com/superlinked/superlinked&compare/v2.26.1..v2.27.0
+[2.26.0]: https://github.com/superlinked/superlinked&compare/v2.25.0..v2.26.0
+[2.25.0]: https://github.com/superlinked/superlinked&compare/v2.24.0..v2.25.0
+[2.24.0]: https://github.com/superlinked/superlinked&compare/v2.23.3..v2.24.0
+[2.23.3]: https://github.com/superlinked/superlinked&compare/v2.23.2..v2.23.3
+[2.23.2]: https://github.com/superlinked/superlinked&compare/v2.23.1..v2.23.2
+[2.23.1]: https://github.com/superlinked/superlinked&compare/v2.23.0..v2.23.1
+[2.23.0]: https://github.com/superlinked/superlinked&compare/v2.22.0..v2.23.0
+[2.22.0]: https://github.com/superlinked/superlinked&compare/v2.21.0..v2.22.0
+[2.21.0]: https://github.com/superlinked/superlinked&compare/v2.20.0..v2.21.0
+[2.20.0]: https://github.com/superlinked/superlinked&compare/v2.19.0..v2.20.0
+[2.19.0]: https://github.com/superlinked/superlinked&compare/v2.18.0..v2.19.0
+[2.17.4]: https://github.com/superlinked/superlinked&compare/v2.17.3..v2.17.4
+[2.17.2]: https://github.com/superlinked/superlinked&compare/v2.17.1..v2.17.2
+[2.17.1]: https://github.com/superlinked/superlinked&compare/v2.17.0..v2.17.1
+[2.17.0]: https://github.com/superlinked/superlinked&compare/v2.16.0..v2.17.0
+[2.16.0]: https://github.com/superlinked/superlinked&compare/v2.15.0..v2.16.0
+[2.14.2]: https://github.com/superlinked/superlinked&compare/v2.14.1..v2.14.2
+[2.14.1]: https://github.com/superlinked/superlinked&compare/v2.14.0..v2.14.1
+[2.14.0]: https://github.com/superlinked/superlinked&compare/v2.13.0..v2.14.0
+[2.12.0]: https://github.com/superlinked/superlinked&compare/v2.11.0..v2.12.0
+[2.11.0]: https://github.com/superlinked/superlinked&compare/v2.10.0..v2.11.0
+[2.10.0]: https://github.com/superlinked/superlinked&compare/v2.9.0..v2.10.0
+[2.9.0]: https://github.com/superlinked/superlinked&compare/v2.8.0..v2.9.0
+[2.8.0]: https://github.com/superlinked/superlinked&compare/v2.7.2..v2.8.0
+[2.7.1]: https://github.com/superlinked/superlinked&compare/v2.7.0..v2.7.1
+[2.6.0]: https://github.com/superlinked/superlinked&compare/v2.5.0..v2.6.0
+[2.5.0]: https://github.com/superlinked/superlinked&compare/v2.4.1..v2.5.0
+[2.4.1]: https://github.com/superlinked/superlinked&compare/v2.4.0..v2.4.1
+[2.4.0]: https://github.com/superlinked/superlinked&compare/v2.3.0..v2.4.0
+[2.3.0]: https://github.com/superlinked/superlinked&compare/v2.2.0..v2.3.0
+[2.2.0]: https://github.com/superlinked/superlinked&compare/v2.1.4..v2.2.0
+[2.1.4]: https://github.com/superlinked/superlinked&compare/v2.1.3..v2.1.4
+[2.1.3]: https://github.com/superlinked/superlinked&compare/v2.1.2..v2.1.3
+[2.1.2]: https://github.com/superlinked/superlinked&compare/v2.1.1..v2.1.2
+[2.1.1]: https://github.com/superlinked/superlinked&compare/v2.1.0..v2.1.1
+[2.1.0]: https://github.com/superlinked/superlinked&compare/v2.0.0..v2.1.0
+[2.0.0]: https://github.com/superlinked/superlinked&compare/v1.11.3..v2.0.0
+[1.11.3]: https://github.com/superlinked/superlinked&compare/v1.11.2..v1.11.3
+[1.11.2]: https://github.com/superlinked/superlinked&compare/v1.11.1..v1.11.2
+[1.11.1]: https://github.com/superlinked/superlinked&compare/v1.11.0..v1.11.1
+[1.11.0]: https://github.com/superlinked/superlinked&compare/v1.10.1..v1.11.0
+[1.10.1]: https://github.com/superlinked/superlinked&compare/v1.10.0..v1.10.1
+[1.10.0]: https://github.com/superlinked/superlinked&compare/v1.9.0..v1.10.0
+[1.9.0]: https://github.com/superlinked/superlinked&compare/v1.8.1..v1.9.0
+[1.8.1]: https://github.com/superlinked/superlinked&compare/v1.8.0..v1.8.1
+[1.8.0]: https://github.com/superlinked/superlinked&compare/v1.7.1..v1.8.0
+[1.7.0]: https://github.com/superlinked/superlinked&compare/v1.6.0..v1.7.0
+[1.6.0]: https://github.com/superlinked/superlinked&compare/v1.5.0..v1.6.0
+[1.5.0]: https://github.com/superlinked/superlinked&compare/v1.4.0..v1.5.0
+[1.4.0]: https://github.com/superlinked/superlinked&compare/v1.3.0..v1.4.0
+[1.3.0]: https://github.com/superlinked/superlinked&compare/v1.2.0..v1.3.0
+[1.2.0]: https://github.com/superlinked/superlinked&compare/v1.1.0..v1.2.0
+[1.1.0]: https://github.com/superlinked/superlinked&compare/v1.0.0..v1.1.0
+[1.0.0]: https://github.com/superlinked/superlinked&compare/v0.9.0..v1.0.0
+[0.9.0]: https://github.com/superlinked/superlinked&compare/v0.8.0..v0.9.0
+[0.8.0]: https://github.com/superlinked/superlinked&compare/v0.7.0..v0.8.0
+[0.7.0]: https://github.com/superlinked/superlinked&compare/v0.6.0..v0.7.0
+[0.6.0]: https://github.com/superlinked/superlinked&compare/v0.5.1..v0.6.0
+[0.5.1]: https://github.com/superlinked/superlinked&compare/v0.5.0..v0.5.1
+[0.5.0]: https://github.com/superlinked/superlinked&compare/v0.4.1..v0.5.0
+[0.4.1]: https://github.com/superlinked/superlinked&compare/v0.4.0..v0.4.1
+[0.4.0]: https://github.com/superlinked/superlinked&compare/v0.3.0..v0.4.0
+[0.3.0]: https://github.com/superlinked/superlinked&compare/v0.2.3..v0.3.0
+[0.2.3]: https://github.com/superlinked/superlinked&compare/v0.2.2..v0.2.3
+[0.2.2]: https://github.com/superlinked/superlinked&compare/v0.2.1..v0.2.2
+[0.2.1]: https://github.com/superlinked/superlinked&compare/v0.2.0..v0.2.1
+[0.2.0]: https://github.com/superlinked/superlinked&compare/v0.1.3..v0.2.0
+[0.1.3]: https://github.com/superlinked/superlinked&compare/v0.1.1..v0.1.3
+[0.1.1]: https://github.com/superlinked/superlinked&compare/v0.1.0..v0.1.1
+[0.1.0]: https://github.com/superlinked/superlinked&compare/v0.0.12..v0.1.0
+[0.0.12]: https://github.com/superlinked/superlinked&compare/v0.0.11..v0.0.12
+[0.0.10]: https://github.com/superlinked/superlinked&compare/v0.0.9..v0.0.10
+[0.0.9]: https://github.com/superlinked/superlinked&compare/v0.0.8..v0.0.9
+[0.0.8]: https://github.com/superlinked/superlinked&compare/v0.0.7..v0.0.8
+[0.0.7]: https://github.com/superlinked/superlinked&compare/v0.0.6..v0.0.7
+[0.0.6]: https://github.com/superlinked/superlinked&compare/v0.0.5..v0.0.6
+[0.0.5]: https://github.com/superlinked/superlinked&compare/v0.0.4..v0.0.5
 
