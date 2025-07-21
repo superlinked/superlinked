@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [31.2.4] - 2025-07-21
+
+### Fixed
+
+- Moved rich dependency from dev to amin deps, to avoid recursion error
+
 ## [31.2.3] - 2025-07-18
 
 ### Fixed
@@ -5996,6 +6002,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove unnecessary call
 - Remove extra field
 
+[31.2.4]: https://github.com/superlinked/superlinked/compare/v31.2.3..v31.2.4
 [31.2.3]: https://github.com/superlinked/superlinked/compare/v31.2.2..v31.2.3
 [31.2.2]: https://github.com/superlinked/superlinked/compare/v31.2.1..v31.2.2
 [31.2.1]: https://github.com/superlinked/superlinked/compare/v31.2.0..v31.2.1
