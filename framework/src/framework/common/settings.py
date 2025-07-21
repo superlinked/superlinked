@@ -159,7 +159,7 @@ class ResourceSettings(YamlBasedSettings):
     )
 
 
-settings = Settings()
-resource_settings = ResourceSettings()
+settings = Settings(_env_nested_delimiter="__")
+resource_settings = ResourceSettings(_env_nested_delimiter="__")
 
 __all__ = ["settings", "resource_settings"]
