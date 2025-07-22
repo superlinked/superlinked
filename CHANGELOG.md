@@ -3,6 +3,25 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [32.0.0] - 2025-07-22
+
+### Removed
+
+- Remove new dict creation
+
+## [31.4.1] - 2025-07-21
+
+### Changed
+
+- Return the query and source with the paths
+- Improve modal image build time
+
+## [31.4.0] - 2025-07-21
+
+### Changed
+
+- Jira issue notebook
+
 ## [31.3.0] - 2025-07-21
 
 ### Changed
@@ -6008,6 +6027,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove unnecessary call
 - Remove extra field
 
+[32.0.0]: https://github.com/superlinked/superlinked/compare/v31.4.1..v32.0.0
+[31.4.1]: https://github.com/superlinked/superlinked/compare/v31.4.0..v31.4.1
+[31.4.0]: https://github.com/superlinked/superlinked/compare/v31.3.0..v31.4.0
 [31.3.0]: https://github.com/superlinked/superlinked/compare/v31.2.4..v31.3.0
 [31.2.4]: https://github.com/superlinked/superlinked/compare/v31.2.3..v31.2.4
 [31.2.3]: https://github.com/superlinked/superlinked/compare/v31.2.2..v31.2.3
