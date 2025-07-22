@@ -9,8 +9,8 @@ Classes
 
     ### Instance variables
 
-    `ingest_paths: list[str]`
+    `path_to_query_map: Mapping[str, superlinked.framework.dsl.executor.rest.rest_configuration.RestQuery]`
     :
 
-    `query_paths: list[str]`
+    `path_to_source_map: Mapping[str, superlinked.framework.dsl.source.rest_source.RestSource]`
     :
