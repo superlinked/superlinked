@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Sequence, TypeVar
+from beartype.typing import Mapping, Sequence, TypeVar
 from furl import furl
 
 from superlinked.framework.dsl.executor.exception import DuplicateEndpointException
@@ -49,12 +49,12 @@ class RestHandler:
         )
 
     @property
-    def ingest_paths(self) -> list[str]:
-        return list(self.__path_to_source_map.keys())
+    def path_to_source_map(self) -> Mapping[str, RestSource]:
+        return self.__path_to_source_map
 
     @property
-    def query_paths(self) -> list[str]:
-        return list(self.__path_to_query_map.keys())
+    def path_to_query_map(self) -> Mapping[str, RestQuery]:
+        return self.__path_to_query_map
 
     def _ingest_handler(self, input_schema: dict, path: str) -> None:
         source = self.__path_to_source_map[path]

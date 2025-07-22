@@ -76,7 +76,7 @@ class SchemaReference(SchemaField[str], HasMultiplier, Generic[RST]):
         )
 
     @property
-    def _referenced_schema(self) -> type[IdSchemaObject]:
+    def _referenced_schema(self) -> type[RST]:
         return self.__referenced_schema
 
     def __mul__(self, other: float | int) -> MultipliedSchemaReference:
