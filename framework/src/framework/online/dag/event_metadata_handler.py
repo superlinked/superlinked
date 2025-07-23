@@ -21,7 +21,8 @@ from beartype.typing import Mapping
 
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.schema.schema_object import SchemaObject
-from superlinked.framework.common.storage.entity_key import EntityKey
+from superlinked.framework.common.storage.entity.entity_id import EntityId
+from superlinked.framework.common.storage_manager.node_info import NodeInfo
 from superlinked.framework.online.online_entity_cache import OnlineEntityCache
 
 
@@ -61,12 +62,13 @@ class EventMetadataHandler:
 
     def read(self, schema: SchemaObject, object_id: str, online_entity_cache: OnlineEntityCache) -> EventMetadata:
         def get_event_metadata_item(object_id: str, field_name: str) -> int:
-            entity_key = EntityKey(
-                schema_id=schema._schema_name,
-                object_id=object_id,
-                node_id=self._metadata_key,
+            entity_id = EntityId(schema_id=schema._schema_name, object_id=object_id)
+            event_metadata_item = (
+                online_entity_cache.get_node_data(
+                    entity_id=entity_id, node_id=self._metadata_key, field_name=field_name
+                )
+                or 0
             )
-            event_metadata_item = online_entity_cache.get(entity_key=entity_key, field_name=field_name) or 0
             if not isinstance(event_metadata_item, int):
                 raise ValueError(f"{field_name} must be int, got {type(event_metadata_item).__name__}.")
             return event_metadata_item
@@ -84,11 +86,14 @@ class EventMetadataHandler:
         online_entity_cache: OnlineEntityCache,
     ) -> None:
         for object_id, metadata in event_metadata_items.items():
-            online_entity_cache.set_multiple(
-                EntityKey(schema_id=schema._schema_name, object_id=object_id, node_id=self._metadata_key),
-                {
-                    constants.EFFECT_COUNT_KEY: metadata.effect_count,
-                    constants.EFFECT_AVG_TS_KEY: metadata.effect_avg_ts,
-                    constants.EFFECT_OLDEST_TS_KEY: metadata.effect_oldest_ts,
-                },
+            online_entity_cache.set_node_info(
+                EntityId(schema_id=schema._schema_name, object_id=object_id),
+                self._metadata_key,
+                NodeInfo(
+                    data={
+                        constants.EFFECT_COUNT_KEY: metadata.effect_count,
+                        constants.EFFECT_AVG_TS_KEY: metadata.effect_avg_ts,
+                        constants.EFFECT_OLDEST_TS_KEY: metadata.effect_oldest_ts,
+                    }
+                ),
             )

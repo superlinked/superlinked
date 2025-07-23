@@ -20,38 +20,80 @@ from collections import defaultdict
 from beartype.typing import Mapping
 
 from superlinked.framework.common.data_types import NodeDataTypes
-from superlinked.framework.common.storage.entity_key import EntityKey
+from superlinked.framework.common.storage.entity.entity_id import EntityId
+from superlinked.framework.common.storage_manager.node_info import NodeInfo
 
 
 class OnlineEntityCache:
     """Storage of data during online DAG evaluation, reducing database operations"""
 
     def __init__(self) -> None:
-        self._cache: dict[EntityKey, dict[str, NodeDataTypes]] = {}
-        self._changed_keys: dict[EntityKey, set[str]] = defaultdict(set[str])
+        self._cache: dict[EntityId, dict[str, NodeInfo]] = defaultdict(defaultdict)
+        self._change: dict[EntityId, dict[str, NodeInfo]] = defaultdict(defaultdict)
+        self._entity_to_origin: dict[EntityId, str] = {}
 
-    def get(self, entity_key: EntityKey, field_name: str) -> NodeDataTypes | None:
-        return self._cache.get(entity_key, {}).get(field_name)
+    @property
+    def changes(self) -> Mapping[EntityId, Mapping[str, NodeInfo]]:
+        return self._change
 
-    def set(self, entity_key: EntityKey, field_name: str, node_data: NodeDataTypes) -> None:
-        if entity_key not in self._cache:
-            self._cache[entity_key] = {}
+    @property
+    def origin_ids(self) -> Mapping[EntityId, str]:
+        return self._entity_to_origin
 
-        if field_name not in self._cache[entity_key] or self._cache[entity_key][field_name] != node_data:
-            self._changed_keys[entity_key].add(field_name)
-        self._cache[entity_key][field_name] = node_data
+    def load_node_info(self, entity_info: Mapping[EntityId, Mapping[str, NodeInfo]]) -> None:
+        self._cache.update(
+            {entity_id: dict(node_id_to_node_info) for entity_id, node_id_to_node_info in entity_info.items()}
+        )
 
-    def set_multiple(self, entity_key: EntityKey, field_name_to_node_data: Mapping[str, NodeDataTypes]) -> None:
-        for field_name, field_value in field_name_to_node_data.items():
-            self.set(entity_key, field_name, field_value)
+    def set_node_info(self, entity_id: EntityId, node_id: str, node_info: NodeInfo) -> None:
+        cached_node_info = self._cache.get(entity_id, {}).get(node_id)
+        delta = self._calculate_node_info(cached_node_info, node_info, diff=True)
+        if delta.result is None and not delta.data:
+            return
 
-    def get_changed(self) -> Mapping[EntityKey, Mapping[str, NodeDataTypes]]:
-        return {
-            entity_key: {
-                field_name: node_data
-                for field_name, node_data in field_name_to_node_data.items()
-                if field_name in self._changed_keys[entity_key]
-            }
-            for entity_key, field_name_to_node_data in self._cache.items()
-            if entity_key in self._changed_keys
+        self._cache[entity_id][node_id] = self._calculate_node_info(cached_node_info, delta, diff=False)
+        previous_change = self._change.get(entity_id, {}).get(node_id)
+        self._change[entity_id][node_id] = self._calculate_node_info(previous_change, delta, diff=False)
+
+    def set_origin(self, entity_id: EntityId, origin_id: str) -> None:
+        self._entity_to_origin[entity_id] = origin_id
+
+    def get_node_result(self, entity_id: EntityId, node_id: str) -> NodeDataTypes | None:
+        if cached_node_info := self._cache[entity_id].get(node_id):
+            return cached_node_info.result
+        return None
+
+    def get_node_data(self, entity_id: EntityId, node_id: str, field_name: str) -> NodeDataTypes | None:
+        if initial_node_info := self._cache[entity_id].get(node_id):
+            return initial_node_info.data.get(field_name)
+        return None
+
+    @staticmethod
+    def _calculate_node_info(base_node_info: NodeInfo | None, new_node_info: NodeInfo, diff: bool) -> NodeInfo:
+        def calculate_field_delta(
+            base_field: NodeDataTypes | None, new_field: NodeDataTypes | None
+        ) -> NodeDataTypes | None:
+            return None if base_field == new_field or new_field is None else new_field
+
+        def calculate_merged_field(
+            base_field: NodeDataTypes | None, new_field: NodeDataTypes | None
+        ) -> NodeDataTypes | None:
+            return base_field if new_field is None else new_field
+
+        if base_node_info is None:
+            return new_node_info
+
+        calculate_field_method = calculate_field_delta if diff else calculate_merged_field
+        node_result = calculate_field_method(base_node_info.result, new_node_info.result)
+        node_data_keys = set(base_node_info.data.keys()).union(new_node_info.data.keys())
+        node_data = {
+            node_data_key: new_data
+            for node_data_key in node_data_keys
+            if (
+                new_data := calculate_field_method(
+                    base_node_info.data.get(node_data_key), new_node_info.data.get(node_data_key)
+                )
+            )
+            is not None
         }
+        return NodeInfo(node_result, node_data)

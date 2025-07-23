@@ -14,36 +14,64 @@
 
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
 
-from beartype.typing import Sequence
+from beartype.typing import Sequence, cast
+from typing_extensions import override
 
-from superlinked.framework.common.data_types import NodeDataTypes
-from superlinked.framework.common.storage.entity_key import EntityKey
+from superlinked.framework.common.data_types import NodeDataTypes, PythonTypes
+from superlinked.framework.common.storage.entity.entity_id import EntityId
+from superlinked.framework.common.storage.field.field import Field
+from superlinked.framework.common.storage_manager.entity_builder import EntityBuilder
+
+
+@dataclass(frozen=True)
+class NodeRequest(ABC):
+    node_id: str
+
+    @abstractmethod
+    def to_field(self, entity_builder: EntityBuilder) -> Field: ...
+
+
+@dataclass(frozen=True)
+class NodeResultRequest(NodeRequest):
+    data_type: type[NodeDataTypes]
+
+    @override
+    def to_field(self, entity_builder: EntityBuilder) -> Field:
+        return entity_builder.compose_field(self.node_id, self.data_type)
+
+
+@dataclass(frozen=True)
+class NodeDataRequest(NodeRequest):
+    field_name: str
+    data_type: type[NodeDataTypes]
+
+    @override
+    def to_field(self, entity_builder: EntityBuilder) -> Field:
+        return entity_builder.compose_field_from_node_data_descriptor(
+            self.node_id, self.field_name, cast(type[PythonTypes], self.data_type)
+        )
 
 
 @dataclass(frozen=True)
 class EntityDataRequest:
-    """Represents a request to retrieve specific node data fields for an entity"""
+    """Represents a request to retrieve specific node result and data fields for an entity"""
 
-    entity_key: EntityKey
-    node_data_name_to_type: dict[str, type[NodeDataTypes]]
+    entity_id: EntityId
+    node_requests: Sequence[NodeRequest]
 
-    @staticmethod
-    def merge(entity_data_requests: Sequence[EntityDataRequest]) -> list[EntityDataRequest]:
-        entity_key_to_requests = defaultdict(list)
-        for request in entity_data_requests:
-            entity_key_to_requests[request.entity_key].append(request)
-
+    @classmethod
+    def merge(cls, entity_data_requests: Sequence[EntityDataRequest]) -> list[EntityDataRequest]:
+        id_to_requests: dict[EntityId, list[EntityDataRequest]] = defaultdict(list)
+        for entity_data_request in entity_data_requests:
+            id_to_requests[entity_data_request.entity_id].append(entity_data_request)
         return [
             EntityDataRequest(
-                entity_key,
-                {
-                    node_data_name: type_
-                    for request in requests
-                    for node_data_name, type_ in request.node_data_name_to_type.items()
-                },
+                entity_id=id_,
+                node_requests=list(set(node_request for request in requests for node_request in request.node_requests)),
             )
-            for entity_key, requests in entity_key_to_requests.items()
+            for id_, requests in id_to_requests.items()
         ]

@@ -20,6 +20,7 @@ from superlinked.framework.common.dag.exception import (
     LeafNodeTypeException,
     MultipleRootSchemaException,
 )
+from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
@@ -40,7 +41,7 @@ class OnlineSchemaDag:
     Must have exactly one leaf `Node` of type `OnlineIndexNode`.
     """
 
-    def __init__(self, schema: SchemaObject, nodes: list[OnlineNode]) -> None:
+    def __init__(self, schema: SchemaObject, nodes: Sequence[OnlineNode]) -> None:
         self.__validate(schema, nodes)
         self.__nodes = nodes
         self.__base_nodes = [online_node.node for online_node in self.nodes]
@@ -49,26 +50,24 @@ class OnlineSchemaDag:
             OnlineIndexNode,
             [node for node in self.__nodes if len(node.children) == 0][0],
         )
+        self.__persistable_nodes = self.__init_persistable_nodes(nodes)
 
     @property
-    def nodes(self) -> list[OnlineNode]:
+    def nodes(self) -> Sequence[OnlineNode]:
         return self.__nodes
 
     @property
     def leaf_node(self) -> OnlineIndexNode:
         return self.__leaf_node
 
-    def evaluate(
-        self,
-        parsed_schemas: Sequence[ParsedSchema],
-        context: ExecutionContext,
-        online_entity_cache: OnlineEntityCache,
-    ) -> list[EvaluationResult[Vector] | None]:
-        with context.dag_output_recorder.visualize_dag_context(self.__base_nodes):
-            results = self.leaf_node.evaluate_next(parsed_schemas, context, online_entity_cache)
-        return results
+    @property
+    def persistable_nodes(self) -> Sequence[Node]:
+        return self.__persistable_nodes
 
-    def __validate(self, schema: SchemaObject, nodes: list[OnlineNode]) -> None:
+    def __init_persistable_nodes(self, nodes: Sequence[OnlineNode]) -> list[Node]:
+        return [node.node for node in nodes if cast(Node, node.node).persist_node_result]
+
+    def __validate(self, schema: SchemaObject, nodes: Sequence[OnlineNode]) -> None:
         class_name = type(self).__name__
         leaf_nodes = [node for node in nodes if len(node.children) == 0]
         if len(leaf_nodes) != 1:
@@ -89,3 +88,13 @@ class OnlineSchemaDag:
                     f"object: {schema.__class__.__name__} <> {list(root_node_schemas)[0]._base_class_name}.",
                 )
             )
+
+    def evaluate(
+        self,
+        parsed_schemas: Sequence[ParsedSchema],
+        context: ExecutionContext,
+        online_entity_cache: OnlineEntityCache,
+    ) -> list[EvaluationResult[Vector] | None]:
+        with context.dag_output_recorder.visualize_dag_context(self.__base_nodes):
+            results = self.leaf_node.evaluate_next(parsed_schemas, context, online_entity_cache)
+        return results

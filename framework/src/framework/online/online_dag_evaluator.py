@@ -16,12 +16,13 @@
 from functools import partial
 
 import structlog
-from beartype.typing import Iterator, Mapping, Sequence
+from beartype.typing import Iterator, Mapping, Sequence, cast
 
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.dag import Dag
 from superlinked.framework.common.dag.dag_effect import DagEffect
+from superlinked.framework.common.dag.event_aggregation_node import EventAggregationNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_dag import SchemaDag
 from superlinked.framework.common.data_types import NodeDataTypes, Vector
@@ -33,9 +34,11 @@ from superlinked.framework.common.parser.parsed_schema import (
 from superlinked.framework.common.schema.event_schema_object import SchemaReference
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import SchemaObject
-from superlinked.framework.common.storage.entity_key import EntityKey
+from superlinked.framework.common.storage.entity.entity_id import EntityId
 from superlinked.framework.common.storage_manager.entity_data_request import (
     EntityDataRequest,
+    NodeDataRequest,
+    NodeResultRequest,
 )
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.telemetry.telemetry_registry import telemetry
@@ -43,10 +46,6 @@ from superlinked.framework.compiler.online.online_schema_dag_compiler import (
     OnlineSchemaDagCompiler,
 )
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
-from superlinked.framework.online.dag.online_event_aggregation_node import (
-    OnlineEventAggregationNode,
-)
-from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.dag.online_schema_dag import OnlineSchemaDag
 from superlinked.framework.online.dag_effect_group import DagEffectGroup
 from superlinked.framework.online.online_entity_cache import OnlineEntityCache
@@ -106,7 +105,7 @@ class OnlineDagEvaluator:
         index_schema = self.__get_single_schema(parsed_schemas)
         online_schema_dag = self._schema_online_schema_dag_mapper[index_schema]
         entity_data_requests = self._build_entity_data_requests(online_schema_dag, parsed_schemas)
-        self._process_entity_data_requests(entity_data_requests, online_entity_cache)
+        self._query_entity_data_requests(entity_data_requests, online_entity_cache)
         with telemetry.span(
             "dag.evaluate",
             attributes={"schema": index_schema._schema_name, "n_entities": len(parsed_schemas), "is_event": False},
@@ -115,16 +114,30 @@ class OnlineDagEvaluator:
         self.__log_evaluate(parsed_schemas, index_schema, results)
         return results
 
+    def _build_entity_data_requests(
+        self, online_schema_dag: OnlineSchemaDag, parsed_schemas: Sequence[ParsedSchema]
+    ) -> list[EntityDataRequest]:
+        node_requests = [
+            NodeResultRequest(node.node_id, node._node_data_type) for node in online_schema_dag.persistable_nodes
+        ]
+        return [
+            EntityDataRequest(
+                entity_id=EntityId(parsed_schema.schema._schema_name, parsed_schema.id_),
+                node_requests=node_requests,
+            )
+            for parsed_schema in parsed_schemas
+        ]
+
     def evaluate_by_dag_effect_group(
         self,
-        effect_groups_to_parsed_schemas: Mapping[DagEffectGroup, list[ParsedSchemaWithEvent]],
+        effect_group_to_parsed_schemas: Mapping[DagEffectGroup, list[ParsedSchemaWithEvent]],
         context: ExecutionContext,
         online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult[Vector] | None]:
-        entity_data_requests = self._build_event_entity_data_requests(effect_groups_to_parsed_schemas)
-        self._process_entity_data_requests(entity_data_requests, online_entity_cache)
+        entity_data_requests = self._build_event_entity_data_requests(effect_group_to_parsed_schemas)
+        self._query_entity_data_requests(entity_data_requests, online_entity_cache)
         all_results = []
-        for dag_effect_group, parsed_schema_with_events in effect_groups_to_parsed_schemas.items():
+        for dag_effect_group, parsed_schema_with_events in effect_group_to_parsed_schemas.items():
             online_schema_dag = self._dag_effect_group_to_online_schema_dag[dag_effect_group]
             labels = {
                 "schema": dag_effect_group.affected_schema._schema_name,
@@ -137,80 +150,73 @@ class OnlineDagEvaluator:
             all_results.extend(results)
         return all_results
 
-    def _build_entity_data_requests(
-        self, online_schema_dag: OnlineSchemaDag, parsed_schemas: Sequence[ParsedSchema]
-    ) -> list[EntityDataRequest]:
-        return [
-            EntityDataRequest(
-                entity_key=EntityKey(parsed_schema.schema._schema_name, parsed_schema.id_, node.node_id),
-                node_data_name_to_type={node.node_id: node.node.node_data_type},
-            )
-            for parsed_schema in parsed_schemas
-            for node in self._get_persistable_nodes(online_schema_dag)
-        ]
-
     def _build_event_entity_data_requests(
-        self, effect_groups_to_parsed_schemas: Mapping[DagEffectGroup, list[ParsedSchemaWithEvent]]
+        self, effect_group_to_parsed_schemas: Mapping[DagEffectGroup, list[ParsedSchemaWithEvent]]
     ) -> list[EntityDataRequest]:
-        return [
+        requests = [
             request
-            for dag_effect_group, parsed_schema_with_events in effect_groups_to_parsed_schemas.items()
-            for node in self._get_persistable_nodes(self._dag_effect_group_to_online_schema_dag[dag_effect_group])
-            for referenced_schema_type, object_id in self._extract_schema_reference_fields(parsed_schema_with_events)
-            for request in self._create_entity_requests(node, referenced_schema_type, object_id, dag_effect_group)
+            for dag_effect_group, parsed_schemas_with_event in effect_group_to_parsed_schemas.items()
+            for node in self._dag_effect_group_to_online_schema_dag[dag_effect_group].persistable_nodes
+            for referenced_schema, object_id in self._extract_schema_reference_fields(
+                parsed_schemas_with_event, dag_effect_group
+            )
+            for request in self._create_entity_requests_for_effect_group(
+                node, referenced_schema, object_id, dag_effect_group
+            )
         ]
-
-    def _get_persistable_nodes(self, online_schema_dag: OnlineSchemaDag) -> Iterator[OnlineNode]:
-        return (node for node in online_schema_dag.nodes if node.node.persist_node_result)
+        return EntityDataRequest.merge(requests)
 
     def _extract_schema_reference_fields(
-        self, parsed_schema_with_events: Sequence[ParsedSchemaWithEvent]
-    ) -> Iterator[tuple[type[IdSchemaObject], str]]:
+        self, parsed_schema_with_events: Sequence[ParsedSchemaWithEvent], dag_effect_group: DagEffectGroup
+    ) -> Iterator[tuple[IdSchemaObject | None, str]]:
         for parsed_schema_with_event in parsed_schema_with_events:
             for field in parsed_schema_with_event.event_parsed_schema.fields:
                 if isinstance(field.schema_field, SchemaReference):
-                    yield field.schema_field._referenced_schema, field.value
+                    yield self._get_referenced_schema(
+                        field.schema_field._referenced_schema, dag_effect_group
+                    ), field.value
 
-    def _create_entity_requests(
+    def _create_entity_requests_for_effect_group(
         self,
-        node: OnlineNode,
-        referenced_schema_type: type[IdSchemaObject],
+        node: Node,
+        referenced_schema: IdSchemaObject | None,
         object_id: str,
         dag_effect_group: DagEffectGroup,
     ) -> Iterator[EntityDataRequest]:
-        node_data_name_to_type: dict[str, type[NodeDataTypes]] = {}
-        if referenced_schema := self._get_referenced_schema(referenced_schema_type, dag_effect_group):
-            node_data_name_to_type[node.node_id] = node.node.node_data_type
+        if referenced_schema:
             yield EntityDataRequest(
-                EntityKey(referenced_schema._schema_name, object_id, node.node_id),
-                {node.node_id: node.node.node_data_type},
+                EntityId(referenced_schema._schema_name, object_id),
+                [NodeResultRequest(node.node_id, cast(type[NodeDataTypes], node.node_data_type))],
             )
-        if isinstance(node, OnlineEventAggregationNode):
+        if isinstance(node, EventAggregationNode):
             yield EntityDataRequest(
-                EntityKey(dag_effect_group.affected_schema._schema_name, object_id, node.node_id),
-                {
-                    metadata_id: int
+                EntityId(dag_effect_group.affected_schema._schema_name, object_id),
+                [
+                    NodeDataRequest(node.node_id, metadata_id, int)
                     for metadata_id in [
                         constants.EFFECT_COUNT_KEY,
                         constants.EFFECT_AVG_TS_KEY,
                         constants.EFFECT_OLDEST_TS_KEY,
                     ]
-                },
+                ],
             )
 
     def _get_referenced_schema(
         self, referenced_schema_type: type[IdSchemaObject], dag_effect_group: DagEffectGroup
     ) -> IdSchemaObject | None:
-        possible_schemas = [dag_effect_group.affected_schema, dag_effect_group.affecting_schema]
-        return next(iter(schema for schema in possible_schemas if isinstance(schema, referenced_schema_type)), None)
+        schema_candidates = [dag_effect_group.affected_schema, dag_effect_group.affecting_schema]
+        return next(iter(schema for schema in schema_candidates if isinstance(schema, referenced_schema_type)), None)
 
-    def _process_entity_data_requests(
+    def _query_entity_data_requests(
         self, entity_data_requests: Sequence[EntityDataRequest], online_entity_cache: OnlineEntityCache
     ) -> None:
-        unique_requests = EntityDataRequest.merge(entity_data_requests)
-        stored_results = self._storage_manager.read_multiple_node_results(unique_requests)
-        for entity_data_request, node_result in zip(unique_requests, stored_results):
-            online_entity_cache.set_multiple(entity_data_request.entity_key, node_result)
+        stored_results = self._storage_manager.read_entity_data_requests(entity_data_requests)
+        online_entity_cache.load_node_info(
+            {
+                entity_data_request.entity_id: node_result
+                for entity_data_request, node_result in zip(entity_data_requests, stored_results)
+            }
+        )
 
     def __init_schema_online_schema_dag_mapper(
         self,

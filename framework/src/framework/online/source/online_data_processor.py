@@ -116,7 +116,9 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
                 "schemas": list({msg.schema._schema_name for msg in regular_msgs}),
             },
         ):
-            self.storage_manager.write_combined_ingestion_result(regular_msgs, online_entity_cache.get_changed())
+            self.storage_manager.write_combined_ingestion_result(
+                regular_msgs, online_entity_cache.changes, online_entity_cache.origin_ids
+            )
         logger.info(
             "stored input data",
             schemas=list({parsed_schema.schema._schema_name for parsed_schema in messages}),
@@ -139,33 +141,33 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
     def _process_events(
         self, event_parsed_schemas: Sequence[EventParsedSchema], online_entity_cache: OnlineEntityCache
     ) -> None:
-        effects_to_parsed_schemas = self._map_effects_to_parsed_schemas(event_parsed_schemas)
-        effect_groups_to_parsed_schemas = self._map_effect_groups_to_parsed_schemas(effects_to_parsed_schemas)
-        self.evaluator.evaluate_by_dag_effect_group(effect_groups_to_parsed_schemas, self.context, online_entity_cache)
+        effect_to_parsed_schemas = self._map_effect_to_parsed_schemas(event_parsed_schemas)
+        effect_group_to_parsed_schemas = self._map_effect_group_to_parsed_schemas(effect_to_parsed_schemas)
+        self.evaluator.evaluate_by_dag_effect_group(effect_group_to_parsed_schemas, self.context, online_entity_cache)
 
-    def _map_effects_to_parsed_schemas(
+    def _map_effect_to_parsed_schemas(
         self, event_parsed_schemas: Sequence[EventParsedSchema]
     ) -> dict[DagEffect, list[ParsedSchemaWithEvent]]:
-        effects_to_parsed_schemas: dict[DagEffect, list[ParsedSchemaWithEvent]] = defaultdict(list)
+        effect_to_parsed_schemas: dict[DagEffect, list[ParsedSchemaWithEvent]] = defaultdict(list)
         for event_parsed_schema in event_parsed_schemas:
             for effect in self._get_matching_effects(event_parsed_schema):
                 if schema_with_event := self._create_parsed_schema_with_event(
                     effect.resolved_affected_schema_reference, event_parsed_schema
                 ):
-                    effects_to_parsed_schemas[effect].append(schema_with_event)
-        return effects_to_parsed_schemas
+                    effect_to_parsed_schemas[effect].append(schema_with_event)
+        return dict(effect_to_parsed_schemas)
 
     def _get_matching_effects(self, event_schema: EventParsedSchema) -> list[DagEffect]:
         return [effect for effect in self._dag_effects if effect.event_schema == event_schema.schema]
 
-    def _map_effect_groups_to_parsed_schemas(
-        self, effects_to_parsed_schemas: Mapping[DagEffect, Sequence[ParsedSchemaWithEvent]]
+    def _map_effect_group_to_parsed_schemas(
+        self, effect_to_parsed_schemas: Mapping[DagEffect, Sequence[ParsedSchemaWithEvent]]
     ) -> dict[DagEffectGroup, list[ParsedSchemaWithEvent]]:
-        effect_groups_to_parsed_schemas: dict[DagEffectGroup, list[ParsedSchemaWithEvent]] = defaultdict(list)
-        for effect, parsed_schemas in effects_to_parsed_schemas.items():
+        effect_group_to_parsed_schemas: dict[DagEffectGroup, list[ParsedSchemaWithEvent]] = defaultdict(list)
+        for effect, parsed_schemas in effect_to_parsed_schemas.items():
             effect_group = self.evaluator.effect_to_group[effect]
-            effect_groups_to_parsed_schemas[effect_group].extend(parsed_schemas)
-        return dict(effect_groups_to_parsed_schemas)
+            effect_group_to_parsed_schemas[effect_group].extend(parsed_schemas)
+        return dict(effect_group_to_parsed_schemas)
 
     def _create_parsed_schema_with_event(
         self,

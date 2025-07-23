@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from beartype.typing import Any, Mapping, Sequence, cast
+from beartype.typing import Any, Mapping, Sequence
 
 from superlinked.framework.common.data_types import NodeDataTypes, PythonTypes
 from superlinked.framework.common.parser.parsed_schema import (
@@ -29,6 +29,7 @@ from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.field.field_data import FieldData
 from superlinked.framework.common.storage.field_type_converter import FieldTypeConverter
 from superlinked.framework.common.storage_manager.admin_fields import AdminFields
+from superlinked.framework.common.storage_manager.node_info import NodeInfo
 from superlinked.framework.common.storage_manager.node_result_data import NodeResultData
 from superlinked.framework.common.storage_manager.storage_naming import StorageNaming
 
@@ -82,12 +83,12 @@ class EntityBuilder:
         field_data = [self.compose_field_data(node_data.node_id, node_data.result)] if node_data.result else []
         return self.compose_entity_data(node_data.schema_id, node_data.object_id, field_data, node_data.origin_id)
 
-    def compose_entity_data_from_mixed_data(
-        self, schema_id: str, object_id: str, node_id: str, node_data: Mapping[str, NodeDataTypes]
+    def compose_entity_data_from_node_info_items(
+        self, entity_id: EntityId, origin_id: str | None, node_id_to_node_info: Mapping[str, NodeInfo]
     ) -> EntityData:
-        entity_id = self.compose_entity_id(schema_id, object_id)
         return EntityData(
-            entity_id, {fd.name: fd for fd in self._compose_field_data_for_entity(entity_id, node_id, node_data)}
+            entity_id,
+            {fd.name: fd for fd in self._compose_field_data_for_entity(entity_id, origin_id, node_id_to_node_info)},
         )
 
     def parse_schema_field_data(
@@ -151,13 +152,17 @@ class EntityBuilder:
         ]
 
     def _compose_field_data_for_entity(
-        self, entity_id: EntityId, node_id: str, node_data: Mapping[str, NodeDataTypes]
+        self, entity_id: EntityId, origin_id: str | None, node_id_to_node_info: Mapping[str, NodeInfo]
     ) -> list[FieldData]:
-        header_fields = self._admin_fields.create_header_field_data(
-            entity_id, cast(str | None, node_data.get(self._storage_naming.ORIGIN_ID_INDEX_NAME))
-        )
-        node_fields = [self.compose_field_data(node_id, node_data[node_id])] if node_id in node_data else []
-        data_fields = self.compose_field_data_from_node_data(
-            node_id, {k: v for k, v in node_data.items() if k != node_id}
-        )
+        header_fields = self._admin_fields.create_header_field_data(entity_id, origin_id)
+        node_fields = [
+            self.compose_field_data(node_id, node_info.result)
+            for node_id, node_info in node_id_to_node_info.items()
+            if node_info.result is not None
+        ]
+        data_fields = [
+            field
+            for node_id, node_info in node_id_to_node_info.items()
+            for field in self.compose_field_data_from_node_data(node_id, node_info.data)
+        ]
         return [*header_fields, *node_fields, *data_fields]

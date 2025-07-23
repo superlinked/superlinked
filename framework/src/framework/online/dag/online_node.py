@@ -25,9 +25,9 @@ from superlinked.framework.common.dag.node import NT, Node, NodeDataT
 from superlinked.framework.common.exception import DagEvaluationException
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.schema_object import SchemaObject
-from superlinked.framework.common.storage.entity_key import EntityKey
+from superlinked.framework.common.storage.entity.entity_id import EntityId
+from superlinked.framework.common.storage_manager.node_info import NodeInfo
 from superlinked.framework.common.storage_manager.node_result_data import NodeResultData
-from superlinked.framework.common.storage_manager.storage_naming import StorageNaming
 from superlinked.framework.online.dag.evaluation_result import (
     EvaluationResult,
     SingleEvaluationResult,
@@ -173,13 +173,15 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
             ]
         ]
         for node_data_item in node_data_items:
-            entity_key = EntityKey(
-                schema_id=node_data_item.schema_id, object_id=node_data_item.object_id, node_id=node_data_item.node_id
-            )
+            entity_id = EntityId(schema_id=node_data_item.schema_id, object_id=node_data_item.object_id)
             if node_data_item.result is not None:
-                online_entity_cache.set(entity_key, node_data_item.node_id, node_data_item.result)
-            if node_data_item.origin_id is not None:
-                online_entity_cache.set(entity_key, StorageNaming.ORIGIN_ID_INDEX_NAME, node_data_item.origin_id)
+                online_entity_cache.set_node_info(
+                    entity_id,
+                    node_data_item.node_id,
+                    NodeInfo(result=node_data_item.result),
+                )
+            if node_data_item.origin_id:
+                online_entity_cache.set_origin(entity_id, node_data_item.origin_id)
         logger.debug(
             "stored online node data",
             schemas=lambda: {parsed_schema.schema._schema_name for parsed_schema in parsed_schemas},
@@ -194,9 +196,8 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
         return [
             cast(
                 NodeDataT | None,
-                online_entity_cache.get(
-                    entity_key=EntityKey(schema_id=schema._schema_name, object_id=object_id, node_id=self.node_id),
-                    field_name=self.node_id,
+                online_entity_cache.get_node_result(
+                    entity_id=EntityId(schema_id=schema._schema_name, object_id=object_id), node_id=self.node_id
                 ),
             )
             for schema, object_id in schemas_with_object_ids
