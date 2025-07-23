@@ -3,6 +3,16 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [32.1.0] - 2025-07-23
+
+### Changed
+
+- Split calculate field by delta or merge
+
+### Fixed
+
+- Turn method into property - online entity cache
+
 ## [32.0.0] - 2025-07-22
 
 ### Removed
@@ -11,10 +21,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [31.4.1] - 2025-07-21
 
+### Added
+
+- Add TODOs (FAB-3639)
+
 ### Changed
 
+- Restructured EntityDataRequest
+- Node info
+- New cache
+- Move persistable_nodes to OnlineSchemaDag
+- Online dag evaluator with new requests
+- Load node info
+- Handle origin ids
+- Group event related cache operations
+- Frozen node requests
 - Return the query and source with the paths
 - Improve modal image build time
+
+### Removed
+
+- Remove usage of old cache
+- Remove legacy EntityDataRequest
+- Remove iterator
+- Remove leftover
 
 ## [31.4.0] - 2025-07-21
 
@@ -6027,6 +6057,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove unnecessary call
 - Remove extra field
 
+[32.1.0]: https://github.com/superlinked/superlinked/compare/v32.0.0..v32.1.0
 [32.0.0]: https://github.com/superlinked/superlinked/compare/v31.4.1..v32.0.0
 [31.4.1]: https://github.com/superlinked/superlinked/compare/v31.4.0..v31.4.1
 [31.4.0]: https://github.com/superlinked/superlinked/compare/v31.3.0..v31.4.0
