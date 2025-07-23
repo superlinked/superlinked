@@ -21,16 +21,22 @@ from beartype.typing import Mapping
 
 from superlinked.framework.common.data_types import NodeDataTypes
 from superlinked.framework.common.storage.entity.entity_id import EntityId
+from superlinked.framework.common.storage_manager.entity_data_request import (
+    EntityDataRequest,
+    NodeResultRequest,
+)
 from superlinked.framework.common.storage_manager.node_info import NodeInfo
+from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 
 
 class OnlineEntityCache:
     """Storage of data during online DAG evaluation, reducing database operations"""
 
-    def __init__(self) -> None:
+    def __init__(self, storage_manager: StorageManager) -> None:
         self._cache: dict[EntityId, dict[str, NodeInfo]] = defaultdict(defaultdict)
         self._change: dict[EntityId, dict[str, NodeInfo]] = defaultdict(defaultdict)
         self._entity_to_origin: dict[EntityId, str] = {}
+        self._storage_manager = storage_manager
 
     @property
     def changes(self) -> Mapping[EntityId, Mapping[str, NodeInfo]]:
@@ -58,10 +64,16 @@ class OnlineEntityCache:
     def set_origin(self, entity_id: EntityId, origin_id: str) -> None:
         self._entity_to_origin[entity_id] = origin_id
 
-    def get_node_result(self, entity_id: EntityId, node_id: str) -> NodeDataTypes | None:
+    def get_node_result(
+        self, entity_id: EntityId, node_id: str, node_data_type: type[NodeDataTypes]
+    ) -> NodeDataTypes | None:
         if cached_node_info := self._cache[entity_id].get(node_id):
             return cached_node_info.result
-        return None
+        stored_entity = self._storage_manager.read_entity_data_requests(
+            [EntityDataRequest(entity_id, [NodeResultRequest(node_id, node_data_type)])]
+        )[0]
+        self.load_node_info({entity_id: stored_entity})
+        return stored_entity[node_id].result if node_id in stored_entity else None
 
     def get_node_data(self, entity_id: EntityId, node_id: str, field_name: str) -> NodeDataTypes | None:
         if initial_node_info := self._cache[entity_id].get(node_id):

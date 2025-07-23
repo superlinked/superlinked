@@ -197,7 +197,9 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
             cast(
                 NodeDataT | None,
                 online_entity_cache.get_node_result(
-                    entity_id=EntityId(schema_id=schema._schema_name, object_id=object_id), node_id=self.node_id
+                    entity_id=EntityId(schema_id=schema._schema_name, object_id=object_id),
+                    node_id=self.node_id,
+                    node_data_type=self.node.node_data_type,
                 ),
             )
             for schema, object_id in schemas_with_object_ids

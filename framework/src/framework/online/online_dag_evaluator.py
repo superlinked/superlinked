@@ -104,8 +104,6 @@ class OnlineDagEvaluator:
     ) -> list[EvaluationResult[Vector] | None]:
         index_schema = self.__get_single_schema(parsed_schemas)
         online_schema_dag = self._schema_online_schema_dag_mapper[index_schema]
-        entity_data_requests = self._build_entity_data_requests(online_schema_dag, parsed_schemas)
-        self._query_entity_data_requests(entity_data_requests, online_entity_cache)
         with telemetry.span(
             "dag.evaluate",
             attributes={"schema": index_schema._schema_name, "n_entities": len(parsed_schemas), "is_event": False},
@@ -113,20 +111,6 @@ class OnlineDagEvaluator:
             results = online_schema_dag.evaluate(parsed_schemas, context, online_entity_cache)
         self.__log_evaluate(parsed_schemas, index_schema, results)
         return results
-
-    def _build_entity_data_requests(
-        self, online_schema_dag: OnlineSchemaDag, parsed_schemas: Sequence[ParsedSchema]
-    ) -> list[EntityDataRequest]:
-        node_requests = [
-            NodeResultRequest(node.node_id, node._node_data_type) for node in online_schema_dag.persistable_nodes
-        ]
-        return [
-            EntityDataRequest(
-                entity_id=EntityId(parsed_schema.schema._schema_name, parsed_schema.id_),
-                node_requests=node_requests,
-            )
-            for parsed_schema in parsed_schemas
-        ]
 
     def evaluate_by_dag_effect_group(
         self,

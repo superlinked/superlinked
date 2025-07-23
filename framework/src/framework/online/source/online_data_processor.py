@@ -89,7 +89,7 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
             else:
                 regular_msgs.append(message)
 
-        online_entity_cache = OnlineEntityCache()
+        online_entity_cache = OnlineEntityCache(self.storage_manager)
         if regular_msgs:
             with telemetry.span(
                 "processor.process.records",
