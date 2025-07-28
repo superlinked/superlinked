@@ -21,6 +21,7 @@ from beartype.typing import Any, Generic, Sequence, TypeVar, cast
 from typing_extensions import override
 
 from superlinked.framework.common.data_types import PythonTypes
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperand,
     ComparisonOperation,
@@ -32,7 +33,6 @@ from superlinked.framework.common.interface.comparison_operation_type import (
     ComparisonOperationType,
 )
 from superlinked.framework.common.schema.blob_information import BlobInformation
-from superlinked.framework.common.schema.exception import FieldException
 from superlinked.framework.common.schema.schema_field_descriptor import (
     SchemaFieldDescriptor,
 )
@@ -85,22 +85,6 @@ class SchemaObject:
         value = field_descriptor.type_(field_descriptor.name, self, field_descriptor.nullable)
         setattr(self, field_descriptor.name, value)
         return value
-
-    def _get_fields_by_names(self, field_names: Sequence[str]) -> list[SchemaField]:
-        matched_fields = []
-        missing_field_names = []
-
-        for field_name in field_names:
-            if field := self._schema_fields_by_name.get(field_name):
-                matched_fields.append(field)
-            else:
-                missing_field_names.append(field_name)
-
-        if missing_field_names:
-            missing_field_names_text = ", ".join(missing_field_names)
-            raise FieldException(f"Fields {missing_field_names_text} not found in schema {self._schema_name}.")
-
-        return matched_fields
 
 
 class SchemaField(ComparisonOperand, Generic[SFT]):
@@ -164,7 +148,7 @@ class String(SchemaField[str]):
 
     def __add__(self, other: object) -> DescribedBlob:
         if not isinstance(other, Blob):
-            raise TypeError(f"Operand must be of type {Blob.__name__}")
+            raise InvalidInputException(f"Operand must be of type {Blob.__name__}")
         return DescribedBlob(blob=other, description=self)
 
     @property
@@ -207,7 +191,7 @@ class Blob(SchemaField[BlobInformation]):
 
     def __add__(self, other: object) -> DescribedBlob:
         if not isinstance(other, String):
-            raise TypeError(f"Operand must be of type {String.__name__}")
+            raise InvalidInputException(f"Operand must be of type {String.__name__}")
         return DescribedBlob(blob=self, description=other)
 
     @property

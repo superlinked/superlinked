@@ -23,9 +23,8 @@ from superlinked.framework.common.dag.dag_effect import DagEffect
 from superlinked.framework.common.dag.resolved_schema_reference import (
     ResolvedSchemaReference,
 )
-from superlinked.framework.common.exception import InvalidDagEffectException
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.observable import Subscriber
-from superlinked.framework.common.parser.exception import MissingFieldException
 from superlinked.framework.common.parser.parsed_schema import (
     EventParsedSchema,
     ParsedSchema,
@@ -134,7 +133,7 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
         ]
         if missing_fields:
             missing_fields_text = ", ".join(missing_fields)
-            raise MissingFieldException(
+            raise InvalidInputException(
                 f"Message with id '{message.id_}' is missing mandatory index fields: {missing_fields_text}."
             )
 
@@ -183,5 +182,10 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
             return None
 
         if len(affected_schema_ids) > 1:
-            raise InvalidDagEffectException(f"Affected schema reference: {affected_schema_reference}")
+            affected_schema_name = affected_schema_reference.schema._schema_name
+            raise InvalidInputException(
+                f"Multiple schema references found for affected schema '{affected_schema_name}' "
+                f"in event '{event_parsed_schema.schema._schema_name}'. Expected exactly one reference, "
+                f"but found {len(affected_schema_ids)} references."
+            )
         return ParsedSchemaWithEvent(affected_schema_reference.schema, affected_schema_ids[0], [], event_parsed_schema)

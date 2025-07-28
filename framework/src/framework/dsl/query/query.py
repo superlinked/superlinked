@@ -59,6 +59,6 @@ class Query:
             QueryDescriptor: The QueryDescriptor object.
 
         Raises:
-            QueryException: If the index does not have the queried schema.
+            InvalidInputException: If the index does not have the queried schema.
         """
         return QueryDescriptor(self.index, schema).space_weights(self.weight_by_space)

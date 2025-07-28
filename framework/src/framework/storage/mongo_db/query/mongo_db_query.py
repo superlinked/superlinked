@@ -17,6 +17,7 @@ from __future__ import annotations
 from beartype.typing import Any, Iterable, Sequence, cast
 from typing_extensions import Self
 
+from superlinked.framework.common.exception import FeatureNotSupportedException
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperand,
     ComparisonOperation,
@@ -160,5 +161,5 @@ class MongoDBQuery:
         vdb_filter: VDBFilter,
     ) -> dict[str, dict[str, Any]]:
         if vdb_filter.op not in SUPPORTED_FILTER_DICT:
-            raise NotImplementedError(f"Unsupported filter operation type: {vdb_filter.op.value}")
+            raise FeatureNotSupportedException(f"Unsupported filter operation type: {vdb_filter.op.value}")
         return {vdb_filter.field.name: {SUPPORTED_FILTER_DICT[vdb_filter.op]: vdb_filter.field_value}}

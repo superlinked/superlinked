@@ -14,14 +14,10 @@
 from beartype.typing import Sequence
 
 from superlinked.framework.common.dag.dag_effect import DagEffect
-from superlinked.framework.common.dag.exception import InvalidDagException
 from superlinked.framework.common.dag.index_node import IndexNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_dag import SchemaDag
-from superlinked.framework.common.exception import (
-    DuplicateNodeIdException,
-    InvalidSchemaException,
-)
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.schema.schema_object import SchemaObject
 
 
@@ -48,12 +44,12 @@ class Dag:
     def project_to_schema(self, schema: SchemaObject) -> SchemaDag:
         if (dag := self.__schema_dag_map.get(schema)) is not None:
             return dag
-        raise InvalidSchemaException(f"SchemaDag for the given schema ({schema._base_class_name}) doesn't exist.")
+        raise InvalidStateException(f"SchemaDag for the given schema ({schema._base_class_name}) doesn't exist.")
 
     def __init_index_node(self, nodes: Sequence[Node]) -> IndexNode:
         if index_node := next((node for node in nodes if isinstance(node, IndexNode)), None):
             return index_node
-        raise InvalidDagException("Dag doesn't have an IndexNode.")
+        raise InvalidStateException(f"{type(self).__name__} doesn't have an IndexNode.")
 
     def __init_node_id_schema_map(self, nodes: list[Node]) -> dict[str, set[SchemaObject]]:
         return {node.node_id: node.schemas for node in nodes}
@@ -80,5 +76,5 @@ class Dag:
         node_ids = set()
         for node in self.nodes:
             if node.node_id in node_ids:
-                raise DuplicateNodeIdException(f"Node id: {node} is duplicated!")
+                raise InvalidStateException(f"Node id: {node} is duplicated!")
             node_ids.add(node._node_id)

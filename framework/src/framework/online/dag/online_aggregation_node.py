@@ -19,11 +19,10 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.aggregation_node import AggregationNode
 from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.dag.exception import ParentCountException
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import (
-    MismatchingDimensionException,
-    ValidationException,
+    InvalidInputException,
+    InvalidStateException,
 )
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.interface.weighted import Weighted
@@ -60,7 +59,7 @@ class OnlineAggregationNode(DefaultOnlineNode[AggregationNode, Vector], HasLengt
     def _validate_parents(cls, parents: list[OnlineNode]) -> None:
         length = cast(HasLength, parents[0]).length
         if any(parent for parent in parents if cast(HasLength, parent).length != length):
-            raise ValidationException(f"{cls.__name__} must have parents with the same length.")
+            raise InvalidInputException(f"{cls.__name__} must have parents with the same length.")
 
     @override
     def _evaluate_singles(
@@ -94,19 +93,19 @@ class OnlineAggregationNode(DefaultOnlineNode[AggregationNode, Vector], HasLengt
             result.__class__.__name__ for _, result in parent_results.items() if not isinstance(result.value, Vector)
         ]
         if any(invalid_type_result_types):
-            raise ValidationException(
+            raise InvalidInputException(
                 f"{self.class_name} can only process `Vector` inputs" + f", got {invalid_type_result_types}"
             )
         filtered_parent_results: dict[OnlineNode, SingleEvaluationResult[Vector]] = {
             parent: result for parent, result in parent_results.items() if not cast(Vector, result.value).is_empty
         }
         if not any(filtered_parent_results.items()):
-            raise ParentCountException(f"{self.class_name} must have at least 1 parent with valid input.")
+            raise InvalidStateException(f"{self.class_name} must have at least 1 parent with valid input.")
         invalid_length_results = [
             result for _, result in filtered_parent_results.items() if result.value.dimension != self.length
         ]
         if any(invalid_length_results):
-            raise MismatchingDimensionException(
+            raise InvalidStateException(
                 f"{self.class_name} can only process inputs having same length"
                 + f", got {invalid_length_results[0].value.dimension}"
             )

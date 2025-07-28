@@ -19,6 +19,7 @@ from functools import reduce
 import structlog
 from beartype.typing import Any, Mapping
 
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.dsl.query.clause_params import NLQClauseParams
 from superlinked.framework.dsl.query.nlq.nlq_handler import NLQHandler
 from superlinked.framework.dsl.query.param import ParamInputType
@@ -53,7 +54,7 @@ class QueryParamValueSetter:
         unknown_params = set(params_to_set.keys()).difference(all_params_names)
         if unknown_params:
             unknown_params_text = ", ".join(unknown_params)
-            raise ValueError(f"Unknown query parameters: {unknown_params_text}.")
+            raise InvalidInputException(f"Unknown query parameters: {unknown_params_text}.")
 
     @classmethod
     def __alter_query_descriptor(

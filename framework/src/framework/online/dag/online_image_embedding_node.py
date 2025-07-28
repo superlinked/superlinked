@@ -22,6 +22,7 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.image_embedding_node import ImageEmbeddingNode
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import PythonTypes, Vector
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.blob_loader import BlobLoader
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
@@ -94,7 +95,7 @@ class OnlineImageEmbeddingNode(OnlineNode[ImageEmbeddingNode, Vector], HasLength
     def __load_input(self, parsed_schema: ParsedSchema) -> tuple[BlobInformation | None, str | None]:
         description = self._get_field_value(parsed_schema, self._description_node)
         if description is not None and not isinstance(description, str):
-            raise ValueError(f"Invalid image description type: {type(description).__name__}.")
+            raise InvalidStateException(f"Invalid image description type: {type(description).__name__}.")
         image = self._get_field_value(parsed_schema, self._image_node)
         if image is not None and not isinstance(image, BlobInformation):
             image = self._blob_loader.load(image)

@@ -16,7 +16,7 @@ from superlinked.framework.common.dag.concatenation_node import ConcatenationNod
 from superlinked.framework.common.dag.context import SPACE_WEIGHT_PARAM_NAME
 from superlinked.framework.common.dag.dag import Dag
 from superlinked.framework.common.dag.node import Node
-from superlinked.framework.common.exception import InvalidSchemaException
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.schema.event_schema_object import EventSchemaObject
 from superlinked.framework.common.schema.schema_object import SchemaObject
 
@@ -58,7 +58,7 @@ class QueryWeighting:
     ) -> tuple[ConcatenationNode, SchemaObject]:
         item_schemas = [schema_ for schema_ in concatenation_node.schemas if not isinstance(schema_, EventSchemaObject)]
         if len(item_schemas) != 1:
-            raise InvalidSchemaException("ConcatenationNode must have exactly 1 non-event type schemas.")
+            raise InvalidStateException("ConcatenationNode must have exactly 1 non-event type schemas.")
         return (concatenation_node, item_schemas[0])
 
     def _get_ancestors_by_schema(self, node: Node, schema_: SchemaObject) -> set[Node]:

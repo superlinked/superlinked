@@ -20,6 +20,7 @@ from dataclasses import dataclass
 from beartype.typing import Mapping
 
 from superlinked.framework.common.const import constants
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.storage.entity.entity_id import EntityId
 from superlinked.framework.common.storage_manager.node_info import NodeInfo
@@ -70,7 +71,7 @@ class EventMetadataHandler:
                 or 0
             )
             if not isinstance(event_metadata_item, int):
-                raise ValueError(f"{field_name} must be int, got {type(event_metadata_item).__name__}.")
+                raise InvalidStateException(f"{field_name} must be int, got {type(event_metadata_item).__name__}.")
             return event_metadata_item
 
         return EventMetadata(

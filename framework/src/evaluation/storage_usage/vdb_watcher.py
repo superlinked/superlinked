@@ -14,7 +14,7 @@
 
 import sys
 
-from superlinked.evaluation.storage_usage.exception import UnsupportedVDBException
+from superlinked.framework.common.exception import NotImplementedException
 from superlinked.framework.common.storage.vdb_connector import VDBConnector
 from superlinked.framework.storage.in_memory.in_memory_vdb import InMemoryVDB
 from superlinked.framework.storage.qdrant.qdrant_vdb_connector import QdrantVDBConnector
@@ -34,4 +34,4 @@ class VDBWatcher:
             if name is not None:
                 self.__vdb_connector._client.delete_full_snapshot(name)
             return size
-        raise UnsupportedVDBException(f"Checking memory usage of {type(self.__vdb_connector)} is not yet implemented")
+        raise NotImplementedException(f"Checking memory usage of {type(self.__vdb_connector)} is not yet implemented")

@@ -18,7 +18,7 @@ from dataclasses import dataclass
 
 from typing_extensions import override
 
-from superlinked.framework.common.exception import QueryException
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.dsl.query.clause_params import NLQClauseParams
 from superlinked.framework.dsl.query.param import StringParamType
 from superlinked.framework.dsl.query.query_clause.query_clause import QueryClause
@@ -44,7 +44,7 @@ class NLQSystemPromptClause(SingleValueParamQueryClause):
     def __evaluate(self) -> str | None:
         value = self._get_value()
         if value is not None and not isinstance(value, str):
-            raise QueryException(f"NLQ system prompt should be str, got {type(value).__name__}.")
+            raise InvalidInputException(f"NLQ system prompt should be str, got {type(value).__name__}.")
         return value
 
     @classmethod

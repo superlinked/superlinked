@@ -23,6 +23,10 @@ from PIL.Image import Image as PILImage
 from torchvision.transforms.transforms import Compose
 from typing_extensions import override
 
+from superlinked.framework.common.exception import (
+    NotImplementedException,
+    RequestTimeoutException,
+)
 from superlinked.framework.common.precision import Precision
 from superlinked.framework.common.settings import settings
 from superlinked.framework.common.space.embedding.model_based.embedding_input import (
@@ -90,7 +94,7 @@ class OpenCLIPEngine(EmbeddingEngine[EmbeddingEngineConfig]):
         model_lock_timeout = settings.MODEL_LOCK_TIMEOUT_SECONDS
         if not model_downloader._acquire_lock_with_timeout(model_lock, model_lock_timeout):
             logger.warning(f"Timeout acquiring model lock for {self._model_name} after {model_lock_timeout} seconds")
-            raise TimeoutError(f"Timeout acquiring model lock for {self._model_name}")
+            raise RequestTimeoutException(f"Timeout acquiring model lock for {self._model_name}")
         cache_dir_text = str(cache_dir)
         try:
             model_and_transforms = create_model_and_transforms(
@@ -138,7 +142,7 @@ class OpenCLIPEngine(EmbeddingEngine[EmbeddingEngineConfig]):
 
     def _use_half_precision(self) -> bool:
         if self._config.precision not in SUPPORTED_PRECISIONS:
-            raise ValueError(f"Unsupported precision: {self._config.precision.value}.")
+            raise NotImplementedException(f"Unsupported precision: {self._config.precision.value}.")
         return self._config.precision == Precision.FLOAT16
 
     def _move_tensor_to_model_device(self, embedding_model: CLIP, tensor: torch.Tensor) -> torch.Tensor:

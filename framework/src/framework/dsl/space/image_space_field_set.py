@@ -19,6 +19,7 @@ import PIL.Image
 from typing_extensions import override
 
 from superlinked.framework.common.data_types import PythonTypes
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.parser.blob_loader import BlobLoader
 from superlinked.framework.common.schema.image_data import ImageData
 from superlinked.framework.common.util.image_util import ImageUtil
@@ -37,7 +38,7 @@ class ImageSpaceFieldSet(SpaceFieldSet[ImageData]):
     @override
     def _generate_space_input(self, value: PythonTypes) -> ImageData:
         if not isinstance(value, (str, PIL.Image.Image)):
-            raise ValueError(f"Invalid type of input for {type(self).__name__}: {type(value)}")
+            raise InvalidStateException(f"Invalid type of input for {type(self).__name__}: {type(value)}")
         loaded_image = blob_loader.load(value)
         opened_image: PIL.Image.Image | None = None
         if loaded_image and loaded_image.data:
@@ -55,5 +56,5 @@ class ImageDescriptionSpaceFieldSet(SpaceFieldSet[ImageData]):
     @override
     def _generate_space_input(self, value: PythonTypes) -> ImageData:
         if not isinstance(value, str):
-            raise ValueError(f"Invalid type of input for {type(self).__name__}: {type(value)}")
+            raise InvalidStateException(f"Invalid type of input for {type(self).__name__}: {type(value)}")
         return ImageData(image=None, description=value)

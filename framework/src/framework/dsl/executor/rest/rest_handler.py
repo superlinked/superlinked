@@ -15,7 +15,7 @@
 from beartype.typing import Mapping, Sequence, TypeVar
 from furl import furl
 
-from superlinked.framework.dsl.executor.exception import DuplicateEndpointException
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.dsl.executor.rest.rest_configuration import (
     RestEndpointConfiguration,
     RestQuery,
@@ -80,7 +80,7 @@ class RestHandler:
                 furl(path=api_root_path).path.add(path_prefix).add(resource.path)  # type: ignore[arg-type]
             )
             if path_string in path_to_resource:
-                raise DuplicateEndpointException(
+                raise InvalidInputException(
                     f"Endpoint duplication detected. The path: {path_string} has been previously added."
                 )
             path_to_resource[path_string] = resource

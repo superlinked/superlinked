@@ -27,9 +27,8 @@ from superlinked.framework.common.dag.index_node import IndexNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import (
-    InitializationException,
-    RecursionException,
-    ValidationException,
+    InvalidInputException,
+    InvalidStateException,
 )
 from superlinked.framework.common.schema.event_schema_object import EventSchemaObject
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
@@ -102,7 +101,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
                 Defaults to 1.0.
 
         Raises:
-            InitializationException: If no spaces are provided.
+            InvalidInputException: If no spaces are provided.
         """
         event_modifier = EffectModifier(max_age, max_count, temperature, event_influence, time_decay_floor)
         self.__spaces = self.__init_spaces(spaces)
@@ -195,9 +194,9 @@ class Index:  # pylint: disable=too-many-instance-attributes
     def __init_spaces(self, spaces: Space | Sequence[Space]) -> list[Space]:
         spaces = list(spaces) if isinstance(spaces, Sequence) else [spaces]
         if len(spaces) == 0:
-            raise InitializationException("Index must be built on at least 1 space.")
+            raise InvalidInputException("Index must be built on at least 1 space.")
         if len(set(spaces)) != len(spaces):
-            raise InitializationException("Index cannot contain duplicate spaces.")
+            raise InvalidInputException("Index cannot contain duplicate spaces.")
         return spaces
 
     def __init_space_schemas(self, validated_spaces: Sequence[Space]) -> set[SchemaObject]:
@@ -217,7 +216,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
         if not isinstance(fields, Sequence):
             return [fields]
         if None in fields:
-            raise ValidationException("Fields cannot contain None values")
+            raise InvalidInputException("Fields cannot contain None values")
         return cast(Sequence[SchemaField], fields)
 
     def __init_effects_with_schema(
@@ -241,7 +240,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
 
     def __validate_effects(self, effects: Sequence[Effect], spaces: Sequence[Space]) -> None:
         if invalid_space_effects := [effect for effect in effects if effect.space not in spaces]:
-            raise ValidationException(f"Effects must work on the Index's spaces, got ({invalid_space_effects})")
+            raise InvalidInputException(f"Effects must work on the Index's spaces, got ({invalid_space_effects})")
 
     def __init_index_node(
         self,
@@ -294,7 +293,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
     def __init_dag(self, node: IndexNode, dag_effects: set[DagEffect]) -> Dag:
         def append_ancestors(node: Node, depth: int = 0) -> None:
             if depth > constants.MAX_DAG_DEPTH:
-                raise RecursionException(f"Max DAG depth ({constants.MAX_DAG_DEPTH}) exceeded.")
+                raise InvalidStateException(f"Max DAG depth ({constants.MAX_DAG_DEPTH}) exceeded.")
             dag_dict[node.node_id] = node
             for parent in node.parents:
                 append_ancestors(parent, depth + 1)

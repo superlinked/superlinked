@@ -20,6 +20,7 @@ from beartype.typing import Any, Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.period_time import PeriodTime
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.space.config.embedding.embedding_config import (
     EmbeddingConfig,
 )
@@ -69,7 +70,7 @@ class RecencyEmbeddingConfig(EmbeddingConfig[int]):
                 "/notebook/combining_recency_and_relevance.ipynb. "
             )
         if self.time_period_hour_offset >= timedelta(hours=24):
-            raise ValueError("Time period hour offset must be less than a day.")
+            raise InvalidInputException("Time period hour offset must be less than a day.")
 
     @property
     @override

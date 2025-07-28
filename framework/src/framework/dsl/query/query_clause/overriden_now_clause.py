@@ -18,7 +18,7 @@ from dataclasses import dataclass
 
 from typing_extensions import override
 
-from superlinked.framework.common.exception import QueryException
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.dsl.query.clause_params import QueryVectorClauseParams
@@ -48,7 +48,7 @@ class OverriddenNowClause(SingleValueParamQueryClause):
     def __evaluate(self) -> int | None:
         if (value := self._get_value()) is not None:
             if not isinstance(value, int):
-                raise QueryException(f"'now' should be int, got {type(value).__name__}.")
+                raise InvalidInputException(f"'now' should be int, got {type(value).__name__}.")
             return value
         return None
 

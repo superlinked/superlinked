@@ -20,7 +20,7 @@ from beartype.typing import cast
 from typing_extensions import override
 
 from superlinked.framework.common.const import constants
-from superlinked.framework.common.exception import QueryException
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.dsl.query.clause_params import KNNSearchClauseParams
 from superlinked.framework.dsl.query.param import NumericParamType
 from superlinked.framework.dsl.query.query_clause.query_clause import QueryClause
@@ -63,11 +63,11 @@ class RadiusClause(SingleValueParamQueryClause):
     def __validate_radius(self) -> None:
         value = QueryClause._get_param_value(self.value_param)
         if value is not None and not isinstance(value, float):
-            raise QueryException(f"Radius should be float, got {type(value)}")
+            raise InvalidInputException(f"Radius should be float, got {type(value)}")
         if value is None:
             return
         if value > constants.RADIUS_MAX or value < constants.RADIUS_MIN:
-            raise ValueError(
+            raise InvalidInputException(
                 f"Not a valid Radius value ({value}). It should be between "
                 f"{constants.RADIUS_MAX} and {constants.RADIUS_MIN}."
             )

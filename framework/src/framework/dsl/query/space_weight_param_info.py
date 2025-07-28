@@ -20,7 +20,7 @@ from itertools import product
 
 from beartype.typing import Mapping, Sequence
 
-from superlinked.framework.common.exception import QueryException
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.dsl.query.query_clause.query_clause import QueryClause
 from superlinked.framework.dsl.space.space import Space
 
@@ -48,7 +48,12 @@ class SpaceWeightParamInfo:
             space_param_names_str = "\n\t".join(
                 [f"{space}: {param_names}" for space, param_names in redundant_global_weight_declarations]
             )
-            raise QueryException(f"Global space weights were declared redundantly: {space_param_names_str}")
+            raise InvalidInputException(
+                (
+                    "Multiple global space weight parameters found for the same space(s). "
+                    f"Each space should have exactly one global weight parameter: {space_param_names_str}"
+                )
+            )
         return {space: param_names[0] for space, param_names in global_param_names_by_space.items()}
 
     @staticmethod

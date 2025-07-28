@@ -16,11 +16,10 @@ from beartype.typing import Any, Generic, Sequence, cast
 from typing_extensions import override
 
 from superlinked.framework.common.dag.dag_effect import DagEffect
-from superlinked.framework.common.dag.exception import ParentCountException
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.persistence_params import PersistenceParams
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.exception import ValidationException
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.schema.schema_object import SchemaObject
@@ -63,12 +62,12 @@ class AggregationNode(
 
     def _validate_parents(self) -> None:
         if len(self.parents) == 0:
-            raise ParentCountException(f"{self.class_name} must have at least 1 parent.")
+            raise InvalidStateException(f"{self.class_name} must have at least 1 parent.")
         length = cast(HasLength, self.parents[0]).length
         wrong_length_parents = {parent for parent in self.parents if cast(HasLength, parent).length != length}
         if any(wrong_length_parents):
             lengths = {length}.union({cast(HasLength, parent).length for parent in wrong_length_parents})
-            raise ValidationException(f"{self.class_name} must have parents with the same length, got {lengths}")
+            raise InvalidStateException(f"{self.class_name} must have parents with the same length, got {lengths}")
 
     @property
     @override

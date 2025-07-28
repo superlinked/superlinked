@@ -21,7 +21,7 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.index_node import IndexNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.query.dag.exception import QueryEvaluationException
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.query.dag.query_evaluation_data_types import (
     QueryEvaluationResult,
 )
@@ -44,7 +44,7 @@ class QueryIndexNode(QueryNodeWithParent[IndexNode, Vector]):
     def _validate_evaluation_inputs(self, inputs: Mapping[str, Sequence[QueryNodeInput]]) -> None:
         super()._validate_evaluation_inputs(inputs)
         if invalid_index_node_inputs := [input_ for input_ in inputs.get(self.node_id, []) if not input_.to_invert]:
-            raise QueryEvaluationException(
+            raise InvalidStateException(
                 "Query index node can only be addressed with items to be inverted, "
                 + f"got {invalid_index_node_inputs}"
             )
@@ -69,7 +69,7 @@ class QueryIndexNode(QueryNodeWithParent[IndexNode, Vector]):
     @override
     def _validate_parent_results(self, parent_results: Sequence[QueryEvaluationResult]) -> None:
         if len(parent_results) != 1:
-            raise QueryEvaluationException(f"{type(self).__name__} must have exactly 1 parent result.")
+            raise InvalidStateException(f"{type(self).__name__} must have exactly 1 parent result.")
 
     @override
     def _evaluate_parent_results(
@@ -78,9 +78,9 @@ class QueryIndexNode(QueryNodeWithParent[IndexNode, Vector]):
         context: ExecutionContext,
     ) -> QueryEvaluationResult[Vector]:
         if (count := len(parent_results)) != 1:
-            raise QueryEvaluationException(f"Query index must receive exactly 1 parent result, got {count}.")
+            raise InvalidStateException(f"Query index must receive exactly 1 parent result, got {count}.")
         if not isinstance(parent_results[0].value, Vector):
-            raise QueryEvaluationException(
+            raise InvalidStateException(
                 "Query index's parent result must be a vector, " + f"got {type(parent_results[0].value).__name__}."
             )
         return parent_results[0]
@@ -99,16 +99,16 @@ class QueryIndexNode(QueryNodeWithParent[IndexNode, Vector]):
     def _get_active_parent(self, context: ExecutionContext) -> QueryNode[Node[Vector], Vector]:
         queried_schema_name = context.get_node_context_value(self.node_id, QUERIED_SCHEMA_NAME_CONTEXT_KEY, str)
         if queried_schema_name is None:
-            raise QueryEvaluationException("Missing schema name for query.")
+            raise InvalidStateException("Missing schema name for query.")
         active_parents = [
             parent
             for parent in self.parents
             if queried_schema_name in [schema._schema_name for schema in parent.node.schemas]
         ]
         if len(active_parents) == 0:
-            raise QueryEvaluationException(f"Query dag doesn't have the given schema {queried_schema_name}.")
+            raise InvalidStateException(f"Query dag doesn't have the given schema {queried_schema_name}.")
         if len(active_parents) > 1:
-            raise QueryEvaluationException(
+            raise InvalidStateException(
                 "Ambiguous query dag definition, query index node cannot "
                 + f"have parents having the same {queried_schema_name} schema."
             )

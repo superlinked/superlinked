@@ -20,6 +20,7 @@ from beartype.typing import Any, Iterator, Sequence, TypeVar
 
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.data_types import NPArray, Vector
+from superlinked.framework.common.exception import InvalidStateException
 
 T = TypeVar("T")
 
@@ -40,7 +41,7 @@ class CollectionUtil:
     @staticmethod
     def concatenate_vectors(vectors: Sequence[Vector]) -> Vector:
         if not vectors:
-            raise ValueError("Cannot concatenate an empty sequence of vectors")
+            raise InvalidStateException("Cannot concatenate an empty sequence of vectors")
 
         non_empty_vectors = [v for v in vectors if not v.is_empty]
         if not non_empty_vectors:

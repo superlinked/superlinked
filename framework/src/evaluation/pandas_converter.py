@@ -16,6 +16,7 @@ import pandas as pd
 from beartype.typing import Any
 from pandas import DataFrame
 
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.dsl.query.result import QueryResult
 
 DEFAULT_SCORE_FIELD_NAME = "similarity_score"
@@ -46,7 +47,7 @@ class PandasConverter:
                 it contains the above-mentioned score column.
 
         Raises:
-            ValueError: If both 'similarity_score' and 'superlinked_similarity_score' fields are present.
+            InvalidInputException: If both 'similarity_score' and 'superlinked_similarity_score' fields are present.
         """
         dataframe_rows = []
         for entry in result.entries:
@@ -94,4 +95,4 @@ class PandasConverter:
             return default_field
         if fallback_field not in dataframe_row:
             return fallback_field
-        raise ValueError(f"Data must not contain field named {fallback_field}")
+        raise InvalidInputException(f"Data must not contain field named {fallback_field}")

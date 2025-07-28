@@ -16,9 +16,9 @@ from superlinked.framework.common.dag.chunking_node import ChunkingNode
 from superlinked.framework.common.dag.comparison_filter_node import ComparisonFilterNode
 from superlinked.framework.common.dag.dag import Dag
 from superlinked.framework.common.dag.event_aggregation_node import EventAggregationNode
-from superlinked.framework.common.dag.exception import LeafNodeCountException
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.compiler.query.query_node_registry import QueryNodeRegistry
 from superlinked.framework.query.dag.query_dag import QueryDag
 from superlinked.framework.query.dag.query_node import QueryNode
@@ -53,7 +53,7 @@ class QueryDagCompiler:
     def compile_dag(self, dag: Dag) -> QueryDag:
         compiled_index_node = self.compile_node(dag.index_node)
         if compiled_index_node is None:
-            raise LeafNodeCountException("Cannot compile index node.")
+            raise InvalidStateException("Cannot compile index node.")
         query_dag = QueryDag(list(self.__compiled_node_by_node_id.values()))
         if not self.__store_compilation_results:
             self.__compiled_node_by_node_id = {}

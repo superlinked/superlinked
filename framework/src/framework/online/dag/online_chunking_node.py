@@ -20,10 +20,10 @@ from typing_extensions import override
 from superlinked.framework.common.dag.chunking_node import ChunkingNode
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import Node
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.util.chunking_util import Chunker
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
-from superlinked.framework.online.dag.exception import ChunkException
 from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.dag.parent_validator import ParentValidationType
 from superlinked.framework.online.online_entity_cache import OnlineEntityCache
@@ -68,7 +68,7 @@ class OnlineChunkingNode(OnlineNode[ChunkingNode, str]):
             return None
         if len(parent_result.chunks) > 0:
             # We can just log a warning and proceed with input_.main.
-            raise ChunkException(f"{self.class_name} cannot have a chunked input.")
+            raise InvalidStateException(f"{self.class_name} cannot have a chunked input.")
         input_value = parent_result.main.value
         chunk_inputs = self.__chunk(
             input_value,

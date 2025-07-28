@@ -14,6 +14,7 @@
 
 from dataclasses import dataclass
 
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.space.config.embedding.model_based_embedding_config import (
     ModelBasedEmbeddingConfig,
 )
@@ -28,4 +29,4 @@ class TextSimilarityEmbeddingConfig(ModelBasedEmbeddingConfig[str, TextModelHand
 
     def __post_init__(self) -> None:
         if self.cache_size < 0:
-            raise ValueError("cache_size must be non-negative")
+            raise InvalidInputException("cache_size must be non-negative")

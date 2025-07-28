@@ -16,8 +16,8 @@
 from beartype.typing import Any, Union
 from pydantic import BaseModel, Field, create_model
 
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.interface.evaluated import Evaluated
-from superlinked.framework.dsl.query.nlq.exception import NLQException
 from superlinked.framework.dsl.query.nlq.nlq_clause_collector import NLQClauseCollector
 from superlinked.framework.dsl.query.nlq.param_filler.query_param_model_validator import (
     QueryParamModelValidator,
@@ -59,8 +59,8 @@ class QueryParamModelBuilder:
             param_type.original_type for param_type in param_types if param_type.original_type in VALID_NLQ_TYPES
         ]
         if not nlq_types:
-            raise NLQException(
-                f"Param type suppported by NLQ cannot be found for param: {QueryClause.get_param(param).name}"
+            raise InvalidInputException(
+                f"No NLQ-supported type found for parameter: {QueryClause.get_param(param).name}"
             )
         types = Union[tuple(nlq_types)] if len(nlq_types) > 1 else nlq_types[0]
         return types if is_type_mandatory else types | None

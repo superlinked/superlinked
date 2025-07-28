@@ -18,7 +18,7 @@ from typing_extensions import override
 from superlinked.framework.common.dag.dag_effect import DagEffect
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
-from superlinked.framework.common.exception import InitializationException
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
 )
@@ -33,7 +33,7 @@ class ComparisonFilterNode(Node[bool]):
         dag_effects: set[DagEffect] | None = None,
     ) -> None:
         if parent.schema_field != comparison_operation._operand:
-            raise InitializationException(f"{self.class_name}'s parent and operand must be the same.")
+            raise InvalidStateException(f"{self.class_name}'s parent and operand must be the same.")
         super().__init__(bool, [parent], non_nullable_parents=frozenset([parent]))
         if dag_effects is not None:
             self.dag_effects = dag_effects

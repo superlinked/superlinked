@@ -15,9 +15,8 @@
 from beartype.typing import Mapping, Sequence
 
 from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.dag.exception import LeafNodeCountException
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.query.dag.exception import QueryEvaluationException
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.query.dag.query_index_node import QueryIndexNode
 from superlinked.framework.query.dag.query_node import QueryNode
 from superlinked.framework.query.query_node_input import QueryNodeInput
@@ -42,7 +41,7 @@ class QueryDag:
             evaluation_result = await self.leaf_node.evaluate_with_validation(inputs, context)
             result = evaluation_result.value
             if not isinstance(result, Vector):
-                raise QueryEvaluationException(
+                raise InvalidStateException(
                     f"{type(self.leaf_node).__name__} must return a vector, " + f"got {type(result).__name__}."
                 )
         return result
@@ -58,5 +57,5 @@ class QueryDag:
         class_name = type(self).__name__
         index_nodes = [node for node in nodes if isinstance(node, QueryIndexNode)]
         if len(index_nodes) != 1:
-            raise LeafNodeCountException(f"{class_name} must have exactly one {QueryIndexNode.__name__}.")
+            raise InvalidStateException(f"{class_name} must have exactly one {QueryIndexNode.__name__}.")
         return index_nodes[0]

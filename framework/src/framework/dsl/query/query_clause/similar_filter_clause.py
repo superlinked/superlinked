@@ -22,7 +22,7 @@ from typing_extensions import override
 
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.data_types import NodeDataTypes, PythonTypes
-from superlinked.framework.common.exception import QueryException
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.interface.evaluated import Evaluated
 from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
@@ -158,7 +158,7 @@ class SimilarFilterClause(SingleValueParamQueryClause, NLQCompatible):
         if weight is None:
             return constants.DEFAULT_WEIGHT
         if not isinstance(weight, (int, float)):
-            raise QueryException(f"Clause weight should be numeric, got {type(weight).__name__}.")
+            raise InvalidInputException(f"Clause weight should be numeric, got {type(weight).__name__}.")
         return float(weight)
 
     def __get_default_weight_param_name(self) -> str:
@@ -208,9 +208,9 @@ class SimilarFilterClause(SingleValueParamQueryClause, NLQCompatible):
     @classmethod
     def __validate_spaces(cls, field_set: SpaceFieldSet, spaces: Sequence[Space]) -> None:
         if not field_set.space.allow_similar_clause:
-            raise QueryException(
+            raise InvalidInputException(
                 f"Similar clause is not possible for {type(field_set.space).__name__}"
                 " as the space configuration implies it."
             )
         if field_set.space not in spaces:
-            raise QueryException(f"Space isn't present in the index: {type(field_set.space).__name__}.")
+            raise InvalidInputException(f"Space isn't present in the index: {type(field_set.space).__name__}.")

@@ -19,16 +19,14 @@ from math import isfinite
 
 from beartype.typing import Generic, Mapping, Sequence, cast
 
-from superlinked.framework.common.exception import InitializationException
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.parser.blob_loader import BlobLoader
-from superlinked.framework.common.parser.exception import InvalidMappingException
 from superlinked.framework.common.parser.parsed_schema import (
     ParsedSchema,
     ParsedSchemaField,
 )
 from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.schema.event_schema_object import EventSchemaObject
-from superlinked.framework.common.schema.exception import SchemaMismatchException
 from superlinked.framework.common.schema.id_schema_object import (
     IdSchemaObject,
     IdSchemaObjectT,
@@ -59,10 +57,10 @@ class DataParser(ABC, Generic[IdSchemaObjectT, SourceTypeT]):
                 to define their custom mapping logic.
 
         Raises:
-            InitializationException: Parameter `schema` is of invalid type.
+            InvalidInputException: Parameter `schema` is of invalid type.
         """
         if not isinstance(schema, IdSchemaObject):
-            raise InitializationException(f"Parameter `schema` is of invalid type: {schema.__class__.__name__}")
+            raise InvalidInputException(f"Parameter `schema` is of invalid type: {schema.__class__.__name__}")
         self._is_event_data_parser = isinstance(schema, EventSchemaObject)
         mapping = mapping or {}
         self.__validate_mapping_against_schema(schema, mapping)
@@ -94,48 +92,19 @@ class DataParser(ABC, Generic[IdSchemaObjectT, SourceTypeT]):
         Returns:
             True if the id value is valid
         """
-
         if value_to_check is None:
             return False
-
         if not isinstance(value_to_check, (str, int, float)):
-            raise TypeError(
-                (
-                    f"Param value_to_check should be instance of str, int, float, got {value_to_check} ",
-                    f"of type {type(value_to_check)}",
-                )
-            )
-
+            return False
         if isinstance(value_to_check, str) and value_to_check.strip() == "":
             return False
-
         if isinstance(value_to_check, (int, float)) and not isfinite(value_to_check):
             return False
-
         return True
 
     @classmethod
     def _is_created_at_value_valid(cls, value_to_check: int | None) -> bool:
-        """Function to check if value is
-        not missing (NaN, infinity, None or empty)
-
-        Args:
-            value_to_check: created at value to validate
-
-        Returns:
-            True if the created_at value is valid
-        """
-
-        if value_to_check is None:
-            return False
-        if not isinstance(value_to_check, int):
-            raise TypeError(
-                (
-                    f"Param value_to_check should be instance of int {value_to_check} ",
-                    f"of type {type(value_to_check)}",
-                )
-            )
-        return True
+        return isinstance(value_to_check, int)
 
     @abstractmethod
     def unmarshal(self, data: SourceTypeT) -> list[ParsedSchema]:
@@ -150,7 +119,7 @@ class DataParser(ABC, Generic[IdSchemaObjectT, SourceTypeT]):
         """
 
     @abstractmethod
-    def _marshal(self, parsed_schemas: list[ParsedSchema]) -> list[SourceTypeT]:
+    def _marshal(self, parsed_schemas: Sequence[ParsedSchema]) -> list[SourceTypeT]:
         pass
 
     def marshal(
@@ -180,7 +149,7 @@ class DataParser(ABC, Generic[IdSchemaObjectT, SourceTypeT]):
             schema_fields.append(cast(EventSchemaObject, schema).created_at)
         if invalid_keys := [key for key in mapping.keys() if key not in schema_fields]:
             invalid_key_names = [f"{key.schema_obj._base_class_name}.{key.name}" for key in invalid_keys]
-            raise InvalidMappingException(f"{invalid_key_names} don't belong to the {schema._base_class_name} schema.")
+            raise InvalidInputException(f"{invalid_key_names} don't belong to the {schema._base_class_name} schema.")
 
     def _handle_parsed_schema_fields(
         self, parsed_schema_fields: Sequence[ParsedSchemaField]
@@ -194,15 +163,15 @@ class DataParser(ABC, Generic[IdSchemaObjectT, SourceTypeT]):
             parsed_field = ParsedSchemaField(parsed_field.schema_field, parsed_field.value.original)
         return parsed_field
 
-    def __check_parsed_schemas(self, parsed_schemas: list[ParsedSchema]) -> None:
-        if not_valid_schema_base_class_names := [
+    def __check_parsed_schemas(self, parsed_schemas: Sequence[ParsedSchema]) -> None:
+        if not_valid_schema_base_class_names := set(
             parsed_schema.schema._base_class_name
             for parsed_schema in parsed_schemas
             if parsed_schema.schema != self._schema
-        ]:
-            raise SchemaMismatchException(
+        ):
+            raise InvalidInputException(
                 (
-                    f"{self.__class__.__name__} can only marshal {self._schema._base_class_name}, ",
-                    f"got {not_valid_schema_base_class_names}",
+                    f"{type(self).__name__} can only marshal {self._schema._base_class_name}, "
+                    f"got {list(not_valid_schema_base_class_names)}"
                 )
             )

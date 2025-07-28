@@ -17,10 +17,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from superlinked.evaluation.storage_usage.data_stream_observer import DataStreamObserver
-from superlinked.evaluation.storage_usage.exception import (
-    UnsupportedIndexCountException,
-    WorkflowException,
-)
 from superlinked.evaluation.storage_usage.storage_usage_report import (
     IndexedFieldInfo,
     PartialResultInfo,
@@ -32,6 +28,10 @@ from superlinked.evaluation.storage_usage.vdb_watcher import VDBWatcher
 from superlinked.framework.common.dag.aggregation_node import AggregationNode
 from superlinked.framework.common.dag.dag import Dag
 from superlinked.framework.common.dag.event_aggregation_node import EventAggregationNode
+from superlinked.framework.common.exception import (
+    InvalidInputException,
+    InvalidStateException,
+)
 from superlinked.framework.dsl.app.online.online_app import OnlineApp
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.online.source.online_source import OnlineSource
@@ -54,13 +54,17 @@ class StorageUsageEvaluator:
 
     def __init_index(self, app: OnlineApp[OnlineSource]) -> Index:
         if (index_count := len(app._indices)) != 1:
-            raise UnsupportedIndexCountException(f"Got {index_count}")
+            raise InvalidInputException(
+                f"{type(self).__name__} only supports applications with a single index, got {index_count} indices."
+            )
         return app._indices[0]
 
     def start_trace(self, title: str) -> None:
         self.__subscribe_to_data_streams()
         if self.__trace_round_info is not None:
-            raise WorkflowException("Found ongoing tracing process, stop the previous one before starting a new one.")
+            raise InvalidStateException(
+                "Found ongoing tracing process, stop the previous one before starting a new one."
+            )
         self.__trace_round_info = TraceRoundInfo(title, self.__vdb_watcher.get_memory_usage())
 
     def __subscribe_to_data_streams(self) -> None:
@@ -70,7 +74,7 @@ class StorageUsageEvaluator:
     def stop_trace(self) -> StorageUsageReportDetail:
         self.__unsubscribe_from_data_streams()
         if self.__trace_round_info is None:
-            raise WorkflowException(
+            raise InvalidStateException(
                 "No ongoing tracing process was found. To start the evaluation, "
                 + f"run {StorageUsageEvaluator.start_trace.__name__} first."
             )

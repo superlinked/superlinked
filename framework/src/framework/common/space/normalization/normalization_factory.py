@@ -15,6 +15,7 @@
 
 from beartype.typing import Any, Mapping
 
+from superlinked.framework.common.exception import NotImplementedException
 from superlinked.framework.common.space.config.normalization.normalization_config import (
     CategoricalNormConfig,
     ConstantNormConfig,
@@ -45,4 +46,4 @@ class NormalizationFactory:
     ) -> Normalization[Any]:
         if normalization_class := NORMALIZATION_BY_TYPE.get(type(normalization_config)):
             return normalization_class(normalization_config)
-        raise ValueError(f"Unknown normalization config type: {type(normalization_config)}")
+        raise NotImplementedException(f"Unknown normalization config type: {type(normalization_config)}")

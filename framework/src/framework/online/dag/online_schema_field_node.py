@@ -19,10 +19,10 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.schema_object import SFT
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
-from superlinked.framework.online.dag.exception import ValueNotProvidedException
 from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.dag.parent_validator import ParentValidationType
 from superlinked.framework.online.online_entity_cache import OnlineEntityCache
@@ -81,7 +81,7 @@ class OnlineSchemaFieldNode(Generic[SFT], OnlineNode[SchemaFieldNode, SFT]):
         if self.node.schema_field.nullable:
             return None
         field_name = f"{self.node.schema_field.schema_obj._schema_name}.{self.node.schema_field.name}"
-        raise ValueNotProvidedException(
+        raise InvalidInputException(
             (
                 f"The SchemaField {field_name} was not supplied in the input data. "
                 "If you want to ingest missing data for this field, make it optional."

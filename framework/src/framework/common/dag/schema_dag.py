@@ -12,12 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from superlinked.framework.common.dag.exception import (
-    LeafNodeCountException,
-    LeafNodeTypeException,
-)
 from superlinked.framework.common.dag.index_node import IndexNode
 from superlinked.framework.common.dag.node import Node
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.schema.schema_object import SchemaObject
 
 
@@ -40,13 +37,9 @@ class SchemaDag:
         return self.__nodes
 
     def __validate(self, nodes: list[Node]) -> None:
-        class_name = self.__class__.__name__
+        class_name = type(self).__name__
         leaf_nodes = [node for node in nodes if len(node.children) == 0]
         if len(leaf_nodes) != 1:
-            raise LeafNodeCountException(
-                f"{class_name} must have exactly one leaf Node, got {len(leaf_nodes)}" + ""
-                if len(leaf_nodes) == 0
-                else f"{[type(leaf_node) for leaf_node in leaf_nodes]}"
-            )
+            raise InvalidStateException(f"{class_name} must have exactly one leaf Node, got {len(leaf_nodes)}")
         if not isinstance(leaf_nodes[0], IndexNode):
-            raise LeafNodeTypeException(f"{class_name} must have a IndexNode leaf Node.")
+            raise InvalidStateException(f"{class_name} must have a IndexNode leaf Node.")

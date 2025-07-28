@@ -23,6 +23,7 @@ from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.dag.text_embedding_node import TextEmbeddingNode
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.schema.schema_object import SchemaObject, String
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     VectorAggregationConfig,
@@ -111,11 +112,10 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
         self, model_handler: TextModelHandler, embedding_engine_config: EmbeddingEngineConfig
     ) -> None:
         if model_handler == TextModelHandler.MODAL and not isinstance(embedding_engine_config, ModalEngineConfig):
-            raise ValueError(
-                (
-                    f"When using {TextModelHandler.MODAL} as model_handler, embedding_engine_config must "
-                    f"be an instance of ModalEngineConfig, but got {type(embedding_engine_config).__name__}"
-                )
+            raise InvalidInputException(
+                f"Invalid configuration: TextModelHandler.MODAL requires ModalEngineConfig, "
+                f"but received {type(embedding_engine_config).__name__}. "
+                f"Please provide a ModalEngineConfig instance when using MODAL as the model handler."
             )
 
     def _get_root(self, text: String | Node) -> String:

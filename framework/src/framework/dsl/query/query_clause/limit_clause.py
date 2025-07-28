@@ -20,7 +20,7 @@ from beartype.typing import cast
 from typing_extensions import override
 
 from superlinked.framework.common.const import constants
-from superlinked.framework.common.exception import QueryException
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.dsl.query.clause_params import KNNSearchClauseParams
 from superlinked.framework.dsl.query.param import IntParamType
 from superlinked.framework.dsl.query.query_clause.query_clause import QueryClause
@@ -35,7 +35,7 @@ class LimitClause(SingleValueParamQueryClause):
         super().__post_init__()
         value = QueryClause._get_param_value(self.value_param)
         if value is not None and not isinstance(value, int):
-            raise QueryException(f"Limit should be int, got {type(value)}")
+            raise InvalidInputException(f"Limit should be int, got {type(value)}")
 
     @override
     def get_altered_knn_search_params(self, knn_search_clause_params: KNNSearchClauseParams) -> KNNSearchClauseParams:

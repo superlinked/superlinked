@@ -15,7 +15,7 @@
 
 from beartype.typing import Any
 
-from superlinked.framework.common.exception import QueryException
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
 )
@@ -43,7 +43,9 @@ class QueryFilterValidator:
     def validate_operation_is_supported(comparison_operation: ComparisonOperation[SchemaField]) -> None:
         field = QueryFilterValidator.__get_schema_field(comparison_operation)
         if comparison_operation._op not in field.supported_comparison_operation_types:
-            raise QueryException(f"Field {field.name} doesn't support {comparison_operation._op.value} operation.")
+            raise InvalidInputException(
+                f"Field {field.name} doesn't support {comparison_operation._op.value} operation."
+            )
 
     @staticmethod
     def validate_operation_field_is_part_of_schema(
@@ -51,7 +53,7 @@ class QueryFilterValidator:
     ) -> None:
         field = QueryFilterValidator.__get_schema_field(comparison_operation)
         if field.schema_obj != schema:
-            raise QueryException(
+            raise InvalidInputException(
                 f"{field.schema_obj._schema_name}.{field.name} is not part of the {schema._schema_name} schema."
             )
 
@@ -59,7 +61,7 @@ class QueryFilterValidator:
     def __get_schema_field(comparison_operation: ComparisonOperation) -> SchemaField:
         field = comparison_operation._operand
         if not isinstance(field, SchemaField):
-            raise QueryException("ComparisonOperation operand must be a SchemaField")
+            raise InvalidInputException("ComparisonOperation operand must be a SchemaField")
         return field
 
     @staticmethod
@@ -87,6 +89,6 @@ class QueryFilterValidator:
                 [allowed_type.__name__ for allowed_type in ([expected_type] + ([Param] if allow_param else []))]
             )
             unsupported_type_text = type(comparison_operation._other).__name__
-            raise QueryException(
+            raise InvalidInputException(
                 f"Unsupported filter operand type: {unsupported_type_text}, expected {allowed_types_text}."
             )

@@ -19,6 +19,7 @@ from dataclasses import dataclass
 from beartype.typing import Any, Generic, Sequence, cast
 
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.space.aggregation.aggregation import Aggregation
 from superlinked.framework.common.space.aggregation.aggregation_factory import (
@@ -61,9 +62,6 @@ from superlinked.framework.common.space.normalization.normalization_factory impo
 from superlinked.framework.common.space.normalization.normalization_step import (
     MultiNormalizationStep,
     NormalizationStep,
-)
-from superlinked.framework.common.transform.exception import (
-    TransformationConfigurationException,
 )
 from superlinked.framework.common.transform.temp_lift_weighting_wrapper import (
     TempLiftWeightingWrapper,
@@ -132,7 +130,7 @@ class TransformationFactory:
             )
         else:
             if transformation_config.aggregation_config.aggregation_input_type is not Vector:
-                raise TransformationConfigurationException(
+                raise InvalidStateException(
                     "Cannot create non-vector aggregation step without an invertible embedding. "
                     + f"Got {transformation_config.embedding_config}"
                 )
@@ -155,7 +153,7 @@ class TransformationFactory:
         base_transformations: BaseTransformations[AggregationInputT, EmbeddingInputT],
     ) -> Transform[Sequence[Weighted[Vector]], Vector]:
         if not isinstance(base_transformations.embedding, InvertibleEmbedding):
-            raise TransformationConfigurationException(
+            raise InvalidStateException(
                 "Inverse aggregation cannot be instantitated "
                 + f"with given embedding {base_transformations.embedding}"
             )
@@ -163,7 +161,7 @@ class TransformationFactory:
             transformation_config.embedding_config.embedding_input_type
             is not transformation_config.aggregation_config.aggregation_input_type
         ):
-            raise TransformationConfigurationException(
+            raise InvalidStateException(
                 "Cannot create aggregation step using an embedding with a different input type. "
                 + f"Got {transformation_config.embedding_config}"
             )

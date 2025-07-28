@@ -15,6 +15,7 @@
 
 from beartype.typing import Any, Mapping
 
+from superlinked.framework.common.exception import NotImplementedException
 from superlinked.framework.common.space.config.embedding.categorical_similarity_embedding_config import (
     CategoricalSimilarityEmbeddingConfig,
 )
@@ -77,4 +78,4 @@ class EmbeddingFactory:
     ) -> Embedding[EmbeddingInputT, Any]:
         if embedding_class := EMBEDDING_BY_CONFIG_CLASS.get(type(embedding_config)):
             return embedding_class(embedding_config, embedding_engine_manager)
-        raise ValueError(f"Unknown embedding config type: {type(embedding_config).__name__}")
+        raise NotImplementedException(f"Unknown embedding config type: {type(embedding_config).__name__}")

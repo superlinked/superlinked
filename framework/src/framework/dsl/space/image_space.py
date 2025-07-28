@@ -23,6 +23,7 @@ from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.image_embedding_node import ImageEmbeddingNode
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.schema.image_data import ImageData
 from superlinked.framework.common.schema.schema_object import (
     Blob,
@@ -54,7 +55,6 @@ from superlinked.framework.common.space.embedding.model_based.singleton_embeddin
     SingletonEmbeddingEngineManager,
 )
 from superlinked.framework.common.util.async_util import AsyncUtil
-from superlinked.framework.dsl.space.exception import InvalidSpaceParamException
 from superlinked.framework.dsl.space.image_space_field_set import (
     ImageDescriptionSpaceFieldSet,
     ImageSpaceFieldSet,
@@ -84,7 +84,7 @@ class ImageSpace(Space[Vector, ImageData]):
             Defaults to EmbeddingEngineConfig().
 
     Raises:
-        InvalidSpaceParamException: If the image and description fields are not
+        InvalidInputException: If the image and description fields are not
             from the same schema.
     """
 
@@ -113,7 +113,7 @@ class ImageSpace(Space[Vector, ImageData]):
                 Defaults to EmbeddingEngineConfig().
 
         Raises:
-            InvalidSpaceParamException: If the image and description fields are not
+            InvalidInputException: If the image and description fields are not
                 from the same schema.
         """
         if embedding_engine_config is None:
@@ -149,13 +149,13 @@ class ImageSpace(Space[Vector, ImageData]):
             for image in (images if isinstance(images, Sequence) else [images])
             if isinstance(image, DescribedBlob)
         ):
-            raise InvalidSpaceParamException("ImageSpace image and description field must be in the same schema.")
+            raise InvalidInputException("ImageSpace image and description field must be in the same schema.")
 
     def __validate_model_handler(
         self, model_handler: ModelHandler, embedding_engine_config: EmbeddingEngineConfig
     ) -> None:
         if model_handler == ModelHandler.MODAL and not isinstance(embedding_engine_config, ModalEngineConfig):
-            raise ValueError(
+            raise InvalidInputException(
                 (
                     f"When using {ModelHandler.MODAL} as model_handler, embedding_engine_config must "
                     f"be an instance of ModalEngineConfig, but got {type(embedding_engine_config).__name__}"

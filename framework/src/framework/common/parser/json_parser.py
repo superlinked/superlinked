@@ -16,11 +16,8 @@ from __future__ import annotations
 
 from beartype.typing import Any, Generic, Sequence, cast
 
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.parser.data_parser import DataParser
-from superlinked.framework.common.parser.exception import (
-    MissingCreatedAtException,
-    MissingIdException,
-)
 from superlinked.framework.common.parser.parsed_schema import (
     EventParsedSchema,
     ParsedSchema,
@@ -92,20 +89,10 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, dict[str,
             for data_idx in range(len(json_datas))
         ]
 
-    def _marshal(
-        self,
-        parsed_schemas: list[ParsedSchema],
-    ) -> list[dict[str, Any]]:
+    def _marshal(self, parsed_schemas: Sequence[ParsedSchema]) -> list[dict[str, Any]]:
         """
         Converts a ParsedSchema objects back into a list of Json objects.
         You can use this functionality to check, if your mapping was defined properly.
-
-        Args:
-            parsed_schemas (list[ParsedSchema]): ParserSchema in a list that you can
-                retrieve after unmarshalling your `Json`.
-
-        Returns:
-            list[Json]: List of Json representation of the schemas.
         """
         return [
             self.__construct_json(list_of_schema_fields)
@@ -129,13 +116,18 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, dict[str,
     def __ensure_id(self, data: dict[str, Any]) -> str:
         id_ = DotSeparatedPathUtil.get(data, self._id_name)
         if not self._is_id_value_valid(id_):
-            raise MissingIdException("The mandatory id field is missing from the input object.")
+            raise InvalidInputException(
+                "The mandatory id field has missing or has invalid type values in the input object."
+            )
         return str(id_)
 
     def __ensure_created_at(self, data: dict[str, Any]) -> int:
         created_at = DotSeparatedPathUtil.get(data, self._created_at_name)
         if not self._is_created_at_value_valid(created_at):
-            raise MissingCreatedAtException("The mandatory created_at field is missing from the input object.")
+            raise InvalidInputException(
+                f"The mandatory {self._created_at_name} field has missing "
+                "or has invalid type values in the input object."
+            )
         return cast(int, created_at)
 
     def _parse_schema_field_values(

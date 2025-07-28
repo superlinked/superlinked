@@ -15,6 +15,7 @@
 from beartype.typing import Any, Sequence, cast
 
 from superlinked.framework.common.data_types import NodeDataTypes, Vector
+from superlinked.framework.common.exception import NotImplementedException
 from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.schema.id_field import IdField
 from superlinked.framework.common.schema.image_data import ImageData
@@ -82,13 +83,13 @@ class FieldTypeConverter:
             cast(type[ConcreteSchemaField], schema_field_cls)
         ):
             return field_data_type
-        raise NotImplementedError(f"Unknown schema field type: {schema_field_cls.__name__}")
+        raise NotImplementedException(f"Unknown schema field type: {schema_field_cls.__name__}")
 
     @staticmethod
     def convert_node_data_type(type_: type[NodeDataTypes]) -> FieldDataType:
         if field_data_type := FIELD_DATA_TYPE_BY_NODE_DATA_TYPE.get(cast(type[NodeDataTypes], type_)):
             return field_data_type
-        raise NotImplementedError(f"Unknown python type: {type_}")
+        raise NotImplementedException(f"Unknown python type: {type_}")
 
     @staticmethod
     def get_valid_node_data_types(

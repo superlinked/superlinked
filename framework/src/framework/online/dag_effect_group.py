@@ -17,6 +17,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from superlinked.framework.common.dag.dag_effect import DagEffect
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.schema.event_schema_object import EventSchemaObject
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 
@@ -34,11 +35,13 @@ class DagEffectGroup:
 
     def __post_init__(self) -> None:
         if len(self.effects) == 0:
-            raise ValueError("DagEffectGroup must contain at least one effect")
+            raise InvalidStateException("DagEffectGroup must contain at least one effect")
         first = next(iter(self.effects))
         for effect in self.effects:
             if not first.is_same_effect_except_for_multiplier(effect):
-                raise ValueError("All effects in a DagEffectGroup must be identical except for their multipliers")
+                raise InvalidStateException(
+                    "All effects in a DagEffectGroup must be identical except for their multipliers"
+                )
 
     @property
     def affected_schema(self) -> IdSchemaObject:

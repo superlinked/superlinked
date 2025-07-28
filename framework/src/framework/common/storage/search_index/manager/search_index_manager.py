@@ -16,7 +16,7 @@ from abc import ABC, abstractmethod
 
 from beartype.typing import Sequence
 
-from superlinked.framework.common.exception import ValidationException
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.storage.index_config import IndexConfig
 from superlinked.framework.common.storage.search_index.search_algorithm import (
     SearchAlgorithm,
@@ -56,7 +56,7 @@ class SearchIndexManager(ABC):
     def get_index_config(self, index_name: str) -> IndexConfig:
         index_config = self._index_configs.get(index_name)
         if not index_config:
-            raise ValidationException(f"Index with the given name {index_name} doesn't exist.")
+            raise InvalidInputException(f"Index with the given name {index_name} doesn't exist.")
         return index_config
 
     def clear_configs(self) -> None:

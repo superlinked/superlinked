@@ -20,7 +20,7 @@ from typing_extensions import override
 from superlinked.framework.common.dag.concatenation_node import ConcatenationNode
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.exception import ValidationException
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.space.normalization.normalization import ConstantNorm
 from superlinked.framework.common.util.collection_util import CollectionUtil
@@ -76,7 +76,7 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
             for result in parent_result.values()
             if not isinstance(result.value, Vector)
         ):
-            raise ValidationException(f"{self.class_name} can only process `Vector` inputs.")
+            raise InvalidInputException(f"{self.class_name} can only process `Vector` inputs.")
 
     def _split_vector(self, vector: Vector, parents_without_duplicates: Sequence[OnlineNode]) -> list[Vector]:
         lengths = [cast(HasLength, parent).length for parent in parents_without_duplicates]

@@ -16,6 +16,11 @@ import numpy as np
 from beartype.typing import Any, Sequence, cast
 
 from superlinked.framework.common.data_types import NPArray, Vector
+from superlinked.framework.common.exception import (
+    InvalidInputException,
+    InvalidStateException,
+    NotFoundException,
+)
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.storage_manager.header import Header
@@ -23,10 +28,6 @@ from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.dsl.executor.in_memory.in_memory_executor import InMemoryApp
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.storage.in_memory.in_memory_vdb import InMemoryVDB
-
-
-class VectorNotFoundError(Exception):
-    pass
 
 
 class VectorCollection:
@@ -41,7 +42,7 @@ class VectorCollection:
 
     def __init__(self, id_list: Sequence[str], vectors: list[NPArray]) -> None:
         if (len(id_list) > 1) & (len(id_list) != len(vectors)):
-            raise ValueError(
+            raise InvalidStateException(
                 f"id_list length and vectors parameter shape's first dimension should match. "
                 f"Got {id_list=} and {len(vectors)=}"
             )
@@ -125,7 +126,7 @@ class VectorSampler:
         else:
             readable_ids = [readable_id_] if isinstance(readable_id_, str) else readable_id_
         if len(ids) != len(readable_ids):
-            raise ValueError(
+            raise InvalidInputException(
                 f"id_ and readable_id_ should have the same length. " f"Got {len(ids)} and {len(readable_ids)}"
             )
 
@@ -138,7 +139,7 @@ class VectorSampler:
                 )
             )
             if vector is None:
-                raise VectorNotFoundError(
+                raise NotFoundException(
                     f"No vector found for {schema._schema_name} with id {identification} in the given index."
                 )
 

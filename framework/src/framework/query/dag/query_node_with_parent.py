@@ -22,7 +22,7 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import NT
-from superlinked.framework.query.dag.exception import QueryEvaluationException
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.query.dag.query_evaluation_data_types import (
     QueryEvaluationResult,
     QueryEvaluationResultT,
@@ -51,7 +51,7 @@ class QueryNodeWithParent(QueryNode[NT, QueryEvaluationResultT], Generic[NT, Que
         inputs_to_invert = [input_ for input_ in inputs.get(self.node_id, []) if input_.to_invert]
         if inputs_to_invert:
             if len(self.parents) > 1:
-                raise QueryEvaluationException(
+                raise InvalidStateException(
                     f"Addressed query node {self.node_id} with inputs needing to "
                     + f"be inverted {inputs_to_invert} is prohibited."
                 )
@@ -66,7 +66,7 @@ class QueryNodeWithParent(QueryNode[NT, QueryEvaluationResultT], Generic[NT, Que
 
     def _validate_parent_results(self, parent_results: Sequence[QueryEvaluationResult]) -> None:
         if len(parent_results) != len(self.parents):
-            raise QueryEvaluationException(
+            raise InvalidStateException(
                 f"Mismatching number of parents {len(self.parents)} " f"and parent results {len(parent_results)}."
             )
 

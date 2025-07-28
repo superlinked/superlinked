@@ -18,7 +18,7 @@ from beartype.typing import Any, Generic, Sequence, TypeVar
 
 from superlinked.framework.common.calculation.distance_metric import DistanceMetric
 from superlinked.framework.common.const import constants
-from superlinked.framework.common.exception import InitializationException
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.precision import Precision
 from superlinked.framework.common.settings import settings
 from superlinked.framework.common.storage.entity.entity import Entity
@@ -72,8 +72,8 @@ class VDBConnector(ABC, Generic[VDBKNNSearchConfigT]):
     @property
     def collection_name(self) -> str:
         if self._app_id is None:
-            raise InitializationException(
-                "app id wasn't initialized properly by calling "
+            raise InvalidStateException(
+                "app id wasn't initialized properly "
                 + "by either initializing the vdb connector with a set of index configs "
                 + "or calling init_search_index_configs with them."
             )

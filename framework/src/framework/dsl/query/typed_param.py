@@ -19,6 +19,7 @@ from dataclasses import dataclass
 from beartype.typing import Any, Sequence
 from typing_extensions import override
 
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.interface.evaluated import Evaluated
 from superlinked.framework.common.interface.type_converter import (
     IntToFloatConverter,
@@ -54,7 +55,7 @@ class TypedParam:
         if self.param.default is not None:
             checked_default = TypedParam.__check_type(self.param.default, self.valid_param_value_types)
             if checked_default != self.param.default:
-                raise ValueError(
+                raise InvalidInputException(
                     f"Invalid param default: {self.param.default}, needs to be converted to: {checked_default}"
                 )
 
@@ -107,4 +108,6 @@ class TypedParam:
         if new_value:
             return new_value.value
         readable_allowed_types = [str(value_type) for value_type in valid_param_value_types]
-        raise ValueError(f"Value ({original_value}) is of wrong type. Allowed types are: {readable_allowed_types})")
+        raise InvalidInputException(
+            f"Value ({original_value}) is of wrong type. Allowed types are: {readable_allowed_types}"
+        )

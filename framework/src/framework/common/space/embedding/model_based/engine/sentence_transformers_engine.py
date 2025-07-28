@@ -20,6 +20,7 @@ import structlog
 from beartype.typing import Any, Sequence
 from typing_extensions import override
 
+from superlinked.framework.common.exception import NotImplementedException
 from superlinked.framework.common.precision import Precision
 from superlinked.framework.common.space.embedding.model_based.embedding_input import (
     ModelEmbeddingInputT,
@@ -103,7 +104,7 @@ class SentenceTransformersEngine(EmbeddingEngine[EmbeddingEngineConfig]):
             return {"torch_dtype": "float16"}
         if self._config.precision == Precision.FLOAT32:
             return {}
-        raise ValueError(f"Unsupported precision: {self._config.precision.value}.")
+        raise NotImplementedException(f"Unsupported precision: {self._config.precision.value}.")
 
     def _calculate_prompt_name(self, model: SentenceTransformer, is_query_context: bool) -> str | None:
         return (

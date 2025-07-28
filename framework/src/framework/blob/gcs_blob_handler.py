@@ -23,6 +23,7 @@ from typing_extensions import override
 
 from superlinked.framework.blob.blob_handler import BlobHandler
 from superlinked.framework.blob.blob_metadata import BlobMetadata
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.util.gcs_utils import GCSFileOps
 
 logger = structlog.getLogger()
@@ -103,8 +104,8 @@ class GcsBlobHandler(BlobHandler):
 
         parsed = urlparse(path)
         if not parsed.netloc:
-            raise ValueError(f"Invalid GCS path, missing bucket: {path}")
+            raise InvalidInputException(f"Invalid GCS path, missing bucket: {path}")
         if not parsed.path.lstrip("/"):
-            raise ValueError(f"Invalid GCS path, missing object key: {path}")
+            raise InvalidInputException(f"Invalid GCS path, missing object key: {path}")
 
         return parsed.netloc, parsed.path.lstrip("/")

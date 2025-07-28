@@ -14,6 +14,8 @@
 
 from dataclasses import dataclass
 
+from superlinked.framework.common.exception import InvalidInputException
+
 
 @dataclass(frozen=True)
 class BlobInformation:
@@ -22,7 +24,7 @@ class BlobInformation:
 
     def __post_init__(self) -> None:
         if self.data is None and self.path is None:
-            raise ValueError(f"{type(self).__name__} must have a non-null data or path.")
+            raise InvalidInputException(f"{type(self).__name__} must have a non-null data or path.")
 
     @property
     def original(self) -> str:

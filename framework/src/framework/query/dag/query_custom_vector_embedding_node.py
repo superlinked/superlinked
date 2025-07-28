@@ -19,6 +19,10 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.custom_node import CustomVectorEmbeddingNode
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.exception import (
+    InvalidInputException,
+    InvalidStateException,
+)
 from superlinked.framework.query.dag.query_embedding_orphan_node import (
     QueryEmbeddingOrphanNode,
 )
@@ -48,7 +52,7 @@ class QueryCustomVectorEmbeddingNode(QueryEmbeddingOrphanNode[Vector, CustomVect
                 node_input.to_invert,
             )
         else:
-            raise ValueError(
+            raise InvalidStateException(
                 f"{type(self).__name__} can only evaluate "
                 + f"{type(Vector).__name__} and list of floats "
                 + f"input, got {type(node_input.value.item).__name__}"
@@ -58,6 +62,6 @@ class QueryCustomVectorEmbeddingNode(QueryEmbeddingOrphanNode[Vector, CustomVect
 
     def __validate_pre_processed(self, input_: QueryNodeInput[Vector]) -> None:
         if input_.value.item.dimension != self.node.length:
-            raise ValueError(
+            raise InvalidInputException(
                 f"Wrong dimension of input, expected {self.node.length}, " + f"got {input_.value.item.dimension}"
             )

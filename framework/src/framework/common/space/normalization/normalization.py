@@ -23,6 +23,7 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import NPArray, Vector
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.space.config.normalization.normalization_config import (
     CategoricalNormConfig,
     ConstantNormConfig,
@@ -99,7 +100,7 @@ class ConstantNorm(Normalization[ConstantNormConfig]):
 
     def __validate_length(self) -> None:
         if self._config.length == 0:
-            raise ValueError("Normalization length cannot be zero.")
+            raise InvalidInputException("Normalization length cannot be zero.")
 
     @override
     def norm(self, value: NPArray, is_query: bool = False) -> float:

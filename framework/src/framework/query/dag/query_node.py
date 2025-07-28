@@ -20,7 +20,7 @@ from beartype.typing import Generic, Iterable, Mapping, Sequence
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import NT
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.query.dag.exception import QueryEvaluationException
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.query.dag.query_evaluation_data_types import (
     QueryEvaluationResult,
     QueryEvaluationResultT,
@@ -95,7 +95,7 @@ class QueryNode(ABC, Generic[NT, QueryEvaluationResultT]):
 
     def _validate_vectors_dimension(self, dimension: int, vectors: Sequence[Vector]) -> None:
         if wrong_dimensions := [vector.dimension for vector in vectors if vector.dimension != dimension]:
-            raise QueryEvaluationException(
+            raise InvalidStateException(
                 f"{type(self).__name__} can only process vectors with {dimension} dimension,"
                 f" got {wrong_dimensions}."
             )

@@ -27,7 +27,10 @@ from superlinked.framework.common.dag.context import (
     NowStrategy,
 )
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.exception import QueryException
+from superlinked.framework.common.exception import (
+    InvalidInputException,
+    InvalidStateException,
+)
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.storage_manager.knn_search_params import (
     KNNSearchParams,
@@ -93,7 +96,7 @@ class QueryExecutor:
             Result: The result of the query execution that can be inspected and post-processed.
 
         Raises:
-            QueryException: If the query index is not amongst the executor's indices.
+            InvalidInputException: If the query index is not amongst the executor's indices.
         """
         self.__check_executor_has_index()
         query_descriptor: QueryDescriptor = await QueryParamValueSetter.set_values(self._query_descriptor, params)
@@ -173,7 +176,7 @@ class QueryExecutor:
         if unqueried_entity_ids := [
             object_id for object_id, vector in index_vector_by_object_id.items() if vector is None
         ]:
-            raise QueryException(
+            raise InvalidStateException(
                 "Vector parts can only be requested with queried index vector. "
                 f"Index vectors of {unqueried_entity_ids} cannot be found"
             )
@@ -279,7 +282,7 @@ class QueryExecutor:
 
     def __check_executor_has_index(self) -> None:
         if self._query_descriptor.index not in self.app._indices:
-            raise QueryException(
+            raise InvalidInputException(
                 f"Query index {self._query_descriptor.index} is not amongst "
                 + f"the executor's indices {self.app._indices}"
             )

@@ -31,10 +31,13 @@ from qdrant_client.models import (
 )
 from typing_extensions import override
 
+from superlinked.framework.common.exception import (
+    InvalidStateException,
+    UnexpectedResponseException,
+)
 from superlinked.framework.common.storage.entity.entity import Entity
 from superlinked.framework.common.storage.entity.entity_data import EntityData
 from superlinked.framework.common.storage.entity.entity_id import EntityId
-from superlinked.framework.common.storage.exception import IndexConfigNotFoundException
 from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.field.field_data import FieldData
 from superlinked.framework.common.storage.field.field_data_type import FieldDataType
@@ -110,7 +113,7 @@ class QdrantVDBConnector(VDBConnector[VDBKNNSearchConfig]):
     @override
     async def _write_entities(self, entity_data: Sequence[EntityData]) -> None:
         if not self.search_index_manager._index_configs:
-            raise IndexConfigNotFoundException(
+            raise InvalidStateException(
                 f"{type(self).__name__} can work properly only after initializing " + "the search indices."
             )
         points = [
@@ -272,12 +275,12 @@ class QdrantVDBConnector(VDBConnector[VDBKNNSearchConfig]):
         if point.vector is None:
             return {}
         if not isinstance(point.vector, dict) or any(v for v in point.vector.values() if not isinstance(v, list)):
-            raise ValueError(f"Retrieved point's payload is invalid: {[point.payload]}")
+            raise UnexpectedResponseException(f"Retrieved point's payload is invalid: {[point.payload]}")
         return cast(dict[str, list[float]], point.vector)
 
     def _check_and_get_payload(self, point: Record | ScoredPoint) -> dict[str, Any]:
         if point.payload is None or not isinstance(point.payload, dict):
-            raise ValueError(f"Retrieved point's payload is invalid: {[point.payload]}")
+            raise UnexpectedResponseException(f"Retrieved point's payload is invalid: {[point.payload]}")
         return cast(dict[str, Any], point.payload)
 
     @staticmethod
@@ -291,7 +294,7 @@ class QdrantVDBConnector(VDBConnector[VDBKNNSearchConfig]):
     def _entity_id_from_payload(self, payload: Payload) -> EntityId:
         id_str = payload.get(ID_PAYLOAD_FIELD_NAME)
         if id_str is None or not isinstance(id_str, str):
-            raise ValueError(f"The mandatory {ID_PAYLOAD_FIELD_NAME} is invalid: {id_str}.")
+            raise UnexpectedResponseException(f"The mandatory {ID_PAYLOAD_FIELD_NAME} is invalid: {id_str}.")
         schema_id, object_id = self._encoder._decode_base_type(id_str).split(":", 1)
         return EntityId(schema_id=schema_id, object_id=object_id)
 

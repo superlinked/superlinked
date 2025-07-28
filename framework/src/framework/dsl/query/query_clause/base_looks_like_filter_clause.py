@@ -24,8 +24,8 @@ from typing_extensions import override
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.data_types import NodeDataTypes, Vector
 from superlinked.framework.common.exception import (
-    InvalidSchemaException,
-    QueryException,
+    InvalidInputException,
+    NotFoundException,
 )
 from superlinked.framework.common.interface.evaluated import Evaluated
 from superlinked.framework.common.schema.id_field import IdField
@@ -121,10 +121,10 @@ class BaseLooksLikeFilterClause(NLQCompatible, SingleValueParamQueryClause, ABC)
         ):
             vector: Vector | None = await storage_manager.read_node_result(schema_obj, object_id, index_node_id, Vector)
         if vector is None:
-            raise QueryException(f"Entity not found object_id: {object_id} node_id: {index_node_id}")
+            raise NotFoundException(f"Entity not found for object_id: {object_id} node_id: {index_node_id}")
         return vector
 
     @classmethod
     def _validate_schema_object(cls, id_: IdField) -> None:
         if not isinstance(id_.schema_obj, IdSchemaObject):
-            raise InvalidSchemaException(f"'with_vector': {type(id_.schema_obj).__name__} is not a schema.")
+            raise InvalidInputException(f"'with_vector': {type(id_.schema_obj).__name__} is not a schema.")

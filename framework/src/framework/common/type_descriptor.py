@@ -80,6 +80,6 @@ class TypeDescriptor:
 
     def __str__(self) -> str:
         plurality = "list of" if self.is_list else "single"
-        valid_types_str = "|".join([str(type_) for type_ in self.valid_types])
+        valid_types_str = "|".join([type_.__name__ for type_ in self.valid_types])
         plurality_syllable = "(s)" if self.is_list else ""
         return f"A {plurality} {valid_types_str}{plurality_syllable}"

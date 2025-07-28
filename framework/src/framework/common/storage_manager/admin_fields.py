@@ -20,6 +20,7 @@ from dataclasses import dataclass
 from beartype.typing import Sequence, cast
 
 from superlinked.framework.common.data_types import PythonTypes
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.settings import settings
 from superlinked.framework.common.storage.entity.entity_id import EntityId
 from superlinked.framework.common.storage.field.field import Field
@@ -38,7 +39,7 @@ class AdminFieldDescriptor:
     def extract_value(self, field_data: dict[str, FieldData], _: type[FT]) -> FT | None:
         data = field_data.get(self.field.name)
         if not self.nullable and data is None:
-            raise ValueError(f"None value found for the non-null {self.field.name} admin field.")
+            raise InvalidStateException(f"None value found for the non-null {self.field.name} admin field.")
         value = data.value if data is not None else None
         return cast(FT, value)
 
@@ -48,7 +49,7 @@ class AdminFieldDescriptor:
     ) -> FieldData | None:
         if value is None:
             if not self.nullable:
-                raise ValueError(f"None value cannot be assigned to {self.field.name} admin field.")
+                raise InvalidStateException(f"None value cannot be assigned to {self.field.name} admin field.")
             return None
         return FieldData.from_field(self.field, value)
 
@@ -116,5 +117,5 @@ class AdminFields:
 
     def _check_none_field(self, value: FT | None) -> FT:
         if value is None:
-            raise ValueError("None value found for the non-null admin field.")
+            raise InvalidStateException("None value found for the non-null admin field.")
         return value

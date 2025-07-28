@@ -19,6 +19,7 @@ from dataclasses import dataclass
 from beartype.typing import Sequence
 
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
 )
@@ -38,7 +39,7 @@ class KNNSearchParams:
     @classmethod
     def from_clause_params(cls, query_vector: Vector, partial: KNNSearchClauseParams) -> KNNSearchParams:
         if partial.limit is None:
-            raise ValueError(f"{cls.__name__} must have a valid limit, got None.")
+            raise InvalidInputException(f"{cls.__name__} must have a valid limit, got None.")
         return cls(
             query_vector,
             partial.limit,

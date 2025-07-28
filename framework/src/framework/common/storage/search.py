@@ -17,7 +17,7 @@ from abc import ABC, abstractmethod
 
 from beartype.typing import Generic, Sequence, TypeVar, cast
 
-from superlinked.framework.common.exception import ValidationException
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
 )
@@ -61,9 +61,9 @@ class Search(ABC, Generic[SearchParamsT, QuertT, KNNReturnT, VDBKNNSearchConfigT
     @staticmethod
     def check_vector_field(index_config: IndexConfig, vector_field: VectorFieldData) -> None:
         if vector_field.value is None:
-            raise ValidationException("Cannot search with NoneType vector!")
+            raise InvalidInputException("Cannot search with NoneType vector!")
         if index_config.vector_field_descriptor.field_name != vector_field.name:
-            raise ValidationException(
+            raise InvalidInputException(
                 f"Indexed {index_config.vector_field_descriptor.field_name} and"
                 + f" searched {vector_field.name} vectors are different."
             )
@@ -81,4 +81,4 @@ class Search(ABC, Generic[SearchParamsT, QuertT, KNNReturnT, VDBKNNSearchConfigT
             for filter_field_name in filter_field_names
             if filter_field_name not in index_config.indexed_field_names
         ]:
-            raise ValidationException(f"Unindexed fields with filter found: {unindexed_filter_field_names}")
+            raise InvalidInputException(f"Unindexed fields with filter found: {unindexed_filter_field_names}")

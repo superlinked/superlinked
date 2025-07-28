@@ -19,7 +19,10 @@ from beartype.typing import Any, Mapping, Sequence, TypeVar, cast
 
 from superlinked.framework.common.dag.index_node import IndexNode
 from superlinked.framework.common.data_types import NodeDataTypes, PythonTypes, Vector
-from superlinked.framework.common.exception import InvalidSchemaException
+from superlinked.framework.common.exception import (
+    InvalidInputException,
+    NotImplementedException,
+)
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperand,
     ComparisonOperation,
@@ -145,7 +148,7 @@ class StorageManager:
             for schema_field in schema_fields
             if not isinstance(schema_field, tuple(FIELD_DATA_TYPE_BY_SCHEMA_FIELD_TYPE.keys()))
         ]:
-            raise NotImplementedError(f"Unindexable schema fields: {', '.join(unsupported_schema_field_indexing)}")
+            raise NotImplementedException(f"Unindexable schema fields: {', '.join(unsupported_schema_field_indexing)}")
         return [
             IndexFieldDescriptor(
                 self._get_index_field_type_of_schema_field(cast(ConcreteSchemaField, schema_field)),
@@ -211,7 +214,7 @@ class StorageManager:
         if invalid_schema_fields := [
             schema_field for schema_field in returned_schema_fields if schema_field.schema_obj != schema
         ]:
-            raise InvalidSchemaException(
+            raise InvalidInputException(
                 "`knn_search` can only return schema_fields from "
                 + f"the searched schema {schema}, got {invalid_schema_fields}"
             )

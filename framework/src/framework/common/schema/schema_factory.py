@@ -18,11 +18,11 @@ from types import NoneType, UnionType
 
 from beartype.typing import Sequence, Union, get_args
 
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.schema.event_schema_object import (
     CreatedAtField,
     EventSchemaObject,
 )
-from superlinked.framework.common.schema.exception import InvalidAttributeException
 from superlinked.framework.common.schema.general_type import T
 from superlinked.framework.common.schema.id_field import IdField
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
@@ -64,7 +64,7 @@ class SchemaFactory:
         if type_ is UnionType or type_ is Union:
             non_none_arg_types = [arg_type for arg_type in arg_types if arg_type is not NoneType]
             if len(non_none_arg_types) != 1:
-                raise InvalidAttributeException(
+                raise InvalidStateException(
                     "An attribute of a schema can only have one optional or mandatory type-annotation, "
                     + f"{name} got {[arg_type.__name__ for arg_type in non_none_arg_types]}"
                 )

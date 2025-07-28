@@ -19,6 +19,10 @@ from collections import defaultdict
 
 from beartype.typing import Any, Callable, Generic, Sequence, TypeVar, cast
 
+from superlinked.framework.common.exception import (
+    InvalidInputException,
+    NotImplementedException,
+)
 from superlinked.framework.common.interface.comparison_operation_type import (
     ComparisonOperationType,
 )
@@ -85,48 +89,48 @@ class ComparisonOperand(ABC, Generic[COT]):
 
     @staticmethod
     def _built_in_greater_than(left_operand: ComparisonOperand[COT], right_operand: object) -> bool:
-        raise NotImplementedError()
+        raise NotImplementedException()
 
     def __lt__(self, __value: object) -> ComparisonOperation[COT]:  # type: ignore[override]
         return ComparisonOperation(ComparisonOperationType.LESS_THAN, self, __value)
 
     @staticmethod
     def _built_in_less_than(left_operand: ComparisonOperand[COT], right_operand: object) -> bool:
-        raise NotImplementedError()
+        raise NotImplementedException()
 
     def __ge__(self, __value: object) -> ComparisonOperation[COT]:  # type: ignore[override]
         return ComparisonOperation(ComparisonOperationType.GREATER_EQUAL, self, __value)
 
     @staticmethod
     def _built_in_greater_equal(left_operand: ComparisonOperand[COT], right_operand: object) -> bool:
-        raise NotImplementedError()
+        raise NotImplementedException()
 
     def __le__(self, __value: object) -> ComparisonOperation[COT]:  # type: ignore[override]
         return ComparisonOperation(ComparisonOperationType.LESS_EQUAL, self, __value)
 
     @staticmethod
     def _built_in_less_equal(left_operand: ComparisonOperand[COT], right_operand: object) -> bool:
-        raise NotImplementedError()
+        raise NotImplementedException()
 
     @staticmethod
     def _built_in_in(left_operand: ComparisonOperand[COT], right_operand: object) -> bool:
-        raise NotImplementedError()
+        raise NotImplementedException()
 
     @staticmethod
     def _built_in_not_in(left_operand: ComparisonOperand[COT], right_operand: object) -> bool:
-        raise NotImplementedError()
+        raise NotImplementedException()
 
     @staticmethod
     def _built_in_contains(left_operand: ComparisonOperand[COT], right_operand: object) -> bool:
-        raise NotImplementedError()
+        raise NotImplementedException()
 
     @staticmethod
     def _built_in_not_contains(left_operand: ComparisonOperand[COT], right_operand: object) -> bool:
-        raise NotImplementedError()
+        raise NotImplementedException()
 
     @staticmethod
     def _built_in_contains_all(left_operand: ComparisonOperand[COT], right_operand: object) -> bool:
-        raise NotImplementedError()
+        raise NotImplementedException()
 
 
 class _Or(Generic[COT]):
@@ -170,7 +174,9 @@ class _Or(Generic[COT]):
             return operation.operations
         if isinstance(operation, ComparisonOperation):
             return [operation]
-        raise ValueError(f"operand of or clause must be {ComparisonOperation} or {_Or}, got {type(operation)}.")
+        raise InvalidInputException(
+            f"operand of or clause must be {ComparisonOperation.__name__} or {_Or.__name__}, got {type(operation)}."
+        )
 
 
 class ComparisonOperation(Generic[COT]):
@@ -223,7 +229,7 @@ class ComparisonOperation(Generic[COT]):
             case ComparisonOperationType.CONTAINS_ALL:
                 result = self.__evaluate_contains_all(value)
             case _:
-                raise ValueError(f"Unsupported operation type: {self._op}")
+                raise NotImplementedException(f"Unsupported operation type: {self._op}")
         return result
 
     def __evaluate_eq(self, value: Any) -> bool:

@@ -20,6 +20,7 @@ from typing_extensions import TypeVar, override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.space.config.embedding.number_embedding_config import (
     LogarithmicScale,
     Mode,
@@ -85,7 +86,7 @@ class NumberEmbedding(InvertibleEmbedding[NumberT, NumberEmbeddingConfig]):
         but it essentially performs the inverse operation of the embed function.
         """
         if len(vector.value) != self.length:
-            raise ValueError(f"Mismatching length {len(vector.value)} of the vector to inverse embed")
+            raise InvalidStateException(f"Mismatching length {len(vector.value)} of the vector to inverse embed")
         if list(vector.value) == self._value_when_out_of_bounds:
             out_of_bounds_bias: float = (self._config.max_value - self._config.min_value) / 1000.0
             if self._config.mode == Mode.MAXIMUM:

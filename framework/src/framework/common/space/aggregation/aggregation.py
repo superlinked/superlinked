@@ -24,7 +24,7 @@ from typing_extensions import override
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.exception import NegativeFilterException
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationConfig,
@@ -108,7 +108,7 @@ class VectorAggregation(Aggregation[Vector]):
         if colliding_negative_filter_indices := [
             i for i in common_negative_filter_indices if len({vector.value[i] for vector in vectors}) > 1
         ]:
-            raise NegativeFilterException(
+            raise InvalidStateException(
                 "Cannot aggregate vectors having different negative filter values in the following positions: "
                 f"{colliding_negative_filter_indices}."
             )
@@ -153,7 +153,7 @@ class NumberAggregation(Generic[NumberAggregationInputT], Aggregation[NumberAggr
             if weighted.weight != constants.DEFAULT_NOT_AFFECTING_WEIGHT and weighted.item is not None
         ]
         if len(weighted_items) == 0:
-            raise ValueError("Cannot aggregate 0 items.")
+            raise InvalidStateException("Cannot aggregate 0 items.")
         return self._aggregate_inputs(weighted_items)
 
     @abstractmethod

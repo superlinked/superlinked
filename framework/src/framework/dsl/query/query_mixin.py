@@ -15,7 +15,7 @@
 
 from beartype.typing import Any, Sequence
 
-from superlinked.framework.common.exception import QueryException
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.telemetry.telemetry_registry import telemetry
 from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.common.util.type_validator import TypeValidator
@@ -69,7 +69,7 @@ class QueryMixin:
             Result: The result of the query execution.
 
         Raises:
-            QueryException: If the query index is not found among the executor's indices.
+            InvalidInputException: If the query index is not found among the executor's indices.
         """
         with telemetry.span(
             "executor.query",
@@ -85,7 +85,7 @@ class QueryMixin:
             ).query(**params)
             return self._query_result_converter.convert(query_result)
 
-        raise QueryException(
+        raise InvalidInputException(
             (
                 f"Query index {query_descriptor.index} is not amongst the executor's indices: ",
                 f" {list(self._query_vector_factory_by_index.keys())}",

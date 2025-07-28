@@ -18,6 +18,7 @@ from beartype.typing import Any
 from typing_extensions import override
 
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.space.config.embedding.embedding_config import (
     EmbeddingConfig,
 )
@@ -29,7 +30,7 @@ class CustomEmbeddingConfig(EmbeddingConfig[Vector]):
 
     def __post_init__(self) -> None:
         if self.vector_length < 1:
-            raise ValueError("Vector length must be greater than 0.")
+            raise InvalidInputException("Vector length must be greater than 0.")
 
     @property
     @override

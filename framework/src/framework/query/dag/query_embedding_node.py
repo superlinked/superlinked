@@ -23,6 +23,7 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.embedding_node import EmbeddingNodeT
 from superlinked.framework.common.dag.node import NodeDataT
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationInputT,
@@ -30,7 +31,6 @@ from superlinked.framework.common.space.config.aggregation.aggregation_config im
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
 )
-from superlinked.framework.query.dag.exception import QueryEvaluationException
 from superlinked.framework.query.dag.query_evaluation_data_types import (
     QueryEvaluationResult,
     QueryEvaluationResultT,
@@ -151,7 +151,7 @@ class QueryEmbeddingNode(
             for weighted_item in weighted_items
             if not isinstance(weighted_item.item, input_type)
         ]:
-            raise QueryEvaluationException(
+            raise InvalidStateException(
                 f"{type(self).__name__} can only evaluate {input_type.__name__}, " + f"got {wrong_types}."
             )
         weighted_items = [

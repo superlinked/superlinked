@@ -17,6 +17,7 @@ from __future__ import annotations
 from beartype.typing import Generic, Sequence
 from typing_extensions import override
 
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.transform.transform import (
     StepInputT,
@@ -49,5 +50,7 @@ class TempLiftWeightingWrapper(
         wrapper_context: WrappingResult[Sequence[StepInputT], Sequence[float]],
     ) -> Sequence[Weighted[StepOutputT]]:
         if len(input_) != len(wrapper_context.context):
-            raise ValueError(f"Mismatching input {len(input_)} and output {len(wrapper_context.context)} counts")
+            raise InvalidStateException(
+                f"Mismatching input {len(input_)} and output {len(wrapper_context.context)} counts"
+            )
         return [Weighted(item, weight) for item, weight in zip(input_, wrapper_context.context)]

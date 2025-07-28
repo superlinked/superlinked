@@ -22,8 +22,8 @@ from typing_extensions import Self, TypeAlias
 
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.exception import (
-    NotImplementedException,
-    QueryException,
+    InvalidInputException,
+    InvalidStateException,
 )
 from superlinked.framework.common.settings import settings
 from superlinked.framework.common.util import time_util
@@ -88,17 +88,18 @@ class ExecutionContext:
             case NowStrategy.CONTEXT_TIME:
                 now = self.__data_now()
                 if now is None:
-                    raise QueryException(
+                    raise InvalidStateException(
                         (
                             f"Environment's '{CONTEXT_COMMON}.{CONTEXT_COMMON_NOW}' "
-                            + "property should always be initialized for query contexts",
+                            "property should always be initialized for query contexts "
+                            f"while using {NowStrategy.CONTEXT_TIME.name} now strategy"
                         )
                     )
                 return now
             case NowStrategy.SYSTEM_TIME:
                 return time_util.now()
             case _:
-                raise NotImplementedException(f"Unknown now strategy: {self.now_strategy}")
+                raise InvalidInputException(f"Unknown now strategy: {self.now_strategy}")
 
     @property
     def environment(self) -> ExecutionEnvironment:

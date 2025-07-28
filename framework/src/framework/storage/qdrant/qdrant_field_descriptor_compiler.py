@@ -18,7 +18,7 @@ from beartype.typing import Sequence
 from qdrant_client.models import Distance, PayloadSchemaType, VectorParams
 
 from superlinked.framework.common.calculation.distance_metric import DistanceMetric
-from superlinked.framework.common.storage.exception import InvalidIndexConfigException
+from superlinked.framework.common.exception import FeatureNotSupportedException
 from superlinked.framework.common.storage.field.field_data_type import FieldDataType
 from superlinked.framework.common.storage.index_config import IndexConfig
 from superlinked.framework.common.storage.search_index.index_field_descriptor import (
@@ -63,9 +63,9 @@ class QdrantFieldDescriptorCompiler:
             for index_config in index_configs
             if index_config.vector_field_descriptor.distance_metric == DistanceMetric.COSINE_SIMILARITY
         ):
-            raise InvalidIndexConfigException(
+            raise FeatureNotSupportedException(
                 "Qdrant's cosine similarity isn't supported because a search index with "
-                + "cosine distance metric sill always L2 normalie its inputs. Tha's "
+                + "cosine distance metric sill always L2 normalize its inputs. That is "
                 + "incompatible with Superlinked."
             )
 
@@ -92,7 +92,7 @@ class QdrantFieldDescriptorCompiler:
             if field_descriptor.field_data_type not in INDEXABLE_PAYLOAD_FIELD_TYPES
         ]:
             indexable_types = ", ".join([fdt.value for fdt in INDEXABLE_PAYLOAD_FIELD_TYPES])
-            raise InvalidIndexConfigException(
+            raise FeatureNotSupportedException(
                 "Can only index payload fields of the type(s) " + f"{indexable_types}, got {', '.join(invalid_fields)}."
             )
         field_type_by_field_name = defaultdict(set)
@@ -115,6 +115,6 @@ class QdrantFieldDescriptorCompiler:
                     for field_name, field_types in invalid_duplicates.items()
                 ]
             )
-            raise InvalidIndexConfigException(
+            raise FeatureNotSupportedException(
                 f"Cannot index field with multiple field data types, got {invalid_duplicates_str}"
             )

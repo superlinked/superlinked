@@ -12,58 +12,56 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-class DagEvaluationException(Exception):
-    pass
-
-
-class InitializationException(Exception):
-    pass
+# ============================================================================
+# Base Exception Classes
+# ============================================================================
 
 
-class InvalidSchemaException(Exception):
-    pass
+class SuperlinkedException(Exception):
+    """Base exception for all Superlinked framework exceptions."""
 
 
-class InvalidDagEffectException(Exception):
-    pass
+class InternalException(SuperlinkedException):
+    """Framework bugs or unexpected internal conditions."""
 
 
-class MismatchingDimensionException(Exception):
-    pass
+class ExternalException(SuperlinkedException):
+    """External input/output or service dependency errors."""
 
 
-class NegativeFilterException(Exception):
-    pass
+# ============================================================================
+# Internal Exceptions
+# ============================================================================
 
 
-class NotImplementedException(Exception):
-    pass
+class NotImplementedException(InternalException):
+    """Functionality not yet implemented."""
 
 
-class ParseException(Exception):
-    pass
+class InvalidStateException(InternalException):
+    """Application state inconsistent or unsafe for operation."""
 
 
-class QueryException(Exception):
-    pass
+# ============================================================================
+# External Exceptions
+# ============================================================================
 
 
-class RecursionException(Exception):
-    pass
+class UnexpectedResponseException(ExternalException):
+    """External service returned malformed or unexpected response."""
 
 
-class SchemaMismatchException(Exception):
-    pass
+class RequestTimeoutException(ExternalException):
+    """Request exceeded timeout limit."""
 
 
-class ValidationException(Exception):
-    pass
+class InvalidInputException(ExternalException):
+    """Input data failed validation or parsing."""
 
 
-class DuplicateNodeIdException(Exception):
-    pass
+class FeatureNotSupportedException(ExternalException):
+    """Requested operation or configuration not supported."""
 
 
-class UnexpectedResponseException(Exception):
-    pass
+class NotFoundException(ExternalException):
+    """Requested resource not found."""

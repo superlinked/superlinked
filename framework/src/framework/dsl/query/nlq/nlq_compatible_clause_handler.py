@@ -20,6 +20,7 @@ from dataclasses import dataclass
 from beartype.typing import cast
 from typing_extensions import override
 
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.interface.evaluated import Evaluated
 from superlinked.framework.dsl.query.nlq.param_filler.nlq_annotation import (
     NLQAnnotation,
@@ -38,7 +39,7 @@ class NLQCompatibleClauseHandler(NLQCompatible):
 
     def __post_init__(self) -> None:
         if not isinstance(self.clause, NLQCompatible):
-            raise ValueError(f"{type(self).__name__} got a non-NLQCompatible clause")
+            raise InvalidStateException(f"{type(self).__name__} got a non-NLQ compatible clause")
 
     @property
     def nlq_compatible_clause(self) -> NLQCompatible:

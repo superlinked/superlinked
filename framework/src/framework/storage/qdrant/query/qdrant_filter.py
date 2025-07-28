@@ -21,6 +21,7 @@ from beartype.typing import cast
 from qdrant_client.models import FieldCondition, MatchAny, MatchValue, Range
 from typing_extensions import override
 
+from superlinked.framework.common.exception import FeatureNotSupportedException
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
 )
@@ -73,7 +74,7 @@ class MatchValueFilter(QdrantFilter):
     ) -> MatchValue:
         other = MathUtil.convert_float_typed_integers_to_int(filter_._other)
         if not isinstance(other, MatchValueFilter.valid_types):
-            raise ValueError(
+            raise FeatureNotSupportedException(
                 f"Qdrant only supports {self.valid_types_string(MatchValueFilter.valid_types)} "
                 + f"{MatchValue.__name__}, got {type(other)}"
             )
@@ -101,7 +102,7 @@ class MatchAnyFilter(QdrantFilter):
         if invalid_any := [
             type(other).__name__ for other in others if not isinstance(other, MatchAnyFilter.valid_types)
         ]:
-            raise ValueError(
+            raise FeatureNotSupportedException(
                 f"Qdrant only supports {self.valid_types_string(MatchAnyFilter.valid_types)} "
                 + f"{MatchAny.__name__}, got {invalid_any}"
             )
@@ -138,7 +139,7 @@ class MatchRangeFilter(QdrantFilter):
 
     def _encode_range_filter(self, filter_: ComparisonOperation[Field], encoder: QdrantFieldEncoder) -> Range:
         if not isinstance(filter_._other, MatchRangeFilter.valid_types):
-            raise ValueError(
+            raise FeatureNotSupportedException(
                 f"Qdrant only supports {self.valid_types_string(MatchRangeFilter.valid_types)} "
                 + f"{MatchValue.__name__}, got {type(filter_._other)}"
             )

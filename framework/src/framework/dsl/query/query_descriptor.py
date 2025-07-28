@@ -21,10 +21,7 @@ import structlog
 from beartype.typing import Sequence, Type, cast
 
 from superlinked.framework.common.const import constants
-from superlinked.framework.common.exception import (
-    InvalidSchemaException,
-    QueryException,
-)
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.interface.comparison_operand import (
     ComparisonOperation,
     _Or,
@@ -183,8 +180,8 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
             Self: The query object itself.
 
         Raises:
-            QueryException: If the space is already bound in the query.
-            InvalidSchemaException: If the schema is not in the similarity field's schema types.
+            InvalidInputException: If the space is already bound in the query.
+            InvalidInputException: If the schema is not in the similarity field's schema types.
         """
         field_set = (
             space_field_set.space_field_set if isinstance(space_field_set, HasSpaceFieldSet) else space_field_set
@@ -196,7 +193,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
 
     def __validate_schema(self, field_set: SpaceFieldSet) -> None:
         if self.schema not in field_set.space._embedding_node_by_schema:
-            raise InvalidSchemaException(f"'find' ({type(self.schema)}) is not in similarity field's schema types.")
+            raise InvalidInputException(f"'find' ({type(self.schema)}) is not in similarity field's schema types.")
 
     @TypeValidator.wrap
     def limit(self, limit: IntParamType | None) -> QueryDescriptor:
@@ -234,10 +231,11 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
             Self: The query object itself.
 
         Raises:
-            QueryException: If multiple Param objects are provided or Param is mixed with other field types.
-            TypeException: If any of the fields are of unsupported types.
-            FieldException: If any of the schema fields are not part of the schema.
-            ValueError: If any of the spaces in metadata is not a Space.
+            InvalidInputException:
+                - If multiple Param objects are provided or Param is mixed with other field types.
+                - If any of the fields are of unsupported types.
+                - If any of the schema fields are not part of the schema.
+                - If any of the spaces in metadata is not a Space.
         """
         field_list = (
             list(fields)
@@ -255,7 +253,9 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         if len(fields) == 1 and isinstance(fields[0], Param):
             return fields[0]
         if any(isinstance(item, Param) for item in fields):
-            raise QueryException("Query select clause can only contain either a single Param or non-Param fields.")
+            raise InvalidInputException(
+                "Query select clause can only contain either a single Param or non-Param fields."
+            )
         return [field.name if isinstance(field, SchemaField) else cast(str, field) for field in fields]
 
     @TypeValidator.wrap
@@ -307,7 +307,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         A lower radius value means that the enforced maximum distance is lower,
         therefore closer vectors are returned only.
         A radius of 0.05 means the lowest cosine similarity of items returned to the query vector is 0.95.
-        The valid range is between 0 and 1. Otherwise it will raise ValueError.
+        The valid range is between 0 and 1. Otherwise it will raise InvalidInputException.
 
         Args:
             radius (NumericParamType | None): The maximum distance of the returned items from the query vector.
@@ -317,7 +317,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
             Self: The query object itself.
 
         Raises:
-            ValueError: If the radius is not between 0 and 1.
+            InvalidInputException: If the radius is not between 0 and 1.
         """
         clause = RadiusClause.from_param(radius)
         return self.__append_clauses([clause])
@@ -461,13 +461,13 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
                 ```
 
         Raises:
-            QueryException: If with_natural_query() has not been called before this method.
+            InvalidInputException: If with_natural_query() has not been called before this method.
         """
         nlq_params = reduce(
             lambda params, clause: clause.get_altered_nql_params(params), self.clauses, NLQClauseParams()
         )
         if nlq_params.client_config is None or nlq_params.natural_query is None:
-            raise QueryException("with_natural_query clause must be provided before calling nlq_suggestions")
+            raise InvalidInputException("with_natural_query clause must be provided before calling nlq_suggestions")
         return NLQHandler(nlq_params.client_config).suggest_improvements(
             self.clauses,
             self._space_weight_param_info,
@@ -524,7 +524,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
             return None
         if len(clauses) == 1:
             return clauses[0]
-        raise QueryException(f"Query cannot have more than one {clause_type.__name__}, got {len(clauses)}.")
+        raise InvalidInputException(f"Query cannot have more than one {clause_type.__name__}, got {len(clauses)}.")
 
     def get_clauses_by_type(self, clause_type: Type[QueryClauseT]) -> list[QueryClauseT]:
         return [clause for clause in self.clauses if isinstance(clause, clause_type)]
@@ -573,7 +573,9 @@ class QueryDescriptorValidator:
     @staticmethod
     def __validate_schema(query_descriptor: QueryDescriptor) -> None:
         if not query_descriptor.index.has_schema(query_descriptor.schema):
-            raise QueryException(f"Index doesn't have the queried schema ({query_descriptor.schema._base_class_name})")
+            raise InvalidInputException(
+                f"Index doesn't have the queried schema ({query_descriptor.schema._base_class_name})"
+            )
 
     @staticmethod
     def __validate_single_or_none_clause(query_descriptor: QueryDescriptor) -> None:

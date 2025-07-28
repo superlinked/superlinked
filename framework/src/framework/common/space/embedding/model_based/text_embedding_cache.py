@@ -16,7 +16,7 @@ from beartype.typing import Sequence, cast
 from cachetools import LRUCache
 
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.space.embedding.exception import EmbeddingException
+from superlinked.framework.common.exception import InvalidStateException
 
 
 class TextEmbeddingCache:
@@ -46,7 +46,7 @@ class TextEmbeddingCache:
         if self._cache_size == 0 or not inputs_to_embed:
             return
         if len(inputs_to_embed) != len(uncached_vectors):
-            raise EmbeddingException(
+            raise InvalidStateException(
                 f"Number of inputs ({len(inputs_to_embed)}) must match number of vectors ({len(uncached_vectors)})"
             )
         for input_, vector in zip(inputs_to_embed, uncached_vectors):

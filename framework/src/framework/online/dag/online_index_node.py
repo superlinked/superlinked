@@ -18,10 +18,10 @@ from beartype.typing import Sequence, cast
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.dag.exception import ParentCountException
 from superlinked.framework.common.dag.index_node import IndexNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.schema_object import SchemaObject
@@ -45,7 +45,7 @@ class OnlineIndexNode(OnlineNode[IndexNode, Vector], HasLength):
     def get_parent_for_schema(self, schema: SchemaObject) -> OnlineNode:
         active_parents = [parent for parent in self.parents if schema in cast(Node, parent.node).schemas]
         if len(active_parents) != 1:
-            raise ParentCountException(
+            raise InvalidStateException(
                 f"{self.class_name} must have exactly 1 parent per schema, got {len(active_parents)}"
             )
         return active_parents[0]
@@ -53,7 +53,7 @@ class OnlineIndexNode(OnlineNode[IndexNode, Vector], HasLength):
     def __get_parent_for_parsed_schemas(self, parsed_schemas: Sequence[ParsedSchema]) -> OnlineNode:
         active_parents = set(self.get_parent_for_schema(parsed_schema.schema) for parsed_schema in parsed_schemas)
         if len(active_parents) != 1:
-            raise ParentCountException(
+            raise InvalidStateException(
                 f"{self.class_name} must have exactly 1 parent per schema, got {len(active_parents)}"
             )
         return cast(OnlineNode[Node[Vector], Vector], next(iter(active_parents)))

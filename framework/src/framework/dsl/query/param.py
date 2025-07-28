@@ -18,6 +18,7 @@ from __future__ import annotations
 from beartype.typing import Any, Sequence, TypeAlias
 from PIL.Image import Image
 
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.util.type_validator import TypeValidator
 
 UNSET_PARAM_NAME = "__UNSET_PARAM_NAME__"
@@ -65,7 +66,7 @@ class Param:
 
     def __init_options(self, name: str, options: Sequence[ParamInputType | None] | None) -> set[ParamInputType | None]:
         if options and any(TypeValidator.is_sequence_safe(option) for option in options):
-            raise ValueError(
+            raise InvalidInputException(
                 f"Sequence option item is not allowed for parameter {name}. " "Each option must be a single value."
             )
         return set(options) if options else set()
@@ -75,12 +76,12 @@ class Param:
             return
         if TypeValidator.is_sequence_safe(value):
             if invalid_values := set(value).difference(self.options):
-                raise ValueError(
+                raise InvalidInputException(
                     f"Values {invalid_values} are not allowed for parameter {self.name}. "
                     f"Allowed values are: {self.options}"
                 )
         elif value not in self.options:
-            raise ValueError(
+            raise InvalidInputException(
                 f"Value {value} is not allowed for parameter {self.name}. " f"Allowed values are: {self.options}"
             )
 

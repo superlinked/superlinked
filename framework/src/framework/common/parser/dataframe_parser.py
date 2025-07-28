@@ -16,14 +16,10 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-from beartype.typing import Any, Generic, cast
+from beartype.typing import Any, Generic, Sequence, cast
 
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.parser.data_parser import DataParser
-from superlinked.framework.common.parser.exception import (
-    DuplicateIdException,
-    MissingCreatedAtException,
-    MissingIdException,
-)
 from superlinked.framework.common.parser.parsed_schema import (
     EventParsedSchema,
     ParsedSchema,
@@ -95,19 +91,7 @@ class DataFrameParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, pd.D
             return len(value) == 0 or any(self._check_value_is_null(v) for v in value)
         return self._check_value_is_null(value)
 
-    def _marshal(
-        self,
-        parsed_schemas: list[ParsedSchema],
-    ) -> list[pd.DataFrame]:
-        """
-        Converts a list of ParsedSchema objects into a list of pandas DataFrame.
-        You can use this functionality to check, if your mapping was defined properly.
-        Args:
-            parsed_schemas (list[ParsedSchema]): A list of ParsedSchema objects that you get
-                after unmarshalling your `DataFrame`.
-        Returns:
-            list[pd.DataFrame]: A list of DataFrame representation of the parsed schemas.
-        """
+    def _marshal(self, parsed_schemas: Sequence[ParsedSchema]) -> list[pd.DataFrame]:
         records = [self.__create_record_dict(parsed_schema) for parsed_schema in parsed_schemas]
         return [pd.DataFrame.from_records(records)]  # type: ignore[attr-defined]
 
@@ -119,7 +103,7 @@ class DataFrameParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, pd.D
         }
         if self._is_event_data_parser:
             if not isinstance(parsed_schema, EventParsedSchema):
-                raise MissingCreatedAtException("Invalid parsed schema, type must be EventParsedSchema")
+                raise InvalidInputException(f"Invalid parsed schema, type must be {EventParsedSchema.__name__}")
             record_dict.update({self._created_at_name: parsed_schema.created_at})
         return record_dict
 
@@ -131,19 +115,21 @@ class DataFrameParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, pd.D
 
     def _ensure_id(self, data: pd.DataFrame) -> None:
         if self._id_name not in data.columns:
-            raise KeyError(
+            raise InvalidInputException(
                 f"No {self._id_name} column in supplied dataframe. Create a unique id column with the specified name."
             )
 
         if self._has_missing_ids(data):
-            raise MissingIdException("The mandatory id field has missing values in the input object.")
+            raise InvalidInputException(
+                "The mandatory id field has missing or has invalid type values in the input object."
+            )
 
         if duplicate_ids := self._find_duplicate_ids(data):
-            raise DuplicateIdException(f"Multiple rows have the same id: {', '.join([str(f) for f in duplicate_ids])}")
+            raise InvalidInputException(f"Multiple rows have the same id: {', '.join([str(f) for f in duplicate_ids])}")
 
     def __ensure_created_at(self, data: pd.DataFrame) -> None:
         if self._created_at_name not in data.columns:
-            raise KeyError(
+            raise InvalidInputException(
                 f"No {self._created_at_name} column in supplied in event dataframe. "
                 f"Create a created_at column with the specified name."
             )
@@ -153,9 +139,7 @@ class DataFrameParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, pd.D
             not self._is_created_at_value_valid(_created_at_val)
             for _created_at_val in data[self._created_at_name].tolist()
         ):
-            raise MissingCreatedAtException(
-                "The mandatory created_at field has missing values in the event input object."
-            )
+            raise InvalidInputException("The mandatory created_at field has missing values in the event input object.")
 
     def _has_missing_ids(self, data: pd.DataFrame) -> bool:
         return any(not self._is_id_value_valid(id_val) for id_val in data[self._id_name].tolist())

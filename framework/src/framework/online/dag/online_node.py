@@ -20,9 +20,8 @@ import structlog
 from beartype.typing import Generic, Mapping, Sequence, cast
 
 from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.dag.exception import ParentCountException
 from superlinked.framework.common.dag.node import NT, Node, NodeDataT
-from superlinked.framework.common.exception import DagEvaluationException
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.storage.entity.entity_id import EntityId
@@ -32,7 +31,6 @@ from superlinked.framework.online.dag.evaluation_result import (
     EvaluationResult,
     SingleEvaluationResult,
 )
-from superlinked.framework.online.dag.exception import ParentResultException
 from superlinked.framework.online.dag.parent_validator import ParentValidationType
 from superlinked.framework.online.online_entity_cache import OnlineEntityCache
 
@@ -130,7 +128,7 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
         parents_with_results = set(parents_result.keys())
         for non_nullable_parent in self.non_nullable_parents.intersection(parents_with_results):
             if parents_result[non_nullable_parent] is None:
-                raise ParentResultException(
+                raise InvalidStateException(
                     f"{type(self).__name__} won't accept None from parent {non_nullable_parent.node_id}."
                 )
         return {parent: result for parent, result in parents_result.items() if result is not None}
@@ -227,7 +225,7 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
             wrong_parsed_schema_params = [
                 f"{parsed_schemas[index].schema._schema_name}, {parsed_schemas[index].id_}" for index in none_indices
             ]
-            raise DagEvaluationException(
+            raise InvalidStateException(
                 f"{self.node_id} doesn't have stored values for the following (schema, object_id) pairs:"
                 + f" ({wrong_parsed_schema_params})"
             )
@@ -238,6 +236,6 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
         parent_validation_type: ParentValidationType,
     ) -> None:
         if not parent_validation_type.validator(len(self.parents)):
-            raise ParentCountException(
+            raise InvalidStateException(
                 f"{type(self).__name__} must have {parent_validation_type.description}, got {len(self.parents)}"
             )

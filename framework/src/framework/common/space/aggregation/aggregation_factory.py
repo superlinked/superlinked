@@ -15,6 +15,7 @@
 
 from beartype.typing import Mapping
 
+from superlinked.framework.common.exception import NotImplementedException
 from superlinked.framework.common.space.aggregation.aggregation import (
     Aggregation,
     AvgAggregation,
@@ -46,4 +47,4 @@ class AggregationFactory:
     ) -> Aggregation[AggregationInputT]:
         if aggregation_class := AGGREGATION_BY_CONFIG_CLASS.get(type(aggregation_config)):
             return aggregation_class(aggregation_config)
-        raise ValueError(f"Unknown aggregation config type: {type(aggregation_config).__name__}")
+        raise NotImplementedException(f"Unknown aggregation config type: {type(aggregation_config).__name__}")

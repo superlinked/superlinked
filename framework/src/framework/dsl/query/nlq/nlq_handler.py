@@ -16,7 +16,7 @@
 from beartype.typing import Any, Sequence
 from pydantic import BaseModel
 
-from superlinked.framework.common.exception import QueryException
+from superlinked.framework.common.exception import UnexpectedResponseException
 from superlinked.framework.common.nlq.open_ai import OpenAIClient, OpenAIClientConfig
 from superlinked.framework.common.telemetry.telemetry_registry import telemetry
 from superlinked.framework.common.util.async_util import AsyncUtil
@@ -97,4 +97,4 @@ class NLQHandler:
             result = await client.query(query, instructor_prompt, model_class)
             return result
         except Exception as e:
-            raise QueryException(f"Error executing natural language query: {str(e)}") from e
+            raise UnexpectedResponseException(f"Error executing natural language query: {str(e)}") from e

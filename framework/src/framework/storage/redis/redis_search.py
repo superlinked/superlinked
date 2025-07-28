@@ -17,6 +17,10 @@ from beartype.typing import Any, Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.const import constants
+from superlinked.framework.common.exception import (
+    RequestTimeoutException,
+    UnexpectedResponseException,
+)
 from superlinked.framework.common.precision import Precision
 from superlinked.framework.common.storage.entity.entity_id import EntityId
 from superlinked.framework.common.storage.index_config import IndexConfig
@@ -25,10 +29,6 @@ from superlinked.framework.common.storage.query.vdb_knn_search_params import (
 )
 from superlinked.framework.common.storage.search import Search
 from superlinked.framework.common.util.type_validator import TypeValidator
-from superlinked.framework.storage.redis.exception import (
-    RedisResultException,
-    RedisTimeoutException,
-)
 from superlinked.framework.storage.redis.query.redis_query_builder import (
     RedisQueryBuilder,
     VectorQueryObj,
@@ -77,13 +77,13 @@ class RedisSearch(Search[VDBKNNSearchParams, VectorQueryObj, list[RedisKNNResult
 
     def _validate_knn_response_format(self, knn_response: dict[bytes, Any]) -> None:
         if not isinstance(knn_response, dict):
-            raise RedisTimeoutException(f"Redis timeout ({constants.REDIS_TIMEOUT}ms) exceeded.")
+            raise RequestTimeoutException(f"Redis timeout ({constants.REDIS_TIMEOUT}ms) exceeded.")
         if RESULTS_BYTES_KEY not in knn_response:
-            raise RedisResultException("Redis response missing results key.")
+            raise UnexpectedResponseException("Redis response missing results key.")
 
     def _parse_knn_result(self, knn_result: dict[bytes, Any] | None, field_names: Sequence[str]) -> RedisKNNResult:
         if knn_result is None:
-            raise RedisResultException("Redis returned incomplete results.")
+            raise UnexpectedResponseException("Redis returned incomplete results.")
         entity_id = self._get_entity_id_from_redis_id(knn_result.get(ID_BYTES_KEY))
         extra_attributes = self._normalize_extra_attributes(knn_result.get(EXTRA_ATTRIBUTES_BYTES_KEY))
         score = self._extract_score(extra_attributes.get(DISTANCE_ID))
@@ -94,25 +94,27 @@ class RedisSearch(Search[VDBKNNSearchParams, VectorQueryObj, list[RedisKNNResult
         self, extra_attributes: dict[bytes, bytes] | Sequence[bytes] | None
     ) -> dict[str, bytes]:
         if not extra_attributes:
-            raise RedisResultException("Redis result missing extra attributes.")
+            raise UnexpectedResponseException("Redis result missing extra attributes.")
         if isinstance(extra_attributes, dict):
             return self._convert_extra_attributes_keys_to_str(extra_attributes)
         if TypeValidator.is_sequence_safe(extra_attributes):
             return self._convert_sequence_to_dict(extra_attributes)
-        raise RedisResultException(f"Redis returned unsupported extra attributes format: {type(extra_attributes)}.")
+        raise UnexpectedResponseException(
+            f"Redis returned unsupported extra attributes format: {type(extra_attributes)}."
+        )
 
     def _convert_extra_attributes_keys_to_str(self, attributes: dict[bytes, bytes]) -> dict[str, bytes]:
         if not all(isinstance(key, bytes) for key in attributes.keys()):
-            raise RedisResultException("Redis returned malformed extra attributes keys.")
+            raise UnexpectedResponseException("Redis returned malformed extra attributes keys.")
         if not all(isinstance(value, bytes) for value in attributes.values()):
-            raise RedisResultException("Redis returned malformed extra attributes values.")
+            raise UnexpectedResponseException("Redis returned malformed extra attributes values.")
         return {key.decode(UTF_8): attribute for key, attribute in attributes.items()}
 
     def _convert_sequence_to_dict(self, attributes: Sequence[bytes]) -> dict[str, bytes]:
         if len(attributes) % 2 != 0:
-            raise RedisResultException("Redis returned malformed extra attributes sequence.")
+            raise UnexpectedResponseException("Redis returned malformed extra attributes sequence.")
         if not all(isinstance(item, bytes) for item in attributes):
-            raise RedisResultException("Redis returned invalid attribute format.")
+            raise UnexpectedResponseException("Redis returned invalid attribute format.")
         return {attributes[i].decode(UTF_8): attributes[i + 1] for i in range(0, len(attributes), 2)}
 
     def _extract_field_data(self, attributes: dict[str, bytes], field_names: Sequence[str]) -> dict[str, Any]:
@@ -120,7 +122,7 @@ class RedisSearch(Search[VDBKNNSearchParams, VectorQueryObj, list[RedisKNNResult
 
     def _extract_score(self, distance: bytes | None) -> float:
         if distance is None:
-            raise RedisResultException("Redis result is missing distance key.")
+            raise UnexpectedResponseException("Redis result is missing distance key.")
         return self._convert_distance_to_score(self._encoder._decode_double(distance))
 
     def _convert_distance_to_score(self, distance: float) -> float:
@@ -128,5 +130,5 @@ class RedisSearch(Search[VDBKNNSearchParams, VectorQueryObj, list[RedisKNNResult
 
     def _get_entity_id_from_redis_id(self, redis_id: bytes | None) -> EntityId:
         if redis_id is None:
-            raise RedisResultException("Redis result is missing ID key.")
+            raise UnexpectedResponseException("Redis result is missing ID key.")
         return self._encoder.decode_redis_id_to_entity_id(redis_id)

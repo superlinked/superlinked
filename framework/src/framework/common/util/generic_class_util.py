@@ -17,6 +17,7 @@ from types import UnionType
 
 from beartype.typing import Any, cast, get_args, get_origin
 
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.schema.general_type import T
 
 
@@ -40,7 +41,7 @@ class GenericClassUtil:
             None,
         )
         if not generic_base_class:
-            raise ValueError(f"{type_.__name__} does not have a Generic base class.")
+            raise InvalidStateException(f"{type_.__name__} does not have a Generic base class.")
         return get_args(generic_base_class)
 
     @staticmethod

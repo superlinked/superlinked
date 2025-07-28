@@ -16,6 +16,8 @@ from enum import Enum
 
 import numpy as np
 
+from superlinked.framework.common.exception import NotImplementedException
+
 
 class Precision(Enum):
     FLOAT32 = "FLOAT32"
@@ -26,4 +28,4 @@ class Precision(Enum):
             return np.float32
         if self is Precision.FLOAT16:
             return np.float16
-        raise ValueError(f"Unsupported vector component precision: {self}")
+        raise NotImplementedException(f"Unsupported vector component precision: {self}")

@@ -17,7 +17,7 @@ from dataclasses import dataclass, field, replace
 from beartype.typing import Any, Iterator, Mapping, Sequence
 from typing_extensions import Self, override
 
-from superlinked.framework.common.exception import QueryException
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.interface.evaluated import Evaluated
 from superlinked.framework.dsl.query.param import (
     UNSET_PARAM_NAME,
@@ -111,7 +111,7 @@ class SpaceWeightMap(Mapping[Space, TypedParam | Evaluated[TypedParam]]):
     ) -> None:
         if bound_spaces := set(self.keys()).intersection(weight_param_by_space.keys()):
             bound_space_names = ",".join([type(space).__name__ for space in bound_spaces])
-            raise QueryException(
+            raise InvalidInputException(
                 f"Attempted to bound space weight(s) for {bound_space_names} space(s) in Query multiple times."
             )
         in_use_param_names = [QueryClause.get_param(weight).name for weight in self.values()]
@@ -120,9 +120,9 @@ class SpaceWeightMap(Mapping[Space, TypedParam | Evaluated[TypedParam]]):
             for weight_param in weight_param_by_space.values()
             if isinstance(weight_param, Param) and weight_param.name in in_use_param_names
         ]:
-            raise QueryException(
+            raise InvalidInputException(
                 f"Attempted to bound space weight with parameter name(s) {weight_param_names} already in use."
             )
         for space in weight_param_by_space.keys():
             if space not in all_space:
-                raise QueryException(f"Space isn't present in the index: {type(space).__name__}.")
+                raise InvalidInputException(f"Space isn't present in the index: {type(space).__name__}.")

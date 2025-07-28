@@ -79,7 +79,7 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
             categories will be similar to other category_inputs not in categories. Note that the same
             category_inputs not in categories will not be similar to each other either.
     Raises:
-        InvalidSchemaException: If a schema object does not have a corresponding node in the
+        InvalidInputException: If a schema object does not have a corresponding node in the
             similarity space.
     """
 
@@ -110,7 +110,7 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
                 be treated as a distinct 'other' category. Defaults to True.
 
         Raises:
-            InvalidSchemaException: If a schema object does not have a corresponding node in the similarity space,
+            InvalidInputException: If a schema object does not have a corresponding node in the similarity space,
             indicating a configuration or implementation error.
         """
         non_none_category_input: list[String | StringList] = self._fields_to_non_none_sequence(category_input)

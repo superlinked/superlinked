@@ -21,7 +21,7 @@ from superlinked.framework.common.dag.event_aggregation_node import (
     EventAggregationNodeInitParams,
 )
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
-from superlinked.framework.common.exception import InitializationException
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
@@ -47,7 +47,7 @@ class EventAggregationNodeUtil:
         effect_modifier: EffectModifier,
     ) -> EventAggregationNode[AggregationInputT, EmbeddingInputT]:
         if not effect_group.effects:
-            raise InitializationException("EventAggregationNode initialization needs a not empty set of Effects.")
+            raise InvalidInputException("EventAggregationNode initialization needs a not empty set of Effects.")
         input_to_aggregate = space._get_embedding_node(effect_group.key.resolved_affecting_schema)
 
         return EventAggregationNode(

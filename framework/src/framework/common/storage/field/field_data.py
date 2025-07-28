@@ -18,6 +18,7 @@ from __future__ import annotations
 from beartype.typing import Any, Generic, Sequence, TypeVar, get_args
 
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.schema.image_data import ImageData
 from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.field.field_data_type import FieldDataType
@@ -40,13 +41,13 @@ class FieldData(Field, Generic[FT]):
         valid_types = FieldTypeConverter.get_valid_node_data_types(data_type)
         error_msg = "Invalid value {value} for the given field data type {data_type}"
         if not isinstance(value, tuple(valid_types)):
-            raise ValueError(error_msg.format(value=value, data_type=data_type))
+            raise InvalidInputException(error_msg.format(value=value, data_type=data_type))
         if isinstance(value, list):
             # Assuming list types have only 1 valid type
             valid_type = VALID_TYPE_BY_FIELD_DATA_TYPE[data_type][0]
             generic_type = get_args(valid_type)[0]
             if not all(isinstance(item, generic_type) for item in value):
-                raise ValueError(error_msg.format(value=value, data_type=data_type))
+                raise InvalidInputException(error_msg.format(value=value, data_type=data_type))
 
     @classmethod
     def from_field(cls, field: Field, value: FT) -> FieldData:

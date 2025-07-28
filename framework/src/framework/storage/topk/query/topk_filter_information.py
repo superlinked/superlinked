@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum, auto
@@ -19,6 +21,10 @@ from functools import reduce
 
 from beartype.typing import Any, Sequence
 
+from superlinked.framework.common.exception import (
+    InvalidStateException,
+    NotImplementedException,
+)
 from superlinked.framework.common.interface.comparison_operation_type import (
     ComparisonOperationType,
 )
@@ -49,7 +55,7 @@ class FilterCombinator:
         expressions: Sequence[Any],
     ) -> Any:
         if len(expressions) != 1:
-            raise ValueError(f"Expected exactly one expression, but got {len(expressions)}")
+            raise InvalidStateException(f"Expected exactly one expression, but got {len(expressions)}")
         return expressions[0]
 
 
@@ -113,9 +119,9 @@ class TopKFilterInformation:
         return VALUE_MAPPER_FN_MAP[self.value_mapper_fn_key]
 
     @staticmethod
-    def get(operation_type: ComparisonOperationType) -> "TopKFilterInformation":
+    def get(operation_type: ComparisonOperationType) -> TopKFilterInformation:
         if operation_type not in FILTER_INFORMATION_BY_COMPARISON_OPERATION_TYPE:
-            raise KeyError(f"Unsupported operation type: {operation_type}")
+            raise NotImplementedException(f"Unsupported operation type: {operation_type}")
         return FILTER_INFORMATION_BY_COMPARISON_OPERATION_TYPE[operation_type]
 
 

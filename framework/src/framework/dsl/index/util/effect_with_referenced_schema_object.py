@@ -23,8 +23,8 @@ from superlinked.framework.common.dag.resolved_schema_reference import (
     ResolvedSchemaReference,
 )
 from superlinked.framework.common.exception import (
-    InitializationException,
-    InvalidSchemaException,
+    InvalidInputException,
+    InvalidStateException,
 )
 from superlinked.framework.common.schema.event_schema_object import (
     EventSchemaObject,
@@ -96,7 +96,7 @@ class EffectWithReferencedSchemaObject(Generic[AggregationInputT, EmbeddingInput
             resolved_affected_schema_reference.reference_field.schema_obj
             != resolved_affecting_schema_reference.reference_field.schema_obj
         ):
-            raise InitializationException(
+            raise InvalidStateException(
                 "An Effect's affected and affecting schema reference must come "
                 + "from the same EventSchema, got "
                 + f"{resolved_affected_schema_reference.reference_field.schema_obj._schema_name} and "
@@ -134,7 +134,7 @@ class EffectWithReferencedSchemaObject(Generic[AggregationInputT, EmbeddingInput
         )
         multiplier = unchecked_schema_reference.multiplier
         if multiplier == 0:
-            raise InitializationException("SchemaReference cannot have 0 (zero) as its multiplier.")
+            raise InvalidInputException("SchemaReference cannot have 0 (zero) as its multiplier.")
         return (result_schema_reference, multiplier)
 
     @staticmethod
@@ -147,7 +147,7 @@ class EffectWithReferencedSchemaObject(Generic[AggregationInputT, EmbeddingInput
         )
         if schema_ is None:
             schemas_as_text = ", ".join(schema._schema_name for schema in schemas)
-            raise InvalidSchemaException(
+            raise InvalidInputException(
                 f"Referenced schema type `{schema_reference.name}` is"
                 + f" not present in the index schemas: {schemas_as_text}"
             )

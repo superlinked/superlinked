@@ -26,6 +26,10 @@ from superlinked.framework.blob.blob_handler_factory import (
     BlobHandlerConfig,
     BlobHandlerFactory,
 )
+from superlinked.framework.common.exception import (
+    InvalidInputException,
+    UnexpectedResponseException,
+)
 from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.settings import settings
 from superlinked.framework.common.telemetry.telemetry_registry import telemetry
@@ -56,7 +60,9 @@ class BlobLoader:
             type_text = type(blob_like_input).__name__
             if type_text == "str":
                 type_text = f"empty {type_text}"
-            raise ValueError(f"Blob field must contain a non-empty str or PIL.Image.Image input, got: {type_text}.")
+            raise InvalidInputException(
+                f"Blob field must contain a non-empty str or PIL.Image.Image input, got: {type_text}."
+            )
 
         if isinstance(blob_like_input, Image):
             blob_like_input = ImageUtil.encode_b64(blob_like_input)
@@ -67,7 +73,7 @@ class BlobLoader:
                 encoded_bytes = base64.b64encode(decoded_bytes)
                 return BlobInformation(encoded_bytes)
             logger.error("byte input not enabled", allow_bytes=self.allow_bytes)
-            raise ValueError("Base64 encoded input is not supported in this operation mode.")
+            raise InvalidInputException("Base64 encoded input is not supported in this operation mode.")
 
         blob_path = cast(str, blob_like_input)
         loader = self._get_loader(blob_path)
@@ -97,7 +103,7 @@ class BlobLoader:
         scheme = urlparse(blob_path).scheme
         file_loader = self._scheme_to_load_function.get(scheme)
         if file_loader is None:
-            raise ValueError(
+            raise InvalidInputException(
                 f"Unsupported scheme in path: {scheme}, possible values: {self._scheme_to_load_function.keys()}"
             )
         return file_loader
@@ -117,7 +123,7 @@ class BlobLoader:
             BlobLoader._validate_response_content(url, response)
             loaded_file: bytes | Any = response.content
         except requests.RequestException as exc:
-            raise ValueError(f"Failed to load URL: {url}.") from exc
+            raise UnexpectedResponseException(f"Failed to load URL: {url}.") from exc
         return loaded_file
 
     @staticmethod
@@ -126,11 +132,11 @@ class BlobLoader:
         if "html" not in content_type:
             return
         if GCS_URL_IDENTIFIER in url:
-            raise ValueError(
+            raise InvalidInputException(
                 f"Unable to access non-public Google Cloud Storage bucket: {url}. "
                 "Configure GCS blob handler to access private buckets."
             )
-        raise ValueError(f"Unexpected HTML content for URL: {url}")
+        raise UnexpectedResponseException(f"Unexpected HTML content for URL: {url}")
 
     @staticmethod
     def load_from_local(path: str) -> bytes:

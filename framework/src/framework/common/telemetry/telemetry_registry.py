@@ -24,6 +24,8 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.trace import NoOpTracer
 from typing_extensions import override
 
+from superlinked.framework.common.exception import NotImplementedException
+
 logger = structlog.getLogger(__name__)
 
 DEFAULT_NAME = "superlinked"
@@ -152,7 +154,7 @@ class TelemetryRegistry:
 
         constructor = self.METRIC_CONSTRUCTORS.get(metric_type)
         if not constructor:
-            raise KeyError(f"unsupported metric type: {metric_type}")
+            raise NotImplementedException(f"unsupported metric type: {metric_type}")
 
         metric = constructor(
             name=name, metric_type=metric_type, description=description, unit=unit, default_labels=self._default_labels

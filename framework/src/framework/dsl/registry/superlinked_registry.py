@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from superlinked.framework.dsl.executor.executor import Executor
-from superlinked.framework.dsl.registry.exception import DuplicateElementException
 
 
 class SuperlinkedRegistry:
@@ -21,14 +20,7 @@ class SuperlinkedRegistry:
 
     @staticmethod
     def register(*items: Executor) -> None:
-        for item in items:
-            SuperlinkedRegistry.__check_for_duplicates(item)
-            SuperlinkedRegistry.__executors.add(item)
-
-    @staticmethod
-    def __check_for_duplicates(item: Executor) -> None:
-        if item in SuperlinkedRegistry.__executors:
-            raise DuplicateElementException(f"{item} already registered!")
+        SuperlinkedRegistry.__executors.update(item for item in items if item not in SuperlinkedRegistry.__executors)
 
     @staticmethod
     def get_executors() -> frozenset[Executor]:

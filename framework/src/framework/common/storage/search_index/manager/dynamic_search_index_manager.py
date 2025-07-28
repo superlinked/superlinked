@@ -17,6 +17,7 @@ from abc import ABC, abstractmethod
 from beartype.typing import Sequence
 from typing_extensions import override
 
+from superlinked.framework.common.exception import FeatureNotSupportedException
 from superlinked.framework.common.storage.index_config import IndexConfig
 from superlinked.framework.common.storage.search_index.manager.search_index_manager import (
     SearchIndexManager,
@@ -39,7 +40,7 @@ class DynamicSearchIndexManager(SearchIndexManager, ABC):
     def _create_search_index_with_check(self, index_config: IndexConfig, collection_name: str) -> None:
         if index_config.index_name not in self._index_configs.keys():
             if index_config.vector_field_descriptor.search_algorithm not in self.supported_vector_indexing:
-                raise NotImplementedError(
+                raise FeatureNotSupportedException(
                     f"The specified vector search algorithm {index_config.vector_field_descriptor.search_algorithm}"
                     + f" is not yet supported. Currently supported algorithms: {self.supported_vector_indexing}"
                 )

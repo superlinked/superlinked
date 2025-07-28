@@ -18,10 +18,10 @@ from beartype.typing import Any, Sequence, cast
 from typing_extensions import override
 
 from superlinked.framework.common.dag.dag_effect import DagEffect
-from superlinked.framework.common.dag.exception import ParentCountException
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.persistence_params import PersistenceParams
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.space.config.normalization.normalization_config import (
@@ -44,7 +44,7 @@ class ConcatenationNode(Node[Vector], HasLength):
 
     def __validate_parents(self) -> None:
         if len(self.parents) == 0:
-            raise ParentCountException(f"{self.class_name} must have at least 1 parent.")
+            raise InvalidStateException(f"{self.class_name} must have at least 1 parent.")
 
     @property
     def length(self) -> int:

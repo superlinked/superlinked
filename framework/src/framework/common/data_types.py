@@ -18,10 +18,7 @@ import numpy as np
 from beartype.typing import Any, Mapping, Sequence
 from typing_extensions import override
 
-from superlinked.framework.common.exception import (
-    MismatchingDimensionException,
-    NegativeFilterException,
-)
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.schema.image_data import ImageData
 
@@ -106,7 +103,7 @@ class Vector:
         if vector.is_empty:
             return self
         if self.dimension != vector.dimension:
-            raise MismatchingDimensionException(
+            raise InvalidStateException(
                 f"Cannot aggregate vectors with different dimensions: {self.dimension} != {vector.dimension}"
             )
         return self.shallow_copy_with_new(
@@ -117,16 +114,15 @@ class Vector:
     def __validate_negative_filter_indices(self) -> None:
         if not self.negative_filter_indices:
             return
-        if len(self.negative_filter_indices) > self.dimension:
-            raise NegativeFilterException(
-                f"Invalid number of negative filter indices: {len(self.negative_filter_indices)}."
+        if (num_indices := len(self.negative_filter_indices)) > self.dimension:
+            raise InvalidStateException(
+                f"Invalid number of negative filter indices: {num_indices}. Vector dimension: {self.dimension}."
             )
-        index_min = min(self.negative_filter_indices)
-        if index_min < 0:
-            raise NegativeFilterException(f"Invalid negative filter index: {index_min}.")
-        index_max = max(self.negative_filter_indices)
-        if index_max > self.dimension - 1:
-            raise NegativeFilterException(f"Invalid negative filter index: {index_max}.")
+        if invalid_indices := [idx for idx in self.negative_filter_indices if idx < 0 or idx >= self.dimension]:
+            raise InvalidStateException(
+                f"Invalid negative filter indices: {invalid_indices}. "
+                f"Indices must be between 0 and {self.dimension - 1}."
+            )
 
     def apply_negative_filter(self, other: Vector) -> Vector:
         if self.negative_filter_indices == other.negative_filter_indices:
@@ -149,12 +145,12 @@ class Vector:
             ]
         )
 
-    def split(self, lengths: list[int]) -> list[Vector]:
+    def split(self, lengths: Sequence[int]) -> list[Vector]:
         if sum(lengths) < self.dimension:
-            raise ValueError(
+            raise InvalidStateException(
                 f"The sum of the provided lengths {sum(lengths)} is smaller than the vector dimension {self.dimension}."
             )
-        indices = list(np.cumsum(np.array([0] + lengths))[1:].tolist())
+        indices = list(np.cumsum(np.array([0] + list(lengths)))[1:].tolist())
         split_values = np.split(self.value, indices)
         split_vectors = []
         for i, length in enumerate(lengths):
@@ -170,7 +166,7 @@ class Vector:
         if self.is_empty:
             return self
         if not isinstance(other, int | float | np.floating):
-            raise ValueError(f"{type(self).__name__} can only be multiplied with int or float")
+            raise InvalidStateException(f"{type(self).__name__} can only be multiplied with int, float or np.floating")
         if other == 1:
             return self
         if other == 0:

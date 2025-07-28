@@ -21,6 +21,10 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.exception import (
+    InvalidInputException,
+    NotImplementedException,
+)
 from superlinked.framework.common.space.config.embedding.embedding_config import (
     EmbeddingConfig,
 )
@@ -54,7 +58,7 @@ class LogarithmicScale(Scale):
 
     def __post_init__(self) -> None:
         if self.base <= 1:
-            raise ValueError("Logarithmic function base must be larger than 1.")
+            raise InvalidInputException("Logarithmic function base must be larger than 1.")
 
     @override
     def _get_embedding_config_parameters(self) -> dict[str, Any]:
@@ -74,15 +78,17 @@ class NumberEmbeddingConfig(EmbeddingConfig[float]):
 
     def _validate_input(self) -> None:
         if isinstance(self.scale, LogarithmicScale) and self.min_value < 0:
-            raise ValueError("Min value must be 0 or higher when using logarithmic scale.")
+            raise InvalidInputException("Min value must be 0 or higher when using logarithmic scale.")
         if isinstance(self.scale, LogarithmicScale) and self.max_value < 0:
-            raise ValueError("Max value cannot be 0 when using logarithmic scale.")
+            raise InvalidInputException("Max value cannot be 0 when using logarithmic scale.")
         if self.min_value >= self.max_value:
-            raise ValueError(
+            raise InvalidInputException(
                 f"The maximum value ({self.max_value}) should be greater than the minimum value ({self.min_value})."
             )
         if self.negative_filter > 0:
-            raise ValueError(f"The negative filter value should not be more than 0. Value is: {self.negative_filter}")
+            raise InvalidInputException(
+                f"The negative filter value should not be more than 0. Value is: {self.negative_filter}"
+            )
 
     @property
     @override
@@ -114,7 +120,7 @@ class NumberEmbeddingConfig(EmbeddingConfig[float]):
         elif self.mode == Mode.MAXIMUM:
             default_values = [1.0, 0.0, 1.0]
         else:
-            raise ValueError(f"Unsupported mode: {self.mode}")
+            raise NotImplementedException(f"Unsupported mode: {self.mode}")
         return Vector(default_values, self.negative_filter_indices)
 
     def should_return_default(self, context: ExecutionContext) -> bool:

@@ -19,6 +19,10 @@ from superlinked.framework.common.dag.constant_node import ConstantNode
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.number_embedding_node import NumberEmbeddingNode
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
+from superlinked.framework.common.exception import (
+    InvalidInputException,
+    NotImplementedException,
+)
 from superlinked.framework.common.schema.schema_object import Number, SchemaObject
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationConfig,
@@ -39,7 +43,6 @@ from superlinked.framework.common.space.config.transformation_config import (
     TransformationConfig,
 )
 from superlinked.framework.common.util.lazy_property import lazy_property
-from superlinked.framework.dsl.space.exception import NoDefaultNodeException
 from superlinked.framework.dsl.space.has_space_field_set import HasSpaceFieldSet
 from superlinked.framework.dsl.space.input_aggregation_mode import InputAggregationMode
 from superlinked.framework.dsl.space.space import Space
@@ -228,10 +231,10 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
             case Mode.MINIMUM:
                 default_constant_node_input = self._embedding_config.min_value
             case Mode.SIMILAR:
-                raise NoDefaultNodeException(
+                raise InvalidInputException(
                     "Number Space with SIMILAR Mode do not have a default value, a .similar "
                     "clause is needed in the query."
                 )
             case _:
-                raise ValueError(f"Unknown mode: {self._embedding_config.mode}")
+                raise NotImplementedException(f"Unknown mode: {self._embedding_config.mode}")
         return default_constant_node_input

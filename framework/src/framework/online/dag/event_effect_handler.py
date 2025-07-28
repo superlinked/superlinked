@@ -22,7 +22,7 @@ from superlinked.framework.common.dag.schema_object_reference import (
     SchemaObjectReference,
 )
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.exception import DagEvaluationException
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.parser.parsed_schema import (
     EventParsedSchema,
     ParsedSchema,
@@ -46,7 +46,7 @@ class EventEffectHandler:
         affecting_weights: Sequence[Sequence[float]],
     ) -> dict[str, EventAffectingInfo]:
         if len(event_parsed_schemas) != len(affecting_vectors) or len(event_parsed_schemas) != len(affecting_weights):
-            raise DagEvaluationException(
+            raise InvalidStateException(
                 f"Input sequences must have the same length. Got: {len(event_parsed_schemas)} event_parsed_schemas, "
                 f"{len(affecting_vectors)} affecting_vectors, and {len(affecting_weights)} affecting_weights."
             )
@@ -69,10 +69,10 @@ class EventEffectHandler:
 
     def map_parent_result_to_vector(self, parent_result: EvaluationResult[Any] | None) -> Vector:
         if parent_result is None:
-            raise DagEvaluationException("OEAN parent_to_aggregate's evaluation result cannot be None")
+            raise InvalidStateException("OEAN parent_to_aggregate's evaluation result cannot be None")
         vector = parent_result.main.value
         if not isinstance(vector, Vector):
-            raise DagEvaluationException(
+            raise InvalidStateException(
                 f"parent_to_aggregate's evaluation result must be of type Vector, got {type(vector).__name__}"
             )
         return vector

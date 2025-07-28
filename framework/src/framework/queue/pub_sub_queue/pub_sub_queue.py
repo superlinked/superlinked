@@ -24,6 +24,7 @@ from google.api_core import retry as retries
 from google.cloud import pubsub_v1  # type: ignore
 from typing_extensions import override
 
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.queue.interface.queue import Queue
 from superlinked.framework.queue.interface.queue_message import MessageT, QueueMessage
 
@@ -94,4 +95,7 @@ class PubSubQueue(Queue[MessageT], Generic[MessageT]):
 
     def _message_to_bytes(self, message: QueueMessage[MessageT]) -> bytes:
         message_dict = asdict(message)
-        return json.dumps(message_dict).encode("utf-8")
+        try:
+            return json.dumps(message_dict).encode("utf-8")
+        except Exception as e:
+            raise InvalidInputException(f"Failed to serialize message: {str(e)}") from e

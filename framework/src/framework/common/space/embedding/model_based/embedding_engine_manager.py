@@ -20,6 +20,7 @@ import structlog
 from beartype.typing import Mapping, Sequence
 
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.exception import NotImplementedException
 from superlinked.framework.common.settings import settings
 from superlinked.framework.common.space.embedding.model_based.embedding_input import (
     ModelEmbeddingInputT,
@@ -83,7 +84,7 @@ class EmbeddingEngineManager:
             engine = engine_type(model_name, model_cache_dir, config)
             self._engines[engine_key] = engine
             return engine
-        raise ValueError(f"Unsupported model handler: {model_handler.value}")
+        raise NotImplementedException(f"Unsupported model handler: {model_handler.value}")
 
     @classmethod
     def calculate_engine_key(

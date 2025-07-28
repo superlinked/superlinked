@@ -20,9 +20,11 @@ from typing_extensions import override
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.event_aggregation_node import EventAggregationNode
-from superlinked.framework.common.dag.exception import ParentCountException
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.exception import ValidationException
+from superlinked.framework.common.exception import (
+    InvalidInputException,
+    InvalidStateException,
+)
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.parser.parsed_schema import (
@@ -65,7 +67,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
             parent for parent in self.parents if parent.node.node_id == self.node.input_to_aggregate.node_id
         ]
         if len(inputs_to_aggregate) > 1:
-            raise ParentCountException(
+            raise InvalidStateException(
                 f"{self.class_name} cannot have more than 1 parents to aggregate, got {len(inputs_to_aggregate)}"
             )
         self._input_to_aggregate = inputs_to_aggregate[0] if len(inputs_to_aggregate) > 0 else None
@@ -97,7 +99,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
             return []
         parsed_schema_types = list({type(parsed_schema) for parsed_schema in parsed_schemas})
         if len(parsed_schema_types) != 1:
-            raise NotImplementedError("Cannot process a mix of event and non-event parsed schemas.")
+            raise InvalidStateException("Cannot process a mix of event and non-event parsed schemas.")
         unique_object_ids = list({parsed_schema.id_ for parsed_schema in parsed_schemas})
         schema = self.__get_single_schema(parsed_schemas)
         id_to_result = self._load_stored_result_by_id(schema, unique_object_ids, online_entity_cache)
@@ -150,7 +152,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
     def __get_single_schema(self, parsed_schemas: Sequence[ParsedSchema]) -> SchemaObject:
         for parsed_schema in parsed_schemas:
             if parsed_schema.schema != self.node.affected_schema.schema:
-                raise ValidationException(
+                raise InvalidInputException(
                     f"Unknown schema, {self.class_name} can only process"
                     + f" {self.node.affected_schema.schema._base_class_name} "
                     + f"got {parsed_schema.schema._base_class_name}"

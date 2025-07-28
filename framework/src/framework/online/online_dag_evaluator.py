@@ -26,7 +26,7 @@ from superlinked.framework.common.dag.event_aggregation_node import EventAggrega
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.schema_dag import SchemaDag
 from superlinked.framework.common.data_types import NodeDataTypes, Vector
-from superlinked.framework.common.exception import InvalidSchemaException
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.parser.parsed_schema import (
     ParsedSchema,
     ParsedSchemaWithEvent,
@@ -91,8 +91,8 @@ class OnlineDagEvaluator:
     def __get_single_schema(self, parsed_schemas: Sequence[ParsedSchema]) -> IdSchemaObject:
         unique_schemas: set[IdSchemaObject] = {parsed_schema.schema for parsed_schema in parsed_schemas}
         if len(unique_schemas) != 1:
-            raise InvalidSchemaException(
-                f"Multiple schemas ({[s._schema_name for s in unique_schemas]}) present in the index."
+            raise InvalidStateException(
+                f"Multiple schemas ({[s._schema_name for s in unique_schemas]}) are present among the parsed schemas."
             )
         return next(iter(unique_schemas))
 

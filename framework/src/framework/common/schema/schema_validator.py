@@ -16,15 +16,11 @@ import inspect
 
 from beartype.typing import Sequence, get_args
 
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.schema.event_schema_object import (
     CREATED_AT_FIELD_NAME,
     CreatedAtField,
     SchemaReference,
-)
-from superlinked.framework.common.schema.exception import (
-    FieldException,
-    InvalidAttributeException,
-    InvalidMemberException,
 )
 from superlinked.framework.common.schema.general_type import T
 from superlinked.framework.common.schema.id_schema_object import ID_FIELD_NAME, IdField
@@ -51,7 +47,7 @@ class SchemaValidator:
         if self.__schema_type == SchemaType.EVENT_SCHEMA and (
             optional_fields := [descriptor.name for descriptor in schema_field_descriptors if descriptor.nullable]
         ):
-            raise InvalidAttributeException(f"An event schema cannot have optional attributes, got {optional_fields}")
+            raise InvalidInputException(f"An event schema cannot have optional attributes, got {optional_fields}")
 
     def validate_field_types(self, descriptors: Sequence[SchemaFieldDescriptor]) -> None:
         if wrong_annotation_types := [
@@ -64,10 +60,10 @@ class SchemaValidator:
                 )
             )
         ]:
-            raise InvalidAttributeException(
+            raise InvalidInputException(
                 (
-                    f"{'An event' if self.__schema_type == SchemaType.EVENT_SCHEMA else 'A'} ",
-                    f"schema cannot have non-SchemaField attributes, got {wrong_annotation_types}",
+                    f"{'An event' if self.__schema_type == SchemaType.EVENT_SCHEMA else 'A'} "
+                    f"schema cannot have non-SchemaField attributes, got {wrong_annotation_types}"
                 )
             )
 
@@ -83,11 +79,10 @@ class SchemaValidator:
         base_members += ["__annotations__"]
         for t in inspect.getmembers(cls):
             if t[0] not in base_members:
-                raise InvalidMemberException(
-                    (
-                        f"{'Schema' if self.__schema_type == SchemaType.SCHEMA else 'Event schema'} ",
-                        f"cannot have functions nor instantiated attributes, got {type(t[1]).__name__} {t[0]}.",
-                    )
+                schema_type_str = "Schema" if self.__schema_type == SchemaType.SCHEMA else "Event schema"
+                member_str = type(t[1]).__name__
+                raise InvalidInputException(
+                    f"{schema_type_str} cannot have functions nor instantiated attributes, got {member_str} {t[0]}."
                 )
 
     def _validate_mandatory_single_field(
@@ -101,9 +96,11 @@ class SchemaValidator:
             and not descriptor.nullable
         ]
         if len(field_names) != 1:
-            raise FieldException(f"A schema must have exactly 1 {field_name}, got {len(field_names)} ({field_names}).")
+            raise InvalidInputException(
+                f"A schema must have exactly 1 {field_name}, got {len(field_names)} ({field_names})."
+            )
         if field_name not in field_names and any(
             descriptor.name for descriptor in descriptors if descriptor.name == field_name
         ):
             field_type_name = field_type.__name__
-            raise FieldException(f"A schema cannot have a non-{field_type_name} named '{field_name}'.")
+            raise InvalidInputException(f"A schema cannot have a non-{field_type_name} named '{field_name}'.")

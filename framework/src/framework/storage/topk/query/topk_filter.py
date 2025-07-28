@@ -18,6 +18,10 @@ from beartype.typing import Any
 from topk_sdk.query import field as topk_field
 from topk_sdk.query import not_
 
+from superlinked.framework.common.exception import (
+    FeatureNotSupportedException,
+    NotImplementedException,
+)
 from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.query.vdb_filter import VDBFilter
 from superlinked.framework.storage.topk.query.topk_filter_information import (
@@ -52,7 +56,7 @@ class TopKFilter(VDBFilter):
                 elif isinstance(value, (str, int, float, bool)):
                     expression = topk_field(field_name) == value
                 else:
-                    raise ValueError(f"Unsupported value type for EQ: {type(value)}")
+                    raise FeatureNotSupportedException(f"Unsupported value type for EQ: {type(value)}")
                 return expression
             case FilterOperator.NE:
                 if isinstance(value, list):
@@ -62,7 +66,7 @@ class TopKFilter(VDBFilter):
                 elif isinstance(value, (str, int, float, bool)):
                     expression = topk_field(field_name) != value
                 else:
-                    raise ValueError(f"Unsupported value type for NE: {type(value)}")
+                    raise FeatureNotSupportedException(f"Unsupported value type for NE: {type(value)}")
                 return expression
             case FilterOperator.GT:
                 return topk_field(field_name) > value
@@ -73,8 +77,8 @@ class TopKFilter(VDBFilter):
             case FilterOperator.LE:
                 return topk_field(field_name) <= value
             case FilterOperator.IN:
-                raise NotImplementedError("IN is not yet supported")
+                raise FeatureNotSupportedException("IN is not yet supported")
             case FilterOperator.NOT_IN:
-                raise NotImplementedError("NOT_IN is not yet supported")
+                raise FeatureNotSupportedException("NOT_IN is not yet supported")
             case _:
-                raise NotImplementedError(f"Unsupported filter operator: {filter_operator}")
+                raise NotImplementedException(f"Unsupported filter operator: {filter_operator}")

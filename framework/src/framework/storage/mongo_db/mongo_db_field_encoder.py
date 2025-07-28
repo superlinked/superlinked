@@ -18,9 +18,12 @@ import numpy as np
 from beartype.typing import Any, Callable, Sequence
 
 from superlinked.framework.common.data_types import Json, Vector
+from superlinked.framework.common.exception import (
+    InvalidStateException,
+    NotImplementedException,
+)
 from superlinked.framework.common.precision import Precision
 from superlinked.framework.common.schema.blob_information import BlobInformation
-from superlinked.framework.common.storage.exception import EncoderException
 from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.field.field_data import FieldData
 from superlinked.framework.common.storage.field.field_data_type import FieldDataType
@@ -109,15 +112,15 @@ class MongoDBFieldEncoder:
 
     def _decode_vector(self, vector: Any) -> Vector:
         if not isinstance(vector, list):
-            raise NotImplementedError(f"Cannot decode non-list type vector, got: {type(vector)}")
+            raise InvalidStateException(f"Cannot decode non-list type vector, got: {type(vector)}")
         return Vector(np.array(vector).astype(self.__vector_precision_type).tolist())
 
     def encode_field(self, field: FieldData) -> MongoDBEncodedTypes:
         if encoder := self._encode_map.get(field.data_type):
             return encoder(field.value)
-        raise EncoderException(f"Unknown field type: {field.data_type}, cannot encode field.")
+        raise NotImplementedException(f"Unknown field type: {field.data_type}, cannot encode field.")
 
     def decode_field(self, field: Field, value: MongoDBEncodedTypes) -> FieldData:
         if decoder := self._decode_map.get(field.data_type):
             return FieldData.from_field(field, decoder(value))
-        raise EncoderException(f"Unknown field type: {field.data_type}, cannot decode field.")
+        raise NotImplementedException(f"Unknown field type: {field.data_type}, cannot decode field.")

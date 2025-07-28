@@ -15,10 +15,10 @@
 from beartype.typing import Any, cast
 from typing_extensions import override
 
-from superlinked.framework.common.dag.exception import ParentCountException
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.dag.persistence_params import PersistenceParams
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.storage.persistence_type import PersistenceType
 
@@ -38,7 +38,7 @@ class IndexNode(Node[Vector], HasLength):
 
     def __validate_and_order_parents(self, parents: set[Node[Vector]]) -> list[Node[Vector]]:
         if len(parents) == 0:
-            raise ParentCountException(f"{self.class_name} must have at least 1 parent.")
+            raise InvalidStateException(f"{self.class_name} must have at least 1 parent.")
         return sorted(parents, key=lambda parent: parent.node_id)
 
     @property

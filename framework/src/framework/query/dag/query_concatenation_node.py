@@ -23,6 +23,7 @@ from superlinked.framework.common.dag.concatenation_node import ConcatenationNod
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import NodeDataTypes, Vector
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.space.config.normalization.normalization_config import (
     ConstantNormConfig,
@@ -32,7 +33,6 @@ from superlinked.framework.common.space.normalization.normalization import (
     L2Norm,
 )
 from superlinked.framework.common.util.collection_util import CollectionUtil
-from superlinked.framework.query.dag.exception import QueryEvaluationException
 from superlinked.framework.query.dag.invert_if_addressed_query_node import (
     InvertIfAddressedQueryNode,
 )
@@ -79,7 +79,7 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
 
     def _validate_inputs_to_be_inverted(self, node_inputs: Sequence[QueryNodeInputValue]) -> None:
         if any(invalid_inputs := [node_input for node_input in node_inputs if not isinstance(node_input.item, Vector)]):
-            raise QueryEvaluationException(
+            raise InvalidStateException(
                 "The inputs that need to be inverted must be " + f"vectors, got {invalid_inputs}"
             )
         if any(
@@ -89,7 +89,7 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
                 if cast(Vector, node_input.item).dimension != self.node.length
             ]
         ):
-            raise QueryEvaluationException(
+            raise InvalidStateException(
                 "The inputs that need to be inverted must have the same dimension "
                 + f"as the concatenation node ({self.node.length}), got {invalid_inputs_lengths}"
             )
@@ -118,7 +118,7 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
             for parent_result in parent_results
             if not isinstance(parent_result.value, Vector)
         }:
-            raise QueryEvaluationException(f"Parent results must be vectors, got {invalid_parent_result_types}")
+            raise InvalidStateException(f"Parent results must be vectors, got {invalid_parent_result_types}")
 
     @override
     def _evaluate_parent_results(

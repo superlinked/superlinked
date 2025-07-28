@@ -13,6 +13,7 @@
 # limitations under the License.
 
 
+from superlinked.framework.common.exception import FeatureNotSupportedException
 from superlinked.framework.storage.common.connection_params import ConnectionParams
 
 
@@ -48,4 +49,4 @@ class TopKConnectionParams(ConnectionParams):
 
     @property
     def connection_string(self) -> str:
-        raise NotImplementedError("TopK does not support connection strings")
+        raise FeatureNotSupportedException("TopK does not support connection strings")

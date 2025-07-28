@@ -20,7 +20,7 @@ from typing_extensions import override
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.custom_node import CustomVectorEmbeddingNode
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.exception import ValidationException
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.transform.transform import Step
@@ -84,7 +84,7 @@ class OnlineCustomVectorEmbeddingNode(OnlineNode[CustomVectorEmbeddingNode, Vect
 
     def _validate_input_value(self, input_value: Sequence[float]) -> None:
         if len(input_value) != self.length:
-            raise ValidationException(
+            raise InvalidInputException(
                 f"{self.class_name} can only process `Vector` inputs"
                 + f" of size {self.length}"
                 + f", got {len(input_value)}"

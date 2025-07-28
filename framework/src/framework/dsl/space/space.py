@@ -23,6 +23,7 @@ from typing_extensions import override
 from superlinked.framework.common.dag.chunking_node import ChunkingNode
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.data_types import NodeDataTypes
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.schema.schema_object import (
     ConcreteSchemaField,
     DescribedBlob,
@@ -40,7 +41,6 @@ from superlinked.framework.common.space.interface.has_transformation_config impo
     HasTransformationConfig,
 )
 from superlinked.framework.common.util.type_validator import TypeValidator
-from superlinked.framework.dsl.space.exception import InvalidSpaceParamException
 
 # SpaceInputType
 SIT = TypeVar("SIT", bound=NodeDataTypes)
@@ -70,12 +70,10 @@ class Space(
 
     def __validate_fields(self, field_list: Sequence[SchemaField]) -> None:
         if not self._allow_empty_fields and not field_list:
-            raise InvalidSpaceParamException(f"{self.__class__.__name__} field input must not be empty.")
+            raise InvalidInputException(f"{type(self).__name__} field input must not be empty.")
         schema_list = [field.schema_obj for field in field_list]
         if duplicates := [schema._schema_name for schema in schema_list if schema_list.count(schema) > 1]:
-            raise InvalidSpaceParamException(
-                f"Duplicates schemas in the same space are not allowed. Duplicates: {duplicates}"
-            )
+            raise InvalidInputException(f"Duplicates schemas in the same space are not allowed: {duplicates}.")
 
     def _fields_to_non_none_sequence(
         self, fields: SpaceFieldT | None | Sequence[SpaceFieldT | None]

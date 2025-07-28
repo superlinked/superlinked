@@ -16,6 +16,7 @@ from pymongo.command_cursor import CommandCursor
 from pymongo.database import Database
 from typing_extensions import override
 
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.storage.index_config import IndexConfig
 from superlinked.framework.common.storage.query.vdb_knn_search_config import (
     VDBKNNSearchConfig,
@@ -41,7 +42,7 @@ class MongoDBSearch(Search[MongoDBVDBKNNSearchParams, MongoDBQuery, CommandCurso
     @override
     def build_query(self, search_params: MongoDBVDBKNNSearchParams, search_config: VDBKNNSearchConfig) -> MongoDBQuery:
         if search_params.num_candidates > MAX_NUMBER_OF_CANDIDATES:
-            raise ValueError("Number of nearest neighbors exeeded")
+            raise InvalidInputException("Number of nearest neighbors exceeded")
         return (
             MongoDBQuery(self._encoder, search_params.collection_name)
             # Order is important!

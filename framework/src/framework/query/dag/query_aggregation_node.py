@@ -21,10 +21,7 @@ from superlinked.framework.common.dag.aggregation_node import AggregationNode
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.query.dag.exception import (
-    QueryDagInitializationException,
-    QueryEvaluationException,
-)
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.query.dag.query_evaluation_data_types import (
     QueryEvaluationResult,
 )
@@ -40,7 +37,7 @@ class QueryAggregationNode(QueryNodeWithParent[AggregationNode, Vector]):
     ) -> None:
         super().__init__(node, parents)
         if len(self.parents) != 1:
-            raise QueryDagInitializationException(f"{type(self).__name__} must have exactly 1 parent.")
+            raise InvalidStateException(f"{type(self).__name__} must have exactly 1 parent.")
         self.parent = self.parents[0]
 
     @override
@@ -50,9 +47,9 @@ class QueryAggregationNode(QueryNodeWithParent[AggregationNode, Vector]):
         context: ExecutionContext,
     ) -> QueryEvaluationResult[Vector]:
         if len(parent_results) != 1:
-            raise QueryEvaluationException(f"{type(self).__name__} can only evaluate exactly 1 parent result.")
+            raise InvalidStateException(f"{type(self).__name__} can only evaluate exactly 1 parent result.")
         if not isinstance(parent_results[0].value, Vector):
-            raise QueryEvaluationException(f"{type(self).__name__} can only evaluate vector type parent result.")
+            raise InvalidStateException(f"{type(self).__name__} can only evaluate vector type parent result.")
         return parent_results[0]
 
     @override

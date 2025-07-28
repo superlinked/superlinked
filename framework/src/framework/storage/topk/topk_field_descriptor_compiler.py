@@ -20,6 +20,7 @@ from topk_sdk.schema import int as topk_int
 from topk_sdk.schema import text, vector_index
 
 from superlinked.framework.common.calculation.distance_metric import DistanceMetric
+from superlinked.framework.common.exception import FeatureNotSupportedException
 from superlinked.framework.common.storage.field.field_data_type import FieldDataType
 from superlinked.framework.common.storage.search_index.index_field_descriptor import (
     IndexFieldDescriptor,
@@ -80,7 +81,7 @@ class TopKFieldDescriptorCompiler:
             return None
 
         if field_descriptor.search_algorithm != SearchAlgorithm.FLAT:
-            raise NotImplementedError(
+            raise FeatureNotSupportedException(
                 f"{field_descriptor.search_algorithm} is not supported by TopK, only FLAT is supported"
             )
 

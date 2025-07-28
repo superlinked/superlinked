@@ -19,10 +19,13 @@ import numpy as np
 from beartype.typing import Any, Callable, cast
 
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.exception import (
+    InvalidStateException,
+    NotImplementedException,
+)
 from superlinked.framework.common.precision import Precision
 from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.storage.entity.entity_id import EntityId
-from superlinked.framework.common.storage.exception import EncoderException
 from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.field.field_data import FieldData
 from superlinked.framework.common.storage.field.field_data_type import FieldDataType
@@ -118,18 +121,18 @@ class RedisFieldEncoder:
 
     def _decode_vector(self, vector: bytes) -> Vector:
         if not isinstance(vector, bytes):
-            raise NotImplementedError(f"Cannot decode non-bytes type vector, got: {type(vector)}")
+            raise InvalidStateException(f"Cannot decode non-bytes type vector, got: {type(vector)}")
         return Vector(np.frombuffer(vector, self.__vector_precision_type).tolist())
 
     def encode_field(self, field: FieldData) -> RedisEncodedTypes:
         if encoder := self._encode_map.get(field.data_type):
             return encoder(field.value)
-        raise EncoderException(f"Unknown field type: {field.data_type}, cannot encode field.")
+        raise NotImplementedException(f"Unknown field type: {field.data_type}, cannot encode field.")
 
     def decode_field(self, field: Field, value: bytes) -> FieldData:
         if decoder := self._decode_map.get(field.data_type):
             return FieldData.from_field(field, decoder(value))
-        raise EncoderException(f"Unknown field type: {field.data_type}, cannot decode field.")
+        raise NotImplementedException(f"Unknown field type: {field.data_type}, cannot decode field.")
 
     def convert_bytes_keys_dict(self, data: dict[bytes, Any]) -> dict[str, Any]:
         return {self._decode_string(cast(bytes, key)): self.convert_bytes_keys(value) for key, value in data.items()}

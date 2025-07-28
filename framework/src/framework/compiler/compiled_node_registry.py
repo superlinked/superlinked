@@ -20,7 +20,10 @@ from pydoc import locate
 from beartype.typing import Any, Generic, Sequence, TypeVar, cast
 
 from superlinked.framework.common.dag.node import Node
-from superlinked.framework.common.exception import NotImplementedException
+from superlinked.framework.common.exception import (
+    InvalidStateException,
+    NotImplementedException,
+)
 
 CompiledNodeT = TypeVar("CompiledNodeT")
 ImportedNodeT = TypeVar("ImportedNodeT")
@@ -77,9 +80,9 @@ class CompiledNodeRegistry(Generic[CompiledNodeT]):
     def __import_node_class(self, path: str, expected_class: type[ImportedNodeT]) -> type[ImportedNodeT]:
         node_class = locate(path)
         if not isinstance(node_class, type):
-            raise ValueError(f"Not a valid class path: {path}")
+            raise InvalidStateException(f"Not a valid class path: {path}")
         if not issubclass(node_class, expected_class):
-            raise ValueError(f"Not {expected_class.__name__} type: {node_class.__name__}")
+            raise InvalidStateException(f"Not {expected_class.__name__} type: {node_class.__name__}")
         return cast(type[ImportedNodeT], node_class)
 
     def init_compiled_node(
