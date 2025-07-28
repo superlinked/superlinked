@@ -14,17 +14,15 @@ icon: cart-shopping
 
 ## Overview
 
-In modern retail and e-commerce websites, personalized and immediate product recommendations can significantly boost customer engagement and drive sales conversions. In this demo, we showcase an example of such a website that uses Superlinked's ability to do real time recommendations. When a user lands on the store’s website, they are greeted by a web interface displaying various products. As they move around the page, whether clicking product details, scrolling through suggested items, or switching categories, every interaction is tracked in real time. 
+In modern retail and e-commerce websites, personalized and immediate product recommendations can significantly boost customer engagement and drive sales conversions. In this demo, we showcase an example of such a website that uses Superlinked's ability to do real time recommendations and natural language quering. In modern retail and e-commerce, shoppers expect the search box to understand full sentences, not just keywords. In this demo we show how Superlinked can turn complex queries like “striped linen shirt under 90 dollars” into accurate retrieval of the right products.
 
-These live signals help build a continuously updated profile of the user’s current interests. The system then quickly refreshes its recommendations to reflect the user’s changing intrests, so new and similar items appear without delay. This approach allows retailers to show the right products at the right time, enhancing the shopping experience and increasing the likelihood of a purchase. 
-
-Additionally, we use [item2vec](https://arxiv.org/vc/arxiv/papers/1603/1603.04259v2.pdf) which introduces a collaborative aspect by capturing product relationships from collective user interactions. All of these approaches showcase how we can leverage Superlinked in an e-commerce application to deliver real-time, session-based recommendations. It is adaptable to your own product data as well, so you can tailor this setup to your specific product relationships and consumer behaviour. 
+Every view, scroll and click feeds a live session profile that evolves in real time. When the natural-language query arrives, Superlinked blends the freshly updated profile with the sentence-derived filters in a single vector search, so the results honour both the shopper’s recent behaviour and their explicit intent. No page reload is needed; the grid silently swaps in items that match the words they used and the products they just explored. This approach allows retailers to show the right products at the right time, enhancing the shopping experience and increasing the likelihood of a purchase. It is adaptable to your own product data as well, so you can tailor this setup to your specific product relationships and consumer behaviour. 
 
 ## How does it work ?
 
 ### Key features
 
-- **Example of how to train item2vec on your event data** - Use events data to extract custom product realtions.
+- **Capture product relationships** - Use events data to extract custom product realtions.
 - **Events based system** - Have a session based recommendation that adjust recommendations in realtime while user surfs the site.
 - **Multi modal features** - Support images, text and categories out of the box with SL.
 
@@ -40,7 +38,9 @@ Additionally, we use [item2vec](https://arxiv.org/vc/arxiv/papers/1603/1603.0425
 ### Hard-filters
 - **Stock** - use `is_active` indicator that will make sure only in stock products are recommended.
 
-### Data example
+## Natural-language querying
+
+Natural-language support is activated through a single clause on the query object. The Wrapper API forwards the shopper’s sentence to a language model that only sees your schema and the optional descriptions you attach to each parameter. The model produces explicit weights and filters, then hands them straight back to the query. If anything is missing, default values keep the call valid, if the front end has set a parameter directly, that explicit value prevails. The snippet below shows what the model returns for the sentence “men’s shirt with stripes and under ninety dollars”. The search therefore takes into account images, text, categories, numbers, and the collaborative item2vec space in one unified step.
 
 For a complex query like *a mens shirt with stripes and under 90 $* the following
 superlinked parameters are infered from the query:
@@ -64,11 +64,7 @@ The user events reach a Wrapper API, which sits on top of the main Superlinked s
 -  Builds and updates a live session context that captures the user’s evolving interests.
 -  Fetches updated recommendations from the vector database (e.g., Redis) based on these interactions.
 
-Under the hood, the Superlinked server connects to a vector database (Redis in this example). Each product is stored with multi-modal embeddings that include images, descriptions, categories, and numeric properties.
-
-## Item2vec
-
-To enhance these recommendations, the system leverages an item2vec model trained on user event data. For instance, if many shoppers who click Product A also end up exploring Product B, item2vec embeddings capture that relationship, increasing B’s rank when someone else shows interest in A. You can train your own item2vec model using the provided scripts and adapt it to your data.
+Under the hood, the Superlinked server connects to a vector database (Redis or Qdrant for example). Each product is stored with multi-modal embeddings that include images, descriptions, categories, and numeric properties.
 
 ##  Real-Time Session-Based Recommendations
 
@@ -77,14 +73,33 @@ As the user continues to click and browse, the system instantly:
 -  Runs fresh queries to the vector database with each new interaction.
 -  Sends back updated recommendations to the UI, so the user sees new suggestions without reloading the page.
 
-If the user starts exploring a particular category, brand, or price range, the system tailors the recommended items accordingly, keeping the shopping experience engaging and personalized. Because the system processes events as they happen, shoppers get the sense that the site is learning their preferences in real time. Highly relevant products show up first, while items that are somewhat related appear further down. This approach can boost engagement and sales, as visitors are guided toward products that align with their interests.
+### Event weights
+
+```python
+event_weights = {
+    "product_viewed"   : 0.5,
+    "product_added"    : 0.7,
+    "product_purchased": 1.0,
+    "product_removed"  : -0.5,
+}
+```
+
+```event_weights```is a simple dictionary that translates front-end actions into numeric influence: 
+- A view pushes the user vector halfway toward the item (0.5).
+- Adding to cart is stronger (0.7) because it signals intent to buy.
+- A completed purchase sets the weight to its maximum of 1.0.
+- Removing an item pulls the vector away with a negative weight (-0.5).
+
+```When user U triggers event E on product P, move U’s vector in this space by (event weight × P’s vector)```
+
+If the user starts exploring a particular category, brand, or price range, the system tailors the recommended items accordingly, keeping the shopping experience engaging and personalized. Because the system processes events as they happen, shoppers get the sense that the site is learning their preferences in real time. Highly relevant products show up first, while items that are somewhat related appear further down. To enhance these recommendations, the system leverages an [item2vec](https://arxiv.org/vc/arxiv/papers/1603/1603.04259v2.pdf) model trained on collaborative user event data.
 
 ##  Get in touch and build this on your own data! 
 
 We will soon publish the repo so you can host an app like this yourself, however if you want early access in the meantime, please [get in touch here](https://getdemo.superlinked.com/?utm_source=ecomm-recsys-recipe&utm_campaign=ecomm-recsys-nlq&utm_medium=docs).
 
 {% hint style="info" %}
-🚀 Try it out: [e-commerce-recsys-recipe.superlinked.io](https://recsys-nlq-demo.superlinked.io/)
+🚀 Try it out: [recsys-nlq-demo.superlinked.io/](https://recsys-nlq-demo.superlinked.io/)
 {% endhint %}
 
 <!-- Link to the public repo (which we don't have for hotel search I think)
