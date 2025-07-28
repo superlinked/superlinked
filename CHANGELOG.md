@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [32.3.0] - 2025-07-28
+
+### Changed
+
+- Rename ValidationException to InvalidInputException
+
 ## [32.2.1] - 2025-07-28
 
 ### Fixed
@@ -21,22 +27,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [32.1.0] - 2025-07-23
 
-### Changed
-
-- Split calculate field by delta or merge
-
-### Fixed
-
-- Turn method into property - online entity cache
-
-## [32.0.0] - 2025-07-22
-
-### Removed
-
-- Remove new dict creation
-
-## [31.4.1] - 2025-07-21
-
 ### Added
 
 - Add TODOs (FAB-3639)
@@ -52,8 +42,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Handle origin ids
 - Group event related cache operations
 - Frozen node requests
-- Return the query and source with the paths
-- Improve modal image build time
+- Split calculate field by delta or merge
+
+### Fixed
+
+- Turn method into property - online entity cache
 
 ### Removed
 
@@ -61,6 +54,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove legacy EntityDataRequest
 - Remove iterator
 - Remove leftover
+
+## [32.0.0] - 2025-07-22
+
+### Removed
+
+- Remove new dict creation
+
+## [31.4.1] - 2025-07-21
+
+### Changed
+
+- Return the query and source with the paths
+- Improve modal image build time
 
 ## [31.4.0] - 2025-07-21
 
@@ -6073,6 +6079,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove unnecessary call
 - Remove extra field
 
+[32.3.0]: https://github.com/superlinked/superlinked/compare/v32.2.1..v32.3.0
 [32.2.1]: https://github.com/superlinked/superlinked/compare/v32.2.0..v32.2.1
 [32.2.0]: https://github.com/superlinked/superlinked/compare/v32.1.0..v32.2.0
 [32.1.0]: https://github.com/superlinked/superlinked/compare/v32.0.0..v32.1.0
