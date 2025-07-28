@@ -40,7 +40,7 @@ class ImageSpaceFieldSet(SpaceFieldSet[ImageData]):
             raise ValueError(f"Invalid type of input for {type(self).__name__}: {type(value)}")
         loaded_image = blob_loader.load(value)
         opened_image: PIL.Image.Image | None = None
-        if loaded_image.data:
+        if loaded_image and loaded_image.data:
             opened_image = ImageUtil.open_image(loaded_image.data)
         return ImageData(image=opened_image, description=None)
 

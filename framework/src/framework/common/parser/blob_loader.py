@@ -49,7 +49,9 @@ class BlobLoader:
         if handler := BlobHandlerFactory.create_blob_handler(blob_handler_config):
             self._scheme_to_load_function[handler.get_supported_cloud_storage_scheme()] = handler.download
 
-    def load(self, blob_like_input: str | Image | None | Any) -> BlobInformation:
+    def load(self, blob_like_input: str | Image | None | Any) -> BlobInformation | None:
+        if blob_like_input is None:
+            return None
         if not isinstance(blob_like_input, str | Image) or not blob_like_input:
             type_text = type(blob_like_input).__name__
             if type_text == "str":
@@ -73,7 +75,7 @@ class BlobLoader:
         encoded_bytes = base64.b64encode(loaded_bytes)
         return BlobInformation(encoded_bytes, blob_path)
 
-    def load_multiple(self, blob_like_inputs: Sequence[str | Image | None | Any]) -> Sequence[BlobInformation]:
+    def load_multiple(self, blob_like_inputs: Sequence[str | Image | None | Any]) -> list[BlobInformation | None]:
         logger_to_use = logger.bind(n_blobs=len(blob_like_inputs))
         logger_to_use.info("started blob loading")
         with telemetry.span(
