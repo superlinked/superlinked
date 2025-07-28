@@ -31,7 +31,7 @@ Classes
             Defaults to 1.0.
     
     Raises:
-        InitializationException: If no spaces are provided.
+        InvalidInputException: If no spaces are provided.
 
     ### Instance variables
 

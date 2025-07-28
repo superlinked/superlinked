@@ -107,7 +107,7 @@ Classes
                 ```
         
         Raises:
-            QueryException: If with_natural_query() has not been called before this method.
+            InvalidInputException: If with_natural_query() has not been called before this method.
 
     `override_now(self, now: int | superlinked.framework.dsl.query.param.Param) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :
@@ -118,7 +118,7 @@ Classes
         A lower radius value means that the enforced maximum distance is lower,
         therefore closer vectors are returned only.
         A radius of 0.05 means the lowest cosine similarity of items returned to the query vector is 0.95.
-        The valid range is between 0 and 1. Otherwise it will raise ValueError.
+        The valid range is between 0 and 1. Otherwise it will raise InvalidInputException.
         
         Args:
             radius (NumericParamType | None): The maximum distance of the returned items from the query vector.
@@ -128,7 +128,7 @@ Classes
             Self: The query object itself.
         
         Raises:
-            ValueError: If the radius is not between 0 and 1.
+            InvalidInputException: If the radius is not between 0 and 1.
 
     `replace_clauses(self, clauses: Sequence[QueryClause]) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :
@@ -160,10 +160,11 @@ Classes
             Self: The query object itself.
         
         Raises:
-            QueryException: If multiple Param objects are provided or Param is mixed with other field types.
-            TypeException: If any of the fields are of unsupported types.
-            FieldException: If any of the schema fields are not part of the schema.
-            ValueError: If any of the spaces in metadata is not a Space.
+            InvalidInputException:
+                - If multiple Param objects are provided or Param is mixed with other field types.
+                - If any of the fields are of unsupported types.
+                - If any of the schema fields are not part of the schema.
+                - If any of the spaces in metadata is not a Space.
 
     `select_all(self, metadata: collections.abc.Sequence[superlinked.framework.dsl.space.space.Space] | None = None) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :   Select all fields from the schema to be returned in the query results.
@@ -193,8 +194,8 @@ Classes
             Self: The query object itself.
         
         Raises:
-            QueryException: If the space is already bound in the query.
-            InvalidSchemaException: If the schema is not in the similarity field's schema types.
+            InvalidInputException: If the space is already bound in the query.
+            InvalidInputException: If the schema is not in the similarity field's schema types.
 
     `space_weights(self, weight_by_space: Mapping[superlinked.framework.dsl.space.space.Space, float | int | superlinked.framework.dsl.query.param.Param]) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :

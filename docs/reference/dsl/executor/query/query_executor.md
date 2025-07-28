@@ -26,4 +26,4 @@ Classes
             Result: The result of the query execution that can be inspected and post-processed.
         
         Raises:
-            QueryException: If the query index is not amongst the executor's indices.
+            InvalidInputException: If the query index is not amongst the executor's indices.

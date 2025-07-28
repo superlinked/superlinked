@@ -29,7 +29,7 @@ Classes
             Result: The result of the query execution.
         
         Raises:
-            QueryException: If the query index is not found among the executor's indices.
+            InvalidInputException: If the query index is not found among the executor's indices.
 
     `setup_query_execution(self, indices: Sequence[superlinked.framework.dsl.index.index.Index]) ‑> None`
     :   Set up the query execution environment by initializing a mapping between indices

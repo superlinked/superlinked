@@ -5,7 +5,6 @@ e.g.: `InMemoryExecutor` to run an in-memory version of the vector computation f
 
 Sub-modules
 -----------
-* superlinked.framework.dsl.executor.exception
 * superlinked.framework.dsl.executor.executor
 * superlinked.framework.dsl.executor.in_memory
 * superlinked.framework.dsl.executor.interactive

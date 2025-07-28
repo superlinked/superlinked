@@ -4,7 +4,7 @@ Module superlinked.framework.common.dag.period_time
 Classes
 -------
 
-`PeriodTime(period_time: datetime.timedelta, weight: float = 1.0)`
+`PeriodTime(period_time: timedelta, weight: float = 1.0)`
 :   A class representing a period time parameter.
     Attributes:
         period_time (timedelta): Oldest item the parameter will differentiate. Older items will have

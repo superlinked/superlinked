@@ -7,7 +7,6 @@ Sub-modules
 -----------
 * superlinked.framework.dsl.space.categorical_similarity_space
 * superlinked.framework.dsl.space.custom_space
-* superlinked.framework.dsl.space.exception
 * superlinked.framework.dsl.space.has_space_field_set
 * superlinked.framework.dsl.space.image_space
 * superlinked.framework.dsl.space.image_space_field_set

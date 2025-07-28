@@ -21,7 +21,7 @@ Classes
             Defaults to EmbeddingEngineConfig().
     
     Raises:
-        InvalidSpaceParamException: If the image and description fields are not
+        InvalidInputException: If the image and description fields are not
             from the same schema.
     
     Initialize the ImageSpace instance for generating vector representations
@@ -40,7 +40,7 @@ Classes
             Defaults to EmbeddingEngineConfig().
     
     Raises:
-        InvalidSpaceParamException: If the image and description fields are not
+        InvalidInputException: If the image and description fields are not
             from the same schema.
 
     ### Ancestors (in MRO)

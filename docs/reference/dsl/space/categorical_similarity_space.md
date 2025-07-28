@@ -36,7 +36,7 @@ Classes
             categories will be similar to other category_inputs not in categories. Note that the same
             category_inputs not in categories will not be similar to each other either.
     Raises:
-        InvalidSchemaException: If a schema object does not have a corresponding node in the
+        InvalidInputException: If a schema object does not have a corresponding node in the
             similarity space.
     
     Initializes a new instance of the CategoricalSimilaritySpace.
@@ -58,7 +58,7 @@ Classes
             be treated as a distinct 'other' category. Defaults to True.
     
     Raises:
-        InvalidSchemaException: If a schema object does not have a corresponding node in the similarity space,
+        InvalidInputException: If a schema object does not have a corresponding node in the similarity space,
         indicating a configuration or implementation error.
 
     ### Ancestors (in MRO)

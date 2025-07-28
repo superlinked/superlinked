@@ -22,7 +22,7 @@ Classes
             to define their custom mapping logic.
     
     Raises:
-        InitializationException: Parameter `schema` is of invalid type.
+        InvalidInputException: Parameter `schema` is of invalid type.
 
     ### Ancestors (in MRO)
 

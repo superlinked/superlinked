@@ -32,4 +32,4 @@ Classes
             QueryDescriptor: The QueryDescriptor object.
         
         Raises:
-            QueryException: If the index does not have the queried schema.
+            InvalidInputException: If the index does not have the queried schema.

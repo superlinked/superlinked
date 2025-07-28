@@ -15,7 +15,7 @@ Classes
         parser (DataParser | None, optional): The data parser. Defaults to JsonParser if None is supplied.
     
     Raises:
-        InitializationException: If the schema is not an instance of SchemaObject.
+        InvalidInputException: If the schema is not an instance of SchemaObject.
 
     ### Ancestors (in MRO)
 
