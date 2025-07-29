@@ -13,6 +13,7 @@
 # limitations under the License.
 
 
+import structlog
 from beartype.typing import Any, Sequence
 from typing_extensions import override
 
@@ -42,6 +43,8 @@ from superlinked.framework.storage.redis.query.vdb_knn_search_params import (
 from superlinked.framework.storage.redis.redis_field_encoder import RedisFieldEncoder
 from superlinked.framework.storage.redis.redis_knn_result import RedisKNNResult
 from superlinked.framework.storage.redis.redis_vdb_client import RedisVDBClient
+
+logger = structlog.getLogger()
 
 EXTRA_ATTRIBUTES_BYTES_KEY = b"extra_attributes"
 RESULTS_BYTES_KEY = b"results"
@@ -73,7 +76,11 @@ class RedisSearch(Search[VDBKNNSearchParams, VectorQueryObj, list[RedisKNNResult
         self, knn_response: dict[bytes, Any] | Any, field_names: Sequence[str]
     ) -> list[RedisKNNResult]:
         self._validate_knn_response_format(knn_response)
-        return [self._parse_knn_result(knn_result, field_names) for knn_result in knn_response[RESULTS_BYTES_KEY]]
+        return [
+            result
+            for knn_result in knn_response[RESULTS_BYTES_KEY]
+            if (result := self._parse_knn_result(knn_result, field_names)) is not None
+        ]
 
     def _validate_knn_response_format(self, knn_response: dict[bytes, Any]) -> None:
         if not isinstance(knn_response, dict):
@@ -81,18 +88,26 @@ class RedisSearch(Search[VDBKNNSearchParams, VectorQueryObj, list[RedisKNNResult
         if RESULTS_BYTES_KEY not in knn_response:
             raise UnexpectedResponseException("Redis response missing results key.")
 
-    def _parse_knn_result(self, knn_result: dict[bytes, Any] | None, field_names: Sequence[str]) -> RedisKNNResult:
+    def _parse_knn_result(
+        self, knn_result: dict[bytes, Any] | None, field_names: Sequence[str]
+    ) -> RedisKNNResult | None:
         if knn_result is None:
             raise UnexpectedResponseException("Redis returned incomplete results.")
         entity_id = self._get_entity_id_from_redis_id(knn_result.get(ID_BYTES_KEY))
-        extra_attributes = self._normalize_extra_attributes(knn_result.get(EXTRA_ATTRIBUTES_BYTES_KEY))
+        unnormalized_extra_attributes = knn_result.get(EXTRA_ATTRIBUTES_BYTES_KEY)
+        if unnormalized_extra_attributes is None:
+            logger.warning(
+                "Redis result entry is missing extra attributes. "
+                "Final results list will be shorter than required by `limit` parameter. "
+                "Probable reason: concurrent writes to the VDB."
+            )
+            return None
+        extra_attributes = self._normalize_extra_attributes(unnormalized_extra_attributes)
         score = self._extract_score(extra_attributes.get(DISTANCE_ID))
         field_name_to_data = self._extract_field_data(extra_attributes, field_names)
         return RedisKNNResult(entity_id=entity_id, score=score, field_name_to_data=field_name_to_data)
 
-    def _normalize_extra_attributes(
-        self, extra_attributes: dict[bytes, bytes] | Sequence[bytes] | None
-    ) -> dict[str, bytes]:
+    def _normalize_extra_attributes(self, extra_attributes: dict[bytes, bytes] | Sequence[bytes]) -> dict[str, bytes]:
         if not extra_attributes:
             raise UnexpectedResponseException("Redis result missing extra attributes.")
         if isinstance(extra_attributes, dict):

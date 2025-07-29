@@ -30,14 +30,13 @@ from superlinked.framework.common.space.config.normalization.normalization_confi
 
 
 class ConcatenationNode(Node[Vector], HasLength):
-    def __init__(self, parents: list[Node[Vector]]) -> None:
-        # Since events can change only a part of the whole result, we
-        # must persist the rest of the parts.
+    def __init__(self, parents: list[Node[Vector]], persist_parent_node_result: bool) -> None:
+        """Since events can change only a part of the whole result, we
+        must persist the rest of the parts, in case we use events in the index
+        """
+        persistence_params = PersistenceParams(persist_parent_node_result=persist_parent_node_result)
         super().__init__(
-            Vector,
-            parents,
-            persistence_params=PersistenceParams(persist_parent_node_result=True),
-            non_nullable_parents=frozenset(parents),
+            Vector, parents, persistence_params=persistence_params, non_nullable_parents=frozenset(parents)
         )
         self.__validate_parents()
         self.__length = sum(cast(HasLength, parent).length for parent in self.parents)

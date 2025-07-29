@@ -258,7 +258,8 @@ class Index:  # pylint: disable=too-many-instance-attributes
             if len(spaces) == 1:
                 index_parents.update(parents)
             else:
-                index_parents.add(ConcatenationNode(parents))
+                persist_parent_node_result = bool(effects)
+                index_parents.add(ConcatenationNode(parents, persist_parent_node_result))
         return IndexNode(index_parents)
 
     def __init_dag_effects(self, effects_with_schema: Sequence[EffectWithReferencedSchemaObject]) -> set[DagEffect]:
