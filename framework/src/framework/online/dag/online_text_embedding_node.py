@@ -68,7 +68,7 @@ class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasL
         schemas_with_object_ids = [(parsed_schema.schema, parsed_schema.id_) for parsed_schema in parsed_schemas]
         stored_results = self.load_stored_results(schemas_with_object_ids, online_entity_cache)
         return [
-            Vector.init_zero_vector(self.node.length) if stored_result is None else stored_result
+            Vector.init_zero_vector(self.length) if stored_result is None else stored_result
             for stored_result in stored_results
         ]
 

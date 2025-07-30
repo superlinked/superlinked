@@ -24,7 +24,7 @@ from superlinked.framework.common.space.config.transformation_config import (
 class NumberEmbeddingNode(EmbeddingNode[float, float]):
     def __init__(
         self,
-        parent: Node[float],
+        parent: Node[float] | None,
         transformation_config: TransformationConfig[float, float],
         fields_for_identification: set[SchemaField],
         schema: SchemaObject | None = None,

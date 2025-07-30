@@ -81,7 +81,7 @@ class OnlineCategoricalSimilarityNode(OnlineNode[CategoricalSimilarityNode, Vect
         context: ExecutionContext,
     ) -> Vector:
         if parent_result is None:
-            return Vector.init_zero_vector(self.node.length)
+            return Vector.init_zero_vector(self.length)
         input_ = parent_result.main.value
         categories = input_ if isinstance(input_, list) else [input_]
         return AsyncUtil.run(self.embedding_transformation.transform(categories, context))

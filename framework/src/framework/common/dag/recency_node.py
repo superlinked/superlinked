@@ -23,7 +23,7 @@ from superlinked.framework.common.space.config.transformation_config import (
 class RecencyNode(EmbeddingNode[int, int]):
     def __init__(
         self,
-        parent: Node[int],
+        parent: Node[int] | None,
         transformation_config: TransformationConfig[int, int],
         fields_for_identification: set[SchemaField],
         schema: SchemaObject | None = None,

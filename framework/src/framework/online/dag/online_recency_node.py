@@ -21,6 +21,7 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.recency_node import RecencyNode
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.interface.has_length import HasLength
+from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.transform.transform import Step
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
@@ -29,6 +30,7 @@ from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
 from superlinked.framework.online.dag.evaluation_result import SingleEvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
+from superlinked.framework.online.online_entity_cache import OnlineEntityCache
 
 DAY_IN_SECONDS: int = 24 * 60 * 60
 
@@ -52,6 +54,19 @@ class OnlineRecencyNode(DefaultOnlineNode[RecencyNode, Vector], HasLength):
     @property
     def embedding_transformation(self) -> Step[int, Vector]:
         return self._embedding_transformation
+
+    @override
+    def get_fallback_results(
+        self,
+        parsed_schemas: Sequence[ParsedSchema],
+        online_entity_cache: OnlineEntityCache,
+    ) -> list[Vector]:
+        schemas_with_object_ids = [(parsed_schema.schema, parsed_schema.id_) for parsed_schema in parsed_schemas]
+        stored_results = self.load_stored_results(schemas_with_object_ids, online_entity_cache)
+        return [
+            Vector.init_zero_vector(self.length) if stored_result is None else stored_result
+            for stored_result in stored_results
+        ]
 
     @override
     def _evaluate_singles(

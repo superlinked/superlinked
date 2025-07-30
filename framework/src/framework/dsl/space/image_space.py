@@ -187,8 +187,7 @@ class ImageSpace(Space[Vector, ImageData]):
 
     @override
     def _create_default_node(self, schema: SchemaObject) -> EmbeddingNode[Vector, ImageData]:
-        default_node = ImageEmbeddingNode(None, None, self._transformation_config, self._all_fields, schema)
-        return default_node
+        return ImageEmbeddingNode(None, None, self._transformation_config, self._all_fields, schema)
 
     @property
     @override

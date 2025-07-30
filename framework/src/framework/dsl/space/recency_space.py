@@ -20,7 +20,6 @@ from beartype.typing import Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
-from superlinked.framework.common.dag.named_function_node import NamedFunctionNode
 from superlinked.framework.common.dag.period_time import PeriodTime
 from superlinked.framework.common.dag.recency_node import RecencyNode
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
@@ -40,7 +39,6 @@ from superlinked.framework.common.space.config.normalization.normalization_confi
 from superlinked.framework.common.space.config.transformation_config import (
     TransformationConfig,
 )
-from superlinked.framework.common.util.named_function_evaluator import NamedFunction
 from superlinked.framework.dsl.space.has_space_field_set import HasSpaceFieldSet
 from superlinked.framework.dsl.space.input_aggregation_mode import InputAggregationMode
 from superlinked.framework.dsl.space.space import Space
@@ -207,10 +205,4 @@ class RecencySpace(Space[int, int], HasSpaceFieldSet):  # pylint: disable=too-ma
 
     @override
     def _create_default_node(self, schema: SchemaObject) -> EmbeddingNode[int, int]:
-        named_function_node = NamedFunctionNode(NamedFunction.NOW, schema, int)
-        default_node = RecencyNode(
-            parent=named_function_node,
-            transformation_config=self._transformation_config,
-            fields_for_identification=self.timestamp.fields,
-        )
-        return default_node
+        return RecencyNode(None, self._transformation_config, self.timestamp.fields, schema)

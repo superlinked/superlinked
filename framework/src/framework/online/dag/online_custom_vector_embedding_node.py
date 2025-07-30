@@ -77,7 +77,7 @@ class OnlineCustomVectorEmbeddingNode(OnlineNode[CustomVectorEmbeddingNode, Vect
         context: ExecutionContext,
     ) -> Vector:
         if parent_result is None:
-            return Vector.init_zero_vector(self.node.length)
+            return Vector.init_zero_vector(self.length)
         input_value = parent_result.main.value
         self._validate_input_value(input_value)
         return AsyncUtil.run(self.embedding_transformation.transform(Vector(input_value), context))
