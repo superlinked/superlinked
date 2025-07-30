@@ -64,7 +64,7 @@ It allows users to search for hotels based on various criteria such as descripti
 ### How it works in a nutshell
 
 <div align="center">
-  <img src="./assets/superlinked-in-a-nutshell.svg" alt="Superlinked in a nutshell">
+  <img src="https://raw.githubusercontent.com/superlinked/superlinked-recipes/main/projects/hotel-search/assets/superlinked-in-a-nutshell.svg"  alt="Superlinked in a nutshell">
 </div>
 
 ## Quick Start
@@ -74,7 +74,7 @@ This section provides a step-by-step guide on how to run the whole system locall
 More details are provided below, in the **Tutorial** section.
 
 <div align="center">
-  <img src="./assets/architecture.svg" alt="System Architecture" width="50%">
+  <img src="https://raw.githubusercontent.com/superlinked/superlinked-recipes/main/projects/hotel-search/assets/architecture.svg" alt="System Architecture" width="50%">
 </div>
 
 ### Redis VDB
@@ -175,7 +175,7 @@ This file defines three important things:
 - index: combines spaces for multi-modal vector search
 
 <div align="center">
-  <img src="./assets/superlinked-index.svg" alt="Graphical abstract">
+  <img src="https://raw.githubusercontent.com/superlinked/superlinked-recipes/e668658f9850396d5745b2c3188776ca593c64d1/projects/hotel-search/assets/superlinked-index.svg" alt="Graphical abstract">
 </div>
 
 In our superlinked application, we will embed one textual field (hotel `description`) and three numeric fields (`price`, `rating`, `rating_count`).
