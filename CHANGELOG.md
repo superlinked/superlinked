@@ -3,6 +3,21 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [33.0.0] - 2025-07-30
+
+### Added
+
+- Add entity cache to online recency node's get_fallback_results
+
+### Changed
+
+- Revert python version change
+
+### Fixed
+
+- Handle default number/recency node for ingestion -> zero vector like others
+- Fix wrong merge conflict resolution
+
 ## [32.4.0] - 2025-07-29
 
 ### Changed
@@ -6085,6 +6100,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove unnecessary call
 - Remove extra field
 
+[33.0.0]: https://github.com/superlinked/superlinked/compare/v32.4.0..v33.0.0
 [32.4.0]: https://github.com/superlinked/superlinked/compare/v32.3.0..v32.4.0
 [32.3.0]: https://github.com/superlinked/superlinked/compare/v32.2.1..v32.3.0
 [32.2.1]: https://github.com/superlinked/superlinked/compare/v32.2.0..v32.2.1
