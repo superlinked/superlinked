@@ -78,14 +78,14 @@ class QueryNumberEmbeddingNode(QueryEmbeddingOrphanNode[float, NumberEmbeddingNo
             return None
         if len(corresponding_inputs) > 1:
             raise InvalidStateException(
-                f"Number embedding node with mode {self._embedding_config.mode} "
-                f"can only handle a single input, got {len(corresponding_inputs)}."
+                f"Number embedding node with mode {self._embedding_config.mode.name} supports only a single input.",
+                input_count=len(corresponding_inputs),
             )
         input_value = corresponding_inputs[0].value
         if not isinstance(input_value.item, Vector):
             raise InvalidStateException(
-                f"Number embedding node with mode {self._embedding_config.mode} "
-                f"can only handle a Vector input, got {type(input_value.item).__name__}."
+                f"Number embedding node with mode {self._embedding_config.mode.name} can only handle a Vector input.",
+                input_count=len(corresponding_inputs),
             )
         weight = input_value.weight.get(self.node_id) if isinstance(input_value.weight, dict) else input_value.weight
         return weight == 0

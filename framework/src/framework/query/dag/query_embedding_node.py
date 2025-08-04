@@ -152,7 +152,7 @@ class QueryEmbeddingNode(
             if not isinstance(weighted_item.item, input_type)
         ]:
             raise InvalidStateException(
-                f"{type(self).__name__} can only evaluate {input_type.__name__}, " + f"got {wrong_types}."
+                f"{type(self).__name__} can only evaluate {input_type.__name__}.", wrong_types=wrong_types
             )
         weighted_items = [
             Weighted(weighted_item.item, get_item_weight(weighted_item.weight)) for weighted_item in weighted_items

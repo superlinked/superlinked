@@ -47,7 +47,9 @@ class TextEmbeddingCache:
             return
         if len(inputs_to_embed) != len(uncached_vectors):
             raise InvalidStateException(
-                f"Number of inputs ({len(inputs_to_embed)}) must match number of vectors ({len(uncached_vectors)})"
+                "Number of inputs must match number of vectors.",
+                num_inputs=len(inputs_to_embed),
+                num_vectors=len(uncached_vectors),
             )
         for input_, vector in zip(inputs_to_embed, uncached_vectors):
             self._cache[input_] = vector

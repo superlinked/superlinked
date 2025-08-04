@@ -42,7 +42,7 @@ class QueryDag:
             result = evaluation_result.value
             if not isinstance(result, Vector):
                 raise InvalidStateException(
-                    f"{type(self.leaf_node).__name__} must return a vector, " + f"got {type(result).__name__}."
+                    f"{type(self.leaf_node).__name__} must return a vector.", result_type=type(result).__name__
                 )
         return result
 

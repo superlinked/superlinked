@@ -96,11 +96,11 @@ class EffectWithReferencedSchemaObject(Generic[AggregationInputT, EmbeddingInput
             resolved_affected_schema_reference.reference_field.schema_obj
             != resolved_affecting_schema_reference.reference_field.schema_obj
         ):
+
             raise InvalidStateException(
-                "An Effect's affected and affecting schema reference must come "
-                + "from the same EventSchema, got "
-                + f"{resolved_affected_schema_reference.reference_field.schema_obj._schema_name} and "
-                + f"{resolved_affecting_schema_reference.reference_field.schema_obj._schema_name}."
+                "An Effect's affected and affecting schema reference must come from the same EventSchema.",
+                affected_reference_schema=resolved_affected_schema_reference.reference_field.schema_obj._schema_name,
+                affecting_reference_schema=resolved_affecting_schema_reference.reference_field.schema_obj._schema_name,
             )
         return cast(
             EventSchemaObject,

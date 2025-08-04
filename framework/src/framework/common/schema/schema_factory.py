@@ -65,8 +65,9 @@ class SchemaFactory:
             non_none_arg_types = [arg_type for arg_type in arg_types if arg_type is not NoneType]
             if len(non_none_arg_types) != 1:
                 raise InvalidStateException(
-                    "An attribute of a schema can only have one optional or mandatory type-annotation, "
-                    + f"{name} got {[arg_type.__name__ for arg_type in non_none_arg_types]}"
+                    "An attribute of a schema can only have one optional or mandatory type-annotation.",
+                    attribute=name,
+                    annotation_details=[arg_type.__name__ for arg_type in non_none_arg_types],
                 )
             return SchemaFieldDescriptor(
                 name=name,

@@ -191,17 +191,16 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
         schemas_with_object_ids: Sequence[tuple[SchemaObject, str]],
         online_entity_cache: OnlineEntityCache,
     ) -> list[NodeDataT | None]:
-        return [
-            cast(
-                NodeDataT | None,
-                online_entity_cache.get_node_result(
-                    entity_id=EntityId(schema_id=schema._schema_name, object_id=object_id),
-                    node_id=self.node_id,
-                    node_data_type=self.node.node_data_type,
-                ),
-            )
+        entity_ids = [
+            EntityId(schema_id=schema._schema_name, object_id=object_id)
             for schema, object_id in schemas_with_object_ids
         ]
+        batch_results = online_entity_cache.get_node_results(
+            entity_ids=entity_ids,
+            node_id=self.node_id,
+            node_data_type=self.node.node_data_type,
+        )
+        return [cast(NodeDataT | None, batch_results[entity_id]) for entity_id in entity_ids]
 
     def load_stored_results_with_default(
         self,
@@ -226,8 +225,10 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
                 f"{parsed_schemas[index].schema._schema_name}, {parsed_schemas[index].id_}" for index in none_indices
             ]
             raise InvalidStateException(
-                f"{self.node_id} doesn't have stored values for the following (schema, object_id) pairs:"
-                + f" ({wrong_parsed_schema_params})"
+                "Node doesn't have stored values for schema, object_id pairs.",
+                node_id=self.node_id,
+                node_type=type(self).__name__,
+                schema_object_ids=wrong_parsed_schema_params,
             )
         return cast(list[NodeDataT], stored_results)
 
@@ -237,5 +238,7 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
     ) -> None:
         if not parent_validation_type.validator(len(self.parents)):
             raise InvalidStateException(
-                f"{type(self).__name__} must have {parent_validation_type.description}, got {len(self.parents)}"
+                f"{type(self).__name__} must have {parent_validation_type.description}.",
+                node_id=self.node_id,
+                len_parents=len(self.parents),
             )

@@ -96,6 +96,6 @@ class QueryNode(ABC, Generic[NT, QueryEvaluationResultT]):
     def _validate_vectors_dimension(self, dimension: int, vectors: Sequence[Vector]) -> None:
         if wrong_dimensions := [vector.dimension for vector in vectors if vector.dimension != dimension]:
             raise InvalidStateException(
-                f"{type(self).__name__} can only process vectors with {dimension} dimension,"
-                f" got {wrong_dimensions}."
+                f"{type(self).__name__} can only process vectors with {dimension} dimension.",
+                wrong_dimensions=wrong_dimensions,
             )

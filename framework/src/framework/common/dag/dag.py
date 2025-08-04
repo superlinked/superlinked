@@ -76,5 +76,7 @@ class Dag:
         node_ids = set()
         for node in self.nodes:
             if node.node_id in node_ids:
-                raise InvalidStateException(f"Node id: {node} is duplicated!")
+                raise InvalidStateException(
+                    "Node id is duplicated.", node_id=node.node_id, node_type=type(node).__name__
+                )
             node_ids.add(node._node_id)

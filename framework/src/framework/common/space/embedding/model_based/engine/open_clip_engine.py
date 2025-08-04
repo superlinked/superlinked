@@ -142,7 +142,7 @@ class OpenCLIPEngine(EmbeddingEngine[EmbeddingEngineConfig]):
 
     def _use_half_precision(self) -> bool:
         if self._config.precision not in SUPPORTED_PRECISIONS:
-            raise NotImplementedException(f"Unsupported precision: {self._config.precision.value}.")
+            raise NotImplementedException("Unsupported precision.", precision=self._config.precision.value)
         return self._config.precision == Precision.FLOAT16
 
     def _move_tensor_to_model_device(self, embedding_model: CLIP, tensor: torch.Tensor) -> torch.Tensor:

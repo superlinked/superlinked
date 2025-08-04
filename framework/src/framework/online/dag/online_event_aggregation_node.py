@@ -68,7 +68,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         ]
         if len(inputs_to_aggregate) > 1:
             raise InvalidStateException(
-                f"{self.class_name} cannot have more than 1 parents to aggregate, got {len(inputs_to_aggregate)}"
+                f"{self.class_name} Cannot have more than 1 parents to aggregate.", len_parents=len(inputs_to_aggregate)
             )
         self._input_to_aggregate = inputs_to_aggregate[0] if len(inputs_to_aggregate) > 0 else None
         self.weighted_filter_parents: dict[OnlineNode, float] = {

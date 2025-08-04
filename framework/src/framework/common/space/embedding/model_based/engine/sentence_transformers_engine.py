@@ -104,7 +104,7 @@ class SentenceTransformersEngine(EmbeddingEngine[EmbeddingEngineConfig]):
             return {"torch_dtype": "float16"}
         if self._config.precision == Precision.FLOAT32:
             return {}
-        raise NotImplementedException(f"Unsupported precision: {self._config.precision.value}.")
+        raise NotImplementedException("Unsupported precision.", precision=self._config.precision.value)
 
     def _calculate_prompt_name(self, model: SentenceTransformer, is_query_context: bool) -> str | None:
         return (

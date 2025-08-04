@@ -104,7 +104,9 @@ class Vector:
             return self
         if self.dimension != vector.dimension:
             raise InvalidStateException(
-                f"Cannot aggregate vectors with different dimensions: {self.dimension} != {vector.dimension}"
+                "Cannot aggregate vectors with different dimensions.",
+                dimension1=self.dimension,
+                dimension2=vector.dimension,
             )
         return self.shallow_copy_with_new(
             self.value + vector.value,
@@ -116,12 +118,13 @@ class Vector:
             return
         if (num_indices := len(self.negative_filter_indices)) > self.dimension:
             raise InvalidStateException(
-                f"Invalid number of negative filter indices: {num_indices}. Vector dimension: {self.dimension}."
+                "Invalid number of negative filter indices.", num_indices=num_indices, vector_dimension=self.dimension
             )
         if invalid_indices := [idx for idx in self.negative_filter_indices if idx < 0 or idx >= self.dimension]:
             raise InvalidStateException(
-                f"Invalid negative filter indices: {invalid_indices}. "
-                f"Indices must be between 0 and {self.dimension - 1}."
+                "Invalid negative filter indices.",
+                invalid_indices=invalid_indices,
+                dimension=self.dimension,
             )
 
     def apply_negative_filter(self, other: Vector) -> Vector:
@@ -148,7 +151,9 @@ class Vector:
     def split(self, lengths: Sequence[int]) -> list[Vector]:
         if sum(lengths) < self.dimension:
             raise InvalidStateException(
-                f"The sum of the provided lengths {sum(lengths)} is smaller than the vector dimension {self.dimension}."
+                "The sum of the provided lengths is smaller than the vector dimension.",
+                lengths=lengths,
+                vector_dimension=self.dimension,
             )
         indices = list(np.cumsum(np.array([0] + list(lengths)))[1:].tolist())
         split_values = np.split(self.value, indices)
@@ -166,7 +171,10 @@ class Vector:
         if self.is_empty:
             return self
         if not isinstance(other, int | float | np.floating):
-            raise InvalidStateException(f"{type(self).__name__} can only be multiplied with int, float or np.floating")
+            raise InvalidStateException(
+                f"{type(self).__name__} can only be multiplied with int, float or np.floating",
+                invalid_type=type(other).__name__,
+            )
         if other == 1:
             return self
         if other == 0:

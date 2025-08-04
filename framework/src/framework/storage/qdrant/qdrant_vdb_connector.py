@@ -114,7 +114,7 @@ class QdrantVDBConnector(VDBConnector[VDBKNNSearchConfig]):
     async def _write_entities(self, entity_data: Sequence[EntityData]) -> None:
         if not self.search_index_manager._index_configs:
             raise InvalidStateException(
-                f"{type(self).__name__} can work properly only after initializing " + "the search indices."
+                f"{type(self).__name__} can work properly only after initializing the search indices."
             )
         points = [
             PointStruct(

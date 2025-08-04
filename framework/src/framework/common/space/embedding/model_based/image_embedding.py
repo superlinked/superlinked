@@ -41,7 +41,7 @@ class ImageEmbedding(ModelEmbedding[ImageData, ImageEmbeddingConfig]):
         images, descriptions = self._prepare_images_and_descriptions(inputs)
         valid_inputs = [inp for inp in (images + descriptions) if inp is not None]
         if not valid_inputs:
-            return [Vector.init_zero_vector(self._config.length)] * len(inputs)
+            return [self._config.default_vector] * len(inputs)
         valid_embeddings = await self._embedding_engine_manager.embed(
             self._config.model_handler,
             self._config.model_name,
@@ -57,7 +57,7 @@ class ImageEmbedding(ModelEmbedding[ImageData, ImageEmbeddingConfig]):
                 embeddings.append(valid_embeddings[valid_input_index])
                 valid_input_index += 1
             else:
-                embeddings.append(Vector.init_zero_vector(self._config.length))
+                embeddings.append(self._config.default_vector)
         aggregation = VectorAggregation(VectorAggregationConfig(Vector))
         combined_embeddings = [
             aggregation.aggregate_weighted(

@@ -112,15 +112,15 @@ class MongoDBFieldEncoder:
 
     def _decode_vector(self, vector: Any) -> Vector:
         if not isinstance(vector, list):
-            raise InvalidStateException(f"Cannot decode non-list type vector, got: {type(vector)}")
+            raise InvalidStateException("Cannot decode non-list type vector.", vector_type=type(vector))
         return Vector(np.array(vector).astype(self.__vector_precision_type).tolist())
 
     def encode_field(self, field: FieldData) -> MongoDBEncodedTypes:
         if encoder := self._encode_map.get(field.data_type):
             return encoder(field.value)
-        raise NotImplementedException(f"Unknown field type: {field.data_type}, cannot encode field.")
+        raise NotImplementedException("Unknown field type.", field_type=field.data_type.name)
 
     def decode_field(self, field: Field, value: MongoDBEncodedTypes) -> FieldData:
         if decoder := self._decode_map.get(field.data_type):
             return FieldData.from_field(field, decoder(value))
-        raise NotImplementedException(f"Unknown field type: {field.data_type}, cannot decode field.")
+        raise NotImplementedException("Unknown field type.", field_type=field.data_type.name)

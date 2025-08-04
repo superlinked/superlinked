@@ -97,12 +97,12 @@ class InMemorySearch:
         if wrong_types := {
             type(value) for value in filtered_unchecked_vectors.values() if not isinstance(value, Vector)
         }:
-            raise InvalidStateException(f"Indexed vector field contains non-vectors: {wrong_types}")
+            raise InvalidStateException("Indexed vector field contains non-vectors.", wrong_types=wrong_types)
         if wrong_dimensions := {
             value.dimension for value in filtered_unchecked_vectors.values() if value.dimension != vector.dimension
         }:
             raise InvalidStateException(
-                f"Indexed vector field contains vectors with wrong dimensions: {wrong_dimensions}"
+                "Indexed vector field contains vectors with wrong dimensions.", wrong_dimensions=wrong_dimensions
             )
         return cast(dict[str, Vector], filtered_unchecked_vectors)
 

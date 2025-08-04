@@ -31,7 +31,7 @@ class VectorSimilarityCalculator:
             case DistanceMetric.INNER_PRODUCT:
                 return self.__calculate_inner_product(vector_a, vector_b)
             case _:
-                raise NotImplementedException(f"Unsupported calculation method: {self.__method}")
+                raise NotImplementedException("Unsupported calculation method.", method=self.__method)
 
     def __calculate_inner_product(self, vector_a: NPArray, vector_b: NPArray) -> float:
 

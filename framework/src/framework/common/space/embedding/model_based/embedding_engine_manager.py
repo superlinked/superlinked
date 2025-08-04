@@ -84,7 +84,7 @@ class EmbeddingEngineManager:
             engine = engine_type(model_name, model_cache_dir, config)
             self._engines[engine_key] = engine
             return engine
-        raise NotImplementedException(f"Unsupported model handler: {model_handler.value}")
+        raise NotImplementedException("Unsupported model handler.", model_handler=model_handler.value)
 
     @classmethod
     def calculate_engine_key(

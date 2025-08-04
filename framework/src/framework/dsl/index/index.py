@@ -294,7 +294,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
     def __init_dag(self, node: IndexNode, dag_effects: set[DagEffect]) -> Dag:
         def append_ancestors(node: Node, depth: int = 0) -> None:
             if depth > constants.MAX_DAG_DEPTH:
-                raise InvalidStateException(f"Max DAG depth ({constants.MAX_DAG_DEPTH}) exceeded.")
+                raise InvalidStateException("Max DAG depth exceeded.", max_depth=constants.MAX_DAG_DEPTH)
             dag_dict[node.node_id] = node
             for parent in node.parents:
                 append_ancestors(parent, depth + 1)

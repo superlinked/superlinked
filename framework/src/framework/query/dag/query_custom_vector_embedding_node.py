@@ -53,9 +53,8 @@ class QueryCustomVectorEmbeddingNode(QueryEmbeddingOrphanNode[Vector, CustomVect
             )
         else:
             raise InvalidStateException(
-                f"{type(self).__name__} can only evaluate "
-                + f"{type(Vector).__name__} and list of floats "
-                + f"input, got {type(node_input.value.item).__name__}"
+                f"{type(self).__name__} can only evaluate " + f"{Vector.__name__} and list of floats input.",
+                input_type=type(node_input.value.item).__name__,
             )
         self.__validate_pre_processed(result)
         return result

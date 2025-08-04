@@ -81,4 +81,4 @@ class TopKFilter(VDBFilter):
             case FilterOperator.NOT_IN:
                 raise FeatureNotSupportedException("NOT_IN is not yet supported")
             case _:
-                raise NotImplementedException(f"Unsupported filter operator: {filter_operator}")
+                raise NotImplementedException("Unsupported filter operator.", filter_operator=filter_operator)

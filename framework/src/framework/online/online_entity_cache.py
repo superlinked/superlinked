@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import Sequence
 
 from beartype.typing import Mapping
 
@@ -46,7 +47,7 @@ class OnlineEntityCache:
     def origin_ids(self) -> Mapping[EntityId, str]:
         return self._entity_to_origin
 
-    def load_node_info(self, entity_info: Mapping[EntityId, Mapping[str, NodeInfo]]) -> None:
+    def load_node_info_into_cache(self, entity_info: Mapping[EntityId, Mapping[str, NodeInfo]]) -> None:
         self._cache.update(
             {entity_id: dict(node_id_to_node_info) for entity_id, node_id_to_node_info in entity_info.items()}
         )
@@ -64,16 +65,28 @@ class OnlineEntityCache:
     def set_origin(self, entity_id: EntityId, origin_id: str) -> None:
         self._entity_to_origin[entity_id] = origin_id
 
-    def get_node_result(
-        self, entity_id: EntityId, node_id: str, node_data_type: type[NodeDataTypes]
-    ) -> NodeDataTypes | None:
-        if cached_node_info := self._cache[entity_id].get(node_id):
-            return cached_node_info.result
-        stored_entity = self._storage_manager.read_entity_data_requests(
-            [EntityDataRequest(entity_id, [NodeResultRequest(node_id, node_data_type)])]
-        )[0]
-        self.load_node_info({entity_id: stored_entity})
-        return stored_entity[node_id].result if node_id in stored_entity else None
+    def get_node_results(
+        self, entity_ids: Sequence[EntityId], node_id: str, node_data_type: type[NodeDataTypes]
+    ) -> dict[EntityId, NodeDataTypes | None]:
+        cached_results: dict[EntityId, NodeDataTypes | None] = {}
+        entities_to_load: list[EntityId] = []
+
+        for entity_id in entity_ids:
+            if cached_node_info := self._cache[entity_id].get(node_id):
+                cached_results[entity_id] = cached_node_info.result
+            else:
+                entities_to_load.append(entity_id)
+        if entities_to_load:
+            entity_data_requests = [
+                EntityDataRequest(entity_id, [NodeResultRequest(node_id, node_data_type)])
+                for entity_id in entities_to_load
+            ]
+            stored_entities = self._storage_manager.read_entity_data_requests(entity_data_requests)
+            batch_entity_info = dict(zip(entities_to_load, stored_entities))
+            self.load_node_info_into_cache(batch_entity_info)
+            for entity_id, stored_entity in batch_entity_info.items():
+                cached_results[entity_id] = stored_entity[node_id].result if node_id in stored_entity else None
+        return cached_results
 
     def get_node_data(self, entity_id: EntityId, node_id: str, field_name: str) -> NodeDataTypes | None:
         if initial_node_info := self._cache[entity_id].get(node_id):

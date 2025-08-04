@@ -147,7 +147,7 @@ class StorageManager:
             for schema_field in schema_fields
             if not isinstance(schema_field, tuple(FIELD_DATA_TYPE_BY_SCHEMA_FIELD_TYPE.keys()))
         ]:
-            raise NotImplementedException(f"Unindexable schema fields: {', '.join(unsupported_schema_field_indexing)}")
+            raise NotImplementedException("Unindexable schema fields.", schema_fields=unsupported_schema_field_indexing)
         return [
             IndexFieldDescriptor(
                 self._get_index_field_type_of_schema_field(cast(ConcreteSchemaField, schema_field)),

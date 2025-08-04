@@ -229,7 +229,7 @@ class ComparisonOperation(Generic[COT]):
             case ComparisonOperationType.CONTAINS_ALL:
                 result = self.__evaluate_contains_all(value)
             case _:
-                raise NotImplementedException(f"Unsupported operation type: {self._op}")
+                raise NotImplementedException("Unsupported operation type.", operation_type=self._op.name)
         return result
 
     def __evaluate_eq(self, value: Any) -> bool:

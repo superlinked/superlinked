@@ -121,18 +121,18 @@ class RedisFieldEncoder:
 
     def _decode_vector(self, vector: bytes) -> Vector:
         if not isinstance(vector, bytes):
-            raise InvalidStateException(f"Cannot decode non-bytes type vector, got: {type(vector)}")
+            raise InvalidStateException("Cannot decode non-bytes type vector.", vector_type=type(vector))
         return Vector(np.frombuffer(vector, self.__vector_precision_type).tolist())
 
     def encode_field(self, field: FieldData) -> RedisEncodedTypes:
         if encoder := self._encode_map.get(field.data_type):
             return encoder(field.value)
-        raise NotImplementedException(f"Unknown field type: {field.data_type}, cannot encode field.")
+        raise NotImplementedException("Unknown field type.", field_type=field.data_type.name)
 
     def decode_field(self, field: Field, value: bytes) -> FieldData:
         if decoder := self._decode_map.get(field.data_type):
             return FieldData.from_field(field, decoder(value))
-        raise NotImplementedException(f"Unknown field type: {field.data_type}, cannot decode field.")
+        raise NotImplementedException("Unknown field type.", field_type=field.data_type.name)
 
     def convert_bytes_keys_dict(self, data: dict[bytes, Any]) -> dict[str, Any]:
         return {self._decode_string(cast(bytes, key)): self.convert_bytes_keys(value) for key, value in data.items()}

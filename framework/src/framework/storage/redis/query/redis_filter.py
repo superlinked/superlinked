@@ -65,4 +65,4 @@ class RedisFilter(VDBFilter):
     def _init_filter_field(cls, field: Field) -> Num | Tag | Text:
         if redis_field_type := REDIS_FIELD_TYPE_BY_FIELD_DATA_TYPE.get(field.data_type):
             return redis_field_type(field.name)
-        raise NotImplementedException(f"Unsupported {FieldDataType.__name__}: {field.data_type}")
+        raise NotImplementedException("Unknown field type.", field_type=field.data_type.name)

@@ -83,13 +83,13 @@ class FieldTypeConverter:
             cast(type[ConcreteSchemaField], schema_field_cls)
         ):
             return field_data_type
-        raise NotImplementedException(f"Unknown schema field type: {schema_field_cls.__name__}")
+        raise NotImplementedException("Unsupported schema field type.", schema_field_type=schema_field_cls.__name__)
 
     @staticmethod
     def convert_node_data_type(type_: type[NodeDataTypes]) -> FieldDataType:
         if field_data_type := FIELD_DATA_TYPE_BY_NODE_DATA_TYPE.get(cast(type[NodeDataTypes], type_)):
             return field_data_type
-        raise NotImplementedException(f"Unknown python type: {type_}")
+        raise NotImplementedException("Unknown python type.", type_name=type_.__name__)
 
     @staticmethod
     def get_valid_node_data_types(

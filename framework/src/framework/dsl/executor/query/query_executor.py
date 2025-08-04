@@ -178,7 +178,8 @@ class QueryExecutor:
         ]:
             raise InvalidStateException(
                 "Vector parts can only be requested with queried index vector. "
-                f"Index vectors of {unqueried_entity_ids} cannot be found"
+                "Index vectors of entity ids cannot be found.",
+                entity_ids=unqueried_entity_ids,
             )
         return cast(list[Vector], list(index_vector_by_object_id.values()))
 

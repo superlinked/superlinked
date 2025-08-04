@@ -104,7 +104,7 @@ class ModelDownloader:
                         model_path = self._get_model_folder_path(model_name, cache_dir)
                         if not model_path.exists():
                             raise InvalidStateException(
-                                f"Model download completed but path {model_path} does not exist"
+                                "Model download completed but path does not exist.", model_path=model_path
                             )
 
                         return model_path

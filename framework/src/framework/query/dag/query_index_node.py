@@ -45,8 +45,8 @@ class QueryIndexNode(QueryNodeWithParent[IndexNode, Vector]):
         super()._validate_evaluation_inputs(inputs)
         if invalid_index_node_inputs := [input_ for input_ in inputs.get(self.node_id, []) if not input_.to_invert]:
             raise InvalidStateException(
-                "Query index node can only be addressed with items to be inverted, "
-                + f"got {invalid_index_node_inputs}"
+                "Query index node can only be addressed with items to be inverted.",
+                node_inputs=invalid_index_node_inputs,
             )
 
     @override
@@ -78,10 +78,11 @@ class QueryIndexNode(QueryNodeWithParent[IndexNode, Vector]):
         context: ExecutionContext,
     ) -> QueryEvaluationResult[Vector]:
         if (count := len(parent_results)) != 1:
-            raise InvalidStateException(f"Query index must receive exactly 1 parent result, got {count}.")
+            raise InvalidStateException("Query index must receive exactly 1 parent result.", count=count)
         if not isinstance(parent_results[0].value, Vector):
             raise InvalidStateException(
-                "Query index's parent result must be a vector, " + f"got {type(parent_results[0].value).__name__}."
+                "Query index's parent result must be a vector.",
+                parent_result_type=type(parent_results[0].value).__name__,
             )
         return parent_results[0]
 
@@ -106,10 +107,10 @@ class QueryIndexNode(QueryNodeWithParent[IndexNode, Vector]):
             if queried_schema_name in [schema._schema_name for schema in parent.node.schemas]
         ]
         if len(active_parents) == 0:
-            raise InvalidStateException(f"Query dag doesn't have the given schema {queried_schema_name}.")
+            raise InvalidStateException("Query dag doesn't have the given schema.", schema_name=queried_schema_name)
         if len(active_parents) > 1:
             raise InvalidStateException(
-                "Ambiguous query dag definition, query index node cannot "
-                + f"have parents having the same {queried_schema_name} schema."
+                "Ambiguous query dag definition, query index node cannot have parents having the same schema.",
+                schema_name=queried_schema_name,
             )
         return active_parents[0]

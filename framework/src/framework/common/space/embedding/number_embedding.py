@@ -86,7 +86,9 @@ class NumberEmbedding(InvertibleEmbedding[NumberT, NumberEmbeddingConfig]):
         but it essentially performs the inverse operation of the embed function.
         """
         if len(vector.value) != self.length:
-            raise InvalidStateException(f"Mismatching length {len(vector.value)} of the vector to inverse embed")
+            raise InvalidStateException(
+                "Mismatching length of the vector to inverse embed.", len_vector=len(vector.value)
+            )
         if list(vector.value) == self._value_when_out_of_bounds:
             out_of_bounds_bias: float = (self._config.max_value - self._config.min_value) / 1000.0
             if self._config.mode == Mode.MAXIMUM:

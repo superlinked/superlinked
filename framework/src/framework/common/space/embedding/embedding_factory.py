@@ -78,4 +78,6 @@ class EmbeddingFactory:
     ) -> Embedding[EmbeddingInputT, Any]:
         if embedding_class := EMBEDDING_BY_CONFIG_CLASS.get(type(embedding_config)):
             return embedding_class(embedding_config, embedding_engine_manager)
-        raise NotImplementedException(f"Unknown embedding config type: {type(embedding_config).__name__}")
+        raise NotImplementedException(
+            "Unsupported embedding config type.", embedding_config_type=type(embedding_config).__name__
+        )

@@ -20,7 +20,7 @@ from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 class SchemaObjectReference:
     def __init__(self, schema: IdSchemaObject, reference_field: SchemaReference) -> None:
         if not isinstance(schema, reference_field._referenced_schema):
-            raise InvalidStateException(f"{self.__class__.__name__}'s schema is not the referenced schema.")
+            raise InvalidStateException(f"{type(self).__name__}'s schema is not the referenced schema.")
         self.schema = schema
         self.reference_field = reference_field
 

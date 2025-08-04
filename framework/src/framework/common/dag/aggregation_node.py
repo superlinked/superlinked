@@ -67,7 +67,7 @@ class AggregationNode(
         wrong_length_parents = {parent for parent in self.parents if cast(HasLength, parent).length != length}
         if any(wrong_length_parents):
             lengths = {length}.union({cast(HasLength, parent).length for parent in wrong_length_parents})
-            raise InvalidStateException(f"{self.class_name} must have parents with the same length, got {lengths}")
+            raise InvalidStateException(f"{self.class_name} must have parents with the same length.", lengths=lengths)
 
     @property
     @override

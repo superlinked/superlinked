@@ -64,7 +64,7 @@ class CompiledNodeRegistry(Generic[CompiledNodeT]):
                     origin = getattr(arg, "__origin__", None)
                     if origin and issubclass(origin, Node):
                         return origin
-        raise NotImplementedException(f"Node type not found for {base_node_type.__name__}.")
+        raise NotImplementedException("Node type not found.", node_type=base_node_type.__name__)
 
     def register_node(self, node: type[Node], compiled_node: type[CompiledNodeT]) -> None:
         self._compiled_node_type_by_node_type[node] = compiled_node
@@ -82,7 +82,9 @@ class CompiledNodeRegistry(Generic[CompiledNodeT]):
         if not isinstance(node_class, type):
             raise InvalidStateException(f"Not a valid class path: {path}")
         if not issubclass(node_class, expected_class):
-            raise InvalidStateException(f"Not {expected_class.__name__} type: {node_class.__name__}")
+            raise InvalidStateException(
+                "Unexpected type.", expected_type=expected_class.__name__, node_type=node_class.__name__
+            )
         return cast(type[ImportedNodeT], node_class)
 
     def init_compiled_node(
@@ -90,5 +92,5 @@ class CompiledNodeRegistry(Generic[CompiledNodeT]):
     ) -> CompiledNodeT:
         compiled_node_class = self._compiled_node_type_by_node_type.get(type(node))
         if compiled_node_class is None:
-            raise NotImplementedException(f"Not implemented Node type: {type(node).__name__}")
+            raise NotImplementedException("Not implemented Node type.", node_type=type(node).__name__)
         return compiled_node_class(node, parents, *args, **kwargs)  # type: ignore

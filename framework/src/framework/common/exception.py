@@ -24,6 +24,10 @@ class SuperlinkedException(Exception):
 class InternalException(SuperlinkedException):
     """Framework bugs or unexpected internal conditions."""
 
+    def __init__(self, *args: object, **kwargs: object) -> None:
+        super().__init__(*args)
+        self.kwargs = kwargs
+
 
 class ExternalException(SuperlinkedException):
     """External input/output or service dependency errors."""

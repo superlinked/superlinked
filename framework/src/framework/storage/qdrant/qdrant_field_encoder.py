@@ -82,9 +82,9 @@ class QdrantFieldEncoder:
     def encode_field(self, field: FieldData) -> QdrantEncodedTypes:
         if encoder := self._encode_map.get(field.data_type):
             return encoder(field.value)
-        raise NotImplementedException(f"Unknown field type: {field.data_type}, cannot encode field.")
+        raise NotImplementedException("Unknown field type.", field_type=field.data_type.name)
 
     def decode_field(self, field: Field, value: Any) -> FieldData:
         if decoder := self._decode_map.get(field.data_type):
             return FieldData.from_field(field, decoder(value))
-        raise NotImplementedException(f"Unknown field type: {field.data_type}, cannot decode field.")
+        raise NotImplementedException("Unknown field type.", field_type=field.data_type.name)

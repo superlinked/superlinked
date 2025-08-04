@@ -51,6 +51,8 @@ class TempLiftWeightingWrapper(
     ) -> Sequence[Weighted[StepOutputT]]:
         if len(input_) != len(wrapper_context.context):
             raise InvalidStateException(
-                f"Mismatching input {len(input_)} and output {len(wrapper_context.context)} counts"
+                "Mismatching input and output counts.",
+                input_count=len(input_),
+                output_count=len(wrapper_context.context),
             )
         return [Weighted(item, weight) for item, weight in zip(input_, wrapper_context.context)]

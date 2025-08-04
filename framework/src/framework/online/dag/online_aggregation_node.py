@@ -106,8 +106,8 @@ class OnlineAggregationNode(DefaultOnlineNode[AggregationNode, Vector], HasLengt
         ]
         if any(invalid_length_results):
             raise InvalidStateException(
-                f"{self.class_name} can only process inputs having same length"
-                + f", got {invalid_length_results[0].value.dimension}"
+                f"{self.class_name} can only process inputs having same length.",
+                dimension=invalid_length_results[0].value.dimension,
             )
 
     def _get_not_empty_weighted_vectors(

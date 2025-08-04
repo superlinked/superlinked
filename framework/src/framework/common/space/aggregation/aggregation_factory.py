@@ -47,4 +47,6 @@ class AggregationFactory:
     ) -> Aggregation[AggregationInputT]:
         if aggregation_class := AGGREGATION_BY_CONFIG_CLASS.get(type(aggregation_config)):
             return aggregation_class(aggregation_config)
-        raise NotImplementedException(f"Unknown aggregation config type: {type(aggregation_config).__name__}")
+        raise NotImplementedException(
+            "Unknown aggregation config type.", aggregation_config_type=type(aggregation_config).__name__
+        )

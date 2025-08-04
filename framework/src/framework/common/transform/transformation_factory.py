@@ -131,8 +131,8 @@ class TransformationFactory:
         else:
             if transformation_config.aggregation_config.aggregation_input_type is not Vector:
                 raise InvalidStateException(
-                    "Cannot create non-vector aggregation step without an invertible embedding. "
-                    + f"Got {transformation_config.embedding_config}"
+                    "Cannot create non-vector aggregation step without an invertible embedding.",
+                    embedding_config=transformation_config.embedding_config,
                 )
             aggregation_step = AggregationStep(base_transformations.aggregation)
             transformation = cast(
@@ -154,16 +154,17 @@ class TransformationFactory:
     ) -> Transform[Sequence[Weighted[Vector]], Vector]:
         if not isinstance(base_transformations.embedding, InvertibleEmbedding):
             raise InvalidStateException(
-                "Inverse aggregation cannot be instantitated "
-                + f"with given embedding {base_transformations.embedding}"
+                "Inverse aggregation cannot be initialized with given embedding.",
+                embedding=base_transformations.embedding,
             )
         if (
             transformation_config.embedding_config.embedding_input_type
             is not transformation_config.aggregation_config.aggregation_input_type
         ):
             raise InvalidStateException(
-                "Cannot create aggregation step using an embedding with a different input type. "
-                + f"Got {transformation_config.embedding_config}"
+                "Cannot create aggregation step using an embedding with a different input type.",
+                embedding_config=transformation_config.embedding_config,
+                aggregation_config=transformation_config.aggregation_config,
             )
         inverse_multi_normalization_step = MultiNormalizationStep(base_transformations.normalization, denormalize=True)
         inverse_multi_embedding_step = InverseMultiEmbeddingStep(base_transformations.embedding)

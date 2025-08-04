@@ -109,8 +109,8 @@ class VectorAggregation(Aggregation[Vector]):
             i for i in common_negative_filter_indices if len({vector.value[i] for vector in vectors}) > 1
         ]:
             raise InvalidStateException(
-                "Cannot aggregate vectors having different negative filter values in the following positions: "
-                f"{colliding_negative_filter_indices}."
+                "Cannot aggregate vectors having different negative filter values in the same positions.",
+                positions=colliding_negative_filter_indices,
             )
         return Vector(
             value=[

@@ -47,8 +47,10 @@ class EventEffectHandler:
     ) -> dict[str, EventAffectingInfo]:
         if len(event_parsed_schemas) != len(affecting_vectors) or len(event_parsed_schemas) != len(affecting_weights):
             raise InvalidStateException(
-                f"Input sequences must have the same length. Got: {len(event_parsed_schemas)} event_parsed_schemas, "
-                f"{len(affecting_vectors)} affecting_vectors, and {len(affecting_weights)} affecting_weights."
+                "Input sequences must have the same length.",
+                len_event_parsed_schemas=len(event_parsed_schemas),
+                len_affecting_vectors=len(affecting_vectors),
+                len_affecting_weights=len(affecting_weights),
             )
         return {
             event_parsed_schema.id_: EventAffectingInfo(vector, len(weights), sum(weights) / len(weights))
@@ -73,7 +75,7 @@ class EventEffectHandler:
         vector = parent_result.main.value
         if not isinstance(vector, Vector):
             raise InvalidStateException(
-                f"parent_to_aggregate's evaluation result must be of type Vector, got {type(vector).__name__}"
+                "parent_to_aggregate's evaluation result must be of type Vector.", result_type=type(vector).__name__
             )
         return vector
 

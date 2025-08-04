@@ -55,7 +55,7 @@ class FilterCombinator:
         expressions: Sequence[Any],
     ) -> Any:
         if len(expressions) != 1:
-            raise InvalidStateException(f"Expected exactly one expression, but got {len(expressions)}")
+            raise InvalidStateException("Expected exactly one expression.", expressions_length=len(expressions))
         return expressions[0]
 
 
@@ -121,7 +121,7 @@ class TopKFilterInformation:
     @staticmethod
     def get(operation_type: ComparisonOperationType) -> TopKFilterInformation:
         if operation_type not in FILTER_INFORMATION_BY_COMPARISON_OPERATION_TYPE:
-            raise NotImplementedException(f"Unsupported operation type: {operation_type}")
+            raise NotImplementedException("Unsupported operation type.", operation_type=operation_type)
         return FILTER_INFORMATION_BY_COMPARISON_OPERATION_TYPE[operation_type]
 
 

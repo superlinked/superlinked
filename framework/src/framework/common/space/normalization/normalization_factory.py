@@ -46,4 +46,6 @@ class NormalizationFactory:
     ) -> Normalization[Any]:
         if normalization_class := NORMALIZATION_BY_TYPE.get(type(normalization_config)):
             return normalization_class(normalization_config)
-        raise NotImplementedException(f"Unknown normalization config type: {type(normalization_config)}")
+        raise NotImplementedException(
+            "Unsupported normalization config type.", normalization_config_type=type(normalization_config).__name__
+        )

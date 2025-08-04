@@ -43,7 +43,7 @@ class FilterCombinator:
     @staticmethod
     def get_single_expression(expressions: Sequence[FilterExpression]) -> FilterExpression:
         if len(expressions) != 1:
-            raise InvalidStateException(f"Expected exactly one expression, but got {len(expressions)}")
+            raise InvalidStateException("Expected exactly one expression.", len_expression=len(expressions))
         return expressions[0]
 
 
@@ -111,7 +111,7 @@ class RedisFilterInformation:
     @staticmethod
     def get(operation_type: ComparisonOperationType) -> RedisFilterInformation:
         if operation_type not in FILTER_INFORMATION_BY_COMPARISON_OPERATION_TYPE:
-            raise NotImplementedException(f"Unsupported operation type: {operation_type}")
+            raise NotImplementedException("Unsupported operation type.", operation_type=operation_type)
         return FILTER_INFORMATION_BY_COMPARISON_OPERATION_TYPE[operation_type]
 
 

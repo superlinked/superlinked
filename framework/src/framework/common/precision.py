@@ -28,4 +28,4 @@ class Precision(Enum):
             return np.float32
         if self is Precision.FLOAT16:
             return np.float16
-        raise NotImplementedException(f"Unsupported vector component precision: {self}")
+        raise NotImplementedException("Unsupported vector component precision.", precision=self.value)

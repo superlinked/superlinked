@@ -28,10 +28,7 @@ from superlinked.evaluation.storage_usage.vdb_watcher import VDBWatcher
 from superlinked.framework.common.dag.aggregation_node import AggregationNode
 from superlinked.framework.common.dag.dag import Dag
 from superlinked.framework.common.dag.event_aggregation_node import EventAggregationNode
-from superlinked.framework.common.exception import (
-    InvalidInputException,
-    InvalidStateException,
-)
+from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.dsl.app.online.online_app import OnlineApp
 from superlinked.framework.dsl.index.index import Index
 from superlinked.framework.online.source.online_source import OnlineSource
@@ -62,7 +59,7 @@ class StorageUsageEvaluator:
     def start_trace(self, title: str) -> None:
         self.__subscribe_to_data_streams()
         if self.__trace_round_info is not None:
-            raise InvalidStateException(
+            raise InvalidInputException(
                 "Found ongoing tracing process, stop the previous one before starting a new one."
             )
         self.__trace_round_info = TraceRoundInfo(title, self.__vdb_watcher.get_memory_usage())
@@ -74,7 +71,7 @@ class StorageUsageEvaluator:
     def stop_trace(self) -> StorageUsageReportDetail:
         self.__unsubscribe_from_data_streams()
         if self.__trace_round_info is None:
-            raise InvalidStateException(
+            raise InvalidInputException(
                 "No ongoing tracing process was found. To start the evaluation, "
                 + f"run {StorageUsageEvaluator.start_trace.__name__} first."
             )

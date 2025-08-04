@@ -80,7 +80,7 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
     def _validate_inputs_to_be_inverted(self, node_inputs: Sequence[QueryNodeInputValue]) -> None:
         if any(invalid_inputs := [node_input for node_input in node_inputs if not isinstance(node_input.item, Vector)]):
             raise InvalidStateException(
-                "The inputs that need to be inverted must be " + f"vectors, got {invalid_inputs}"
+                "The inputs that need to be inverted must be vectors.", invalid_inputs=invalid_inputs
             )
         if any(
             invalid_inputs_lengths := [
@@ -90,8 +90,9 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
             ]
         ):
             raise InvalidStateException(
-                "The inputs that need to be inverted must have the same dimension "
-                + f"as the concatenation node ({self.node.length}), got {invalid_inputs_lengths}"
+                "The inputs that need to be inverted must have the same dimension as the concatenation node.",
+                dimension=self.node.length,
+                invalid_inputs_lengths=invalid_inputs_lengths,
             )
 
     def _split_weighted_vector(self, weighted_vector: QueryNodeInputValue[Vector]) -> list[QueryNodeInputValue[Vector]]:
@@ -118,7 +119,9 @@ class QueryConcatenationNode(InvertIfAddressedQueryNode[ConcatenationNode, Vecto
             for parent_result in parent_results
             if not isinstance(parent_result.value, Vector)
         }:
-            raise InvalidStateException(f"Parent results must be vectors, got {invalid_parent_result_types}")
+            raise InvalidStateException(
+                "Parent results must be vectors.", invalid_parent_result_types=invalid_parent_result_types
+            )
 
     @override
     def _evaluate_parent_results(

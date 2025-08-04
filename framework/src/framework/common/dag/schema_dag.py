@@ -40,6 +40,6 @@ class SchemaDag:
         class_name = type(self).__name__
         leaf_nodes = [node for node in nodes if len(node.children) == 0]
         if len(leaf_nodes) != 1:
-            raise InvalidStateException(f"{class_name} must have exactly one leaf Node, got {len(leaf_nodes)}")
+            raise InvalidStateException(f"{class_name} must have exactly one leaf Node.", n_leaf_nodes=len(leaf_nodes))
         if not isinstance(leaf_nodes[0], IndexNode):
             raise InvalidStateException(f"{class_name} must have a IndexNode leaf Node.")

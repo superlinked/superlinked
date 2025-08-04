@@ -39,7 +39,7 @@ class AdminFieldDescriptor:
     def extract_value(self, field_data: dict[str, FieldData], _: type[FT]) -> FT | None:
         data = field_data.get(self.field.name)
         if not self.nullable and data is None:
-            raise InvalidStateException(f"None value found for the non-null {self.field.name} admin field.")
+            raise InvalidStateException("None value found for the non-null admin field.", field_name=self.field.name)
         value = data.value if data is not None else None
         return cast(FT, value)
 
@@ -49,7 +49,7 @@ class AdminFieldDescriptor:
     ) -> FieldData | None:
         if value is None:
             if not self.nullable:
-                raise InvalidStateException(f"None value cannot be assigned to {self.field.name} admin field.")
+                raise InvalidStateException("None value cannot be assigned to admin field.", field_name=self.field.name)
             return None
         return FieldData.from_field(self.field, value)
 

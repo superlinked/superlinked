@@ -14,6 +14,8 @@
 
 from __future__ import annotations
 
+from itertools import chain
+
 from beartype.typing import Sequence, cast
 from PIL.Image import Image
 from typing_extensions import override
@@ -72,18 +74,34 @@ class OnlineImageEmbeddingNode(OnlineNode[ImageEmbeddingNode, Vector], HasLength
         return self._embedding_transformation
 
     @override
-    def evaluate_self(
+    def evaluate_self(  # pylint: disable=too-many-locals
         self,
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
         online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult[Vector] | None]:
         image_data_list = [self._get_image_data(parsed_schema) for parsed_schema in parsed_schemas]
-        embedded_images = AsyncUtil.run(self.embedding_transformation.transform(image_data_list, context))
-
-        return [
-            EvaluationResult(self._get_single_evaluation_result(embedded_image)) for embedded_image in embedded_images
-        ]
+        empty_indices = []
+        valid_indices = []
+        valid_image_data = []
+        empty_parsed_schemas = []
+        for i, image_data in enumerate(image_data_list):
+            if image_data.image is None and image_data.description is None:
+                empty_indices.append(i)
+                empty_parsed_schemas.append(parsed_schemas[i])
+            else:
+                valid_indices.append(i)
+                valid_image_data.append(image_data_list[i])
+        empty_results = self.load_stored_results_with_default(
+            [(parsed_schema.schema, parsed_schema.id_) for parsed_schema in empty_parsed_schemas],
+            self.node.transformation_config.embedding_config.default_vector,
+            online_entity_cache,
+        )
+        valid_results = AsyncUtil.run(self.embedding_transformation.transform(valid_image_data, context))
+        results: list[EvaluationResult[Vector] | None] = [None] * len(image_data_list)  # type: ignore
+        for idx, result in chain(zip(empty_indices, empty_results), zip(valid_indices, valid_results)):
+            results[idx] = EvaluationResult(self._get_single_evaluation_result(result))
+        return results
 
     def _get_image_data(self, parsed_schema: ParsedSchema) -> ImageData:
         image, description = self.__load_input(parsed_schema)
@@ -95,7 +113,7 @@ class OnlineImageEmbeddingNode(OnlineNode[ImageEmbeddingNode, Vector], HasLength
     def __load_input(self, parsed_schema: ParsedSchema) -> tuple[BlobInformation | None, str | None]:
         description = self._get_field_value(parsed_schema, self._description_node)
         if description is not None and not isinstance(description, str):
-            raise InvalidStateException(f"Invalid image description type: {type(description).__name__}.")
+            raise InvalidStateException("Invalid image description type.", description_type=type(description).__name__)
         image = self._get_field_value(parsed_schema, self._image_node)
         if image is not None and not isinstance(image, BlobInformation):
             image = self._blob_loader.load(image)

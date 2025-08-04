@@ -34,4 +34,4 @@ class VDBWatcher:
             if name is not None:
                 self.__vdb_connector._client.delete_full_snapshot(name)
             return size
-        raise NotImplementedException(f"Checking memory usage of {type(self.__vdb_connector)} is not yet implemented")
+        raise NotImplementedException("Memory usage check not implemented.", vdb_connector=type(self.__vdb_connector))

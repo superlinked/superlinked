@@ -71,7 +71,10 @@ class EventMetadataHandler:
                 or 0
             )
             if not isinstance(event_metadata_item, int):
-                raise InvalidStateException(f"{field_name} must be int, got {type(event_metadata_item).__name__}.")
+                raise InvalidStateException(
+                    f"{field_name} must be int.",
+                    actual_type=type(event_metadata_item).__name__,
+                )
             return event_metadata_item
 
         return EventMetadata(

@@ -120,7 +120,7 @@ class NumberEmbeddingConfig(EmbeddingConfig[float]):
         elif self.mode == Mode.MAXIMUM:
             default_values = [1.0, 0.0, 1.0]
         else:
-            raise NotImplementedException(f"Unsupported mode: {self.mode}")
+            raise NotImplementedException("Unsupported mode.", mode=self.mode.name)
         return Vector(default_values, self.negative_filter_indices)
 
     def should_return_default(self, context: ExecutionContext) -> bool:

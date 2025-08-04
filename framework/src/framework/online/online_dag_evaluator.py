@@ -92,7 +92,8 @@ class OnlineDagEvaluator:
         unique_schemas: set[IdSchemaObject] = {parsed_schema.schema for parsed_schema in parsed_schemas}
         if len(unique_schemas) != 1:
             raise InvalidStateException(
-                f"Multiple schemas ({[s._schema_name for s in unique_schemas]}) are present among the parsed schemas."
+                "Multiple schemas are present among the parsed schemas.",
+                schemas=[s._schema_name for s in unique_schemas],
             )
         return next(iter(unique_schemas))
 
@@ -195,7 +196,7 @@ class OnlineDagEvaluator:
         self, entity_data_requests: Sequence[EntityDataRequest], online_entity_cache: OnlineEntityCache
     ) -> None:
         stored_results = self._storage_manager.read_entity_data_requests(entity_data_requests)
-        online_entity_cache.load_node_info(
+        online_entity_cache.load_node_info_into_cache(
             {
                 entity_data_request.entity_id: node_result
                 for entity_data_request, node_result in zip(entity_data_requests, stored_results)

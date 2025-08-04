@@ -78,10 +78,9 @@ class OnlineSchemaDag:
             raise InvalidStateException(f"{class_name}'s nodes must have the same root schema.")
         if schema not in root_node_schemas:
             raise InvalidStateException(
-                (
-                    f"{class_name} was instantiated with a schema object different from the nodes' root schema "
-                    f"object: {type(schema).__name__} <> {list(root_node_schemas)[0]._base_class_name}."
-                )
+                f"{class_name} was instantiated with a schema object different from the nodes' root schema object.",
+                schema_name=type(schema).__name__,
+                root_schema_name=list(root_node_schemas)[0]._base_class_name,
             )
 
     def evaluate(

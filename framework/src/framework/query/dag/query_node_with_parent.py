@@ -52,8 +52,10 @@ class QueryNodeWithParent(QueryNode[NT, QueryEvaluationResultT], Generic[NT, Que
         if inputs_to_invert:
             if len(self.parents) > 1:
                 raise InvalidStateException(
-                    f"Addressed query node {self.node_id} with inputs needing to "
-                    + f"be inverted {inputs_to_invert} is prohibited."
+                    "Addressed query node with inputs needing to be inverted is prohibited.",
+                    node_id=self.node_id,
+                    node_type=type(self).__name__,
+                    inputs_to_invert=inputs_to_invert,
                 )
             if len(self.parents) == 1:
                 return self._merge_inputs([inputs, {self.parents[0].node_id: inputs_to_invert}])
@@ -67,7 +69,11 @@ class QueryNodeWithParent(QueryNode[NT, QueryEvaluationResultT], Generic[NT, Que
     def _validate_parent_results(self, parent_results: Sequence[QueryEvaluationResult]) -> None:
         if len(parent_results) != len(self.parents):
             raise InvalidStateException(
-                f"Mismatching number of parents {len(self.parents)} " f"and parent results {len(parent_results)}."
+                "Mismatching number of parents and parent results.",
+                node_id=self.node_id,
+                node_type=type(self).__name__,
+                parents_count=len(self.parents),
+                parent_results_count=len(parent_results),
             )
 
     @abstractmethod
