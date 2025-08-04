@@ -133,10 +133,9 @@ class StorageManager:
             vector_index_field_descriptor,
             list(self._create_index_field_descriptors_from_schema_fields(params.indexed_fields))
             + [
-                IndexFieldDescriptor(
-                    FieldDataType.METADATA_STRING,
-                    self._entity_builder._admin_fields.schema_id.field.name,
-                )
+                IndexFieldDescriptor(field_descriptor.field.data_type, field_descriptor.field.name)
+                for field_descriptor in self._entity_builder._admin_fields.field_descriptors
+                if field_descriptor.should_be_returned
             ],
         )
 

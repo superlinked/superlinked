@@ -59,22 +59,26 @@ class AdminFields:
         self.schema_id = AdminFieldDescriptor(Field(FieldDataType.METADATA_STRING, StorageNaming.SCHEMA_INDEX_NAME))
         self.object_id = AdminFieldDescriptor(Field(FieldDataType.METADATA_STRING, StorageNaming.OBJECT_ID_INDEX_NAME))
         self.origin_id = AdminFieldDescriptor(
-            Field(FieldDataType.STRING, StorageNaming.ORIGIN_ID_INDEX_NAME),
+            Field(FieldDataType.METADATA_STRING, StorageNaming.ORIGIN_ID_INDEX_NAME),
             True,
             should_be_returned=settings.QUERY_TO_RETURN_ORIGIN_ID,
         )
-        admin_field_descriptors = [
+        self.__admin_field_descriptors = [
             self.schema_id,
             self.object_id,
             self.origin_id,
         ]
-        admin_fields = [admin_field_descriptor.field for admin_field_descriptor in admin_field_descriptors]
+        admin_fields = [admin_field_descriptor.field for admin_field_descriptor in self.__admin_field_descriptors]
         self.__admin_field_names = [admin_field.name for admin_field in admin_fields]
         self.__header_fields = [
             admin_field_descriptor.field
-            for admin_field_descriptor in admin_field_descriptors
+            for admin_field_descriptor in self.__admin_field_descriptors
             if admin_field_descriptor.should_be_returned
         ]
+
+    @property
+    def field_descriptors(self) -> Sequence[AdminFieldDescriptor]:
+        return self.__admin_field_descriptors
 
     @property
     def header_fields(self) -> Sequence[Field]:

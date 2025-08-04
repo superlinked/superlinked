@@ -23,6 +23,7 @@ from superlinked.framework.common.storage.search_index.index_field_descriptor im
     IndexFieldDescriptor,
     VectorIndexFieldDescriptor,
 )
+from superlinked.framework.common.storage_manager.storage_naming import StorageNaming
 
 RedisFieldTypeByFieldDataType: dict[FieldDataType, type[RedisField]] = {
     FieldDataType.DOUBLE: NumericField,
@@ -38,6 +39,8 @@ DistanceMetricMap = {
     DistanceMetric.EUCLIDEAN: "L2",
     DistanceMetric.INNER_PRODUCT: "IP",
 }
+
+INDEX_FIELDS_WITHOUT_FILTERING = [StorageNaming.OBJECT_ID_INDEX_NAME, StorageNaming.ORIGIN_ID_INDEX_NAME]
 
 
 class RedisFieldDescriptorCompiler:
@@ -75,5 +78,7 @@ class RedisFieldDescriptorCompiler:
             field = redis_field_cls(field_descriptor.field_name, sortable=True)
             if isinstance(field, TagField):
                 field.args_suffix.append("UNF")
+            if field_descriptor.field_name in INDEX_FIELDS_WITHOUT_FILTERING:
+                field.args_suffix.append("NOINDEX")
             return field
         return None
