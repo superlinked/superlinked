@@ -41,6 +41,7 @@
     * [Period Time](reference/common/dag/period_time.md)
   * [Index](reference/dsl/index/index.md)
     * [Index](reference/dsl/index/index.m.md)
+    * [Index Validator](reference/dsl/index/index_validator.md)
     * [Effect](reference/dsl/index/effect.md)
     * [Util](reference/dsl/index/util/index.md)
       * [Event Aggregation Node Util](reference/dsl/index/util/event_aggregation_node_util.md)
