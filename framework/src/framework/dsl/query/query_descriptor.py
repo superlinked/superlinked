@@ -243,7 +243,9 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
             else [] if fields is None else [fields]
         )
         param = self.__handle_select_param(field_list)
-        clause = SelectClause.from_param(self.schema, param, [] if metadata is None else metadata)
+        clause = SelectClause.from_param(
+            self.schema, param, [] if metadata is None else metadata, self.index._fields_to_exclude
+        )
         altered_query_descriptor = self.__append_clauses([clause])
         return altered_query_descriptor
 
@@ -273,7 +275,8 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         Raises:
             See `select`.
         """
-        return self.select(self.__schema.schema_fields, metadata)
+        all_fields = list(filter(lambda field: field not in self.index._fields_to_exclude, self.__schema.schema_fields))
+        return self.select(all_fields, metadata)
 
     @TypeValidator.wrap
     def with_natural_query(
@@ -483,7 +486,14 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         if self.get_clause_by_type(RadiusClause) is None:
             clauses.append(RadiusClause.from_param(None))
         if self.get_clause_by_type(SelectClause) is None:
-            clauses.append(SelectClause.from_param(self.schema, fields=[], vector_parts=[]))
+            clauses.append(
+                SelectClause.from_param(
+                    self.schema,
+                    fields=self.index._fields,
+                    vector_parts=[],
+                    fields_to_exclude=self.index._fields_to_exclude,
+                )
+            )
         altered_query_descriptor = self.__append_clauses(clauses)
         return altered_query_descriptor._add_missing_space_weight_params()
 

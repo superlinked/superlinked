@@ -54,9 +54,7 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
         self.evaluator = evaluator
         self.context = context
         self.storage_manager = storage_manager
-        self.effect_schemas = set(index._effect_schemas)
-        self._schema_type_schema_mapper = index._schema_type_schema_mapper
-        self._dag_effects = index._dag_effects
+        self._index = index
         self._mandatory_field_names_by_schema: Mapping[SchemaObject, Sequence[str]] = (
             self._init_mandatory_field_names_by_schema(index)
         )
@@ -83,7 +81,7 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
         event_msgs = []
         regular_msgs = []
         for message in messages:
-            if message.schema in self.effect_schemas:
+            if message.schema in self._index._effect_schemas:
                 event_msgs.append(cast(EventParsedSchema, message))
             else:
                 regular_msgs.append(message)
@@ -116,7 +114,10 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
             },
         ):
             self.storage_manager.write_combined_ingestion_result(
-                regular_msgs, online_entity_cache.changes, online_entity_cache.origin_ids
+                regular_msgs,
+                online_entity_cache.changes,
+                online_entity_cache.origin_ids,
+                self._index._fields_to_exclude,
             )
         logger.info(
             "stored input data",
@@ -157,7 +158,7 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
         return dict(effect_to_parsed_schemas)
 
     def _get_matching_effects(self, event_schema: EventParsedSchema) -> list[DagEffect]:
-        return [effect for effect in self._dag_effects if effect.event_schema == event_schema.schema]
+        return [effect for effect in self._index._dag_effects if effect.event_schema == event_schema.schema]
 
     def _map_effect_group_to_parsed_schemas(
         self, effect_to_parsed_schemas: Mapping[DagEffect, Sequence[ParsedSchemaWithEvent]]

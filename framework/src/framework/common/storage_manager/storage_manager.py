@@ -274,9 +274,10 @@ class StorageManager:
         parsed_schemas: Sequence[ParsedSchema],
         cached_items: Mapping[EntityId, Mapping[str, NodeInfo]],
         entity_to_origin_id: Mapping[EntityId, str],
+        fields_to_exclude: Sequence[SchemaField],
     ) -> None:
         entity_data_items = [
-            self._entity_builder.compose_entity_data_from_parsed_schema(parsed_schema)
+            self._entity_builder.compose_entity_data_from_parsed_schema(parsed_schema, fields_to_exclude)
             for parsed_schema in parsed_schemas
         ]
         cached_entity_data = [
@@ -288,9 +289,11 @@ class StorageManager:
         entity_data_items.extend(cached_entity_data)
         AsyncUtil.run(self._vdb_connector.write_entities(entity_data_items))
 
-    def write_parsed_schema_fields(self, parsed_schemas: Sequence[ParsedSchema]) -> None:
+    def write_parsed_schema_fields(
+        self, parsed_schemas: Sequence[ParsedSchema], fields_to_exclude: Sequence[SchemaField]
+    ) -> None:
         entities_to_write = [
-            self._entity_builder.compose_entity_data_from_parsed_schema(parsed_schema)
+            self._entity_builder.compose_entity_data_from_parsed_schema(parsed_schema, fields_to_exclude)
             for parsed_schema in parsed_schemas
         ]
         AsyncUtil.run(self._vdb_connector.write_entities(entities_to_write))

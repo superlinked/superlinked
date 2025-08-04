@@ -15,7 +15,7 @@
 import datetime
 
 import structlog
-from beartype.typing import Sequence, cast
+from beartype.typing import Sequence
 from typing_extensions import Annotated
 
 from superlinked.framework.common.const import constants
@@ -26,10 +26,7 @@ from superlinked.framework.common.dag.effect_modifier import EffectModifier
 from superlinked.framework.common.dag.index_node import IndexNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.exception import (
-    InvalidInputException,
-    InvalidStateException,
-)
+from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.schema.event_schema_object import EventSchemaObject
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import SchemaField, SchemaObject
@@ -41,6 +38,7 @@ from superlinked.framework.common.space.config.embedding.embedding_config import
 )
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.index.effect import Effect
+from superlinked.framework.dsl.index.index_validator import IndexValidator
 from superlinked.framework.dsl.index.util.aggregation_effect_group import (
     AggregationEffectGroup,
 )
@@ -69,6 +67,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
         self,
         spaces: Space | ValidatedSpaceList,
         fields: SchemaField | ValidatedSchemaFieldList | None = None,
+        fields_to_exclude: SchemaField | ValidatedSchemaFieldList | None = None,
         effects: Effect | ValidatedEffectList | None = None,
         max_age: datetime.timedelta | None = None,
         max_count: int | None = None,
@@ -82,6 +81,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
         Args:
             spaces (Space | list[Space]): The space or list of spaces.
             fields (SchemaField | list[SchemaField]): The field or list of fields to be indexed.
+            fields_to_exclude (SchemaField | list[SchemaField]): Excludes fields from storage and query results.
             effects (Effect | list[Effect]): A list of conditional interactions within a `Space`.
                 Defaults to None.
             max_age (datetime.timedelta | None): Maximum age of events to be considered. Older events
@@ -104,10 +104,12 @@ class Index:  # pylint: disable=too-many-instance-attributes
             InvalidInputException: If no spaces are provided.
         """
         event_modifier = EffectModifier(max_age, max_count, temperature, event_influence, time_decay_floor)
-        self.__spaces = self.__init_spaces(spaces)
+        self.__spaces = IndexValidator.validate_spaces(spaces)
         self.__space_schemas = self.__init_space_schemas(self.__spaces)
-        self.__fields = self.__init_fields(fields)
-        effects_with_schema = self.__init_effects_with_schema(effects, self.__spaces, self.__space_schemas)
+        self.__fields = IndexValidator.validate_fields(fields)
+        self.__fields_to_exclude = IndexValidator.validate_fields_to_exclude(fields_to_exclude)
+        validated_effects = IndexValidator.validate_effects(effects, self.__spaces)
+        effects_with_schema = self.__init_effects_with_schema(validated_effects, self.__space_schemas)
         self.__effect_schemas = self.__init_effect_schemas(effects_with_schema)
         self.__schemas = list(self.__space_schemas.union(set(self.__effect_schemas)))
         self.__node = self.__init_index_node(self.__spaces, effects_with_schema, event_modifier, self.__space_schemas)
@@ -146,6 +148,10 @@ class Index:  # pylint: disable=too-many-instance-attributes
     @property
     def _fields(self) -> Sequence[SchemaField]:
         return self.__fields
+
+    @property
+    def _fields_to_exclude(self) -> Sequence[SchemaField]:
+        return self.__fields_to_exclude
 
     @property
     def non_nullable_fields(self) -> Sequence[SchemaField]:
@@ -191,14 +197,6 @@ class Index:  # pylint: disable=too-many-instance-attributes
         """
         return schema in self.__schemas
 
-    def __init_spaces(self, spaces: Space | Sequence[Space]) -> list[Space]:
-        spaces = list(spaces) if isinstance(spaces, Sequence) else [spaces]
-        if len(spaces) == 0:
-            raise InvalidInputException("Index must be built on at least 1 space.")
-        if len(set(spaces)) != len(spaces):
-            raise InvalidInputException("Index cannot contain duplicate spaces.")
-        return spaces
-
     def __init_space_schemas(self, validated_spaces: Sequence[Space]) -> set[SchemaObject]:
         seen = set[SchemaObject]()
         seen_add = seen.add
@@ -210,23 +208,9 @@ class Index:  # pylint: disable=too-many-instance-attributes
             if not (schema in seen or seen_add(schema))
         }
 
-    def __init_fields(self, fields: SchemaField | Sequence[SchemaField | None] | None) -> Sequence[SchemaField]:
-        if fields is None:
-            return []
-        if not isinstance(fields, Sequence):
-            return [fields]
-        if None in fields:
-            raise InvalidInputException("Fields cannot contain None values")
-        return cast(Sequence[SchemaField], fields)
-
     def __init_effects_with_schema(
-        self, effects: Effect | Sequence[Effect] | None, spaces: Sequence[Space], schemas: set[SchemaObject]
+        self, effects: Sequence[Effect], schemas: set[SchemaObject]
     ) -> list[EffectWithReferencedSchemaObject]:
-        if effects is None:
-            effects = []
-        if not isinstance(effects, Sequence):
-            effects = [effects]
-        self.__validate_effects(effects, spaces)
         return [EffectWithReferencedSchemaObject.from_base_effect(effect, schemas) for effect in effects]
 
     def __init_effect_schemas(self, effects: Sequence[EffectWithReferencedSchemaObject]) -> list[EventSchemaObject]:
@@ -237,10 +221,6 @@ class Index:  # pylint: disable=too-many-instance-attributes
             for effect_with_schema in effects
             if not (effect_with_schema.event_schema in seen or seen_add(effect_with_schema.event_schema))
         ]
-
-    def __validate_effects(self, effects: Sequence[Effect], spaces: Sequence[Space]) -> None:
-        if invalid_space_effects := [effect for effect in effects if effect.space not in spaces]:
-            raise InvalidInputException(f"Effects must work on the Index's spaces, got ({invalid_space_effects})")
 
     def __init_index_node(
         self,

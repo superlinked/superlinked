@@ -69,13 +69,16 @@ class EntityBuilder:
         admin_field_data = list(self._admin_fields.create_header_field_data(entity_id, origin_id))
         return EntityData(entity_id, {fd.name: fd for fd in (list(field_data) + admin_field_data)})
 
-    def compose_entity_data_from_parsed_schema(self, parsed_schema: ParsedSchema) -> EntityData:
+    def compose_entity_data_from_parsed_schema(
+        self, parsed_schema: ParsedSchema, fields_to_exclude: Sequence[SchemaField]
+    ) -> EntityData:
         return self.compose_entity_data(
             parsed_schema.schema._base_class_name,
             parsed_schema.id_,
             [
                 self.convert_parsed_schema_field_to_field_data(parsed_schema_field)
                 for parsed_schema_field in parsed_schema.fields
+                if parsed_schema_field.schema_field not in fields_to_exclude
             ],
         )
 

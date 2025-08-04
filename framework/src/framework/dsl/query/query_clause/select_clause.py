@@ -41,6 +41,7 @@ logger = structlog.getLogger()
 class SelectClause(SingleValueParamQueryClause):
     schema: IdSchemaObject
     vector_parts: Sequence[Space]
+    fields_to_exclude: Sequence[SchemaField]
 
     @override
     def __post_init__(self) -> None:
@@ -90,6 +91,8 @@ class SelectClause(SingleValueParamQueryClause):
             raise InvalidInputException(
                 f"Fields {missing_field_names_text} not found in schema {self.schema._schema_name}."
             )
+        if selected_excluded_fields := [field.name for field in matched_fields if field in self.fields_to_exclude]:
+            raise InvalidInputException(f"Fields {selected_excluded_fields} cannot be selected as they are not stored.")
         return matched_fields
 
     def __validate_fields(self) -> None:
@@ -106,6 +109,12 @@ class SelectClause(SingleValueParamQueryClause):
 
     @classmethod
     def from_param(
-        cls, schema: IdSchemaObject, fields: Param | Sequence[str], vector_parts: Sequence[Space]
+        cls,
+        schema: IdSchemaObject,
+        fields: Param | Sequence[str] | Sequence[SchemaField],
+        vector_parts: Sequence[Space],
+        fields_to_exclude: Sequence[SchemaField],
     ) -> SelectClause:
-        return SelectClause(QueryClause._to_typed_param(fields, [list[str], list[SchemaField]]), schema, vector_parts)
+        return SelectClause(
+            QueryClause._to_typed_param(fields, [list[str], list[SchemaField]]), schema, vector_parts, fields_to_exclude
+        )
