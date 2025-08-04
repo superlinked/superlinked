@@ -140,7 +140,7 @@ class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, dict[str,
             return [cast(SFT, str(parsed_value)) if parsed_value else None for parsed_value in parsed_values]
 
         if isinstance(field, Blob):
-            return cast(Sequence[SFT], self.blob_loader.load_multiple(parsed_values))
+            return cast(Sequence[SFT], self.blob_loader.load(parsed_values))
 
         return parsed_values
 

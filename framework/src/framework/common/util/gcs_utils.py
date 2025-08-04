@@ -18,6 +18,12 @@ from deprecated import deprecated
 from google.api_core import exceptions, retry
 from google.auth.credentials import Credentials
 from google.cloud import storage
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+from superlinked.framework.common.const import constants
+
+HTTPS_PREFIX = "https://"
 
 
 @dataclass
@@ -29,9 +35,12 @@ class GcsClientParams:
 class GCSFileOps:
     cached_params: GcsClientParams | None = None
 
-    def __init__(self, client_params: GcsClientParams | None = None):
+    def __init__(
+        self, client_params: GcsClientParams | None = None, pool_size: int = constants.DEFAULT_GCS_POOL_SIZE
+    ) -> None:
         self.init_single()
         self.__client_params = client_params or self.cached_params
+        self.__pool_size = pool_size
         self.__storage_client: storage.Client | None = None
 
     @classmethod
@@ -42,12 +51,21 @@ class GCSFileOps:
 
     @property
     def storage_client(self) -> storage.Client:
+        """Used for lazy init. Returns a singleton client."""
         if self.__storage_client is not None:
             return cast(storage.Client, self.__storage_client)
         client = storage.Client(
             project=(self.__client_params.project if self.__client_params is not None else None),
             credentials=(self.__client_params.credentials if self.__client_params is not None else None),
         )
+        adapter = HTTPAdapter(
+            pool_connections=self.__pool_size,
+            pool_maxsize=self.__pool_size,
+            max_retries=Retry(total=5, backoff_factor=0.3),
+            pool_block=True,
+        )
+        client._http.mount(HTTPS_PREFIX, adapter)
+        client._http._auth_request.session.mount(HTTPS_PREFIX, adapter)
         self.__storage_client = client
         return client
 

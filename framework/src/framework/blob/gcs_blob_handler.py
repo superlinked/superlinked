@@ -12,18 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
+import base64
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import asdict
 from urllib.parse import urlparse
 
 import structlog
-from beartype.typing import Any
+from beartype.typing import Any, Sequence
 from google.cloud import storage
 from typing_extensions import override
 
 from superlinked.framework.blob.blob_handler import BlobHandler
 from superlinked.framework.blob.blob_metadata import BlobMetadata
+from superlinked.framework.common.const import constants
 from superlinked.framework.common.exception import InvalidInputException
+from superlinked.framework.common.schema.blob_information import BlobInformation
+from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.common.util.gcs_utils import GCSFileOps
 
 logger = structlog.getLogger()
@@ -33,16 +38,12 @@ SUPPORTED_SCHEME = "gs"
 
 
 class GcsBlobHandler(BlobHandler):
-    def __init__(self, bucket: str) -> None:
+    def __init__(self, bucket: str, pool_size: int = constants.DEFAULT_GCS_POOL_SIZE) -> None:
         super().__init__()
         self.__bucket_name = bucket
         self._executor = ThreadPoolExecutor()
         self._logger = logger.bind(bucket=self.__bucket_name)
-
-    @property
-    def __client(self) -> storage.Client:
-        """Used for lazy init. Returns a singleton client."""
-        return GCSFileOps().storage_client
+        self._file_ops = GCSFileOps(pool_size=pool_size)
 
     @override
     def upload(self, object_key: str, data: bytes, metadata: BlobMetadata | None = None) -> None:
@@ -50,24 +51,45 @@ class GcsBlobHandler(BlobHandler):
         future.add_done_callback(lambda f: self._task_done_callback(f, object_key, data))
 
     @override
-    def download(self, object_key: str) -> bytes:
+    def download(self, object_keys: Sequence[str]) -> list[BlobInformation]:
+        downloaded_items = AsyncUtil.run(self._download(object_keys))
+        return [
+            BlobInformation(base64.b64encode(downloaded_item), object_key)
+            for object_key, downloaded_item in zip(object_keys, downloaded_items)
+        ]
+
+    async def _download(self, object_keys: Sequence[str]) -> list[bytes]:
+        bucket_object_path_pairs = [self._parse_gcs_path(object_key) for object_key in object_keys]
+        bucket_cache = {}
+
+        def get_bucket(bucket_name: str) -> storage.Bucket:
+            if bucket_name not in bucket_cache:
+                bucket_cache[bucket_name] = self._file_ops.storage_client.bucket(bucket_name)
+            return bucket_cache[bucket_name]
+
+        download_tasks = [
+            asyncio.to_thread(self.download_blob, get_bucket(bucket_name), object_path)
+            for bucket_name, object_path in bucket_object_path_pairs
+        ]
+        return await asyncio.gather(*download_tasks)
+
+    def download_blob(self, bucket: storage.Bucket, object_full_path: str) -> bytes:
         try:
-            bucket_name, object_full_path = self._parse_gcs_path(object_key)
-            bucket = self.__client.bucket(bucket_name)
             blob = bucket.blob(object_full_path)
             data = blob.download_as_bytes()
             self._logger.debug(
                 "downloaded blob",
-                key=object_key,
+                key=object_full_path,
                 object_full_path=object_full_path,
-                bucket=bucket_name,
+                bucket=bucket.name,
                 size=len(data),
             )
             return data
         except Exception as e:  # pylint: disable=broad-exception-caught
             self._logger.exception(
                 "failed to download",
-                key=object_key,
+                key=object_full_path,
+                bucket=bucket.name,
                 error_type=type(e).__name__,
                 error_details=str(e),
             )
@@ -78,7 +100,7 @@ class GcsBlobHandler(BlobHandler):
         return SUPPORTED_SCHEME
 
     def _upload_sync(self, object_key: str, data: bytes, metadata: BlobMetadata | None) -> None:
-        bucket = self.__client.bucket(self.__bucket_name)
+        bucket = self._file_ops.storage_client.bucket(self.__bucket_name)
         blob = bucket.blob(object_key)
         upload_args: dict[str, Any] = {"data": data}
         if metadata is not None:

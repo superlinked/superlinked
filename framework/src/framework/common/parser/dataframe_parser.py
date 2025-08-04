@@ -53,7 +53,7 @@ class DataFrameParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, pd.D
 
         if blob_cols := [key for key, value in schema_cols.items() if isinstance(value, Blob)]:
             for col in blob_cols:
-                data_copy[col] = self.blob_loader.load_multiple(list(data_copy[col]))
+                data_copy[col] = self.blob_loader.load(list(data_copy[col]))
 
         if self._is_event_data_parser:
             self.__ensure_created_at(data_copy)

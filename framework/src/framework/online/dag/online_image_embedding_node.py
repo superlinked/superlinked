@@ -116,7 +116,7 @@ class OnlineImageEmbeddingNode(OnlineNode[ImageEmbeddingNode, Vector], HasLength
             raise InvalidStateException("Invalid image description type.", description_type=type(description).__name__)
         image = self._get_field_value(parsed_schema, self._image_node)
         if image is not None and not isinstance(image, BlobInformation):
-            image = self._blob_loader.load(image)
+            image = self._blob_loader.load([image])[0]
         return image, (description if description else None)
 
     def _get_field_value(

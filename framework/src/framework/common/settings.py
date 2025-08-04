@@ -64,7 +64,6 @@ class Settings(YamlBasedSettings):
     SENTENCE_TRANSFORMERS_MODEL_LOCK_TIMEOUT_BUFFER_SECONDS: int = 10
     SENTENCE_TRANSFORMERS_MODEL_LOCK_TIMEOUT_MIN_SECONDS: int = 5
     # Blob loading settings
-    SUPERLINKED_CONCURRENT_BLOB_LOADING: bool = True
     BLOB_HANDLER_MODULE_PATH: str | None = None
     BLOB_HANDLER_CLASS_NAME: str | None = None
     BLOB_HANDLER_CLASS_ARGS: dict[str, Any] | None = None

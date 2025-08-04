@@ -18,6 +18,7 @@ from attr import dataclass
 @dataclass(frozen=True)
 class Constants:
     MAX_DAG_DEPTH: int = 20
+    DEFAULT_GCS_POOL_SIZE: int = 64
     DEFAULT_WEIGHT: float = 1.0
     DEFAULT_NOT_AFFECTING_WEIGHT: float = 0.0
     DEFAULT_NOT_AFFECTING_EMBEDDING_VALUE: float = 0.0
