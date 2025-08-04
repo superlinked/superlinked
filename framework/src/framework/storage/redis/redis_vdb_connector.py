@@ -122,7 +122,7 @@ class RedisVDBConnector(VDBConnector[RedisVDBKNNSearchConfig]):
             ResultEntityData(
                 id_=result.entity_id,
                 field_data={
-                    field.name: self._encoder.decode_field(field, result.field_name_to_data[field.name])
+                    field.name: (self._encoder.decode_field(field, result.field_name_to_data[field.name]))
                     for field in vdb_knn_search_params.fields_to_return
                 },
                 score=result.score,

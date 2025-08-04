@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from types import NoneType
+
 from beartype.typing import Any, Sequence, cast
 
 from superlinked.framework.common.data_types import NodeDataTypes, Vector
@@ -59,7 +61,7 @@ FIELD_DATA_TYPE_BY_NODE_DATA_TYPE: dict[type[NodeDataTypes | dict], FieldDataTyp
     BlobInformation: FieldDataType.BLOB,
 }
 
-VALID_TYPE_BY_FIELD_DATA_TYPE: dict[FieldDataType, Sequence[type[NodeDataTypes | dict]]] = {
+VALID_TYPE_BY_FIELD_DATA_TYPE: dict[FieldDataType, Sequence[type[NodeDataTypes | dict | None]]] = {
     FieldDataType.BLOB: [BlobInformation],
     FieldDataType.DOUBLE: [int, float],
     FieldDataType.INT: [int],
@@ -71,6 +73,7 @@ VALID_TYPE_BY_FIELD_DATA_TYPE: dict[FieldDataType, Sequence[type[NodeDataTypes |
     FieldDataType.METADATA_STRING: [str],
     FieldDataType.VECTOR: [Vector],
     FieldDataType.IMAGE_DATA: [ImageData],
+    FieldDataType.NULL: [NoneType],
 }
 
 

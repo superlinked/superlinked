@@ -129,7 +129,9 @@ class RedisFieldEncoder:
             return encoder(field.value)
         raise NotImplementedException("Unknown field type.", field_type=field.data_type.name)
 
-    def decode_field(self, field: Field, value: bytes) -> FieldData:
+    def decode_field(self, field: Field, value: bytes | None) -> FieldData:
+        if value is None:
+            return FieldData(FieldDataType.NULL, field.name, None)
         if decoder := self._decode_map.get(field.data_type):
             return FieldData.from_field(field, decoder(value))
         raise NotImplementedException("Unknown field type.", field_type=field.data_type.name)
