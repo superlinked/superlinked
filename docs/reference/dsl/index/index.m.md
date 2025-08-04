@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.index.index
 Classes
 -------
 
-`Index(spaces: superlinked.framework.dsl.space.space.Space | typing.Annotated[list[superlinked.framework.dsl.space.space.Space], beartype.vale.Is[TypeValidator.list_validator.validator]], fields: superlinked.framework.common.schema.schema_object.SchemaField | typing.Annotated[list[superlinked.framework.common.schema.schema_object.SchemaField | None], beartype.vale.Is[TypeValidator.list_validator.validator]] | None = None, effects: superlinked.framework.dsl.index.effect.Effect | typing.Annotated[list[superlinked.framework.dsl.index.effect.Effect], beartype.vale.Is[TypeValidator.list_validator.validator]] | None = None, max_age: datetime.timedelta | None = None, max_count: int | None = None, temperature: int | float = 0.5, event_influence: int | float = 0.5, time_decay_floor: int | float = 1.0)`
+`Index(spaces: superlinked.framework.dsl.space.space.Space | typing.Annotated[list[superlinked.framework.dsl.space.space.Space], beartype.vale.Is[TypeValidator.list_validator.validator]], fields: superlinked.framework.common.schema.schema_object.SchemaField | typing.Annotated[list[superlinked.framework.common.schema.schema_object.SchemaField | None], beartype.vale.Is[TypeValidator.list_validator.validator]] | None = None, fields_to_exclude: superlinked.framework.common.schema.schema_object.SchemaField | typing.Annotated[list[superlinked.framework.common.schema.schema_object.SchemaField | None], beartype.vale.Is[TypeValidator.list_validator.validator]] | None = None, effects: superlinked.framework.dsl.index.effect.Effect | typing.Annotated[list[superlinked.framework.dsl.index.effect.Effect], beartype.vale.Is[TypeValidator.list_validator.validator]] | None = None, max_age: datetime.timedelta | None = None, max_count: int | None = None, temperature: int | float = 0.5, event_influence: int | float = 0.5, time_decay_floor: int | float = 1.0)`
 :   An index is an abstraction which represents a collection of spaces that will enable us to query our data.
     
     Initialize the Index.
@@ -12,6 +12,7 @@ Classes
     Args:
         spaces (Space | list[Space]): The space or list of spaces.
         fields (SchemaField | list[SchemaField]): The field or list of fields to be indexed.
+        fields_to_exclude (SchemaField | list[SchemaField]): Excludes fields from storage and query results.
         effects (Effect | list[Effect]): A list of conditional interactions within a `Space`.
             Defaults to None.
         max_age (datetime.timedelta | None): Maximum age of events to be considered. Older events

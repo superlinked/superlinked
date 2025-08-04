@@ -4,8 +4,8 @@ Module superlinked.framework.dsl.query.query_clause.select_clause
 Classes
 -------
 
-`SelectClause(value_param: superlinked.framework.dsl.query.typed_param.TypedParam | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.typed_param.TypedParam], schema: IdSchemaObject, vector_parts: Sequence[Space])`
-:   SelectClause(value_param: Union[superlinked.framework.dsl.query.typed_param.TypedParam, superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.typed_param.TypedParam]], schema: 'IdSchemaObject', vector_parts: 'Sequence[Space]')
+`SelectClause(value_param: superlinked.framework.dsl.query.typed_param.TypedParam | superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.typed_param.TypedParam], schema: IdSchemaObject, vector_parts: Sequence[Space], fields_to_exclude: Sequence[SchemaField])`
+:   SelectClause(value_param: Union[superlinked.framework.dsl.query.typed_param.TypedParam, superlinked.framework.common.interface.evaluated.Evaluated[superlinked.framework.dsl.query.typed_param.TypedParam]], schema: 'IdSchemaObject', vector_parts: 'Sequence[Space]', fields_to_exclude: 'Sequence[SchemaField]')
 
     ### Ancestors (in MRO)
 
@@ -15,10 +15,13 @@ Classes
 
     ### Static methods
 
-    `from_param(schema: IdSchemaObject, fields: Param | Sequence[str], vector_parts: Sequence[Space]) ‑> superlinked.framework.dsl.query.query_clause.select_clause.SelectClause`
+    `from_param(schema: IdSchemaObject, fields: Param | Sequence[str] | Sequence[SchemaField], vector_parts: Sequence[Space], fields_to_exclude: Sequence[SchemaField]) ‑> superlinked.framework.dsl.query.query_clause.select_clause.SelectClause`
     :
 
     ### Instance variables
+
+    `fields_to_exclude: Sequence[superlinked.framework.common.schema.schema_object.SchemaField]`
+    :
 
     `schema: superlinked.framework.common.schema.id_schema_object.IdSchemaObject`
     :
