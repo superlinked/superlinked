@@ -1,0 +1,176 @@
+---
+title: "Index"
+description: "Create and configure indexes to organize spaces for efficient data querying in Superlinked"
+---
+
+The `Index` class is a core abstraction that represents a collection of spaces, enabling you to query your data efficiently. An index organizes multiple spaces and their associated fields to create a unified querying interface.
+
+## Constructor
+
+Create a new index with the specified configuration.
+
+```python
+Index(
+    spaces,
+    fields=None,
+    fields_to_exclude=None,
+    effects=None,
+    max_age=None,
+    max_count=None,
+    temperature=0.5,
+    event_influence=0.5,
+    time_decay_floor=1.0
+)
+```
+
+### Parameters
+
+<ParamField path="spaces" type="Space | list[Space]" required>
+  The space or list of spaces to include in the index. These define the vector
+  representations for your data.
+</ParamField>
+
+<ParamField path="fields" type="SchemaField | list[SchemaField]" default="None">
+  The field or list of fields to be indexed. If not specified, all fields from
+  the spaces will be indexed.
+</ParamField>
+
+<ParamField path="fields_to_exclude" type="SchemaField | list[SchemaField]" default="None">
+  Excludes fields from storage and query results.
+</ParamField>
+
+<ParamField path="effects" type="Effect | list[Effect]" default="None">
+  A list of conditional interactions within a space that modify vector behavior
+  based on events or conditions.
+</ParamField>
+
+<ParamField path="max_age" type="datetime.timedelta" default="None">
+  Maximum age of events to be considered. Older events will be filtered out when
+  specified. Use this to implement time-based data retention.
+</ParamField>
+
+<ParamField path="max_count" type="int" default="None">
+  **Batch system only**: Restricts how many events should be considered based on
+  their age. Does not apply to real-time systems.
+</ParamField>
+
+<ParamField path="temperature" type="float" default="0.5">
+  Controls event contribution during aggregation. Must be between 0 and 1. -
+  Values closer to **0**: Give more weight to stored event aggregates - Values
+  closer to **1**: Give more weight to new events being added
+</ParamField>
+
+<ParamField path="event_influence" type="float" default="0.5">
+  Controls how much the final aggregated event vector influences the base
+  vector. Must be between 0 and 1. - Values closer to **0**: Keep results closer
+  to the base vector - Values closer to **1**: Make results more influenced by
+  aggregated events
+</ParamField>
+
+<ParamField path="time_decay_floor" type="float" default="1.0">
+  Controls the time decay curve for event weights. - **Higher values**: Create
+  more gradual decay over time - **Lower values**: Create steeper decay curves
+</ParamField>
+
+### Example
+
+```python
+from superlinked import Index
+from datetime import timedelta
+
+# Create an index with multiple spaces
+product_index = Index(
+    spaces=[text_space, category_space, price_space],
+    fields_to_exclude=[schema.internal_id, schema.created_by],
+    max_age=timedelta(days=30),
+    temperature=0.7,
+    event_influence=0.6
+)
+```
+
+<Warning>
+  The index will raise an `InvalidInputException` if no spaces are provided.
+</Warning>
+
+## Properties
+
+### non_nullable_fields
+
+```python
+non_nullable_fields: Sequence[SchemaField]
+```
+
+Returns the sequence of schema fields that cannot contain null values in this index.
+
+### schemas
+
+```python
+schemas: Sequence[SchemaObject]
+```
+
+Returns the sequence of schema objects associated with this index's spaces.
+
+## Methods
+
+### has_schema()
+
+Check if a given schema is used as input to any of the index's spaces.
+
+```python
+has_schema(schema: SchemaObject) -> bool
+```
+
+<ParamField path="schema" type="SchemaObject" required>
+  The schema object to check for presence in the index.
+</ParamField>
+
+**Returns**: `bool` - True if the schema is found, False otherwise.
+
+#### Example
+
+```python
+# Check if a schema is part of the index
+if product_index.has_schema(product_schema):
+    print("Product schema is indexed")
+```
+
+### has_space()
+
+Check if a given space is present in the index.
+
+```python
+has_space(space: Space) -> bool
+```
+
+<ParamField path="space" type="Space" required>
+  The space object to check for presence in the index.
+</ParamField>
+
+**Returns**: `bool` - True if the space is found, False otherwise.
+
+#### Example
+
+```python
+# Verify a space is included in the index
+if product_index.has_space(text_space):
+    print("Text space is part of this index")
+```
+
+## Best Practices
+
+<Tip>
+  **Index Design**: Group related spaces together in a single index to enable
+  efficient multi-dimensional queries. For example, combine text, categorical,
+  and numerical spaces for product data.
+</Tip>
+
+<Tip>
+  **Event Parameters**: Start with default values for `temperature` and
+  `event_influence` (0.5), then adjust based on your specific use case and data
+  patterns.
+</Tip>
+
+<Warning>
+  **Batch vs Real-time**: The `max_count` parameter only affects batch
+  processing systems and has no impact on real-time query performance.
+</Warning>

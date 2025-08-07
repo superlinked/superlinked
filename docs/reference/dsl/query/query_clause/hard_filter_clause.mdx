@@ -1,0 +1,57 @@
+---
+title: "HardFilterClause"
+description: "Query clause for applying hard filters with exact constraints"
+---
+
+## HardFilterClause
+
+```python
+HardFilterClause(value_param, op, operand, group_key)
+```
+
+### Parameters
+
+<ParamField path="value_param" type="TypedParam | Evaluated[TypedParam]" required>
+The parameter that specifies the filter value.
+</ParamField>
+
+<ParamField path="op" type="ComparisonOperationType" required>
+The comparison operation type for the filter.
+</ParamField>
+
+<ParamField path="operand" type="SchemaField" required>
+The schema field to apply the filter on.
+</ParamField>
+
+<ParamField path="group_key" type="int | None" required>
+Optional group key for organizing related filters.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `HardFilterClause` 
+- → `SingleValueParamQueryClause`
+- → `QueryClause`
+- → `NLQCompatible`
+- → `ABC`
+
+### Properties
+
+<ParamField path="group_key" type="int | None">
+The group key for organizing related filters.
+</ParamField>
+
+### Static Methods
+
+#### from_param()
+
+```python
+from_param(operation) -> HardFilterClause
+```
+
+<ParamField path="operation" type="ComparisonOperation[SchemaField]" required>
+The comparison operation to create the clause from.
+</ParamField>
+
+**Returns**: `HardFilterClause` - A new hard filter clause instance.

@@ -1,0 +1,36 @@
+---
+title: "ParamEvaluator"
+description: "Base class for evaluating query parameters and generating query vectors"
+---
+
+## ParamEvaluator
+
+```python
+ParamEvaluator(query_descriptor)
+```
+
+Base class for evaluating query parameters and generating appropriate query vectors.
+
+### Parameters
+
+<ParamField path="query_descriptor" type="QueryDescriptor" required>
+The query descriptor containing the query configuration.
+</ParamField>
+
+### Descendants
+
+- [**NLQParamEvaluator**](/reference/dsl/query/nlq_param_evaluator)
+
+### Methods
+
+#### evaluate()
+
+```python
+evaluate(**params) -> ParamEvaluationResult
+```
+
+<ParamField path="**params" type="Any" required>
+Parameters to evaluate for the query.
+</ParamField>
+
+**Returns**: `ParamEvaluationResult` - The evaluation result with processed parameters and query vectors.

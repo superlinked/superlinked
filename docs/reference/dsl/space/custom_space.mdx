@@ -1,0 +1,55 @@
+---
+title: "CustomSpace"
+description: "Space for ingesting custom vectors with L2 normalization and consistent length requirements"
+---
+
+CustomSpace is the instrument of ingesting your own vectors into Superlinked. This way you can use your own vectors right away.
+
+## Key Requirements
+
+- vectors need to have the same length
+- vectors will be L2Norm normalized to ensure weighting makes sense
+- weighting can be performed (query-time)
+- you are going to need an FloatList typed SchemaField to supply your data
+- the FloatList field will be able to parse any Sequence[float | int]
+
+## Constructor
+
+```python
+CustomSpace(vector, length, description=None)
+```
+
+### Parameters
+
+<ParamField path="vector" type="FloatList | list[FloatList]" required>
+The input vector(s) to be stored in the space. This can be a single FloatList SchemaField or a list of those.
+</ParamField>
+
+<ParamField path="length" type="int" required>
+The fixed length that all vectors in this space must have. This ensures uniformity and consistency in vector operations.
+</ParamField>
+
+<ParamField path="description" type="str | None" default="None">
+Optional description for the custom space.
+</ParamField>
+
+## Inheritance
+
+**Inheritance Chain**: 
+- `CustomSpace` 
+- → `Space`
+- → `HasTransformationConfig` 
+- → `HasLength`
+- → `Generic`
+- → `HasSpaceFieldSet`
+- → `ABC`
+
+## Properties
+
+<ParamField path="space_field_set" type="SpaceFieldSet">
+The space field set for this custom space.
+</ParamField>
+
+<ParamField path="transformation_config" type="TransformationConfig[Vector, Vector]">
+Configuration for transforming custom vectors.
+</ParamField>

@@ -1,0 +1,159 @@
+---
+title: "Event Schema Object"
+description: "Event schema object classes for representing time-based events and schema references"
+---
+
+Event schema object classes that provide specialized functionality for representing time-based events and relationships between schemas.
+
+## EventSchemaObject
+
+```python
+EventSchemaObject(base_cls: type, id_field_name: str, created_at_field_name: str)
+```
+
+Custom decorated event schema class. Event schemas can be used to reference other schema and to define interactions between schemas.
+
+### Parameters
+
+<ParamField path="base_cls" type="type" required>
+The base class for the event schema.
+</ParamField>
+
+<ParamField path="id_field_name" type="str" required>
+Name of the ID field.
+</ParamField>
+
+<ParamField path="created_at_field_name" type="str" required>
+Name of the created_at field.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `EventSchemaObject` 
+- → `IdSchemaObject`
+- → `SchemaObject`
+- → `ABC`
+
+### Descendants
+
+- `EventSchema`
+
+### Properties
+
+<ParamField path="created_at" type="CreatedAtField">
+The creation timestamp field for this event schema.
+</ParamField>
+
+### Static Methods
+
+#### get_schema_field_type()
+
+```python
+get_schema_field_type() -> types.UnionType
+```
+
+## CreatedAtField
+
+```python
+CreatedAtField(schema_obj: SchemaObjectT, created_at_field_name: str)
+```
+
+A class representing creation time. A unix timestamp field in a schema object.
+
+### Parameters
+
+<ParamField path="schema_obj" type="SchemaObjectT" required>
+The schema object this field belongs to.
+</ParamField>
+
+<ParamField path="created_at_field_name" type="str" required>
+Name of the created_at field.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `CreatedAtField` 
+- → `SchemaField`
+- → `ComparisonOperand`
+- → `ABC` 
+- → `Generic`
+
+### Properties
+
+<ParamField path="supported_comparison_operation_types" type="Sequence[ComparisonOperationType]">
+Sequence of supported comparison operation types for this field.
+</ParamField>
+
+### Methods
+
+#### as_type()
+
+```python
+as_type(value: Any) -> int
+```
+
+## SchemaReference
+
+```python
+SchemaReference(name: str, schema_obj: EventSchemaObject, referenced_schema: type[RST])
+```
+
+Schema reference used within an `EventSchema` to reference other schemas.
+
+### Parameters
+
+<ParamField path="name" type="str" required>
+Name of the schema reference.
+</ParamField>
+
+<ParamField path="schema_obj" type="EventSchemaObject" required>
+The event schema object this reference belongs to.
+</ParamField>
+
+<ParamField path="referenced_schema" type="type[RST]" required>
+The type of schema being referenced.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `SchemaReference` 
+- → `SchemaField`
+- → `ComparisonOperand`
+- → `HasMultiplier`
+- → `ABC` 
+- → `Generic`
+
+### Properties
+
+<ParamField path="supported_comparison_operation_types" type="Sequence[ComparisonOperationType]">
+Sequence of supported comparison operation types for this field.
+</ParamField>
+
+## MultipliedSchemaReference
+
+```python
+MultipliedSchemaReference(schema_reference: SchemaReference[RST], multiplier: float = 1.0)
+```
+
+Helper class that provides a standard way to create an ABC using inheritance.
+
+### Parameters
+
+<ParamField path="schema_reference" type="SchemaReference[RST]" required>
+The schema reference to be multiplied.
+</ParamField>
+
+<ParamField path="multiplier" type="float" default="1.0">
+The multiplier value.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `MultipliedSchemaReference` 
+- → `HasMultiplier`
+- → `ABC` 
+- → `Generic`

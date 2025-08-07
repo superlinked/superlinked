@@ -1,0 +1,24 @@
+---
+title: "QueryFilterValidator"
+description: "Validator for ensuring query filter correctness and compatibility"
+---
+
+## QueryFilterValidator
+
+```python
+QueryFilterValidator()
+```
+
+### Static Methods
+
+#### validate()
+
+```python
+validate(query_descriptor) -> None
+```
+
+<ParamField path="query_descriptor" type="QueryDescriptor" required>
+The query descriptor to validate.
+</ParamField>
+
+**Raises**: `InvalidInputException` - If validation fails due to incompatible filters or configuration errors.

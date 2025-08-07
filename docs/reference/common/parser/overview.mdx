@@ -1,0 +1,48 @@
+---
+title: "Parser Overview"
+description: "Data parsing utilities for converting various input formats into Superlinked-compatible structures"
+icon: file-code
+---
+
+The Parser module provides essential utilities for processing and converting data from various input formats into structures that Superlinked can work with efficiently.
+
+## Data Parsing Components
+
+Superlinked supports multiple data input formats through specialized parser components:
+
+<CardGroup cols={3}>
+  <Card 
+    title="Data Parser" 
+    icon="table" 
+    href="/reference/common/parser/data_parser"
+  >
+    Core parsing functionality for generic data structures
+  </Card>
+  <Card 
+    title="DataFrame Parser" 
+    icon="chart-simple" 
+    href="/reference/common/parser/dataframe_parser"
+  >
+    Specialized parser for pandas DataFrame inputs
+  </Card>
+  <Card 
+    title="JSON Parser" 
+    icon="brackets-curly" 
+    href="/reference/common/parser/json_parser"
+  >
+    Parser for JSON data format handling
+  </Card>
+</CardGroup>
+
+## Key Features
+
+The parser components enable:
+
+- **Format Flexibility**: Support for multiple input data formats
+- **Type Safety**: Automatic type detection and validation
+- **Performance**: Optimized parsing for large datasets
+- **Integration**: Seamless integration with Superlinked schemas
+
+<Note>
+Parsers work in conjunction with Schema components to ensure data consistency and type safety throughout the processing pipeline.
+</Note> 

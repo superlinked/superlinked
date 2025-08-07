@@ -1,0 +1,122 @@
+---
+title: "PeriodTime"
+description: "Configure time-based parameters for recency scoring and temporal filtering in Superlinked"
+---
+
+The `PeriodTime` class represents a time period parameter used for temporal filtering and recency scoring. It defines how far back in time the system should consider items and how to weight them based on their age.
+
+## Constructor
+
+Create a new period time configuration for temporal operations.
+
+```python
+PeriodTime(period_time, weight=1.0)
+```
+
+### Parameters
+
+<ParamField path="period_time" type="timedelta" required>
+  The time period that defines the oldest items the parameter will
+  differentiate. Items older than this period will receive a recency score of 0
+  or be filtered out entirely.
+</ParamField>
+
+<ParamField path="weight" type="float" default="1.0">
+  A weighting factor for this period time when multiple period times are used
+  together. Useful for balancing different temporal considerations against each
+  other.
+</ParamField>
+
+### Example
+
+```python
+from datetime import timedelta
+from superlinked import PeriodTime
+
+# Create a period time for the last 30 days
+recent_period = PeriodTime(
+    period_time=timedelta(days=30),
+    weight=1.0
+)
+
+# Create a weighted period for the last week (higher importance)
+weekly_period = PeriodTime(
+    period_time=timedelta(days=7),
+    weight=2.0
+)
+```
+
+## Properties
+
+### period_time
+
+```python
+period_time: datetime.timedelta
+```
+
+The configured time period for this instance. Items older than this duration from the current time will be treated as having zero recency.
+
+### weight
+
+```python
+weight: float
+```
+
+The relative weight of this period time when used in combination with other temporal parameters.
+
+## Use Cases
+
+### Recency Filtering
+
+Use `PeriodTime` to implement time-based filtering where only recent items are considered relevant:
+
+```python
+# Only consider items from the last 2 weeks
+recent_filter = PeriodTime(timedelta(weeks=2))
+```
+
+### Temporal Decay
+
+Apply different weights to different time periods for gradual decay:
+
+```python
+# Recent items get full weight
+immediate_period = PeriodTime(timedelta(days=1), weight=1.0)
+
+# Older items get reduced weight
+extended_period = PeriodTime(timedelta(days=30), weight=0.5)
+```
+
+### Multi-Scale Temporal Analysis
+
+Combine multiple period times for complex temporal behavior:
+
+```python
+# Short-term relevance (high weight)
+short_term = PeriodTime(timedelta(hours=24), weight=3.0)
+
+# Medium-term relevance (moderate weight)
+medium_term = PeriodTime(timedelta(days=7), weight=2.0)
+
+# Long-term relevance (low weight)
+long_term = PeriodTime(timedelta(days=30), weight=1.0)
+```
+
+## Best Practices
+
+<Tip>
+  **Weight Tuning**: Start with equal weights (1.0) for all period times, then
+  adjust based on your specific use case. Higher weights give more importance to
+  that temporal range.
+</Tip>
+
+<Warning>
+  **Performance Consideration**: Very long period times may impact performance
+  as they require evaluating more historical data. Balance recency requirements
+  with system performance.
+</Warning>
+
+<Note>
+  **Zero Recency**: Items older than the specified `period_time` will have a
+  recency score of 0, effectively filtering them out of similarity calculations.
+</Note>

@@ -1,0 +1,48 @@
+---
+title: "IdSchemaObject"
+description: "Schema object with required ID field for entity identification"
+---
+
+## IdSchemaObject
+
+```python
+IdSchemaObject(base_cls: type, id_field_name: str)
+```
+
+Schema object with required ID field.
+
+### Parameters
+
+<ParamField path="base_cls" type="type" required>
+The base class for the schema object.
+</ParamField>
+
+<ParamField path="id_field_name" type="str" required>
+Name of the ID field.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `IdSchemaObject` 
+- → `SchemaObject`
+- → `ABC`
+
+### Descendants
+
+- [**EventSchemaObject**](/reference/common/schema/event_schema_object)
+- [**Schema**](/reference/common/schema/schema)
+
+### Properties
+
+<ParamField path="id" type="IdField">
+The ID field for this schema object.
+</ParamField>
+
+### Static Methods
+
+#### get_schema_field_type()
+
+```python
+get_schema_field_type() -> types.UnionType
+```

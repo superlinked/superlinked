@@ -1,0 +1,66 @@
+---
+title: "OnlineApp"
+description: "Manages the execution environment for online sources and indices with query capabilities"
+---
+
+## OnlineApp
+
+```python
+OnlineApp(sources, indices, vector_database, context, init_search_indices, queue=None, blob_handler=None, query_result_converter=None)
+```
+
+Manages the execution environment for online sources and indices. This class extends the base App class and incorporates the QueryMixin to handle query execution. It is designed to work with online sources and indices, providing the necessary setup and management for efficient data processing and querying.
+
+### Parameters
+
+<ParamField path="sources" type="Sequence[OnlineSourceT]" required>
+A sequence of data sources to be used by the application.
+</ParamField>
+
+<ParamField path="indices" type="Sequence[Index]" required>
+A sequence of indices for data retrieval and storage.
+</ParamField>
+
+<ParamField path="vector_database" type="VectorDatabase" required>
+The vector database instance for managing vector data.
+</ParamField>
+
+<ParamField path="context" type="ExecutionContext" required>
+The execution context providing necessary runtime information.
+</ParamField>
+
+<ParamField path="init_search_indices" type="bool" required>
+Whether to initialize search indices during setup.
+</ParamField>
+
+<ParamField path="queue" type="Queue | None" default="None">
+Optional messaging queue for persisting ingested data.
+</ParamField>
+
+<ParamField path="blob_handler" type="BlobHandler | None" default="None">
+Optional blob handler for managing binary data.
+</ParamField>
+
+<ParamField path="query_result_converter" type="QueryResultConverter | None" default="None">
+Optional query result converter for customizing result formatting.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `OnlineApp` 
+- → `App`
+- → `ABC`
+- → `Generic`
+- → `QueryMixin`
+
+### Descendants
+
+- [**InteractiveApp**](/reference/dsl/app/interactive/interactive_app)
+- [**RestApp**](/reference/dsl/app/rest/rest_app)
+
+### Class Variables
+
+<ParamField path="INGEST_MESSAGE_TYPE" type="str">
+Message type identifier for data ingestion operations.
+</ParamField>

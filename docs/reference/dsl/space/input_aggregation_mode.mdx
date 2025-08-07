@@ -1,0 +1,32 @@
+---
+title: "InputAggregationMode"
+description: "Enumeration defining aggregation modes for input processing in spaces"
+---
+
+## InputAggregationMode
+
+```python
+InputAggregationMode(*args, **kwds)
+```
+
+Enumeration for defining how multiple input values should be aggregated in spaces.
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `InputAggregationMode` 
+- → `Enum`
+
+### Values
+
+<ParamField path="INPUT_AVERAGE" type="InputAggregationMode">
+Average aggregation mode - computes the average of multiple input values.
+</ParamField>
+
+<ParamField path="INPUT_MAXIMUM" type="InputAggregationMode">
+Maximum aggregation mode - selects the maximum value from multiple inputs.
+</ParamField>
+
+<ParamField path="INPUT_MINIMUM" type="InputAggregationMode">
+Minimum aggregation mode - selects the minimum value from multiple inputs.
+</ParamField>

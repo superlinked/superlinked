@@ -1,0 +1,167 @@
+---
+title: "Executor"
+description: "Abstract base class for executing queries against indexed data with different deployment strategies"
+---
+
+The `Executor` class serves as the abstract foundation for all execution engines in Superlinked. It defines the interface for running queries against indexed data and managing the complete execution pipeline from data sources to vector databases.
+
+## Constructor
+
+```python
+Executor(sources, indices, vector_database, context)
+```
+
+### Parameters
+
+<ParamField path="sources" type="SourceT | Sequence[SourceT]" required>
+One or more data sources that provide the data to be indexed and queried. Can be a single source or a sequence of sources.
+</ParamField>
+
+<ParamField path="indices" type="Index | Sequence[Index]" required>
+One or more indices that define the vector spaces and organization of the data. Can be a single index or a sequence of indices.
+</ParamField>
+
+<ParamField path="vector_database" type="VectorDatabase" required>
+The vector database implementation that will store and manage the vectorized data for efficient retrieval.
+</ParamField>
+
+<ParamField path="context" type="ExecutionContext" required>
+The execution context that provides runtime configuration and environment-specific settings.
+</ParamField>
+
+This is an abstract base class and cannot be instantiated directly. Use concrete implementations for specific execution strategies.
+
+## Inheritance Hierarchy
+
+The `Executor` class serves as the base for all execution engine implementations:
+
+**Inheritance Chain**: `Executor` → `ABC` → `Generic`
+
+### Available Implementations
+
+<AccordionGroup>
+<Accordion title="Development Executors">
+- [**InMemoryExecutor**](/reference/dsl/executor/in_memory/in_memory_executor) - In-memory execution for development and testing
+- [**InteractiveExecutor**](/reference/dsl/executor/interactive/interactive_executor) - Interactive execution with real-time data ingestion
+</Accordion>
+
+<Accordion title="Production Executors">
+- [**RestExecutor**](/reference/dsl/executor/rest/rest_executor) - REST API execution for production deployments
+- [**QueryExecutor**](/reference/dsl/executor/query/query_executor) - Specialized query execution engine
+</Accordion>
+</AccordionGroup>
+
+## Methods
+
+### run()
+
+Execute the configured pipeline and return a running application instance.
+
+```python
+run() -> App
+```
+
+**Returns**: An instance of `App` configured with the executor's sources, indices, and vector database.
+
+This abstract method must be implemented by concrete executor classes to define their specific execution strategy and return the appropriate application type.
+
+## Execution Pipeline
+
+All executors manage a consistent execution pipeline:
+
+1. **Source Configuration**: Initialize and configure data sources
+2. **Index Setup**: Prepare vector spaces and indexing strategies  
+3. **Vector Database Integration**: Connect to the specified vector database
+4. **Context Application**: Apply execution context settings
+5. **Application Creation**: Return a configured application instance
+
+## Executor Types and Use Cases
+
+### Development Executors
+
+**InMemoryExecutor**: Designed for development, testing, and prototyping with in-memory data storage and processing.
+
+**InteractiveExecutor**: Enables interactive development with real-time data ingestion and immediate query execution.
+
+### Production Executors
+
+**RestExecutor**: Built for production REST API deployments with scalable request handling and robust error management.
+
+**QueryExecutor**: Specialized for complex query processing scenarios with advanced optimization capabilities.
+
+## Design Patterns
+
+### Configuration Management
+
+Executors follow a builder pattern for configuration:
+- **Sources**: Define data input strategies
+- **Indices**: Specify vector organization and spaces
+- **Vector Database**: Configure storage and retrieval
+- **Context**: Provide runtime settings
+
+### Execution Strategy
+
+Each executor implementation provides:
+- **Specific Application Type**: Returns appropriate app instance
+- **Runtime Optimization**: Optimizes for its deployment scenario
+- **Resource Management**: Manages resources appropriate to its context
+- **Error Handling**: Implements error handling suitable for its environment
+
+## Best Practices
+
+### Executor Selection
+
+<Tip>
+**Development**: Use InMemoryExecutor for quick testing and prototyping with small datasets.
+</Tip>
+
+<Tip>
+**Production APIs**: Use RestExecutor for scalable web applications requiring REST API endpoints.
+</Tip>
+
+<Tip>
+**Interactive Development**: Use InteractiveExecutor when building and testing incrementally with real-time data.
+</Tip>
+
+### Configuration
+
+<Warning>
+**Resource Matching**: Ensure your vector database choice matches your executor type. For example, use InMemoryVectorDatabase with InMemoryExecutor.
+</Warning>
+
+### Context Management
+
+<Note>
+**Execution Context**: Provide appropriate context data that matches your deployment environment and performance requirements.
+</Note>
+
+## Integration Pattern
+
+Executors integrate all core Superlinked components:
+
+- **Sources**: Provide data input from various sources
+- **Indices**: Define vector spaces and data organization
+- **Vector Databases**: Handle vector storage and retrieval
+- **Applications**: Create the final application interface
+- **Queries**: Enable search and retrieval operations
+
+## Application Lifecycle
+
+The executor manages the complete application lifecycle:
+
+1. **Initialization**: Configure all components
+2. **Startup**: Initialize connections and resources
+3. **Runtime**: Handle queries and data operations
+4. **Monitoring**: Provide observability and health checks
+5. **Shutdown**: Clean up resources appropriately
+
+## Error Handling
+
+Executors provide comprehensive error handling:
+
+- **Configuration Errors**: Validate component compatibility
+- **Runtime Errors**: Handle execution failures gracefully
+- **Resource Errors**: Manage database and network issues
+- **Data Errors**: Handle source and parsing failures
+
+The abstract nature of the Executor class ensures consistent behavior across different deployment strategies while allowing each implementation to optimize for its specific use case and environment.

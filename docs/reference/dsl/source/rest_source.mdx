@@ -1,0 +1,202 @@
+---
+title: "RestSource"
+description: "REST API data source for production deployments with HTTP endpoint-based data ingestion"
+---
+
+The `RestSource` class provides a production-ready data source implementation that receives data through HTTP REST endpoints. It's designed for scalable applications where data is ingested via API calls rather than programmatic methods.
+
+## Constructor
+
+```python
+RestSource(schema, parser=None, rest_descriptor=None)
+```
+
+### Parameters
+
+<ParamField path="schema" type="IdSchemaObjectT" required>
+The schema object that defines the structure of data this source will handle. All data received through REST endpoints must conform to this schema.
+</ParamField>
+
+<ParamField path="parser" type="DataParser | None" default="None">
+Optional data parser for processing input data received through REST endpoints. If None, an appropriate parser is selected based on the data format.
+</ParamField>
+
+<ParamField path="rest_descriptor" type="RestDescriptor | None" default="None">
+Optional REST descriptor for configuring the REST API behavior and endpoint definitions.
+</ParamField>
+
+## Properties
+
+<ParamField path="path" type="str" required>
+The API endpoint path where this source accepts data through HTTP requests.
+</ParamField>
+
+## Inheritance
+
+The `RestSource` extends several classes for online data processing:
+
+**Inheritance Chain**: 
+- `RestSource` 
+- → `OnlineSource` 
+- → `TransformerPublisher`
+- → `Source` 
+- → `Generic`
+
+This inheritance provides:
+- **Base Source functionality** from `Source`
+- **Online processing capabilities** from `OnlineSource`
+- **Event publishing** from `TransformerPublisher`
+- **Generic type support** for schema types
+
+## REST API Integration
+
+### Endpoint Configuration
+
+The `RestSource` automatically creates HTTP endpoints for data ingestion:
+- **Data ingestion endpoints** for receiving new data
+- **Batch processing endpoints** for handling multiple records
+- **Status endpoints** for monitoring source health
+
+### Request Processing
+
+Incoming HTTP requests are processed through the following pipeline:
+1. **Request validation** against API contracts
+2. **Data extraction** from request body
+3. **Schema validation** against the associated schema
+4. **Parser processing** if custom parser is configured
+5. **Vector generation** through associated spaces
+6. **Index updates** for immediate search availability
+
+## Production Features
+
+### Scalability
+
+- **Concurrent Processing**: Handle multiple simultaneous requests
+- **Asynchronous Operations**: Non-blocking data processing
+- **Load Balancing**: Support for distributed deployments
+
+### Reliability
+
+- **Error Handling**: Comprehensive error response handling
+- **Data Validation**: Schema validation with detailed error messages
+- **Request Logging**: Full audit trail of API requests
+
+### Security
+
+- **Authentication Support**: Integration with authentication systems
+- **Rate Limiting**: Built-in protection against abuse
+- **Data Sanitization**: Input validation and sanitization
+
+## Use Cases
+
+### Real-Time Applications
+
+Ideal for applications that need to ingest data from:
+- **Web applications** submitting user-generated content
+- **Mobile applications** sending usage data and content
+- **IoT devices** streaming sensor data
+- **Third-party integrations** via webhook endpoints
+
+### Microservices Architecture
+
+Perfect for microservices that need to:
+- **Receive data** from other services via REST APIs
+- **Process events** from event-driven architectures
+- **Handle webhooks** from external systems
+- **Provide data ingestion APIs** for client applications
+
+### Content Management Systems
+
+Suitable for systems that handle:
+- **User-generated content** from web interfaces
+- **Content publishing** from editorial systems
+- **Media uploads** through API endpoints
+- **Metadata updates** from content management tools
+
+## API Response Handling
+
+### Success Responses
+
+RestSource provides appropriate HTTP status codes:
+- **200 OK**: Successful data processing
+- **201 Created**: New data successfully indexed
+- **202 Accepted**: Data queued for processing
+
+### Error Responses
+
+Comprehensive error handling with detailed messages:
+- **400 Bad Request**: Schema validation failures
+- **422 Unprocessable Entity**: Data format issues
+- **500 Internal Server Error**: Processing failures
+
+## Integration with Applications
+
+RestSource integrates with Superlinked REST applications to provide API endpoints:
+
+- **Automatic Endpoint Generation**: Creates REST endpoints based on source configuration
+- **OpenAPI Documentation**: Generates API documentation automatically
+- **Request/Response Validation**: Ensures data consistency
+- **Monitoring Integration**: Provides metrics and health checks
+
+## Performance Characteristics
+
+### Advantages
+
+- **Production Ready**: Designed for high-throughput production environments
+- **Scalable**: Supports horizontal scaling and load balancing
+- **Reliable**: Built-in error handling and recovery mechanisms
+- **Monitoring**: Comprehensive logging and metrics
+
+### Considerations
+
+- **Network Latency**: Dependent on network conditions for data ingestion
+- **HTTP Overhead**: Additional protocol overhead compared to in-memory sources
+- **External Dependencies**: Requires proper HTTP client configuration
+
+## Best Practices
+
+### API Design
+
+<Tip>
+**RESTful Endpoints**: Follow REST conventions for intuitive API design and easier integration with client applications.
+</Tip>
+
+### Error Handling
+
+<Warning>
+**Schema Validation**: Ensure robust schema validation at the API level to prevent processing failures downstream.
+</Warning>
+
+### Performance Optimization
+
+<Note>
+**Batch Processing**: Design APIs to accept batch data when possible to reduce HTTP overhead and improve throughput.
+</Note>
+
+### Security
+
+<Warning>
+**Authentication**: Always implement proper authentication and authorization for production REST endpoints.
+</Warning>
+
+### Monitoring
+
+<Tip>
+**Health Checks**: Implement health check endpoints to monitor source availability and processing status.
+</Tip>
+
+## Deployment Considerations
+
+### Infrastructure Requirements
+
+- **Load Balancers**: For distributing incoming requests
+- **SSL/TLS**: For secure data transmission
+- **Monitoring Systems**: For tracking API performance and health
+
+### Configuration Management
+
+- **Environment Variables**: For different deployment environments
+- **Configuration Files**: For complex REST descriptor settings
+- **Secret Management**: For API keys and authentication credentials
+
+The RestSource provides enterprise-grade REST API capabilities essential for production applications requiring scalable, reliable data ingestion through HTTP endpoints.

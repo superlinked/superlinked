@@ -1,0 +1,38 @@
+---
+title: "RestDescriptor"
+description: "Configuration descriptor for REST endpoints in the executor"
+---
+
+## RestDescriptor
+
+```python
+RestDescriptor(query_path=None, query_descriptor=None, source_path=None)
+```
+
+### Parameters
+
+<ParamField path="query_path" type="str | None" default="None">
+Path configuration for query endpoints.
+</ParamField>
+
+<ParamField path="query_descriptor" type="QueryDescriptor | None" default="None">
+Query descriptor instance for defining query behavior.
+</ParamField>
+
+<ParamField path="source_path" type="str | None" default="None">
+Path configuration for source endpoints.
+</ParamField>
+
+### Properties
+
+<ParamField path="query_descriptor" type="QueryDescriptor | None">
+The query descriptor associated with this REST descriptor.
+</ParamField>
+
+<ParamField path="query_path" type="str | None">
+The configured query endpoint path.
+</ParamField>
+
+<ParamField path="source_path" type="str | None">
+The configured source endpoint path.
+</ParamField>

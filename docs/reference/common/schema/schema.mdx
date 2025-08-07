@@ -1,0 +1,209 @@
+---
+title: "Schema Decorator"
+description: "Annotate classes as schemas to represent structured data in Superlinked's embedding space"
+---
+
+The `@schema` decorator transforms regular Python classes into schema definitions that can be used to represent structured data in Superlinked. Schemas define the entities in the embedding space that you can search by or search for.
+
+## Function Signature
+
+```python
+@schema
+def schema(cls: type[T]) -> type[T] | type[IdSchemaObject]
+```
+
+The decorator takes a class definition and converts it into a schema object that Superlinked can use for data processing and vector operations.
+
+### Parameters
+
+<ParamField path="cls" type="type[T]" required>
+  The class to be converted into a schema. The class should define fields with
+  appropriate type annotations that represent the structure of your data.
+</ParamField>
+
+**Returns**: `type[T] | type[IdSchemaObject]` - The decorated class, now enhanced with schema capabilities.
+
+## Usage
+
+### Basic Schema Definition
+
+Define a simple schema for your data structure:
+
+```python
+from superlinked import schema
+
+@schema
+class ProductSchema:
+    id: str
+    name: str
+    description: str
+    price: float
+    category: str
+    in_stock: bool
+
+# Create an instance to use in your application
+product_schema = ProductSchema()
+```
+
+### Schema with Complex Types
+
+Use more complex type annotations for richer data structures:
+
+```python
+from datetime import datetime
+from typing import List, Optional
+
+@schema
+class UserSchema:
+    user_id: str
+    email: str
+    name: str
+    age: Optional[int]
+    tags: List[str]
+    created_at: datetime
+    is_active: bool
+
+user_schema = UserSchema()
+```
+
+### Event-Based Schema
+
+Create schemas for time-series or event data:
+
+```python
+@schema
+class InteractionSchema:
+    user_id: str
+    item_id: str
+    interaction_type: str
+    timestamp: datetime
+    rating: Optional[float]
+
+interaction_schema = InteractionSchema()
+```
+
+## Schema Integration
+
+### With Spaces
+
+Use schemas to define vector spaces:
+
+```python
+from superlinked import TextSimilaritySpace, CategoricalSimilaritySpace
+
+# Create spaces based on schema fields
+text_space = TextSimilaritySpace(
+    text=product_schema.description,
+    model="sentence-transformers/all-MiniLM-L6-v2"
+)
+
+category_space = CategoricalSimilaritySpace(
+    category_input=product_schema.category,
+    categories=["electronics", "clothing", "books"]
+)
+```
+
+### With Data Sources
+
+Connect schemas to data sources:
+
+```python
+from superlinked import InMemorySource
+
+# Create a data source for the schema
+source = InMemorySource(product_schema)
+```
+
+### With Indexes
+
+Organize schemas in indexes for querying:
+
+```python
+from superlinked import Index
+
+# Create an index combining multiple spaces
+product_index = Index([text_space, category_space])
+```
+
+## Schema Properties
+
+Once decorated, your schema gains several important capabilities:
+
+### Entity Representation
+
+- **Embedding Space Entities**: Each schema instance represents an entity type in the vector space
+- **Searchable Units**: You can search for entities of this schema type or use them as search criteria
+- **Type Safety**: The schema ensures data consistency and type validation
+
+### Field Access
+
+- **Schema Fields**: Access individual fields for use in spaces and queries
+- **Type Information**: Maintain type safety throughout the pipeline
+- **Validation**: Automatic validation of data against the schema structure
+
+## Best Practices
+
+<Tip>
+  **Clear Naming**: Use descriptive class and field names that clearly represent
+  your data domain. This improves code readability and makes debugging easier.
+</Tip>
+
+<Tip>
+  **Type Annotations**: Always include proper type annotations for all fields.
+  This enables better validation and IDE support.
+</Tip>
+
+<Warning>
+  **Required Fields**: Mark optional fields explicitly with `Optional[]` or `|
+  None`. All other fields are considered required.
+</Warning>
+
+<Note>
+  **Schema Evolution**: Changes to schema definitions may require rebuilding
+  indexes and reprocessing data. Plan schema changes carefully in production
+  environments.
+</Note>
+
+## Common Patterns
+
+### Multiple Schema Relationships
+
+Define related schemas for complex data models:
+
+```python
+@schema
+class AuthorSchema:
+    author_id: str
+    name: str
+    biography: str
+
+@schema
+class BookSchema:
+    book_id: str
+    title: str
+    author_id: str  # References AuthorSchema
+    isbn: str
+    publication_year: int
+
+author_schema = AuthorSchema()
+book_schema = BookSchema()
+```
+
+### Hierarchical Data
+
+Structure schemas for hierarchical or nested data:
+
+```python
+@schema
+class CategorySchema:
+    category_id: str
+    name: str
+    parent_category_id: Optional[str]
+
+@schema
+class ProductSchema:
+    product_id: str
+    name: str
+    category_id: str  # References CategorySchema
+    subcategory_id: Optional[str]
+```

@@ -1,0 +1,49 @@
+---
+title: "SingleValueParamQueryClause"
+description: "Base class for query clauses that operate on a single parameter value"
+---
+
+## SingleValueParamQueryClause
+
+```python
+SingleValueParamQueryClause(value_param)
+```
+
+Base class for query clauses that operate on a single parameter value.
+
+### Parameters
+
+<ParamField path="value_param" type="TypedParam | Evaluated[TypedParam]" required>
+The parameter containing the value for this clause.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `SingleValueParamQueryClause` 
+- → `QueryClause`
+- → `ABC`
+
+### Descendants
+
+Classes that extend SingleValueParamQueryClause:
+
+- `BaseLooksLikeFilterClause`
+- `HardFilterClause`
+- `LimitClause`
+- `NLQClause`
+- `NLQSystemPromptClause`
+- `OverriddenNowClause`
+- `RadiusClause`
+- `SelectClause`
+- `SimilarFilterClause`
+
+### Properties
+
+<ParamField path="params" type="Sequence[TypedParam | Evaluated[TypedParam]]">
+Sequence containing the single parameter for this clause.
+</ParamField>
+
+<ParamField path="value_param" type="TypedParam | Evaluated[TypedParam]">
+The parameter containing the value for this clause.
+</ParamField>

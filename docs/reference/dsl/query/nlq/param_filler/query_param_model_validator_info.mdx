@@ -1,0 +1,34 @@
+---
+title: "QueryParamModelValidatorInfo"
+description: "Information container for query parameter model validation"
+---
+
+## QueryParamModelValidatorInfo
+
+```python
+QueryParamModelValidatorInfo(clause_collector)
+```
+
+### Parameters
+
+<ParamField path="clause_collector" type="NLQClauseCollector" required>
+The clause collector containing query clauses and parameter information.
+</ParamField>
+
+### Properties
+
+<ParamField path="allowed_values_by_param" type="Mapping[str, set[ParamInputType]]">
+Mapping of parameter names to their allowed values.
+</ParamField>
+
+<ParamField path="space_param_name_and_space_weight_param_names" type="Sequence[tuple[str, str]]">
+Sequence of tuples containing space parameter names and their corresponding weight parameter names.
+</ParamField>
+
+<ParamField path="space_weight_param_name_by_space" type="Mapping[Space, str]">
+Mapping of spaces to their weight parameter names.
+</ParamField>
+
+<ParamField path="weight_param_names" type="list[str] | None">
+List of weight parameter names, or None if no weight parameters are present.
+</ParamField>

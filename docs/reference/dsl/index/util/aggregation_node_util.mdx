@@ -1,0 +1,28 @@
+---
+title: "AggregationNodeUtil"
+description: "Utility class for aggregation node management and initialization"
+---
+
+## AggregationNodeUtil
+
+```python
+AggregationNodeUtil()
+```
+
+### Static Methods
+
+#### init_aggregation_node()
+
+```python
+init_aggregation_node(aggregation_effect_group, effect_modifier) -> AggregationNode[AggregationInputT, EmbeddingInputT]
+```
+
+<ParamField path="aggregation_effect_group" type="AggregationEffectGroup[AggregationInputT, EmbeddingInputT]" required>
+The aggregation effect group to initialize the node with.
+</ParamField>
+
+<ParamField path="effect_modifier" type="EffectModifier" required>
+The effect modifier to apply during node initialization.
+</ParamField>
+
+**Returns**: `AggregationNode[AggregationInputT, EmbeddingInputT]` - The initialized aggregation node.

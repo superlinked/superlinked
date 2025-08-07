@@ -1,0 +1,64 @@
+---
+title: "OverriddenNowClause"
+description: "Query clause for overriding the current timestamp in time-based queries"
+---
+
+## OverriddenNowClause
+
+```python
+OverriddenNowClause(value_param)
+```
+
+### Parameters
+
+<ParamField path="value_param" type="TypedParam | Evaluated[TypedParam]" required>
+The parameter containing the timestamp to use as "now".
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `OverriddenNowClause` 
+- → `SingleValueParamQueryClause`
+- → `QueryClause`
+- → `ABC`
+
+### Static Methods
+
+#### from_param()
+
+```python
+from_param(now) -> OverriddenNowClause
+```
+
+<ParamField path="now" type="IntParamType" required>
+The timestamp parameter to use as the current time.
+</ParamField>
+
+**Returns**: `OverriddenNowClause` - A new overridden now clause instance.
+
+### Methods
+
+#### get_altered_query_vector_params()
+
+```python
+get_altered_query_vector_params(query_vector_params, index_node_id, query_schema, storage_manager) -> QueryVectorClauseParams
+```
+
+<ParamField path="query_vector_params" type="QueryVectorClauseParams" required>
+The query vector parameters to modify.
+</ParamField>
+
+<ParamField path="index_node_id" type="str" required>
+The index node identifier.
+</ParamField>
+
+<ParamField path="query_schema" type="IdSchemaObject" required>
+The schema object for the query.
+</ParamField>
+
+<ParamField path="storage_manager" type="StorageManager" required>
+The storage manager instance.
+</ParamField>
+
+**Returns**: `QueryVectorClauseParams` - The modified query vector parameters with the overridden timestamp.

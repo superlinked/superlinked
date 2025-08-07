@@ -1,0 +1,203 @@
+---
+title: "App"
+description: "Abstract base class for creating running executors that handle queries and data ingestion in Superlinked"
+---
+
+The `App` class serves as the abstract foundation for all application types in Superlinked. It provides a unified interface for running executors that can perform operations like data ingestion and query execution across different deployment scenarios.
+
+## Constructor
+
+Create a new application instance with the specified configuration.
+
+```python
+App(sources, indices, vector_database, context, init_search_indices)
+```
+
+### Parameters
+
+<ParamField path="sources" type="Sequence[SourceT]" required>
+  The list of data sources that will provide input data to the application.
+  Sources define how data flows into your vector processing pipeline.
+</ParamField>
+
+<ParamField path="indices" type="Sequence[Index]" required>
+  The list of indices that organize your vector spaces for efficient querying.
+  Each index represents a collection of related vector spaces.
+</ParamField>
+
+<ParamField path="vector_database" type="VectorDatabase" required>
+  The vector database instance that the executor will use for storing and
+  retrieving vector data. This determines where your vectors are persisted.
+</ParamField>
+
+<ParamField path="context" type="ExecutionContext" required>
+  The execution context that provides configuration and runtime information for
+  the application.
+</ParamField>
+
+<ParamField path="init_search_indices" type="bool" required>
+  Whether to initialize search indices during application startup. Set to `True`
+  for production deployments.
+</ParamField>
+
+### Example
+
+```python
+from superlinked import App, InMemorySource, Index, InMemoryVectorDatabase
+
+# This is an abstract class, use concrete implementations like InMemoryApp
+# Example shows the interface that all App subclasses implement
+
+@schema
+class ProductSchema:
+    id: str
+    name: str
+    description: str
+
+product_schema = ProductSchema()
+
+# Create components
+source = InMemorySource(product_schema)
+text_space = TextSimilaritySpace(text=product_schema.description)
+index = Index([text_space])
+vector_db = InMemoryVectorDatabase()
+
+# App subclasses will use these components
+```
+
+<Note>
+  The `App` class is abstract and cannot be instantiated directly. Use concrete
+  implementations like `InMemoryApp`, `RestApp`, or `OnlineApp`.
+</Note>
+
+## Properties
+
+### storage_manager
+
+```python
+storage_manager: StorageManager
+```
+
+Returns the storage manager instance that handles data persistence and retrieval operations for the application.
+
+**Returns**: `StorageManager` - The storage manager instance used by this application.
+
+## Inheritance Hierarchy
+
+The `App` class serves as the base for specialized application types:
+
+<AccordionGroup>
+  <Accordion title="Concrete App Types">
+    - [**InMemoryApp**](/reference/dsl/app/in_memory/in_memory_app) - For
+    development and testing with in-memory storage -
+    [**RestApp**](/reference/dsl/app/rest/rest_app) - For production REST API
+    deployments - [**OnlineApp**](/reference/dsl/app/online/online_app) - For
+    real-time online processing -
+    [**InteractiveApp**](/reference/dsl/app/interactive/interactive_app) - For
+    interactive development environments
+  </Accordion>
+</AccordionGroup>
+
+## Application Lifecycle
+
+### Initialization Phase
+
+1. **Source Setup**: Data sources are configured and connected
+2. **Index Preparation**: Vector indices are created and optimized
+3. **Database Connection**: Vector database connection is established
+4. **Context Loading**: Execution context and configuration are applied
+
+### Runtime Phase
+
+1. **Data Ingestion**: Sources provide data that flows through the processing pipeline
+2. **Vector Processing**: Data is transformed into vectors using defined spaces
+3. **Storage Operations**: Vectors are stored in the configured vector database
+4. **Query Handling**: Search and retrieval operations are executed against the stored vectors
+
+## Design Patterns
+
+### Builder Pattern
+
+Apps are typically created using executor builders for clean configuration:
+
+```python
+# Using an executor to build the app
+executor = InMemoryExecutor(
+    sources=[source],
+    indices=[index],
+    vector_database=vector_db
+)
+
+app = executor.run()
+```
+
+### Strategy Pattern
+
+Different app types implement the same interface but with different execution strategies:
+
+- **InMemoryApp**: In-memory processing for development
+- **RestApp**: HTTP API-based processing for production
+- **OnlineApp**: Real-time streaming processing
+
+## Best Practices
+
+<Tip>
+  **App Selection**: Choose the appropriate app type based on your deployment
+  needs. Use `InMemoryApp` for development, `RestApp` for API services, and
+  `OnlineApp` for real-time processing.
+</Tip>
+
+<Tip>
+  **Resource Management**: Ensure proper cleanup of resources when shutting down
+  applications, especially database connections and file handles.
+</Tip>
+
+<Warning>
+  **Thread Safety**: App instances are designed for single-threaded use. For
+  concurrent access, use appropriate synchronization mechanisms or multiple app
+  instances.
+</Warning>
+
+<Note>
+  **Configuration**: The execution context provides important configuration
+  details. Ensure it's properly configured before initializing your app.
+</Note>
+
+## Integration Example
+
+```python
+from superlinked import (
+    InMemoryApp, InMemorySource, Index,
+    TextSimilaritySpace, InMemoryVectorDatabase
+)
+
+# Define your data schema
+@schema
+class DocumentSchema:
+    id: str
+    title: str
+    content: str
+    category: str
+
+document_schema = DocumentSchema()
+
+# Create vector space for semantic search
+text_space = TextSimilaritySpace(
+    text=document_schema.content,
+    model="sentence-transformers/all-MiniLM-L6-v2"
+)
+
+# Set up the application
+source = InMemorySource(document_schema)
+index = Index([text_space])
+vector_db = InMemoryVectorDatabase()
+
+# Create and run the app
+app = InMemoryApp(
+    sources=[source],
+    indices=[index],
+    vector_database=vector_db
+)
+
+# The app is now ready for data ingestion and querying
+```

@@ -1,0 +1,368 @@
+---
+title: "QueryDescriptor"
+description: "Configure and execute vector search queries with filtering, similarity matching, and result formatting options"
+---
+
+The `QueryDescriptor` class provides a fluent interface for building and configuring vector search queries. It allows you to combine vector-based similarity search with traditional filtering, specify result formatting, and execute searches against your indexed data.
+
+## Constructor
+
+```python
+QueryDescriptor(index, schema, clauses=None, query_user_config=None)
+```
+
+### Parameters
+
+<ParamField path="index" type="Index" required>
+The vector index to query against.
+</ParamField>
+
+<ParamField path="schema" type="IdSchemaObject" required>
+The schema object that defines the data structure being queried.
+</ParamField>
+
+<ParamField path="clauses" type="Sequence[QueryClause] | None" default="None">
+Optional list of query clauses that define the search criteria.
+</ParamField>
+
+<ParamField path="query_user_config" type="QueryUserConfig | None" default="None">
+Optional user configuration for query execution behavior.
+</ParamField>
+
+## Properties
+
+<ParamField path="clauses" type="Sequence[QueryClause]" required>
+The collection of query clauses that define the search criteria.
+</ParamField>
+
+<ParamField path="index" type="Index" required>
+The vector index being queried.
+</ParamField>
+
+<ParamField path="query_user_config" type="QueryUserConfig" required>
+User configuration settings for the query.
+</ParamField>
+
+<ParamField path="schema" type="IdSchemaObject" required>
+The schema object for the data being queried.
+</ParamField>
+
+<ParamField path="with_metadata" type="bool" required>
+Whether to include metadata in the query results.
+</ParamField>
+
+## Core Query Methods
+
+### similar()
+
+Add a similarity clause to find items similar to a given input.
+
+```python
+similar(space_field_set, param, weight=1.0) -> QueryDescriptor
+```
+
+<ParamField path="space_field_set" type="HasSpaceFieldSet | SpaceFieldSet" required>
+The space or field set to search within.
+</ParamField>
+
+<ParamField path="param" type="ParamType" required>
+The query parameter - can be a fixed value or a Param placeholder for later substitution.
+</ParamField>
+
+<ParamField path="weight" type="float | int | Param" default="1.0">
+The weight to apply to this similarity clause.
+</ParamField>
+
+**Returns**: `QueryDescriptor` - The query object for method chaining.
+
+**Raises**: 
+- `InvalidInputException` - If the space is already bound in the query
+- `InvalidInputException` - If the schema is not in the similarity field's schema types
+
+### with_vector()
+
+Add a clause to use an existing stored vector for similarity search.
+
+```python
+with_vector(schema_obj, id_param, weight=1.0) -> QueryDescriptor
+```
+
+<ParamField path="schema_obj" type="IdSchemaObject" required>
+The schema object the vector originates from.
+</ParamField>
+
+<ParamField path="id_param" type="str | Param" required>
+The ID parameter - the ID of the vector to use in the query.
+</ParamField>
+
+<ParamField path="weight" type="float | int | Param | Mapping[Space, float | int | Param]" default="1.0">
+Weight for the retrieved vector. Can be fine-tuned with space-wise weighting.
+</ParamField>
+
+**Returns**: `QueryDescriptor` - The query object for method chaining.
+
+## Filtering Methods
+
+### filter()
+
+Add filtering criteria to limit results based on field values.
+
+```python
+filter(comparison_operation) -> QueryDescriptor
+```
+
+<ParamField path="comparison_operation" type="ComparisonOperation[SchemaField] | _Or[SchemaField]" required>
+The comparison operation defining the filter criteria.
+</ParamField>
+
+**Returns**: `QueryDescriptor` - The query object for method chaining.
+
+#### Filter Examples
+
+The original documentation shows these filter patterns:
+
+- `filter(color_schema.color == "blue")`
+- `filter(color_schema.color == Param("color_param"))`
+- `filter(color_schema.color != "red")`
+- `filter(color_schema.rating > 3)`
+- `filter(color_schema.rating >= 3)`
+- `filter(color_schema.rating < 3)`
+- `filter(color_schema.rating <= 3)`
+- `filter((color_schema.color == "blue") | (color_schema.color == "red"))`
+- `filter(color_schema.categories.contains(["bright", "matte"]))` - returns both bright and matte colors
+- `filter(color_schema.categories.not_contains(["bright", "matte"]))` - returns colors that are non-bright and non-matte
+- `filter(color_schema.categories.contains_all(["bright", "blue"]))` - returns colors that are bright and blue at the same time
+
+## Result Configuration Methods
+
+### limit()
+
+Set the maximum number of results to return.
+
+```python
+limit(limit) -> QueryDescriptor
+```
+
+<ParamField path="limit" type="int | Param | None" required>
+The maximum number of results. If None, -1 will be used (not handled by all databases).
+</ParamField>
+
+**Returns**: `QueryDescriptor` - The query object for method chaining.
+
+### radius()
+
+Set a radius for the search to limit results by distance.
+
+```python
+radius(radius) -> QueryDescriptor
+```
+
+<ParamField path="radius" type="float | int | Param | None" required>
+The maximum distance from the query vector. Valid range is 0-1. A radius of 0.05 means minimum cosine similarity of 0.95.
+</ParamField>
+
+**Returns**: `QueryDescriptor` - The query object for method chaining.
+
+**Raises**: `InvalidInputException` - If the radius is not between 0 and 1.
+
+### select()
+
+Select specific fields to return in the results.
+
+```python
+select(fields=None, metadata=None) -> QueryDescriptor
+```
+
+<ParamField path="fields" type="SchemaField | str | Param | Sequence[SchemaField | str | Param] | None" default="None">
+The fields to select. Can be SchemaField objects, field names as strings, or Param objects.
+</ParamField>
+
+<ParamField path="metadata" type="Sequence[Space] | None" default="None">
+The spaces identifying the requested vector parts.
+</ParamField>
+
+**Returns**: `QueryDescriptor` - The query object for method chaining.
+
+**Raises**:
+- `InvalidInputException` - If multiple Param objects are provided or Param is mixed with other field types
+- `TypeException` - If any fields are of unsupported types
+- `FieldException` - If any schema fields are not part of the schema
+- `InvalidInputException` - If any spaces in metadata is not a Space
+
+### select_all()
+
+Select all fields from the schema to be returned.
+
+```python
+select_all(metadata=None) -> QueryDescriptor
+```
+
+<ParamField path="metadata" type="Sequence[Space] | None" default="None">
+The spaces identifying the requested vector parts.
+</ParamField>
+
+**Returns**: `QueryDescriptor` - The query object for method chaining.
+
+## Metadata and Configuration
+
+### include_metadata()
+
+Include per-item metadata in query results.
+
+```python
+include_metadata() -> QueryDescriptor
+```
+
+Current metadata includes space-wise partial scores.
+
+**Returns**: `QueryDescriptor` - The query object for method chaining.
+
+### space_weights()
+
+Set custom weights for different vector spaces.
+
+```python
+space_weights(weight_by_space) -> QueryDescriptor
+```
+
+<ParamField path="weight_by_space" type="Mapping[Space, float | int | Param]" required>
+Mapping of spaces to their weights.
+</ParamField>
+
+**Returns**: `QueryDescriptor` - The query object for method chaining.
+
+## Natural Language Query Support
+
+### with_natural_query()
+
+Enable natural language query processing to automatically fill parameter values.
+
+```python
+with_natural_query(natural_query, client_config, system_prompt=None) -> QueryDescriptor
+```
+
+<ParamField path="natural_query" type="str | Param" required>
+Query containing desired characteristics in natural language.
+</ParamField>
+
+<ParamField path="client_config" type="OpenAIClientConfig" required>
+Client configuration to initialize the OpenAI client.
+</ParamField>
+
+<ParamField path="system_prompt" type="str | Param | None" default="None">
+Custom system prompt to use for the query.
+</ParamField>
+
+**Returns**: `QueryDescriptor` - The query object for method chaining.
+
+### nlq_suggestions()
+
+Get suggestions for improving natural language query parameters.
+
+```python
+nlq_suggestions(feedback=None) -> QuerySuggestionsModel
+```
+
+<ParamField path="feedback" type="str | None" default="None">
+Additional feedback to help generate more targeted suggestions.
+</ParamField>
+
+**Returns**: `QuerySuggestionsModel` - Model containing improvement suggestions and clarifying questions.
+
+The original documentation shows this example usage:
+```python
+suggestions = query.nlq_suggestions()
+suggestions.print()  # Prints formatted suggestions
+# Or access directly:
+print(suggestions.improvement_suggestions)
+print(suggestions.clarifying_questions)
+```
+
+**Raises**: `InvalidInputException` - If `with_natural_query()` has not been called before this method.
+
+## Advanced Configuration
+
+### override_now()
+
+Override the current timestamp for time-based queries.
+
+```python
+override_now(now) -> QueryDescriptor
+```
+
+<ParamField path="now" type="int | Param" required>
+The timestamp to use as "now" for time-based calculations.
+</ParamField>
+
+**Returns**: `QueryDescriptor` - The query object for method chaining.
+
+### replace_user_config()
+
+Replace the current query user configuration.
+
+```python
+replace_user_config(query_user_config) -> QueryDescriptor
+```
+
+<ParamField path="query_user_config" type="QueryUserConfig" required>
+The new configuration to use for this query.
+</ParamField>
+
+**Returns**: `QueryDescriptor` - A new query descriptor with the updated configuration.
+
+## Utility Methods
+
+### get_clause_by_type()
+
+Get a specific clause by its type.
+
+```python
+get_clause_by_type(clause_type) -> QueryClauseT | None
+```
+
+### get_clauses_by_type()
+
+Get all clauses of a specific type.
+
+```python
+get_clauses_by_type(clause_type) -> list[QueryClauseT]
+```
+
+### append_missing_mandatory_clauses()
+
+Add any missing mandatory clauses to the query.
+
+```python
+append_missing_mandatory_clauses() -> QueryDescriptor
+```
+
+### replace_clauses()
+
+Replace the current clauses with a new set.
+
+```python
+replace_clauses(clauses) -> QueryDescriptor
+```
+
+## QueryDescriptorValidator
+
+Validation utility for query descriptors.
+
+```python
+QueryDescriptorValidator()
+```
+
+### Static Methods
+
+#### validate()
+
+Validate a query descriptor for correctness.
+
+```python
+@staticmethod
+validate(query_descriptor: QueryDescriptor) -> None
+```
+
+## Method Chaining
+
+QueryDescriptor supports fluent interface patterns for building complex queries through method chaining. Each method returns the QueryDescriptor instance, allowing you to chain multiple operations together.

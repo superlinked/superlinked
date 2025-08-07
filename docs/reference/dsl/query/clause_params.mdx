@@ -1,0 +1,82 @@
+---
+title: "Clause Parameters"
+description: "Parameter classes for defining query clause configurations"
+---
+
+Parameter classes that define configuration options for different types of query clauses.
+
+## KNNSearchClauseParams
+
+```python
+KNNSearchClauseParams(limit=None, filters=<factory>, schema_fields_to_return=<factory>, radius=None, should_return_index_vector=False)
+```
+
+### Parameters
+
+<ParamField path="limit" type="int | None" default="None">
+Maximum number of results to return.
+</ParamField>
+
+<ParamField path="filters" type="Sequence[ComparisonOperation[SchemaField]]" default="<factory>">
+Sequence of filter operations to apply.
+</ParamField>
+
+<ParamField path="schema_fields_to_return" type="Sequence[SchemaField]" default="<factory>">
+Sequence of schema fields to include in results.
+</ParamField>
+
+<ParamField path="radius" type="float | None" default="None">
+Search radius for distance-based filtering.
+</ParamField>
+
+<ParamField path="should_return_index_vector" type="bool" default="False">
+Whether to return the index vector in results.
+</ParamField>
+
+### Properties
+
+<ParamField path="filters" type="Sequence[ComparisonOperation[SchemaField]]">
+The configured filter operations.
+</ParamField>
+
+<ParamField path="limit" type="int | None">
+The configured result limit.
+</ParamField>
+
+<ParamField path="radius" type="float | None">
+The configured search radius.
+</ParamField>
+
+<ParamField path="schema_fields_to_return" type="Sequence[SchemaField]">
+The configured schema fields to return.
+</ParamField>
+
+<ParamField path="should_return_index_vector" type="bool">
+Whether index vectors should be returned.
+</ParamField>
+
+## ParamEvaluationResult
+
+```python
+ParamEvaluationResult(params, query_vectors)
+```
+
+### Parameters
+
+<ParamField path="params" type="KNNSearchClauseParams" required>
+The evaluated clause parameters.
+</ParamField>
+
+<ParamField path="query_vectors" type="QueryVectors" required>
+The query vectors associated with the parameters.
+</ParamField>
+
+### Properties
+
+<ParamField path="params" type="KNNSearchClauseParams">
+The evaluated clause parameters.
+</ParamField>
+
+<ParamField path="query_vectors" type="QueryVectors">
+The associated query vectors.
+</ParamField>

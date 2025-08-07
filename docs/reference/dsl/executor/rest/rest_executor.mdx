@@ -1,0 +1,62 @@
+---
+title: "RestExecutor"
+description: "Specialized executor subclass designed to handle REST applications with all necessary configuration parameters"
+---
+
+The RestExecutor is a specialized subclass of the Executor base class designed to handle REST applications. It encapsulates all necessary parameters for configuring and running a REST-based application.
+
+## Constructor
+
+```python
+RestExecutor(sources, indices, queries, vector_database, endpoint_configuration=None, context_data=None, blob_handler_config=None)
+```
+
+### Parameters
+
+<ParamField path="sources" type="Sequence[RestSource | DataLoaderSource]" required>
+Sources, either RestSource or DataLoaderSource.
+</ParamField>
+
+<ParamField path="indices" type="Sequence[Index]" required>
+Indices for the RestExecutor.
+</ParamField>
+
+<ParamField path="queries" type="Sequence[RestQuery]" required>
+Queries to execute.
+</ParamField>
+
+<ParamField path="vector_database" type="VectorDatabase" required>
+Vector database instance.
+</ParamField>
+
+<ParamField path="endpoint_configuration" type="RestEndpointConfiguration | None" default="None">
+REST endpoint configuration. Defaults to None.
+</ParamField>
+
+<ParamField path="context_data" type="Mapping[str, Mapping[str, ContextValue]] | None" default="None">
+Context data for execution. Defaults to None.
+</ParamField>
+
+<ParamField path="blob_handler_config" type="BlobHandlerConfig | None" default="None">
+Blob handler configuration. Defaults to None.
+</ParamField>
+
+## Inheritance
+
+**Inheritance Chain**: 
+- `RestExecutor` 
+- → `Executor`
+- → `ABC` 
+- → `Generic`
+
+## Methods
+
+### run()
+
+```python
+run() -> RestApp
+```
+
+Run the RestExecutor. It returns an app that will create rest endpoints.
+
+**Returns**: An instance of RestApp.

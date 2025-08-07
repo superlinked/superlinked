@@ -1,0 +1,28 @@
+---
+title: "QueryParamPromptBuilder"
+description: "Builder for creating prompts used in query parameter filling"
+---
+
+## QueryParamPromptBuilder
+
+```python
+QueryParamPromptBuilder()
+```
+
+### Static Methods
+
+#### calculate_instructor_prompt()
+
+```python
+calculate_instructor_prompt(clause_collector, system_prompt=None) -> str
+```
+
+<ParamField path="clause_collector" type="NLQClauseCollector" required>
+The clause collector containing query clauses and parameter information.
+</ParamField>
+
+<ParamField path="system_prompt" type="str | None" default="None">
+Optional system prompt to include in the instruction.
+</ParamField>
+
+**Returns**: `str` - The generated instructor prompt for parameter filling.

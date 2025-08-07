@@ -1,0 +1,34 @@
+---
+title: "HasSpaceFieldSet"
+description: "Abstract base class providing standard way to create space field set implementations"
+---
+
+Helper class that provides a standard way to create an ABC using inheritance.
+
+## Constructor
+
+```python
+HasSpaceFieldSet()
+```
+
+## Inheritance
+
+**Inheritance Chain**: 
+- `HasSpaceFieldSet` 
+- → `ABC`
+
+### Descendants
+
+Classes that implement the HasSpaceFieldSet interface:
+
+- [**CategoricalSimilaritySpace**](/reference/dsl/space/categorical_similarity_space)
+- [**CustomSpace**](/reference/dsl/space/custom_space)
+- [**NumberSpace**](/reference/dsl/space/number_space)
+- [**RecencySpace**](/reference/dsl/space/recency_space)
+- [**TextSimilaritySpace**](/reference/dsl/space/text_similarity_space)
+
+## Properties
+
+<ParamField path="space_field_set" type="SpaceFieldSet">
+The space field set instance that implementing classes must provide.
+</ParamField>

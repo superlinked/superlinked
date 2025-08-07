@@ -1,0 +1,99 @@
+---
+title: "Source Overview"
+description: "Data source components for handling various input types including interactive, REST, and data loader sources"
+icon: arrow-right-to-bracket
+---
+
+The Source module provides flexible data input handling through various source types, enabling you to connect Superlinked to different data streams and input methods.
+
+## Core Source Components
+
+Foundation components for data source management:
+
+<CardGroup cols={2}>
+  <Card 
+    title="Source" 
+    icon="arrow-right-to-bracket" 
+    href="/reference/dsl/source/source"
+  >
+    Base source class and core functionality
+  </Card>
+  <Card 
+    title="Types" 
+    icon="tags" 
+    href="/reference/dsl/source/types"
+  >
+    Source type definitions and configurations
+  </Card>
+</CardGroup>
+
+## Source Types
+
+Choose the appropriate source type for your data input needs:
+
+<CardGroup cols={2}>
+  <Card 
+    title="Interactive Source" 
+    icon="terminal" 
+    href="/reference/dsl/source/interactive_source"
+  >
+    Interactive data input for experimentation and development
+  </Card>
+  <Card 
+    title="REST Source" 
+    icon="globe" 
+    href="/reference/dsl/source/rest_source"
+  >
+    REST API-based data input for web applications
+  </Card>
+  <Card 
+    title="Data Loader Source" 
+    icon="download" 
+    href="/reference/dsl/source/data_loader_source"
+  >
+    Batch data loading from files and databases
+  </Card>
+  <Card 
+    title="In Memory Source" 
+    icon="memory" 
+    href="/reference/dsl/source/in_memory_source"
+  >
+    In-memory data source for fast development and testing
+  </Card>
+</CardGroup>
+
+## Key Features
+
+Source components provide:
+
+- **Multiple Input Methods**: Support for various data input patterns
+- **Real-time Processing**: Handle streaming and real-time data updates
+- **Batch Processing**: Efficient batch loading of large datasets
+- **API Integration**: Built-in REST API support for web-based data input
+- **Development Support**: Interactive sources for rapid prototyping
+
+<Info>
+Different source types are optimized for specific data input scenarios. Interactive sources are ideal for development, while REST sources enable production API integrations.
+</Info>
+
+## Source Selection Guide
+
+Choose the right source type for your use case:
+
+- **Interactive Source**: Best for development, experimentation, and manual data input
+- **REST Source**: Ideal for production web applications with API-based data input
+- **Data Loader Source**: Perfect for batch processing of files, databases, and large datasets
+- **In Memory Source**: Optimized for testing and small-scale development scenarios
+
+<Tip>
+Start with Interactive Source during development for easy data manipulation, then transition to REST or Data Loader Source for production deployment.
+</Tip>
+
+## Data Flow Patterns
+
+Sources handle different data input patterns:
+
+1. **Real-time Streaming**: Continuous data input from live sources
+2. **Batch Loading**: Periodic loading of large data volumes
+3. **API Integration**: RESTful data input from web applications
+4. **Manual Input**: Interactive data entry for testing and development 

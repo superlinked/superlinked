@@ -1,0 +1,54 @@
+---
+title: "InteractiveExecutor"
+description: "Interactive implementation of the Executor class with optimized vector spaces for search"
+---
+
+Interactive implementation of the Executor class. Supply it with the sources through which your data is received, the indices indicating the desired vector spaces, and optionally a vector database. The executor will create the spaces optimized for search.
+
+## Constructor
+
+```python
+InteractiveExecutor(sources, indices, vector_database=None, context_data=None)
+```
+
+### Parameters
+
+<ParamField path="sources" type="InteractiveSourceT | Sequence[InteractiveSourceT]" required>
+List of interactive sources.
+</ParamField>
+
+<ParamField path="indices" type="Index | Sequence[Index]" required>
+List of indices.
+</ParamField>
+
+<ParamField path="vector_database" type="VectorDatabase | None" default="None">
+Vector database instance. Defaults to InMemoryVectorDatabase.
+</ParamField>
+
+<ParamField path="context_data" type="Mapping[str, Mapping[str, ContextValue]] | None" default="None">
+Context data for execution. Defaults to None.
+</ParamField>
+
+## Inheritance
+
+**Inheritance Chain**: 
+- `InteractiveExecutor` 
+- → `Executor`
+- → `ABC` 
+- → `Generic`
+
+### Descendants
+
+- [**InMemoryExecutor**](/reference/dsl/executor/in_memory/in_memory_executor)
+
+## Methods
+
+### run()
+
+```python
+run() -> InteractiveApp
+```
+
+Run the InteractiveExecutor. It returns an app that can accept queries.
+
+**Returns**: An instance of InteractiveApp.

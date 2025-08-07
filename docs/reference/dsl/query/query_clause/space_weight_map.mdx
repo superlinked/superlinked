@@ -1,0 +1,80 @@
+---
+title: "SpaceWeightMap"
+description: "Mapping container for associating vector spaces with their weight parameters"
+---
+
+## SpaceWeightMap
+
+```python
+SpaceWeightMap(space_weights=<factory>)
+```
+
+### Parameters
+
+<ParamField path="space_weights" type="Mapping[Space, TypedParam | Evaluated[TypedParam]]" default="<factory>">
+Mapping of spaces to their corresponding weight parameters.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `SpaceWeightMap` 
+- → `Mapping`
+- → `Collection`
+- → `Sized`
+- → `Iterable`
+- → `Container`
+
+### Properties
+
+<ParamField path="params" type="Sequence[TypedParam | Evaluated[TypedParam]]">
+Sequence of all weight parameters in this mapping.
+</ParamField>
+
+<ParamField path="space_weights" type="Mapping[Space, TypedParam | Evaluated[TypedParam]]">
+The mapping of spaces to their weight parameters.
+</ParamField>
+
+### Methods
+
+#### alter_param_values()
+
+```python
+alter_param_values(param_values, is_override_set) -> Self | None
+```
+
+<ParamField path="param_values" type="Mapping[str, ParamInputType]" required>
+The parameter values to alter.
+</ParamField>
+
+<ParamField path="is_override_set" type="bool" required>
+Whether this is an override operation.
+</ParamField>
+
+**Returns**: `Self | None` - The altered space weight map or None if no changes.
+
+#### extend()
+
+```python
+extend(weight_param_by_space, all_space) -> Self
+```
+
+<ParamField path="weight_param_by_space" type="Mapping[Space, float | int | Param]" required>
+Additional weight parameters to extend the mapping with.
+</ParamField>
+
+<ParamField path="all_space" type="Sequence[Space]" required>
+All available spaces for the extension.
+</ParamField>
+
+**Returns**: `Self` - The extended space weight map.
+
+#### set_param_name_if_unset()
+
+```python
+set_param_name_if_unset(prefix) -> None
+```
+
+<ParamField path="prefix" type="str" required>
+The prefix to use for parameter names if they are not set.
+</ParamField>

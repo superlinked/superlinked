@@ -1,0 +1,161 @@
+---
+title: "Query Results"
+description: "Data structures for handling search results, including entries, metadata, and scoring information"
+---
+
+The query result system provides structured data models for representing search results returned from vector queries. These Pydantic-based models ensure type safety and consistent result formatting.
+
+## QueryResult
+
+The main container for query results, holding a collection of result entries and associated metadata.
+
+```python
+QueryResult(**data: Any)
+```
+
+### Properties
+
+<ParamField path="entries" type="Sequence[ResultEntry]" required>
+A sequence of result entries, each representing a matching item from the search with its associated data and scoring information.
+</ParamField>
+
+<ParamField path="metadata" type="ResultMetadata" required>
+Global metadata about the query execution, including search parameters and execution context.
+</ParamField>
+
+<ParamField path="model_config" type="ConfigDict">
+Pydantic model configuration for validation and serialization behavior.
+</ParamField>
+
+## ResultEntry
+
+Individual result item containing the matched data and associated metadata.
+
+```python
+ResultEntry(**data: Any)
+```
+
+### Properties
+
+<ParamField path="id" type="str" required>
+The unique identifier of the matched item from the original data source.
+</ParamField>
+
+<ParamField path="fields" type="dict[str, Any]" required>
+Dictionary containing the actual field values from the matched item, as selected in the query.
+</ParamField>
+
+<ParamField path="metadata" type="ResultEntryMetadata" required>
+Detailed metadata about this specific result entry, including scoring and vector information.
+</ParamField>
+
+<ParamField path="model_config" type="ConfigDict">
+Pydantic model configuration for this entry.
+</ParamField>
+
+## ResultEntryMetadata
+
+Detailed scoring and vector information for individual result entries.
+
+```python
+ResultEntryMetadata(**data: Any)
+```
+
+### Properties
+
+<ParamField path="score" type="float" required>
+The overall similarity score for this result entry, representing how well it matches the query criteria.
+</ParamField>
+
+<ParamField path="partial_scores" type="Sequence[float]" required>
+Individual similarity scores from each vector space that contributed to the final score, allowing for detailed analysis of match quality.
+</ParamField>
+
+<ParamField path="vector_parts" type="Sequence[Sequence[float]]" required>
+The actual vector representations from each space for this result entry, useful for debugging and analysis.
+</ParamField>
+
+<ParamField path="model_config" type="ConfigDict">
+Pydantic model configuration for metadata handling.
+</ParamField>
+
+## ResultMetadata
+
+Global information about the query execution and search context.
+
+```python
+ResultMetadata(**data: Any)
+```
+
+### Properties
+
+<ParamField path="schema_name" type="str | None" required>
+The name of the schema that was queried, if available.
+</ParamField>
+
+<ParamField path="search_params" type="dict[str, Any]" required>
+The parameters that were used during the search execution, including any resolved parameter values.
+</ParamField>
+
+<ParamField path="search_vector" type="Sequence[float]" required>
+The final search vector that was used for similarity comparison, after all transformations and weightings.
+</ParamField>
+
+<ParamField path="model_config" type="ConfigDict">
+Pydantic model configuration for result metadata.
+</ParamField>
+
+## Inheritance
+
+All result classes inherit from Pydantic's BaseModel through ImmutableBaseModel:
+
+**Inheritance Chain**: 
+- `QueryResult/ResultEntry/ResultEntryMetadata/ResultMetadata`
+- → `ImmutableBaseModel` 
+- → `BaseModel`
+
+This provides:
+- **Type Validation**: Automatic validation of field types and values
+- **Serialization**: JSON serialization/deserialization support
+- **Immutability**: Result objects cannot be modified after creation
+- **Documentation**: Automatic API documentation generation
+
+## Model Features
+
+### Validation
+
+All models include comprehensive validation:
+- Field type checking
+- Required field enforcement  
+- Custom validation rules
+- Nested model validation
+
+### Serialization
+
+Built-in support for:
+- JSON export/import
+- Dictionary conversion
+- Custom serialization rules
+- Field filtering and selection
+
+### Immutability
+
+Result objects are immutable to ensure:
+- Data consistency across application layers
+- Thread safety for concurrent access
+- Prevention of accidental modifications
+- Reliable caching and memoization
+
+## Best Practices
+
+<Note>
+**Score Interpretation**: Similarity scores are typically between 0 and 1, with higher values indicating better matches. Use partial_scores to understand how different vector spaces contributed to the final score.
+</Note>
+
+<Tip>
+**Metadata Usage**: Use the metadata information for debugging query performance, understanding result ranking, and implementing result explain-ability features.
+</Tip>
+
+<Warning>
+**Large Results**: For queries returning many results, consider the memory impact of storing full vector information in metadata. Use selective field loading when appropriate.
+</Warning>

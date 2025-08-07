@@ -1,0 +1,24 @@
+---
+title: "QueryParamModelBuilder"
+description: "Builder for creating Pydantic models for query parameter validation"
+---
+
+## QueryParamModelBuilder
+
+```python
+QueryParamModelBuilder()
+```
+
+### Static Methods
+
+#### build()
+
+```python
+build(clause_collector) -> type[BaseModel]
+```
+
+<ParamField path="clause_collector" type="NLQClauseCollector" required>
+The clause collector containing query clauses and parameter information.
+</ParamField>
+
+**Returns**: `type[BaseModel]` - A dynamically created Pydantic model class for parameter validation.

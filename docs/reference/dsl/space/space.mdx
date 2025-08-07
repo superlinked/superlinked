@@ -1,0 +1,282 @@
+---
+title: "Space"
+description: "Abstract base class for creating vector spaces that transform data into embeddings for similarity search"
+---
+
+The `Space` class serves as the abstract foundation for all vector space implementations in Superlinked. It defines the interface for transforming data into vector representations that enable similarity search and retrieval operations.
+
+## Constructor
+
+Create a new space with the specified fields and type configuration.
+
+```python
+Space(fields, type_)
+```
+
+### Parameters
+
+<ParamField path="fields" type="Sequence[SchemaField]" required>
+  The sequence of schema fields that this space will process. These fields
+  define what data will be transformed into vectors.
+</ParamField>
+
+<ParamField path="type_" type="type | TypeAlias" required>
+  The type specification for the space, defining the expected input and output
+  data types for the vector transformation.
+</ParamField>
+
+<Note>
+  The `Space` class is abstract and cannot be instantiated directly. Use
+  concrete implementations like `TextSimilaritySpace`,
+  `CategoricalSimilaritySpace`, or `NumberSpace`.
+</Note>
+
+## Properties
+
+### allow_similar_clause
+
+```python
+allow_similar_clause: bool
+```
+
+Indicates whether this space supports similarity-based query clauses. When `True`, the space can be used in similarity searches and "looks like" queries.
+
+### annotation
+
+```python
+annotation: str
+```
+
+A string annotation that describes the space configuration and purpose. Used for debugging and introspection.
+
+### length
+
+```python
+length: int
+```
+
+The dimensionality of the vector space - the number of dimensions in the resulting vectors. This is determined by the specific space implementation and its configuration.
+
+## Space Types
+
+Superlinked provides several specialized space implementations for different data types:
+
+<AccordionGroup>
+<Accordion title="Text Processing">
+- [**TextSimilaritySpace**](/reference/dsl/space/text_similarity_space) - For semantic text similarity using embedding models
+</Accordion>
+
+<Accordion title="Categorical Data">
+  -
+  [**CategoricalSimilaritySpace**](/reference/dsl/space/categorical_similarity_space)
+  - For categorical data with predefined categories
+</Accordion>
+
+<Accordion title="Numerical Data">
+  - [**NumberSpace**](/reference/dsl/space/number_space) - For numerical data
+  with min-max or similarity-based transformations
+</Accordion>
+
+<Accordion title="Time-Based Data">
+  - [**RecencySpace**](/reference/dsl/space/recency_space) - For time-based
+  decay and recency scoring
+</Accordion>
+
+<Accordion title="Images">
+  - [**ImageSpace**](/reference/dsl/space/image_space) - For image similarity
+  using vision models
+</Accordion>
+
+<Accordion title="Custom Transformations">
+- [**CustomSpace**](/reference/dsl/space/custom_space) - For custom vector transformations
+</Accordion>
+</AccordionGroup>
+
+## Vector Transformation Pipeline
+
+### Data Flow
+
+1. **Input Processing**: Raw data from schema fields is ingested
+2. **Type Validation**: Data types are validated against the space configuration
+3. **Transformation**: Data is transformed into vector representations
+4. **Normalization**: Vectors are normalized according to space requirements
+5. **Output**: Standardized vectors ready for indexing and similarity search
+
+### Example Workflow
+
+```python
+from superlinked import TextSimilaritySpace, schema
+
+@schema
+class DocumentSchema:
+    id: str
+    title: str
+    content: str
+
+document_schema = DocumentSchema()
+
+# Create a text similarity space
+text_space = TextSimilaritySpace(
+    text=document_schema.content,
+    model="sentence-transformers/all-MiniLM-L6-v2"
+)
+
+# The space will transform text content into 384-dimensional vectors
+print(f"Vector dimensions: {text_space.length}")  # 384
+print(f"Supports similarity queries: {text_space.allow_similar_clause}")  # True
+```
+
+## Design Patterns
+
+### Composition Pattern
+
+Spaces can be combined in indexes for multi-dimensional similarity:
+
+```python
+# Multiple spaces for different aspects of data
+text_space = TextSimilaritySpace(text=product_schema.description)
+category_space = CategoricalSimilaritySpace(
+    category_input=product_schema.category,
+    categories=["electronics", "clothing", "books"]
+)
+price_space = NumberSpace(number=product_schema.price, min_value=0, max_value=1000)
+
+# Combine in an index
+product_index = Index([text_space, category_space, price_space])
+```
+
+### Strategy Pattern
+
+Different space types implement the same interface with different strategies:
+
+- **TextSimilaritySpace**: Uses embedding models for semantic similarity
+- **CategoricalSimilaritySpace**: Uses one-hot encoding or learned embeddings
+- **NumberSpace**: Uses normalization and binning strategies
+
+## Interface Contracts
+
+### HasTransformationConfig
+
+Provides configuration for how data is transformed into vectors:
+
+```python
+transformation_config: TransformationConfig
+```
+
+### HasLength
+
+Defines the dimensionality of the resulting vectors:
+
+```python
+length: int
+```
+
+### HasSpaceFieldSet (for some implementations)
+
+Manages the fields and their processing within the space:
+
+```python
+space_field_set: SpaceFieldSet
+```
+
+## Use Cases
+
+### Semantic Search
+
+Create spaces for finding semantically similar content:
+
+```python
+# Semantic text search
+content_space = TextSimilaritySpace(
+    text=article_schema.content,
+    model="sentence-transformers/all-mpnet-base-v2"
+)
+```
+
+### Multi-Modal Search
+
+Combine different data types for comprehensive search:
+
+```python
+# Product search combining text, category, and price
+product_spaces = [
+    TextSimilaritySpace(text=product_schema.description),
+    CategoricalSimilaritySpace(
+        category_input=product_schema.category,
+        categories=category_list
+    ),
+    NumberSpace(number=product_schema.price)
+]
+```
+
+### Recommendation Systems
+
+Build recommendation engines using multiple signal types:
+
+```python
+# User preference modeling
+user_spaces = [
+    CategoricalSimilaritySpace(
+        category_input=user_schema.preferences,
+        categories=preference_categories
+    ),
+    RecencySpace(timestamp=interaction_schema.timestamp),
+    NumberSpace(number=user_schema.age)
+]
+```
+
+## Best Practices
+
+<Tip>
+  **Space Selection**: Choose the appropriate space type based on your data
+  characteristics. Use `TextSimilaritySpace` for unstructured text,
+  `CategoricalSimilaritySpace` for discrete categories, and `NumberSpace` for
+  continuous numerical values.
+</Tip>
+
+<Tip>
+  **Dimensionality**: Consider the trade-off between vector dimensionality and
+  performance. Higher dimensions can capture more nuanced relationships but
+  require more computational resources.
+</Tip>
+
+<Warning>
+  **Type Consistency**: Ensure your schema field types match the expected input
+  types for your chosen space. Type mismatches will cause runtime errors.
+</Warning>
+
+<Note>
+  **Combination Strategy**: When using multiple spaces in an index, consider how
+  they will be combined. Different space types may require different weighting
+  strategies for optimal results.
+</Note>
+
+## Advanced Configuration
+
+### Custom Transformations
+
+For specialized use cases, implement custom transformation logic:
+
+```python
+class CustomProductSpace(Space):
+    def __init__(self, fields):
+        super().__init__(fields, ProductVector)
+
+    def transform(self, data):
+        # Custom transformation logic
+        return custom_vector_transform(data)
+```
+
+### Performance Optimization
+
+Configure spaces for optimal performance:
+
+```python
+# Optimize text space for large-scale processing
+text_space = TextSimilaritySpace(
+    text=document_schema.content,
+    model="sentence-transformers/all-MiniLM-L6-v2",
+    cache_size=50000,  # Larger cache for better performance
+    model_cache_dir="/path/to/model/cache"
+)
+```

@@ -1,0 +1,44 @@
+---
+title: "QueryExecutor"
+description: "Interface to execute predefined queries with query time parameters"
+---
+
+QueryExecutor provides an interface to execute predefined queries with query time parameters.
+
+## Constructor
+
+```python
+QueryExecutor(app, query_descriptor, query_vector_factory)
+```
+
+### Parameters
+
+<ParamField path="app" type="App" required>
+An instance of the App class.
+</ParamField>
+
+<ParamField path="query_descriptor" type="QueryDescriptor" required>
+An instance of the QueryDescriptor class representing the query to be executed.
+</ParamField>
+
+<ParamField path="query_vector_factory" type="QueryVectorFactory" required>
+An instance of the QueryVectorFactory class used to produce query vectors.
+</ParamField>
+
+## Methods
+
+### query()
+
+```python
+query(**params) -> QueryResult
+```
+
+Execute a query with keyword parameters.
+
+<ParamField path="**params" type="Sequence[str] | Sequence[float] | PIL.Image.Image | str | int | float | bool | tuple[str | None, str | None] | None" required>
+Arbitrary arguments with keys corresponding to the `name` attribute of the `Param` instance.
+</ParamField>
+
+**Returns**: The result of the query execution that can be inspected and post-processed.
+
+**Raises**: `InvalidInputException` - If the query index is not amongst the executor's indices.

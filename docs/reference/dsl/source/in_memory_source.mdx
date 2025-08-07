@@ -1,0 +1,271 @@
+---
+title: "InMemorySource"
+description: "In-memory data source for development, testing, and rapid prototyping with real-time data ingestion"
+---
+
+The `InMemorySource` class provides an in-memory implementation of the Source interface, designed for development, testing, and scenarios where data is provided programmatically. It stores data in memory and allows for real-time data ingestion and immediate vector processing.
+
+## Constructor
+
+Create a new in-memory source with the specified schema and optional parser.
+
+```python
+InMemorySource(schema, parser=None)
+```
+
+### Parameters
+
+<ParamField path="schema" type="IdSchemaObjectT" required>
+The schema object that defines the structure of data this source will handle. All data added to this source must conform to this schema.
+</ParamField>
+
+<ParamField path="parser" type="DataParser | None" default="None">
+Optional data parser for processing input data. If None, defaults to JsonParser for handling JSON-formatted data.
+</ParamField>
+
+**Raises**: `InvalidInputException` - If the schema is not an instance of SchemaObject.
+
+## Inheritance
+
+The `InMemorySource` extends several classes to provide comprehensive functionality:
+
+**Inheritance Chain**: 
+- `InMemorySource` 
+- → `InteractiveSource` 
+- → `OnlineSource` 
+- → `TransformerPublisher`
+- → `Source` 
+- → `Generic`
+
+This inheritance provides:
+- **Base Source functionality** from `Source`
+- **Online processing capabilities** from `OnlineSource`
+- **Interactive data input** from `InteractiveSource`
+- **Event publishing** from `TransformerPublisher`
+- **Generic type support** for schema types
+
+## Key Features
+
+### Memory-Based Storage
+
+All data is stored in RAM, providing:
+- **Fast Access**: No disk I/O overhead for data operations
+- **Immediate Processing**: Data is immediately available for vector processing
+- **Simple Setup**: No external dependencies or database configuration
+
+### Real-Time Ingestion
+
+Inherited from `InteractiveSource`:
+- **Continuous Data Input**: Add data while the application is running
+- **Immediate Processing**: Data is processed into vectors as soon as it's added
+- **Live Updates**: Indices are updated in real-time with new data
+
+## Use Cases
+
+### Development and Testing
+
+Perfect for initial development and unit testing:
+
+```python
+from superlinked import InMemorySource, schema
+
+@schema
+class ProductSchema:
+    id: str
+    name: str
+    description: str
+    price: float
+
+product_schema = ProductSchema()
+
+# Create in-memory source
+source = InMemorySource(product_schema)
+
+# Add test data
+test_products = [
+    {"id": "1", "name": "Laptop", "description": "Gaming laptop", "price": 999.99},
+    {"id": "2", "name": "Mouse", "description": "Wireless mouse", "price": 29.99}
+]
+
+source.put(test_products)
+```
+
+### Rapid Prototyping
+
+Ideal for quick experimentation and proof-of-concepts:
+
+```python
+# Quick prototype setup
+source = InMemorySource(document_schema)
+
+# Add sample documents
+sample_docs = [
+    {"id": "doc1", "title": "AI Overview", "content": "Introduction to AI concepts"},
+    {"id": "doc2", "title": "ML Basics", "content": "Machine learning fundamentals"}
+]
+
+source.put(sample_docs)
+
+# Immediately available for vector search testing
+```
+
+### Interactive Development
+
+Great for Jupyter notebooks and interactive development:
+
+```python
+# Start with empty source
+source = InMemorySource(article_schema)
+
+# Add data incrementally during development
+source.put({"id": "1", "title": "First Article", "content": "Content here"})
+
+# Test search functionality
+# ... run queries ...
+
+# Add more data as needed
+source.put({"id": "2", "title": "Second Article", "content": "More content"})
+```
+
+### Demo Applications
+
+Excellent for demonstrations and training:
+
+```python
+# Demo setup with realistic data
+demo_source = InMemorySource(movie_schema)
+
+# Load demo dataset
+demo_movies = load_demo_movie_data()  # Your demo data function
+demo_source.put(demo_movies)
+
+# Ready for live demonstration with pre-loaded data
+```
+
+## Data Management
+
+### Programmatic Data Input
+
+Data is added programmatically through the `put()` method inherited from `InteractiveSource`:
+
+- **Single Items**: Add individual data records
+- **Batch Input**: Add multiple records at once
+- **Continuous Updates**: Add data while the application is running
+- **Real-Time Processing**: Data is immediately processed and available for search
+
+### Memory Considerations
+
+<Warning>
+**Memory Usage**: All data is stored in RAM. Monitor memory usage with large datasets to prevent out-of-memory errors.
+</Warning>
+
+<Tip>
+**Data Size Limits**: Keep datasets reasonably sized (typically under 1GB) for optimal performance in development scenarios.
+</Tip>
+
+### Data Persistence
+
+<Warning>
+**No Persistence**: Data is lost when the application shuts down. Not suitable for production use cases requiring data durability.
+</Warning>
+
+## Performance Characteristics
+
+### Advantages
+
+- **Speed**: Fastest possible data access and processing
+- **Simplicity**: No external dependencies or setup required
+- **Flexibility**: Easy to modify and test with different datasets
+
+### Limitations
+
+- **Memory Constraints**: Limited by available RAM
+- **No Persistence**: Data doesn't survive application restarts
+- **Single Instance**: Cannot share data across multiple application instances
+
+## Best Practices
+
+### Development Workflow
+
+<Tip>
+**Incremental Development**: Start with small datasets in InMemorySource, then migrate to production sources when ready for deployment.
+</Tip>
+
+### Testing Strategy
+
+<Note>
+**Isolated Tests**: Each test should create its own InMemorySource instance to ensure test isolation and prevent data contamination.
+</Note>
+
+### Data Management
+
+<Tip>
+**Schema Validation**: Always validate your test data against the schema before adding to the source to catch schema mismatches early.
+</Tip>
+
+## Integration Example
+
+```python
+from superlinked import (
+    InMemorySource, InMemoryApp, Index, 
+    TextSimilaritySpace, InMemoryVectorDatabase
+)
+
+# Complete development setup
+@schema
+class DocumentSchema:
+    id: str
+    title: str
+    content: str
+    category: str
+
+document_schema = DocumentSchema()
+
+# Create source and other components
+source = InMemorySource(document_schema)
+text_space = TextSimilaritySpace(text=document_schema.content)
+index = Index([text_space])
+vector_db = InMemoryVectorDatabase()
+
+# Create application
+app = InMemoryApp(
+    sources=[source],
+    indices=[index],
+    vector_database=vector_db
+)
+
+# Add data for development
+development_docs = [
+    {
+        "id": "1", 
+        "title": "Getting Started", 
+        "content": "Introduction to our system",
+        "category": "tutorial"
+    },
+    {
+        "id": "2", 
+        "title": "Advanced Features", 
+        "content": "Deep dive into advanced functionality",
+        "category": "guide"
+    }
+]
+
+source.put(development_docs)
+
+# Ready for development and testing
+```
+
+## Migration Path
+
+When transitioning from development to production:
+
+```python
+# Development with InMemorySource
+dev_source = InMemorySource(schema)
+
+# Production with RestSource
+prod_source = RestSource(schema, parser=custom_parser)
+
+# Same application logic works with both sources
+app = ProductionApp(sources=[prod_source], indices=[index])
+```

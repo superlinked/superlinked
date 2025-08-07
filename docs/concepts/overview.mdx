@@ -1,0 +1,170 @@
+---
+title: "Concepts Overview"
+description: "Explore the core ideas and principles behind Superlinked's functionality"
+icon: bullseye-arrow
+---
+
+
+1. Describe your data using Python classes with the [@schema](../reference/common/schema/overview) decorator.
+2. Describe your vector embeddings from building blocks with [Spaces](../reference/dsl/space/overview).
+3. Combine your embeddings into a queryable [Index](../reference/dsl/index/overview).
+4. Define your search with dynamic parameters and weights as a [Query](../reference/dsl/query/overview).
+5. Load your data using a [Source](../reference/dsl/source/overview).
+6. Define your transformations with a [Parser](../reference/common/parser/overview) (e.g.: from [`pd.DataFrame`](../reference/common/parser/dataframe_parser)).
+7. Run your configuration with an [Executor](../reference/dsl/executor/overview).
+
+## Colab notebooks explaining the concepts
+
+<CardGroup cols={3}>
+<Card 
+  title="Accessing stored vector parts" 
+  href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/accessing_stored_vector_parts.ipynb" 
+  img="/images/concept-thumbnails/access-vector-parts.png"
+>
+  Use query interface to return vector-parts based on our needs
+</Card>
+
+<Card
+  title="Categorical Embeddings"
+  href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/categorical_embedding.ipynb"
+  img="/images/concept-thumbnails/Categorical Embeddings.png"
+>
+  Efficiently represent and compare categorical data in vector space for
+  similarity searches.
+</Card>
+
+<Card
+  title="Combine Multiple Embeddings"
+  href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/combine_multiple_embeddings.ipynb"
+  img="/images/concept-thumbnails/Combine Multiple Embeddings.png"
+>
+  Merge different types of embeddings to create a unified representation for
+  complex objects.
+</Card>
+
+<Card
+  title="Custom Spaces"
+  href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/custom_space.ipynb"
+  img="/images/concept-thumbnails/Custom Spaces.png"
+>
+  Create and manage custom vector spaces for specialized similarity searches.
+</Card>
+
+<Card
+  title="Dynamic Parameters"
+  href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/dynamic_parameters.ipynb"
+  img="/images/concept-thumbnails/Dynamic Parameters.png"
+>
+  Adjust query parameters dynamically to fine-tune search results.
+</Card>
+
+<Card
+  title="Event Effects"
+  href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/event_effects.ipynb"
+  img="/images/concept-thumbnails/Event Effects.png"
+>
+  Model and apply the impact of events on vector representations over time.
+</Card>
+
+<Card
+  title="Hard Filtering"
+  href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/hard_filtering.ipynb"
+  img="/images/concept-thumbnails/Hard Filtering.png"
+>
+  Apply strict criteria to narrow down search results before similarity ranking.
+</Card>
+
+<Card
+  title="Image Embedding"
+  href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/image_embedding.ipynb"
+  img="/images/concept-thumbnails/Image Embedding.png"
+>
+  Embed text or images into a multi-modal vector space.
+</Card>
+
+<Card
+  title="Natural Language Querying"
+  href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/natural_language_querying.ipynb"
+  img="/images/concept-thumbnails/Natural Language Querying.png"
+>
+  Perform similarity searches using natural language queries instead of vector
+  representations.
+</Card>
+
+<Card
+  title="Number Embedding Minmax"
+  href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/number_embedding_minmax.ipynb"
+  img="/images/concept-thumbnails/Number Embedding Minmax.png"
+>
+  Embed numerical values within a specified range for effective similarity
+  comparisons.
+</Card>
+
+<Card
+  title="Number Embedding Similar"
+  href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/number_embedding_similar.ipynb"
+  img="/images/concept-thumbnails/Number Embedding Similar.png"
+>
+  Embed numbers to find similar values based on relative closeness rather than
+  exact matches.
+</Card>
+
+<Card
+  title="Optional Schema Fields"
+  href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/optional_schema_fields.ipynb"
+  img="/images/concept-thumbnails/optional-schema-fields.png"
+>
+  Define optional fields in your schema.
+</Card>
+
+<Card
+  title="Query Result"
+  href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/query_result.ipynb"
+  img="/images/concept-thumbnails/query-result.png"
+>
+  Customize the result object for your queries.
+</Card>
+
+<Card
+  title="Query Time Weights"
+  href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/query_time_weights.ipynb"
+  img="/images/concept-thumbnails/Query Time Weights.png"
+>
+  Adjust the importance of different embedding components during query
+  execution.
+</Card>
+
+<Card
+  title="Querying Options"
+  href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/querying_options.ipynb"
+  img="/images/concept-thumbnails/Querying Options.png"
+>
+  Customize search behavior with various querying options for refined results.
+</Card>
+
+<Card
+  title="Recency Embedding"
+  href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/recency_embedding.ipynb"
+  img="/images/concept-thumbnails/Recency Embedding.png"
+>
+  Incorporate time-based relevance into vector representations for up-to-date
+  search results.
+</Card>
+
+<Card
+  title="Text Embedding"
+  href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/text_embedding.ipynb"
+  img="/images/concept-thumbnails/Text Embedding.png"
+>
+  Convert text data into vector representations for semantic similarity
+  searches.
+</Card>
+
+<Card 
+  title="Vector Sampler" 
+  href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/vector_sampler.ipynb" 
+  img="/images/concept-thumbnails/Vector Sampling.png"
+>
+  Generate diverse vector samples to explore and understand the embedding space.
+</Card>
+</CardGroup>

@@ -1,0 +1,203 @@
+---
+title: "DataFrameParser"
+description: "Parse pandas DataFrames into schema-compliant data using column-to-field mapping"
+---
+
+The `DataFrameParser` class specializes in parsing pandas DataFrames into schema-compliant data structures. It extends the base `DataParser` functionality to handle tabular data with column-based mapping.
+
+## Constructor
+
+Create a new DataFrame parser for a specific schema with optional column mapping.
+
+```python
+DataFrameParser(schema, mapping=None)
+```
+
+### Parameters
+
+<ParamField path="schema" type="IdSchemaObjectT" required>
+  The target schema object that describes the desired output format. This schema
+  defines the structure and fields that the parsed DataFrame should conform to.
+</ParamField>
+
+<ParamField path="mapping" type="Mapping[SchemaField, str]" default="None">
+  Optional column mapping rules that define how DataFrame columns correspond to
+  schema fields. Specified as `SchemaField` to column name pairs.
+</ParamField>
+
+### Example
+
+```python
+import pandas as pd
+from superlinked import DataFrameParser, schema
+
+@schema
+class ProductSchema:
+    id: str
+    name: str
+    price: float
+    category: str
+
+product_schema = ProductSchema()
+
+# Create parser with column mapping
+parser = DataFrameParser(
+    schema=product_schema,
+    mapping={
+        product_schema.id: "product_id",
+        product_schema.name: "product_name",
+        product_schema.price: "unit_price",
+        product_schema.category: "product_category"
+    }
+)
+```
+
+<Warning>
+  The constructor will raise an `InvalidInputException` if the schema
+  parameter is of an invalid type.
+</Warning>
+
+## Methods
+
+### unmarshal()
+
+Parse a pandas DataFrame into schema-compliant data using the defined column mapping.
+
+```python
+unmarshal(data: pd.DataFrame) -> list[ParsedSchema]
+```
+
+<ParamField path="data" type="pd.DataFrame" required>
+  The pandas DataFrame to parse. Each row will be converted to a ParsedSchema
+  object.
+</ParamField>
+
+**Returns**: `list[ParsedSchema]` - A list of ParsedSchema objects, one for each row in the DataFrame.
+
+#### Example
+
+```python
+import pandas as pd
+
+# Sample DataFrame
+df = pd.DataFrame({
+    "product_id": ["P001", "P002", "P003"],
+    "product_name": ["Laptop", "Mouse", "Keyboard"],
+    "unit_price": [999.99, 29.99, 79.99],
+    "product_category": ["Electronics", "Accessories", "Accessories"]
+})
+
+# Parse DataFrame
+parsed_data = parser.unmarshal(df)
+
+# Each row becomes a ParsedSchema object
+print(f"Parsed {len(parsed_data)} products")
+```
+
+## Inheritance
+
+The `DataFrameParser` inherits from the base `DataParser` class and implements its abstract methods specifically for pandas DataFrame handling.
+
+**Inheritance Chain**: `DataFrameParser` → `DataParser` → `ABC` + `Generic`
+
+## Use Cases
+
+### CSV Data Processing
+
+Perfect for processing CSV files loaded into pandas DataFrames:
+
+```python
+# Load CSV data
+df = pd.read_csv("products.csv")
+
+# Parse with custom mapping
+parser = DataFrameParser(
+    schema=product_schema,
+    mapping={
+        product_schema.id: "SKU",
+        product_schema.name: "Title",
+        product_schema.price: "Price_USD"
+    }
+)
+
+parsed_products = parser.unmarshal(df)
+```
+
+### Data Cleaning and Transformation
+
+Handle data cleaning during the parsing process:
+
+```python
+# DataFrame with mixed data types
+df = pd.DataFrame({
+    "id": ["1", "2", "3"],
+    "price": ["$19.99", "$29.99", "$39.99"],  # String prices
+    "active": ["true", "false", "true"]       # String booleans
+})
+
+# The parser handles type conversion based on schema
+parsed_data = parser.unmarshal(df)
+```
+
+### Batch Processing
+
+Efficiently process large datasets in batches:
+
+```python
+# Process large DataFrame in chunks
+chunk_size = 1000
+for chunk in pd.read_csv("large_dataset.csv", chunksize=chunk_size):
+    parsed_chunk = parser.unmarshal(chunk)
+    # Process parsed_chunk...
+```
+
+## Best Practices
+
+<Tip>
+  **Column Mapping**: Always define explicit column mappings when your DataFrame
+  column names don't exactly match your schema field names. This ensures data
+  consistency.
+</Tip>
+
+<Tip>
+  **Data Types**: Ensure your DataFrame column types are compatible with your
+  schema field types. Pandas will attempt automatic type conversion, but
+  explicit conversion is more reliable.
+</Tip>
+
+<Warning>
+  **Missing Columns**: If a mapped column is missing from the DataFrame, the
+  parsing will fail. Validate your DataFrame structure before parsing.
+</Warning>
+
+<Note>
+  **Performance**: For large DataFrames, consider processing in chunks to manage
+  memory usage effectively.
+</Note>
+
+## Integration Example
+
+```python
+from superlinked import DataFrameParser, TextSimilaritySpace, Index
+
+# Define schema and parser
+@schema
+class MovieSchema:
+    title: str
+    description: str
+    genre: str
+    year: int
+
+movie_schema = MovieSchema()
+parser = DataFrameParser(movie_schema)
+
+# Load and parse data
+movies_df = pd.read_csv("movies.csv")
+parsed_movies = parser.unmarshal(movies_df)
+
+# Create vector space and index
+text_space = TextSimilaritySpace(text=movie_schema.description)
+movie_index = Index([text_space])
+
+# The parsed data is now ready for vector processing
+```

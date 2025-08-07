@@ -1,0 +1,32 @@
+---
+title: "EventAggregationNodeUtil"
+description: "Utility class for event aggregation node management and initialization"
+---
+
+## EventAggregationNodeUtil
+
+```python
+EventAggregationNodeUtil()
+```
+
+### Static Methods
+
+#### init_event_aggregation_node()
+
+```python
+init_event_aggregation_node(space, effect_group, effect_modifier) -> EventAggregationNode[AggregationInputT, EmbeddingInputT]
+```
+
+<ParamField path="space" type="Space" required>
+The space for the event aggregation node.
+</ParamField>
+
+<ParamField path="effect_group" type="EventAggregationEffectGroup[AggregationInputT, EmbeddingInputT]" required>
+The event aggregation effect group to initialize the node with.
+</ParamField>
+
+<ParamField path="effect_modifier" type="EffectModifier" required>
+The effect modifier to apply during node initialization.
+</ParamField>
+
+**Returns**: `EventAggregationNode[AggregationInputT, EmbeddingInputT]` - The initialized event aggregation node.

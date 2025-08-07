@@ -1,0 +1,74 @@
+---
+title: "EffectWithReferencedSchemaObject"
+description: "Effect with resolved schema references and event schema context"
+---
+
+## EffectWithReferencedSchemaObject
+
+```python
+EffectWithReferencedSchemaObject(base_effect, resolved_affected_schema_reference, resolved_affecting_schema_reference, event_schema)
+```
+
+### Parameters
+
+<ParamField path="base_effect" type="Effect[AggregationInputT, EmbeddingInputT]" required>
+The base effect that this wraps.
+</ParamField>
+
+<ParamField path="resolved_affected_schema_reference" type="ResolvedSchemaReference" required>
+The resolved schema reference for the affected schema.
+</ParamField>
+
+<ParamField path="resolved_affecting_schema_reference" type="ResolvedSchemaReference" required>
+The resolved schema reference for the affecting schema.
+</ParamField>
+
+<ParamField path="event_schema" type="EventSchemaObject" required>
+The event schema context for this effect.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `EffectWithReferencedSchemaObject` 
+- → `Generic`
+
+### Properties
+
+<ParamField path="base_effect" type="Effect[AggregationInputT, EmbeddingInputT]">
+The underlying base effect.
+</ParamField>
+
+<ParamField path="dag_effect" type="DagEffect">
+The DAG effect representation.
+</ParamField>
+
+<ParamField path="event_schema" type="EventSchemaObject">
+The event schema associated with this effect.
+</ParamField>
+
+<ParamField path="resolved_affected_schema_reference" type="ResolvedSchemaReference">
+The resolved reference for the schema being affected.
+</ParamField>
+
+<ParamField path="resolved_affecting_schema_reference" type="ResolvedSchemaReference">
+The resolved reference for the schema causing the effect.
+</ParamField>
+
+### Static Methods
+
+#### from_base_effect()
+
+```python
+from_base_effect(base_effect, schemas) -> EffectWithReferencedSchemaObject
+```
+
+<ParamField path="base_effect" type="Effect" required>
+The base effect to wrap.
+</ParamField>
+
+<ParamField path="schemas" type="set[SchemaObject]" required>
+The set of schemas to resolve references against.
+</ParamField>
+
+**Returns**: `EffectWithReferencedSchemaObject` - The effect with resolved schema references.

@@ -1,0 +1,197 @@
+---
+title: "DataParser"
+description: "Base interface for parsing and transforming source data to match defined schemas with flexible mapping support"
+---
+
+The `DataParser` class provides a standardized interface for converting source data into the format required by a defined schema. It supports flexible field mapping and serves as the foundation for all data parsing operations in Superlinked.
+
+## Constructor
+
+Create a new data parser for a specific schema with optional field mapping.
+
+```python
+DataParser(schema, mapping=None)
+```
+
+### Parameters
+
+<ParamField path="schema" type="IdSchemaObjectT" required>
+  The target schema object that describes the desired output format. This schema
+  defines the structure and fields that the parsed data should conform to.
+</ParamField>
+
+<ParamField path="mapping" type="Mapping[SchemaField, str]" default="None">
+Optional field mapping rules that define how source data fields correspond to schema fields. Specified as `SchemaField` to `str` pairs, such as `{movie_schema.title: "movie_title"}`.
+</ParamField>
+
+### Example
+
+```python
+from superlinked import DataParser, schema, SchemaField
+
+@schema
+class MovieSchema:
+    title: str
+    year: int
+    genre: str
+
+movie_schema = MovieSchema()
+
+# Create parser with field mapping
+parser = DataParser(
+    schema=movie_schema,
+    mapping={
+        movie_schema.title: "movie_title",
+        movie_schema.year: "release_year",
+        movie_schema.genre: "category"
+    }
+)
+```
+
+<Warning>
+  The constructor will raise an `InvalidInputException` if the schema
+  parameter is of an invalid type.
+</Warning>
+
+## Properties
+
+### allow_bytes_input
+
+```python
+allow_bytes_input: bool
+```
+
+Controls whether the parser accepts byte input data. Can be configured using the `set_allow_bytes_input()` method.
+
+### blob_loader
+
+```python
+blob_loader: BlobLoader
+```
+
+The blob loader instance used for handling binary data and file operations.
+
+## Methods
+
+### unmarshal()
+
+Parse source data into the desired schema format using the defined mapping rules.
+
+```python
+unmarshal(data: SourceTypeT) -> list[ParsedSchema]
+```
+
+<ParamField path="data" type="SourceTypeT" required>
+  Source data that corresponds to the DataParser's expected input type.
+</ParamField>
+
+**Returns**: `list[ParsedSchema]` - A list of ParsedSchema objects conforming to the target schema.
+
+#### Example
+
+```python
+# Parse source data
+source_data = {
+    "movie_title": "The Matrix",
+    "release_year": 1999,
+    "category": "Sci-Fi"
+}
+
+parsed_data = parser.unmarshal(source_data)
+```
+
+### marshal()
+
+Convert previously parsed data back to its original source format.
+
+```python
+marshal(parsed_schemas: ParsedSchema | list[ParsedSchema]) -> list[SourceTypeT]
+```
+
+<ParamField
+  path="parsed_schemas"
+  type="ParsedSchema | list[ParsedSchema]"
+  required
+>
+  Previously parsed data that follows the schema format of the DataParser.
+</ParamField>
+
+**Returns**: `list[SourceTypeT]` - A list of data in the original source format.
+
+#### Example
+
+```python
+# Convert parsed data back to source format
+original_format = parser.marshal(parsed_data)
+```
+
+### set_allow_bytes_input()
+
+Configure whether the parser should accept byte input data.
+
+```python
+set_allow_bytes_input(value: bool) -> None
+```
+
+<ParamField path="value" type="bool" required>
+  Whether to allow byte input data processing.
+</ParamField>
+
+## Inheritance Hierarchy
+
+The `DataParser` class serves as an abstract base class for specialized parsers:
+
+<AccordionGroup>
+  <Accordion title="Specialized Parsers">
+    - [**DataFrameParser**](/reference/common/parser/dataframe_parser) - For
+    pandas DataFrame processing -
+    [**JsonParser**](/reference/common/parser/json_parser) - For JSON data
+    handling
+  </Accordion>
+</AccordionGroup>
+
+## Use Cases
+
+### Custom Field Mapping
+
+Map source data fields to different schema field names:
+
+```python
+# Source has different field names than schema
+mapping = {
+    product_schema.name: "product_title",
+    product_schema.price: "cost",
+    product_schema.description: "product_info"
+}
+
+parser = DataParser(product_schema, mapping=mapping)
+```
+
+### Multi-Format Data Processing
+
+Use as a base for creating parsers that handle various data formats:
+
+```python
+class CustomParser(DataParser):
+    def unmarshal(self, data):
+        # Custom parsing logic
+        return self._parse_custom_format(data)
+```
+
+## Best Practices
+
+<Tip>
+  **Mapping Strategy**: Define comprehensive field mappings upfront to avoid
+  data transformation issues. Use descriptive mapping keys that clearly indicate
+  the source field names.
+</Tip>
+
+<Note>
+  **Schema Validation**: Ensure your source data contains all required fields
+  defined in the target schema before calling `unmarshal()`.
+</Note>
+
+<Warning>
+  **Type Safety**: The generic typing ensures type safety between the source
+  data format and schema. Maintain consistency in your type annotations.
+</Warning>

@@ -1,0 +1,190 @@
+---
+title: "InMemoryExecutor"
+description: "In-memory executor for development and testing with optimized in-memory vector processing"
+---
+
+The `InMemoryExecutor` provides an in-memory implementation for executing queries against indexed data. It creates optimized vector spaces based on the provided indices and allows querying data from in-memory sources, making it ideal for development, testing, and prototyping scenarios.
+
+## Constructor
+
+```python
+InMemoryExecutor(sources, indices, context_data=None)
+```
+
+### Parameters
+
+<ParamField path="sources" type="InMemorySource | Sequence[InMemorySource]" required>
+One or more in-memory data sources to query against. Can be a single source or sequence of sources. All sources must be InMemorySource instances.
+</ParamField>
+
+<ParamField path="indices" type="Index | Sequence[Index]" required>
+One or more indices that define the vector spaces. Can be a single index or sequence of indices. These indices determine how the data will be organized and searched.
+</ParamField>
+
+<ParamField path="context_data" type="Mapping[str, Mapping[str, ContextValue]] | None" default="None">
+Additional context data for execution. The outer mapping key represents the context name, inner mapping contains key-value pairs for that context. Provides runtime configuration and environment-specific settings.
+</ParamField>
+
+## Inheritance
+
+The `InMemoryExecutor` extends the executor hierarchy for in-memory processing:
+
+**Inheritance Chain**: 
+- `InMemoryExecutor` 
+- → `InteractiveExecutor` 
+- → `Executor`
+- → `ABC` 
+- → `Generic`
+
+This inheritance provides:
+- **Base executor functionality** from `Executor`
+- **Interactive processing capabilities** from `InteractiveExecutor`
+- **Abstract base class support** from `ABC`
+- **Generic type support** for type safety
+
+## Methods
+
+### run()
+
+Execute the in-memory pipeline and return a configured InMemoryApp instance.
+
+```python
+run() -> InMemoryApp
+```
+
+**Returns**: An instance of `InMemoryApp` that can accept queries and provide immediate results from in-memory data.
+
+The run method:
+1. Initializes all provided sources with their data
+2. Creates optimized vector spaces from the indices
+3. Configures the in-memory vector database
+4. Returns a fully configured application ready for querying
+
+## Key Features
+
+### In-Memory Processing
+
+- **Fast Access**: All data stored in RAM for immediate access
+- **No I/O Overhead**: Eliminates disk and network latency
+- **Immediate Results**: Queries execute and return results instantly
+- **Simple Setup**: No external database configuration required
+
+### Development Optimization
+
+- **Quick Iteration**: Rapid development and testing cycles
+- **Easy Debugging**: Full control over data and execution flow
+- **Flexible Testing**: Easy to modify datasets and test scenarios
+- **Minimal Dependencies**: Self-contained execution environment
+
+## Use Cases
+
+### Development and Testing
+
+Perfect for initial development phases:
+- **Prototype Development**: Quick testing of vector search concepts
+- **Unit Testing**: Isolated testing of search functionality
+- **Integration Testing**: Testing complete pipelines with controlled data
+- **Algorithm Development**: Experimenting with different vector spaces and configurations
+
+### Educational and Learning
+
+Ideal for learning and demonstration:
+- **Tutorials**: Teaching vector search concepts with immediate feedback
+- **Workshops**: Hands-on learning with instant results
+- **Proof of Concepts**: Demonstrating search capabilities to stakeholders
+- **Research**: Academic research with controlled datasets
+
+### Small-Scale Applications
+
+Suitable for applications with limited data requirements:
+- **Personal Projects**: Individual applications with small datasets
+- **Internal Tools**: Company tools with limited search requirements
+- **Demos**: Live demonstrations with pre-loaded data
+- **MVPs**: Minimum viable products for initial validation
+
+## Performance Characteristics
+
+### Advantages
+
+- **Speed**: Fastest possible query execution due to in-memory storage
+- **Simplicity**: No external dependencies or complex configuration
+- **Consistency**: Predictable performance without external factors
+- **Development Speed**: Rapid iteration and testing capabilities
+
+### Limitations
+
+- **Memory Constraints**: Limited by available system RAM
+- **No Persistence**: Data lost on application restart
+- **Scalability**: Not suitable for large datasets or high concurrency
+- **Single Instance**: Cannot distribute across multiple servers
+
+## Data Management
+
+### Memory Usage
+
+<Warning>
+**Memory Monitoring**: Monitor memory usage carefully as all data, vectors, and indices are stored in RAM. Large datasets can quickly consume available memory.
+</Warning>
+
+### Data Lifecycle
+
+- **Initialization**: Data loaded into memory during startup
+- **Runtime**: All operations happen in memory
+- **Shutdown**: All data lost when application stops
+- **No Persistence**: Data must be reloaded on each restart
+
+## Best Practices
+
+### Development Workflow
+
+<Tip>
+**Start Small**: Begin with small datasets to validate your approach before scaling to production solutions.
+</Tip>
+
+### Memory Management
+
+<Note>
+**Dataset Size**: Keep datasets reasonably sized (typically under 1GB) for optimal performance and to prevent out-of-memory errors.
+</Note>
+
+### Testing Strategy
+
+<Tip>
+**Isolated Tests**: Use separate InMemoryExecutor instances for different test scenarios to ensure test isolation and prevent data contamination.
+</Tip>
+
+### Migration Path
+
+<Note>
+**Production Transition**: Design your application to easily migrate from InMemoryExecutor to production executors like RestExecutor when ready to deploy.
+</Note>
+
+## Context Configuration
+
+The `context_data` parameter allows fine-tuning of execution behavior:
+
+- **Performance Settings**: Configure memory allocation and processing parameters
+- **Debug Information**: Enable detailed logging and debugging features
+- **Environment Variables**: Set environment-specific configurations
+- **Feature Flags**: Enable or disable specific functionality during development
+
+## Integration Pattern
+
+InMemoryExecutor works seamlessly with the Superlinked development stack:
+
+- **InMemorySource**: Provides data input for testing and development
+- **Various Indices**: Supports all index types for experimentation
+- **InMemoryVectorDatabase**: Automatically configured for in-memory storage
+- **InMemoryApp**: Returns the appropriate application instance
+
+## Application Lifecycle
+
+The InMemoryExecutor manages a simple lifecycle:
+
+1. **Initialization**: Configure sources, indices, and context
+2. **Data Loading**: Load all data into memory during startup
+3. **Vector Processing**: Generate and store vectors in memory
+4. **Query Execution**: Process queries with immediate results
+5. **Shutdown**: Clean termination with data loss
+
+The InMemoryExecutor provides the foundation for rapid development and testing while maintaining the same interface patterns used in production executors, ensuring smooth transitions as your application evolves.

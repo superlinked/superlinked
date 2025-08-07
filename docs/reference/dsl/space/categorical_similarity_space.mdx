@@ -1,0 +1,67 @@
+---
+title: "CategoricalSimilaritySpace"
+description: "Space for encoding categorical similarity with n-hot encoded vectors and optional negative filtering"
+---
+
+Represents a space for encoding categorical similarity.
+
+A CategoricalSimilaritySpace is designed to measure the similarity between items that are grouped into a finite number of textual categories. The categories are represented in an n-hot encoded vector, with the option to apply a negative filter for unmatched categories, enhancing the distinction between matching and non-matching category items.
+
+## Constructor
+
+```python
+CategoricalSimilaritySpace(category_input, categories, negative_filter=0.0, uncategorized_as_category=True)
+```
+
+### Parameters
+
+<ParamField path="category_input" type="String | StringList | list[String | StringList]" required>
+The schema field containing input categories to be considered in the similarity space. Input contains one or more categories in a list if `StringList` is provided. If `String` is provided, then the input must be a single value.
+</ParamField>
+
+<ParamField path="categories" type="list[str]" required>
+A list of all the recognized categories. Categories not included in this list will be treated as 'other', unless `uncategorized_as_category` is False.
+</ParamField>
+
+<ParamField path="negative_filter" type="float" default="0.0">
+A value used to represent unmatched categories in the encoding process. This allows for a penalizing non-matching categories - in contrast to them contributing 0 to similarity, it is possible to influence the similarity score negatively. Defaults to 0.0.
+</ParamField>
+
+<ParamField path="uncategorized_as_category" type="bool" default="True">
+Determines whether categories not listed in `categories` should be treated as a distinct 'other' category. Defaults to True.
+</ParamField>
+
+**Raises**: `InvalidInputException` - If a schema object does not have a corresponding node in the similarity space, indicating a configuration or implementation error.
+
+## Behavior
+
+Negative_filter allows for filtering out unmatched categories, by setting it to a large negative value, effectively resulting in large negative similarity between non-matching category items. A category input not present in categories will be encoded as `other` category. These categories will be similar to each other by default. Set uncategorized_as_category parameter to False in order to suppress this behavior - this way other categories are not similar to each other in any case - not even to the same `other` category. To make that specific category value similar to only the same category items, consider adding it to `categories`.
+
+## Inheritance
+
+**Inheritance Chain**: 
+- `CategoricalSimilaritySpace` 
+- → `Space`
+- → `HasTransformationConfig` 
+- → `HasLength`
+- → `Generic`
+- → `HasSpaceFieldSet`
+- → `ABC`
+
+## Properties
+
+<ParamField path="category" type="SpaceFieldSet">
+The space field set containing the category fields.
+</ParamField>
+
+<ParamField path="space_field_set" type="SpaceFieldSet">
+The space field set for this categorical similarity space.
+</ParamField>
+
+<ParamField path="transformation_config" type="TransformationConfig[Vector, list[str]]">
+Configuration for transforming category lists into vectors.
+</ParamField>
+
+<ParamField path="uncategorized_as_category" type="bool">
+Whether uncategorized items should be treated as a distinct category.
+</ParamField>

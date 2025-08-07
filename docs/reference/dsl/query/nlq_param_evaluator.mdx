@@ -1,0 +1,40 @@
+---
+title: "NLQParamEvaluator"
+description: "Parameter evaluator specialized for natural language query processing"
+---
+
+## NLQParamEvaluator
+
+```python
+NLQParamEvaluator(query_descriptor, nlq_handler)
+```
+
+### Parameters
+
+<ParamField path="query_descriptor" type="QueryDescriptor" required>
+The query descriptor containing the query configuration.
+</ParamField>
+
+<ParamField path="nlq_handler" type="NLQHandler" required>
+The NLQ handler for processing natural language queries.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `NLQParamEvaluator` 
+- → `ParamEvaluator`
+
+### Methods
+
+#### evaluate()
+
+```python
+evaluate(**params) -> ParamEvaluationResult
+```
+
+<ParamField path="**params" type="Any" required>
+Parameters to evaluate for the natural language query.
+</ParamField>
+
+**Returns**: `ParamEvaluationResult` - The evaluation result with processed parameters and query vectors.

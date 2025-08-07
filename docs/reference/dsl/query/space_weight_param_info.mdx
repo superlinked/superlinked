@@ -1,0 +1,44 @@
+---
+title: "SpaceWeightParamInfo"
+description: "Information and configuration for space weight parameters"
+---
+
+## SpaceWeightParamInfo
+
+```python
+SpaceWeightParamInfo(global_param_name_by_space, param_names_by_space)
+```
+
+### Parameters
+
+<ParamField path="global_param_name_by_space" type="Mapping[Space, str]" required>
+Mapping from spaces to their global parameter names.
+</ParamField>
+
+<ParamField path="param_names_by_space" type="Mapping[Space, Sequence[str]]" required>
+Mapping from spaces to sequences of their parameter names.
+</ParamField>
+
+### Properties
+
+<ParamField path="global_param_name_by_space" type="Mapping[Space, str]">
+The mapping of spaces to their global parameter names.
+</ParamField>
+
+<ParamField path="param_names_by_space" type="Mapping[Space, Sequence[str]]">
+The mapping of spaces to their sequences of parameter names.
+</ParamField>
+
+### Static Methods
+
+#### from_clauses()
+
+```python
+from_clauses(clauses) -> SpaceWeightParamInfo
+```
+
+<ParamField path="clauses" type="Sequence[QueryClause]" required>
+The query clauses to extract space weight parameter information from.
+</ParamField>
+
+**Returns**: `SpaceWeightParamInfo` - The extracted space weight parameter information.

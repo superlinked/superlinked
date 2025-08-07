@@ -1,0 +1,38 @@
+---
+title: "QueryResultConverter"
+description: "Base class for converting query results into different formats"
+---
+
+## QueryResultConverter
+
+```python
+QueryResultConverter()
+```
+
+Abstract base class for converting query results into different formats.
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `QueryResultConverter` 
+- → `ABC`
+- → `Generic`
+
+### Descendants
+
+- [**DefaultQueryResultConverter**](/reference/dsl/query/query_result_converter/default_query_result_converter)
+- [**SerializableQueryResultConverter**](/reference/dsl/query/query_result_converter/serializable_query_result_converter)
+
+### Methods
+
+#### convert()
+
+```python
+convert(query_result) -> T
+```
+
+<ParamField path="query_result" type="InternalQueryResult" required>
+The internal query result to convert.
+</ParamField>
+
+**Returns**: `T` - The converted query result in the target format.

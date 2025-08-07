@@ -1,0 +1,66 @@
+---
+title: "NLQ Annotation"
+description: "Annotation classes for natural language query parameter filling"
+---
+
+## NLQAnnotation
+
+```python
+NLQAnnotation(annotation, annotation_type)
+```
+
+### Parameters
+
+<ParamField path="annotation" type="str" required>
+The annotation text.
+</ParamField>
+
+<ParamField path="annotation_type" type="NLQAnnotationType" required>
+The type of annotation.
+</ParamField>
+
+### Properties
+
+<ParamField path="annotation" type="str">
+The annotation text content.
+</ParamField>
+
+<ParamField path="annotation_type" type="NLQAnnotationType">
+The type classification of this annotation.
+</ParamField>
+
+## NLQAnnotationType
+
+```python
+NLQAnnotationType(*args, **kwds)
+```
+
+Enumeration defining the types of annotations used in natural language query processing.
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `NLQAnnotationType` 
+- → `Enum`
+
+### Values
+
+<ParamField path="ALLOWED_VALUES" type="NLQAnnotationType">
+Annotation type for specifying allowed parameter values.
+</ParamField>
+
+<ParamField path="DESCRIPTION" type="NLQAnnotationType">
+Annotation type for providing parameter descriptions.
+</ParamField>
+
+<ParamField path="FIELD_SET" type="NLQAnnotationType">
+Annotation type for defining field sets.
+</ParamField>
+
+<ParamField path="FILTER_TYPE" type="NLQAnnotationType">
+Annotation type for specifying filter types.
+</ParamField>
+
+<ParamField path="TYPE" type="NLQAnnotationType">
+Annotation type for parameter type information.
+</ParamField>

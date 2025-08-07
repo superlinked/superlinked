@@ -1,0 +1,125 @@
+---
+title: "Source"
+description: "Abstract base class for data sources that feed data into Superlinked's vector processing pipeline"
+---
+
+The `Source` class serves as the abstract foundation for all data source implementations in Superlinked. It defines the interface for providing data to vector indices for processing and search operations.
+
+## Constructor
+
+```python
+Source()
+```
+
+This is an abstract base class and cannot be instantiated directly. Use concrete implementations for specific data source types.
+
+## Inheritance Hierarchy
+
+The `Source` class serves as the base for all data source implementations:
+
+**Inheritance Chain**: `Source` → `ABC`
+
+### Available Implementations
+
+<AccordionGroup>
+<Accordion title="Interactive Sources">
+- [**InMemorySource**](/reference/dsl/source/in_memory_source) - In-memory data storage for development and testing
+- [**InteractiveSource**](/reference/dsl/source/interactive_source) - Interactive data input with real-time ingestion
+</Accordion>
+
+<Accordion title="Production Sources">
+- [**RestSource**](/reference/dsl/source/rest_source) - REST API data source for production deployments
+- [**DataLoaderSource**](/reference/dsl/source/data_loader_source) - Batch data loading from files and external systems
+</Accordion>
+</AccordionGroup>
+
+## Source Types and Use Cases
+
+### Development Sources
+
+**InMemorySource**: Perfect for development, testing, and prototyping where data is provided programmatically and stored in memory.
+
+**InteractiveSource**: Ideal for interactive development environments where you want to add data incrementally and see immediate results.
+
+### Production Sources
+
+**RestSource**: Designed for production applications where data comes through REST API endpoints, enabling real-time data ingestion.
+
+**DataLoaderSource**: Suitable for batch processing scenarios where data is loaded from files (CSV, JSON, Parquet) or external data sources.
+
+## Data Flow Architecture
+
+Sources integrate into the Superlinked pipeline as the entry point for data:
+
+1. **Data Input**: Sources receive raw data from various inputs (APIs, files, memory)
+2. **Parsing**: Data is processed through associated parsers to match schema requirements
+3. **Validation**: Schema validation ensures data conformity
+4. **Transformation**: Data flows to vector spaces for embedding generation
+5. **Indexing**: Processed vectors are stored in indices for searching
+
+## Source Selection Guide
+
+### For Development
+
+<Tip>
+**InMemorySource**: Use when you want to quickly test with small datasets and don't need persistence. Perfect for tutorials and experimentation.
+</Tip>
+
+### For Interactive Development
+
+<Tip>
+**InteractiveSource**: Use when building and testing incrementally, allowing you to add data on-the-fly and observe results immediately.
+</Tip>
+
+### For Production APIs
+
+<Tip>
+**RestSource**: Use for production web applications where data is ingested through HTTP endpoints. Provides scalable real-time data processing.
+</Tip>
+
+### For Batch Processing
+
+<Tip>
+**DataLoaderSource**: Use for ETL pipelines and batch processing scenarios where you need to load large datasets from files or databases.
+</Tip>
+
+## Integration Pattern
+
+All source implementations follow a consistent pattern:
+
+1. **Schema Association**: Each source is associated with a specific schema that defines the data structure
+2. **Parser Configuration**: Sources can use custom parsers to handle different data formats
+3. **Data Validation**: Incoming data is validated against the associated schema
+4. **Event Publishing**: Sources publish data events to connected indices and processing components
+
+## Best Practices
+
+### Schema Design
+
+<Warning>
+**Schema Consistency**: Ensure your data source consistently provides data that matches the associated schema structure. Mismatched data will cause processing failures.
+</Warning>
+
+### Performance Considerations
+
+<Tip>
+**Batch Processing**: For large datasets, consider using DataLoaderSource with appropriate batch sizes to optimize memory usage and processing performance.
+</Tip>
+
+### Error Handling
+
+<Note>
+**Data Validation**: Implement proper error handling for data validation failures, especially in production environments where data quality may vary.
+</Note>
+
+## Data Processing Pipeline
+
+Sources work together with other Superlinked components:
+
+- **Schemas**: Define the structure of data that sources must provide
+- **Parsers**: Transform raw data from sources into schema-compliant format
+- **Spaces**: Convert parsed data into vector representations
+- **Indices**: Organize and store vectors for efficient searching
+- **Queries**: Search through the indexed data provided by sources
+
+The abstract nature of the Source class ensures consistent behavior across different data input methods while allowing each implementation to optimize for its specific use case and data patterns.
