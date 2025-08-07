@@ -1,0 +1,71 @@
+---
+title: "NumberSpace"
+description: "Space for encoding numerical values within a specified range with different modes and scaling options"
+---
+
+NumberSpace is used to encode numerical values within a specified range. The range is defined by the min_value and max_value parameters. The preference can be controlled by the mode parameter.
+
+<Note>
+In similar mode you MUST add a similar clause to the query or it will raise.
+</Note>
+
+## Constructor
+
+```python
+NumberSpace(number, min_value, max_value, mode, scale=LinearScale(), aggregation_mode=InputAggregationMode.INPUT_AVERAGE, negative_filter=0.0)
+```
+
+### Parameters
+
+<ParamField path="number" type="Number | list[Number]" required>
+A set of Number objects. It is a SchemaFieldObject not regular python ints or floats.
+</ParamField>
+
+<ParamField path="min_value" type="float | int" required>
+This represents the minimum boundary. Any number lower than this will be considered as this minimum value. It can be either a float or an integer. It must larger or equal to 0 in case of scale=LogarithmicScale(base).
+</ParamField>
+
+<ParamField path="max_value" type="float | int" required>
+This represents the maximum boundary. Any number higher than this will be considered as this maximum value. It can be either a float or an integer. It cannot be 0 in case of scale=LogarithmicScale(base).
+</ParamField>
+
+<ParamField path="mode" type="Mode" required>
+The mode of the number embedding. Possible values are: maximum, minimum and similar. Similar mode expects a .similar on the query, otherwise it will default to maximum.
+</ParamField>
+
+<ParamField path="scale" type="Scale" default="LinearScale()">
+The scaling of the number embedding. Possible values are: LinearScale(), and LogarithmicScale(base). LogarithmicScale base must be larger than 1. It defaults to LinearScale().
+</ParamField>
+
+<ParamField path="aggregation_mode" type="InputAggregationMode" default="InputAggregationMode.INPUT_AVERAGE">
+The aggregation mode of the number embedding. Possible values are: maximum, minimum and average.
+</ParamField>
+
+<ParamField path="negative_filter" type="float" default="0.0">
+This is a value that will be set for everything that is equal or lower than the min_value. It can be a float. It defaults to 0 (No effect)
+</ParamField>
+
+## Inheritance
+
+**Inheritance Chain**: 
+- `NumberSpace` 
+- → `Space`
+- → `HasTransformationConfig` 
+- → `HasLength`
+- → `Generic`
+- → `HasSpaceFieldSet`
+- → `ABC`
+
+## Properties
+
+<ParamField path="allow_similar_clause" type="bool">
+Whether this space allows similarity clauses in queries.
+</ParamField>
+
+<ParamField path="space_field_set" type="SpaceFieldSet">
+The space field set for this number space.
+</ParamField>
+
+<ParamField path="transformation_config" type="TransformationConfig[float, float]">
+Configuration for transforming numerical values into vectors.
+</ParamField>

@@ -1,0 +1,42 @@
+---
+title: "BaseLooksLikeFilterClause"
+description: "Base class for looks like filter clause implementations"
+---
+
+## BaseLooksLikeFilterClause
+
+```python
+BaseLooksLikeFilterClause(value_param, schema_field)
+```
+
+Base class for implementing looks like filter clauses that perform similarity-based filtering.
+
+### Parameters
+
+<ParamField path="value_param" type="TypedParam | Evaluated[TypedParam]" required>
+The parameter containing the value to filter by.
+</ParamField>
+
+<ParamField path="schema_field" type="IdField" required>
+The ID field in the schema to compare against.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `BaseLooksLikeFilterClause` 
+- → `NLQCompatible`
+- → `SingleValueParamQueryClause`
+- → `QueryClause`
+- → `ABC`
+
+### Descendants
+
+- `LooksLikeFilterClause`
+- `LooksLikeFilterClauseWeightBySpace`
+
+### Properties
+
+<ParamField path="schema_field" type="IdField">
+The ID field used for similarity comparison.
+</ParamField>

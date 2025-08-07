@@ -1,0 +1,70 @@
+---
+title: "LooksLikeFilterClauseWeightBySpace"
+description: "Query clause for ID-based similarity filtering with space-specific weights"
+---
+
+## LooksLikeFilterClauseWeightBySpace
+
+```python
+LooksLikeFilterClauseWeightBySpace(value_param, schema_field, space_weight_map=<factory>)
+```
+
+### Parameters
+
+<ParamField path="value_param" type="TypedParam | Evaluated[TypedParam]" required>
+The parameter that specifies the ID value to filter by.
+</ParamField>
+
+<ParamField path="schema_field" type="IdField" required>
+The ID field in the schema to compare against.
+</ParamField>
+
+<ParamField path="space_weight_map" type="SpaceWeightMap" default="<factory>">
+Mapping of spaces to their specific weight parameters.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `LooksLikeFilterClauseWeightBySpace` 
+- → `BaseLooksLikeFilterClause`
+- → `NLQCompatible`
+- → `SingleValueParamQueryClause`
+- → `QueryClause`
+- → `ABC`
+
+### Properties
+
+<ParamField path="nlq_annotations" type="list[NLQAnnotation]">
+List of natural language query annotations for this clause.
+</ParamField>
+
+<ParamField path="schema_field" type="IdField">
+The ID field used for similarity comparison.
+</ParamField>
+
+<ParamField path="space_weight_map" type="SpaceWeightMap">
+The mapping of spaces to their specific weight parameters.
+</ParamField>
+
+### Static Methods
+
+#### from_param()
+
+```python
+from_param(id_, id_param, weight) -> LooksLikeFilterClauseWeightBySpace
+```
+
+<ParamField path="id_" type="IdField" required>
+The ID field to filter on.
+</ParamField>
+
+<ParamField path="id_param" type="StringParamType" required>
+The parameter containing the ID value.
+</ParamField>
+
+<ParamField path="weight" type="Mapping[Space, NumericParamType]" required>
+Mapping of spaces to their weight parameters.
+</ParamField>
+
+**Returns**: `LooksLikeFilterClauseWeightBySpace` - A new looks like filter clause with space weights.

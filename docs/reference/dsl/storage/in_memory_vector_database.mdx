@@ -1,0 +1,28 @@
+---
+title: "InMemoryVectorDatabase"
+description: "In-memory vector database implementation for testing and development purposes"
+---
+
+In-memory implementation of the VectorDatabase. This class provides an in-memory vector database connector, which is useful for testing and development purposes.
+
+## Constructor
+
+```python
+InMemoryVectorDatabase(default_query_limit=-1)
+```
+
+Initialize the InMemoryVectorDatabase and set up an in-memory vector DB connector for testing and development.
+
+### Parameters
+
+<ParamField path="default_query_limit" type="int" default="-1">
+The default limit for query results. A value of -1 indicates no limit.
+</ParamField>
+
+## Inheritance
+
+**Inheritance Chain**: 
+- `InMemoryVectorDatabase` 
+- → `VectorDatabase`
+- → `ABC` 
+- → `Generic`

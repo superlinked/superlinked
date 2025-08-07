@@ -1,0 +1,55 @@
+---
+title: "NLQCompatibleClauseHandler"
+description: "Handler for processing NLQ-compatible query clauses"
+---
+
+## NLQCompatibleClauseHandler
+
+```python
+NLQCompatibleClauseHandler(clause)
+```
+
+### Parameters
+
+<ParamField path="clause" type="QueryClause" required>
+The query clause to handle for NLQ processing.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `NLQCompatibleClauseHandler` 
+- → `NLQCompatible`
+- → `ABC`
+
+### Properties
+
+<ParamField path="annotation_by_space_annotation" type="dict[str, str]">
+Mapping of space annotations to their corresponding annotation strings.
+</ParamField>
+
+<ParamField path="clause" type="QueryClause">
+The query clause being handled.
+</ParamField>
+
+<ParamField path="nlq_annotations" type="list[NLQAnnotation]">
+List of NLQ annotations associated with this clause handler.
+</ParamField>
+
+<ParamField path="params" type="Sequence[TypedParam | Evaluated[TypedParam]]">
+Sequence of parameters used by this clause handler.
+</ParamField>
+
+### Static Methods
+
+#### from_clauses()
+
+```python
+from_clauses(clauses) -> list[NLQCompatibleClauseHandler]
+```
+
+<ParamField path="clauses" type="Sequence[QueryClause]" required>
+The query clauses to create handlers for.
+</ParamField>
+
+**Returns**: `list[NLQCompatibleClauseHandler]` - List of clause handlers for NLQ-compatible clauses.

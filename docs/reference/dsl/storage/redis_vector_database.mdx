@@ -1,0 +1,48 @@
+---
+title: "RedisVectorDatabase"
+description: "Redis implementation of the VectorDatabase with Redis Stack vector search capabilities"
+---
+
+Redis implementation of the VectorDatabase. This class provides a Redis-based vector database connector.
+
+## Constructor
+
+```python
+RedisVectorDatabase(host, port, default_query_limit=10, search_algorithm=SearchAlgorithm.FLAT, vector_precision=Precision.FLOAT16, **extra_params)
+```
+
+Initialize the RedisVectorDatabase with connection parameters and search configuration.
+
+### Parameters
+
+<ParamField path="host" type="str" required>
+The hostname of the Redis server.
+</ParamField>
+
+<ParamField path="port" type="int" required>
+The port number of the Redis server.
+</ParamField>
+
+<ParamField path="default_query_limit" type="int" default="10">
+Default vector search limit, set to Redis's default of 10.
+</ParamField>
+
+<ParamField path="search_algorithm" type="SearchAlgorithm" default="SearchAlgorithm.FLAT">
+The algorithm to use for vector search. Defaults to FLAT.
+</ParamField>
+
+<ParamField path="vector_precision" type="Precision" default="Precision.FLOAT16">
+Precision to use for storing vectors. Defaults to FLOAT16.
+</ParamField>
+
+<ParamField path="**extra_params" type="Any">
+Additional parameters for the Redis connection.
+</ParamField>
+
+## Inheritance
+
+**Inheritance Chain**: 
+- `RedisVectorDatabase` 
+- → `VectorDatabase`
+- → `ABC` 
+- → `Generic`

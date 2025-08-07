@@ -1,0 +1,60 @@
+---
+title: "MongoDBVectorDatabase"
+description: "MongoDB implementation of the VectorDatabase with Atlas Vector Search support"
+---
+
+MongoDB implementation of the VectorDatabase. This class provides a MongoDB-based vector database connector.
+
+## Constructor
+
+```python
+MongoDBVectorDatabase(host, db_name, cluster_name, project_id, admin_api_user, admin_api_password, default_query_limit=10, vector_precision=Precision.FLOAT16, **extra_params)
+```
+
+Initialize the MongoDBVectorDatabase with connection parameters and configuration.
+
+### Parameters
+
+<ParamField path="host" type="str" required>
+The hostname of the MongoDB server.
+</ParamField>
+
+<ParamField path="db_name" type="str" required>
+The name of the database.
+</ParamField>
+
+<ParamField path="cluster_name" type="str" required>
+The name of the MongoDB cluster.
+</ParamField>
+
+<ParamField path="project_id" type="str" required>
+The project ID for MongoDB.
+</ParamField>
+
+<ParamField path="admin_api_user" type="str" required>
+The admin API username.
+</ParamField>
+
+<ParamField path="admin_api_password" type="str" required>
+The admin API password.
+</ParamField>
+
+<ParamField path="default_query_limit" type="int" default="10">
+Default vector search limit. MongoDB does not have a default for it so setting it to a reasonable number of 10.
+</ParamField>
+
+<ParamField path="vector_precision" type="Precision" default="Precision.FLOAT16">
+Precision to use for storing vectors. Defaults to FLOAT16.
+</ParamField>
+
+<ParamField path="**extra_params" type="Any">
+Additional parameters for the MongoDB connection.
+</ParamField>
+
+## Inheritance
+
+**Inheritance Chain**: 
+- `MongoDBVectorDatabase` 
+- → `VectorDatabase`
+- → `ABC` 
+- → `Generic`

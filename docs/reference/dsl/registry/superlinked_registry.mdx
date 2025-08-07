@@ -1,0 +1,38 @@
+---
+title: "SuperlinkedRegistry"
+description: "Central registry for managing and organizing Superlinked framework executors"
+---
+
+The `SuperlinkedRegistry` provides centralized management for Superlinked framework executors, enabling registration and retrieval of executor instances.
+
+## Constructor
+
+```python
+SuperlinkedRegistry()
+```
+
+## Static Methods
+
+### get_executors()
+
+```python
+get_executors() -> frozenset[Executor]
+```
+
+Retrieve all registered executors from the registry.
+
+**Returns**: A frozen set containing all registered executor instances.
+
+### register()
+
+```python
+register(*items: Executor) -> None
+```
+
+Register one or more executor instances with the registry.
+
+<ParamField path="*items" type="Executor" required>
+Variable number of executor instances to register with the framework.
+</ParamField>
+
+**Returns**: None

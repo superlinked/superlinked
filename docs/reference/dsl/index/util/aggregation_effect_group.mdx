@@ -1,0 +1,46 @@
+---
+title: "AggregationEffectGroup"
+description: "Group of effects with the same space and affected schema"
+---
+
+## AggregationEffectGroup
+
+```python
+AggregationEffectGroup(space, affected_schema, effects)
+```
+
+Group of effects with the same space and affected schema.
+
+### Parameters
+
+<ParamField path="space" type="Space[AggregationInputT, EmbeddingInputT]" required>
+The space that all effects in this group apply to.
+</ParamField>
+
+<ParamField path="affected_schema" type="SchemaObject" required>
+The schema object that is affected by all effects in this group.
+</ParamField>
+
+<ParamField path="effects" type="Sequence[EffectWithReferencedSchemaObject[AggregationInputT, EmbeddingInputT]]" required>
+The sequence of effects that belong to this group.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `AggregationEffectGroup` 
+- → `Generic`
+
+### Properties
+
+<ParamField path="affected_schema" type="SchemaObject">
+The schema object that is affected by the effects in this group.
+</ParamField>
+
+<ParamField path="effects" type="Sequence[EffectWithReferencedSchemaObject[AggregationInputT, EmbeddingInputT]]">
+The collection of effects that share the same space and affected schema.
+</ParamField>
+
+<ParamField path="space" type="Space[AggregationInputT, EmbeddingInputT]">
+The space that all effects in this group are applied to.
+</ParamField>

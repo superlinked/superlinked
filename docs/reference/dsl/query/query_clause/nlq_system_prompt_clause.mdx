@@ -1,0 +1,52 @@
+---
+title: "NLQSystemPromptClause"
+description: "Query clause for providing system prompts to natural language query processing"
+---
+
+## NLQSystemPromptClause
+
+```python
+NLQSystemPromptClause(value_param)
+```
+
+### Parameters
+
+<ParamField path="value_param" type="TypedParam | Evaluated[TypedParam]" required>
+The parameter containing the system prompt text.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `NLQSystemPromptClause` 
+- → `SingleValueParamQueryClause`
+- → `QueryClause`
+- → `ABC`
+
+### Static Methods
+
+#### from_param()
+
+```python
+from_param(system_prompt) -> NLQSystemPromptClause
+```
+
+<ParamField path="system_prompt" type="StringParamType" required>
+The system prompt parameter for natural language query processing.
+</ParamField>
+
+**Returns**: `NLQSystemPromptClause` - A new NLQ system prompt clause instance.
+
+### Methods
+
+#### get_altered_nql_params()
+
+```python
+get_altered_nql_params(nlq_clause_params) -> NLQClauseParams
+```
+
+<ParamField path="nlq_clause_params" type="NLQClauseParams" required>
+The NLQ clause parameters to modify with the system prompt.
+</ParamField>
+
+**Returns**: `NLQClauseParams` - The modified NLQ parameters with the system prompt applied.

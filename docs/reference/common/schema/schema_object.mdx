@@ -1,0 +1,377 @@
+---
+title: "Schema Object"
+description: "Schema object classes and field types for structured data representation"
+---
+
+Schema object classes and field types that define the structure and validation of data in Superlinked.
+
+## SchemaObject
+
+```python
+SchemaObject(base_cls: type)
+```
+
+`@schema` decorated class that has multiple `SchemaField`s. Use it to represent your structured data to reference during the vector embedding process.
+
+### Descendants
+
+- [**IdSchemaObject**](/reference/common/schema/id_schema_object)
+
+### Properties
+
+<ParamField path="schema_fields" type="Sequence[SchemaField]">
+Collection of schema fields that define the structure of this schema object.
+</ParamField>
+
+## SchemaField
+
+```python
+SchemaField(name: str, schema_obj: SchemaObjectT, type_: type[SFT], nullable: bool)
+```
+
+A SchemaField is a generic field of your `@schema` decorated class. `SchemaField`s are the basic building block for inputs that will be referenced in an embedding space. Sub-types of a `SchemaField` are typed data representations that you can use to transform and load data to feed the vector embedding process.
+
+### Parameters
+
+<ParamField path="name" type="str" required>
+Name of the schema field.
+</ParamField>
+
+<ParamField path="schema_obj" type="SchemaObjectT" required>
+The schema object this field belongs to.
+</ParamField>
+
+<ParamField path="type_" type="type[SFT]" required>
+The type of the field.
+</ParamField>
+
+<ParamField path="nullable" type="bool" required>
+Whether the field can have null values.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `SchemaField` 
+- → `ComparisonOperand`
+- → `ABC` 
+- → `Generic`
+
+### Descendants
+
+- `CreatedAtField`
+- `SchemaReference`
+- `IdField`
+- `Blob`
+- `Boolean`
+- `FloatList`
+- `Number`
+- `String`
+- `StringList`
+- `Timestamp`
+
+### Properties
+
+<ParamField path="supported_comparison_operation_types" type="Sequence[ComparisonOperationType]">
+Sequence of supported comparison operation types for this field.
+</ParamField>
+
+### Methods
+
+#### as_type()
+
+```python
+as_type(value: Any) -> SFT
+```
+
+#### parse()
+
+```python
+parse(value: SFT) -> SFT
+```
+
+## String
+
+```python
+String(name: str, schema_obj: SchemaObjectT, nullable: bool)
+```
+
+Field of a schema that represents a string value. e.g.: `TextEmbeddingSpace` expects a String field as an input.
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `String` 
+- → `SchemaField`
+- → `ComparisonOperand`
+- → `ABC` 
+- → `Generic`
+
+### Properties
+
+<ParamField path="supported_comparison_operation_types" type="Sequence[ComparisonOperationType]">
+Sequence of supported comparison operation types for this field.
+</ParamField>
+
+## Number
+
+```python
+Number(name: str, schema_obj: SchemaObjectT, type_: type[SFT], nullable: bool)
+```
+
+Field of a schema that represents a union of Float and Integer. e.g.: `NumberSpace` expects a Number field as an input.
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `Number` 
+- → `SchemaField`
+- → `ComparisonOperand`
+- → `ABC` 
+- → `Generic`
+
+### Descendants
+
+- `Float`
+- `Integer`
+
+## Float
+
+```python
+Float(name: str, schema_obj: SchemaObjectT, nullable: bool)
+```
+
+Field of a schema that represents a float.
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `Float` 
+- → `Number`
+- → `SchemaField`
+- → `ComparisonOperand`
+- → `ABC` 
+- → `Generic`
+
+### Properties
+
+<ParamField path="supported_comparison_operation_types" type="Sequence[ComparisonOperationType]">
+Sequence of supported comparison operation types for this field.
+</ParamField>
+
+## Integer
+
+```python
+Integer(name: str, schema_obj: SchemaObjectT, nullable: bool)
+```
+
+Field of a schema that represents an integer.
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `Integer` 
+- → `Number`
+- → `SchemaField`
+- → `ComparisonOperand`
+- → `ABC` 
+- → `Generic`
+
+### Properties
+
+<ParamField path="supported_comparison_operation_types" type="Sequence[ComparisonOperationType]">
+Sequence of supported comparison operation types for this field.
+</ParamField>
+
+## Boolean
+
+```python
+Boolean(name: str, schema_obj: SchemaObjectT, nullable: bool)
+```
+
+Field of a schema that represents a boolean.
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `Boolean` 
+- → `SchemaField`
+- → `ComparisonOperand`
+- → `ABC` 
+- → `Generic`
+
+### Properties
+
+<ParamField path="supported_comparison_operation_types" type="Sequence[ComparisonOperationType]">
+Sequence of supported comparison operation types for this field.
+</ParamField>
+
+### Methods
+
+#### is_()
+
+```python
+is_(value: bool) -> ComparisonOperation[SchemaField]
+```
+
+Equivalent to equality comparison for boolean fields. This method exists to avoid linter errors when comparing boolean fields.
+
+#### is_not_()
+
+```python
+is_not_(value: bool) -> ComparisonOperation[SchemaField]
+```
+
+Equivalent to inequality comparison for boolean fields. This method exists to avoid linter errors when comparing boolean fields.
+
+## Timestamp
+
+```python
+Timestamp(name: str, schema_obj: SchemaObjectT, nullable: bool)
+```
+
+Field of a schema that represents a unix timestamp. e.g.: `RecencySpace` expects a Timestamp field as an input.
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `Timestamp` 
+- → `SchemaField`
+- → `ComparisonOperand`
+- → `ABC` 
+- → `Generic`
+
+### Properties
+
+<ParamField path="supported_comparison_operation_types" type="Sequence[ComparisonOperationType]">
+Sequence of supported comparison operation types for this field.
+</ParamField>
+
+### Methods
+
+#### as_type()
+
+```python
+as_type(value: Any) -> int
+```
+
+## Blob
+
+```python
+Blob(name: str, schema_obj: SchemaObjectT, nullable: bool)
+```
+
+Field of a schema that represents a local/remote file path or an utf-8 encoded bytes string. e.g.: `ImageSpace` expects a blob field as an input.
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `Blob` 
+- → `SchemaField`
+- → `ComparisonOperand`
+- → `ABC` 
+- → `Generic`
+
+### Properties
+
+<ParamField path="supported_comparison_operation_types" type="Sequence[ComparisonOperationType]">
+Sequence of supported comparison operation types for this field.
+</ParamField>
+
+### Methods
+
+#### as_type()
+
+```python
+as_type(value: Any) -> BlobInformation
+```
+
+## StringList
+
+```python
+StringList(name: str, schema_obj: SchemaObjectT, nullable: bool)
+```
+
+Field of a schema that represents a list of strings.
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `StringList` 
+- → `SchemaField`
+- → `ComparisonOperand`
+- → `ABC` 
+- → `Generic`
+
+### Properties
+
+<ParamField path="supported_comparison_operation_types" type="Sequence[ComparisonOperationType]">
+Sequence of supported comparison operation types for this field.
+</ParamField>
+
+### Methods
+
+#### as_type()
+
+```python
+as_type(value: Any) -> list[str]
+```
+
+#### parse()
+
+```python
+parse(value: list[str]) -> list[str]
+```
+
+## FloatList
+
+```python
+FloatList(name: str, schema_obj: SchemaObjectT, nullable: bool)
+```
+
+Field of a schema that represents a vector.
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `FloatList` 
+- → `SchemaField`
+- → `ComparisonOperand`
+- → `ABC` 
+- → `Generic`
+
+### Properties
+
+<ParamField path="supported_comparison_operation_types" type="Sequence[ComparisonOperationType]">
+Sequence of supported comparison operation types for this field.
+</ParamField>
+
+### Methods
+
+#### as_type()
+
+```python
+as_type(value: Any) -> list[float]
+```
+
+#### parse()
+
+```python
+parse(value: list[float]) -> list[float]
+```
+
+## DescribedBlob
+
+```python
+DescribedBlob(blob: Blob, description: String)
+```
+
+### Properties
+
+<ParamField path="blob" type="Blob">
+The blob field containing the file or binary data.
+</ParamField>
+
+<ParamField path="description" type="String">
+The string field containing the description text.
+</ParamField>

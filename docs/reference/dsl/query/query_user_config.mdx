@@ -1,0 +1,38 @@
+---
+title: "QueryUserConfig"
+description: "User configuration options for query execution behavior"
+---
+
+## QueryUserConfig
+
+```python
+QueryUserConfig(with_metadata=False, redis_hybrid_policy=None, redis_batch_size=250)
+```
+
+### Parameters
+
+<ParamField path="with_metadata" type="bool" default="False">
+Whether to include metadata in query results.
+</ParamField>
+
+<ParamField path="redis_hybrid_policy" type="str | None" default="None">
+The Redis hybrid policy configuration.
+</ParamField>
+
+<ParamField path="redis_batch_size" type="int | None" default="250">
+The batch size for Redis operations.
+</ParamField>
+
+### Properties
+
+<ParamField path="redis_batch_size" type="int | None">
+The configured batch size for Redis operations.
+</ParamField>
+
+<ParamField path="redis_hybrid_policy" type="str | None">
+The configured Redis hybrid policy.
+</ParamField>
+
+<ParamField path="with_metadata" type="bool">
+Whether metadata should be included in query results.
+</ParamField>

@@ -1,0 +1,44 @@
+---
+title: "TopKVectorDatabase"
+description: "TopK implementation of the VectorDatabase for optimized top-K nearest neighbor retrieval"
+---
+
+TopK implementation of the VectorDatabase. This class provides a TopK-based vector database connector.
+
+## Constructor
+
+```python
+TopKVectorDatabase(api_key, region, https=True, host="topk.io", default_query_limit=10)
+```
+
+Initialize the TopKVectorDatabase with API credentials and connection configuration.
+
+### Parameters
+
+<ParamField path="api_key" type="str" required>
+The API key for the TopK server.
+</ParamField>
+
+<ParamField path="region" type="str" required>
+The region of the TopK server.
+</ParamField>
+
+<ParamField path="https" type="bool" default="True">
+Whether to use HTTPS for the TopK server.
+</ParamField>
+
+<ParamField path="host" type="str" default="topk.io">
+The host of the TopK server.
+</ParamField>
+
+<ParamField path="default_query_limit" type="int" default="10">
+Default vector search limit, set to TopK's default of 10.
+</ParamField>
+
+## Inheritance
+
+**Inheritance Chain**: 
+- `TopKVectorDatabase` 
+- → `VectorDatabase`
+- → `ABC` 
+- → `Generic`

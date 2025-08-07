@@ -1,0 +1,137 @@
+---
+title: "VectorDatabase"
+description: "Abstract base class for vector database implementations that provide persistent storage for vector embeddings"
+---
+
+The `VectorDatabase` class serves as the abstract foundation for all vector database implementations in Superlinked. It defines the interface that concrete vector database implementations must follow to provide persistent storage and retrieval of vector embeddings.
+
+## Constructor
+
+```python
+VectorDatabase()
+```
+
+This is an abstract base class and cannot be instantiated directly. Use concrete implementations for specific vector database providers.
+
+## Architecture
+
+The `VectorDatabase` class ensures that any concrete implementation provides a connector to the underlying vector database through the `_vdb_connector` property.
+
+### Attributes
+
+<ParamField path="_vdb_connector" type="VDBConnectorT" required>
+An abstract property that concrete implementations must override to return an instance of a VDBConnector for the specific database type.
+</ParamField>
+
+## Inheritance Hierarchy
+
+The `VectorDatabase` class serves as the base for all vector database implementations:
+
+**Inheritance Chain**: `VectorDatabase` → `ABC` + `Generic`
+
+### Available Implementations
+
+<AccordionGroup>
+<Accordion title="Production Databases">
+- [**QdrantVectorDatabase**](/reference/dsl/storage/qdrant_vector_database) - Qdrant vector database integration
+- [**RedisVectorDatabase**](/reference/dsl/storage/redis_vector_database) - Redis Stack vector search
+- [**MongoDBVectorDatabase**](/reference/dsl/storage/mongo_db_vector_database) - MongoDB Atlas Vector Search
+</Accordion>
+
+<Accordion title="Development & Testing">
+- [**InMemoryVectorDatabase**](/reference/dsl/storage/in_memory_vector_database) - In-memory storage for development
+- [**TopKVectorDatabase**](/reference/dsl/storage/topk_vector_database) - Top-K optimization wrapper
+</Accordion>
+</AccordionGroup>
+
+## Vector Database Features
+
+Vector databases provide several key capabilities:
+
+### Persistent Storage
+- Store vector embeddings with associated metadata
+- Maintain data durability across application restarts
+- Scale storage capacity based on data volume
+
+### Similarity Search
+- Efficient nearest neighbor search algorithms
+- Support for various distance metrics (cosine, euclidean, etc.)
+- Optimized indexing for fast retrieval
+
+### Filtering and Querying
+- Combine vector similarity with metadata filtering
+- Support complex query conditions
+- Handle large-scale concurrent queries
+
+### Performance Optimization
+- Index management for search performance
+- Memory and disk optimization strategies
+- Clustering and sharding capabilities
+
+## Implementation Requirements
+
+Concrete vector database implementations must provide:
+
+1. **Connection Management**: Establish and maintain connections to the database
+2. **Vector Operations**: Store, update, and retrieve vector embeddings
+3. **Search Functionality**: Perform similarity searches with filtering
+4. **Index Management**: Create and maintain search indices
+5. **Error Handling**: Graceful handling of database errors and timeouts
+
+## Database Selection Guide
+
+### Production Workloads
+
+<Tip>
+**Qdrant**: Excellent for high-performance vector search with advanced filtering capabilities. Supports both cloud and self-hosted deployments.
+</Tip>
+
+<Tip>
+**Redis**: Great for applications already using Redis, providing fast in-memory vector search with persistence options.
+</Tip>
+
+<Tip>
+**MongoDB**: Ideal for applications with existing MongoDB infrastructure, offering integrated document and vector search.
+</Tip>
+
+### Development & Testing
+
+<Note>
+**InMemoryVectorDatabase**: Perfect for development, testing, and prototyping. No external dependencies required.
+</Note>
+
+<Note>
+**TopKVectorDatabase**: Useful for scenarios where only the top-K most similar results are needed, providing memory optimization.
+</Note>
+
+## Best Practices
+
+### Database Configuration
+
+<Warning>
+**Connection Limits**: Configure appropriate connection limits and timeouts based on your expected query volume and latency requirements.
+</Warning>
+
+### Performance Tuning
+
+<Tip>
+**Index Strategy**: Choose appropriate indexing strategies based on your vector dimensions, data size, and query patterns. Each database provides different indexing algorithms optimized for specific use cases.
+</Tip>
+
+### Data Management
+
+<Warning>
+**Backup Strategy**: Implement regular backup procedures for production vector databases to prevent data loss and enable disaster recovery.
+</Warning>
+
+## Integration Pattern
+
+Vector databases integrate into the Superlinked pipeline as storage backends:
+
+1. **Vector Generation**: Spaces transform data into vectors
+2. **Index Organization**: Indices organize vectors for efficient querying  
+3. **Storage**: VectorDatabase implementations persist vectors
+4. **Retrieval**: Query operations search stored vectors
+5. **Results**: Matching vectors are returned with metadata
+
+The abstract nature of this class ensures consistent behavior across different vector database providers while allowing each implementation to optimize for its specific strengths and capabilities.

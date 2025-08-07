@@ -1,0 +1,77 @@
+---
+title: "SimilarFilterClause"
+description: "Query clause for semantic similarity filtering with custom weights"
+---
+
+## SimilarFilterClause
+
+```python
+SimilarFilterClause(value_param, weight_param, field_set)
+```
+
+### Parameters
+
+<ParamField path="value_param" type="TypedParam | Evaluated[TypedParam]" required>
+The parameter that specifies the similarity value to filter by.
+</ParamField>
+
+<ParamField path="weight_param" type="TypedParam | Evaluated[TypedParam]" required>
+The parameter that specifies the weight for this filter.
+</ParamField>
+
+<ParamField path="field_set" type="SpaceFieldSet" required>
+The space field set that defines the fields for similarity comparison.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `SimilarFilterClause` 
+- → `SingleValueParamQueryClause`
+- → `QueryClause`
+- → `NLQCompatible`
+- → `ABC`
+
+### Properties
+
+<ParamField path="annotation_by_space_annotation" type="dict[str, str]">
+Mapping of space annotations to their corresponding annotations.
+</ParamField>
+
+<ParamField path="field_set" type="SpaceFieldSet">
+The space field set used for similarity comparison.
+</ParamField>
+
+<ParamField path="nlq_annotations" type="list[NLQAnnotation]">
+List of natural language query annotations for this clause.
+</ParamField>
+
+<ParamField path="weight_param" type="TypedParam | Evaluated[TypedParam]">
+The weight parameter for this similarity filter.
+</ParamField>
+
+### Static Methods
+
+#### from_param()
+
+```python
+from_param(spaces, field_set, param, weight) -> SimilarFilterClause
+```
+
+<ParamField path="spaces" type="Sequence[Space]" required>
+The spaces to apply the similarity filter to.
+</ParamField>
+
+<ParamField path="field_set" type="SpaceFieldSet" required>
+The field set for similarity comparison.
+</ParamField>
+
+<ParamField path="param" type="ParamType" required>
+The parameter defining the similarity value.
+</ParamField>
+
+<ParamField path="weight" type="NumericParamType" required>
+The weight parameter for the filter.
+</ParamField>
+
+**Returns**: `SimilarFilterClause` - A new similar filter clause instance.

@@ -1,0 +1,36 @@
+---
+title: "QuerySuggestionsPromptBuilder"
+description: "Builder for creating prompts used in query suggestion generation"
+---
+
+## QuerySuggestionsPromptBuilder
+
+```python
+QuerySuggestionsPromptBuilder()
+```
+
+### Static Methods
+
+#### calculate_instructor_prompt()
+
+```python
+calculate_instructor_prompt(clause_collector, system_prompt, feedback, natural_query) -> str
+```
+
+<ParamField path="clause_collector" type="NLQClauseCollector" required>
+The clause collector containing query clauses and parameter information.
+</ParamField>
+
+<ParamField path="system_prompt" type="str | None" required>
+Optional system prompt to include in the instruction.
+</ParamField>
+
+<ParamField path="feedback" type="str | None" required>
+Optional user feedback to incorporate into the prompt.
+</ParamField>
+
+<ParamField path="natural_query" type="str | None" required>
+Optional natural language query to reference in the prompt.
+</ParamField>
+
+**Returns**: `str` - The generated instructor prompt for query suggestions.

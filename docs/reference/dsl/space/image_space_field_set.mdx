@@ -1,0 +1,74 @@
+---
+title: "Image Space Field Sets"
+description: "Specialized field set classes for image space configurations"
+---
+
+## ImageDescriptionSpaceFieldSet
+
+```python
+ImageDescriptionSpaceFieldSet(space, fields, allowed_param_types=None)
+```
+
+Specialized field set for image spaces that support both image data and descriptions.
+
+### Parameters
+
+<ParamField path="space" type="Space" required>
+The space instance this field set belongs to.
+</ParamField>
+
+<ParamField path="fields" type="set[SchemaField]" required>
+Set of schema fields for this field set.
+</ParamField>
+
+<ParamField path="allowed_param_types" type="Sequence[type] | None" default="None">
+Optional sequence of allowed parameter types.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `ImageDescriptionSpaceFieldSet` 
+- → `SpaceFieldSet`
+- → `Generic`
+
+### Properties
+
+<ParamField path="input_type" type="type">
+The input type for this field set.
+</ParamField>
+
+## ImageSpaceFieldSet
+
+```python
+ImageSpaceFieldSet(space, fields, allowed_param_types=None)
+```
+
+Standard field set for image spaces handling image data.
+
+### Parameters
+
+<ParamField path="space" type="Space" required>
+The space instance this field set belongs to.
+</ParamField>
+
+<ParamField path="fields" type="set[SchemaField]" required>
+Set of schema fields for this field set.
+</ParamField>
+
+<ParamField path="allowed_param_types" type="Sequence[type] | None" default="None">
+Optional sequence of allowed parameter types.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `ImageSpaceFieldSet` 
+- → `SpaceFieldSet`
+- → `Generic`
+
+### Properties
+
+<ParamField path="input_type" type="type">
+The input type for this field set.
+</ParamField>

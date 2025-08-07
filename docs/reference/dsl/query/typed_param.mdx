@@ -1,0 +1,66 @@
+---
+title: "Typed Parameters"
+description: "Typed parameter handling and conversion utilities for query processing"
+---
+
+Typed parameter classes that provide type-safe parameter handling and conversion utilities for query processing.
+
+## SchemaFieldToStrConverter
+
+```python
+SchemaFieldToStrConverter()
+```
+
+Abstract base class for converting schema fields to string representations.
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `SchemaFieldToStrConverter` 
+- → `Generic`
+
+## TypedParam
+
+```python
+TypedParam(param, required_type)
+```
+
+### Parameters
+
+<ParamField path="param" type="Param" required>
+The parameter to be typed.
+</ParamField>
+
+<ParamField path="required_type" type="type[RequiredT]" required>
+The required type for this parameter.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `TypedParam` 
+- → `Generic`
+
+### Properties
+
+<ParamField path="param" type="Param">
+The underlying parameter object.
+</ParamField>
+
+<ParamField path="required_type" type="type[RequiredT]">
+The required type for this parameter.
+</ParamField>
+
+### Methods
+
+#### get_typed_value()
+
+```python
+get_typed_value(value) -> RequiredT
+```
+
+<ParamField path="value" type="Any" required>
+The value to convert to the required type.
+</ParamField>
+
+**Returns**: `RequiredT` - The value converted to the required type.

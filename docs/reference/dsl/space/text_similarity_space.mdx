@@ -1,0 +1,395 @@
+---
+title: "TextSimilaritySpace"
+description: "Create vector embeddings from text data for semantic similarity search using pre-trained language models"
+---
+
+The `TextSimilaritySpace` class transforms text data into high-dimensional vector embeddings, enabling semantic similarity search. It leverages pre-trained SentenceTransformers models that are specifically optimized for encoding longer text sequences efficiently.
+
+## Constructor
+
+Create a new text similarity space with the specified configuration.
+
+```python
+TextSimilaritySpace(
+    text,
+    model,
+    cache_size=10000,
+    model_cache_dir=None,
+    model_handler=TextModelHandler.SENTENCE_TRANSFORMERS,
+    embedding_engine_config=None
+)
+```
+
+### Parameters
+
+<ParamField
+  path="text"
+  type="String | ChunkingNode | Sequence[String | ChunkingNode]"
+  required
+>
+  The text input(s) to be transformed into vectors. Can be a single String
+  schema field, a ChunkingNode for processed text, or a sequence of either. Must
+  be SchemaField objects, not regular Python strings.
+</ParamField>
+
+<ParamField path="model" type="str" required>
+  The SentenceTransformers model identifier to use for text embedding. Examples
+  include "all-MiniLM-L6-v2", "all-mpnet-base-v2", or custom model paths.
+</ParamField>
+
+<ParamField path="cache_size" type="int" default="10000">
+  The number of embeddings to store in an in-memory LRU cache for performance
+  optimization. Set to 0 to disable caching.
+</ParamField>
+
+<ParamField path="model_cache_dir" type="Path | None" default="None">
+  Directory to cache downloaded models. If None, uses the default cache
+  directory provided by the model library.
+</ParamField>
+
+<ParamField
+  path="model_handler"
+  type="TextModelHandler"
+  default="SENTENCE_TRANSFORMERS"
+>
+  The handler for the embedding model. Currently supports SentenceTransformers
+  models.
+</ParamField>
+
+<ParamField
+  path="embedding_engine_config"
+  type="EmbeddingEngineConfig | None"
+  default="None"
+>
+  Optional configuration for the embedding engine behavior and optimization
+  settings.
+</ParamField>
+
+### Example
+
+```python
+from superlinked import TextSimilaritySpace, schema
+
+@schema
+class ArticleSchema:
+    id: str
+    title: str
+    content: str
+    summary: str
+
+article_schema = ArticleSchema()
+
+# Basic text similarity space
+content_space = TextSimilaritySpace(
+    text=article_schema.content,
+    model="sentence-transformers/all-MiniLM-L6-v2"
+)
+
+# Advanced configuration
+advanced_space = TextSimilaritySpace(
+    text=[article_schema.title, article_schema.summary],
+    model="sentence-transformers/all-mpnet-base-v2",
+    cache_size=50000,
+    model_cache_dir="/path/to/models"
+)
+```
+
+## Text Chunking
+
+### chunk() Function
+
+For processing long documents, use the `chunk()` function to split text into smaller, more manageable pieces:
+
+```python
+chunk(
+    text,
+    chunk_size=None,
+    chunk_overlap=None,
+    split_chars_keep=None,
+    split_chars_remove=None
+) -> ChunkingNode
+```
+
+<ParamField path="text" type="String" required>
+  The String schema field containing the text to be chunked.
+</ParamField>
+
+<ParamField path="chunk_size" type="int | None" default="250">
+  Maximum size of each chunk in characters. Respects word boundaries to avoid
+  splitting words.
+</ParamField>
+
+<ParamField path="chunk_overlap" type="int | None" default="50">
+  Maximum overlap between consecutive chunks in characters to maintain context
+  continuity.
+</ParamField>
+
+<ParamField
+  path="split_chars_keep"
+  type="list[str] | None"
+  default="['!', '?', '.']"
+>
+  Characters to split at while keeping them in the text. Used to identify
+  natural breakpoints.
+</ParamField>
+
+<ParamField path="split_chars_remove" type="list[str] | None" default="['\n']">
+  Characters to split at and remove from the text. Useful for removing
+  formatting characters.
+</ParamField>
+
+#### Chunking Example
+
+```python
+from superlinked import TextSimilaritySpace, chunk
+
+# Create chunked text for long documents
+chunked_content = chunk(
+    text=document_schema.content,
+    chunk_size=500,
+    chunk_overlap=100,
+    split_chars_keep=[".", "!", "?", ";"],
+    split_chars_remove=["\n", "\r"]
+)
+
+# Use chunked text in similarity space
+document_space = TextSimilaritySpace(
+    text=chunked_content,
+    model="sentence-transformers/all-mpnet-base-v2"
+)
+```
+
+## Properties
+
+### space_field_set
+
+```python
+space_field_set: SpaceFieldSet
+```
+
+Manages the text fields and their processing configuration within the space.
+
+### transformation_config
+
+```python
+transformation_config: TransformationConfig[Vector, str]
+```
+
+Configuration object that defines how text strings are transformed into vector representations.
+
+## Model Selection
+
+### Popular Models
+
+<Tabs>
+<Tab title="General Purpose">
+```python
+# Balanced performance and quality
+TextSimilaritySpace(
+    text=schema.content,
+    model="sentence-transformers/all-MiniLM-L6-v2"  # 384 dimensions
+)
+
+# Higher quality, larger size
+
+TextSimilaritySpace(
+text=schema.content,
+model="sentence-transformers/all-mpnet-base-v2" # 768 dimensions
+)
+
+````
+</Tab>
+
+<Tab title="Multilingual">
+```python
+# Multilingual support
+TextSimilaritySpace(
+    text=schema.content,
+    model="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+)
+````
+
+</Tab>
+
+<Tab title="Domain-Specific">
+```python
+# Legal documents
+TextSimilaritySpace(
+    text=schema.content,
+    model="sentence-transformers/all-MiniLM-L6-v2"  # Fine-tune for legal domain
+)
+
+# Scientific papers
+
+TextSimilaritySpace(
+text=schema.content,
+model="sentence-transformers/allenai-specter"
+)
+
+````
+</Tab>
+</Tabs>
+
+## Use Cases
+
+### Document Search
+
+Semantic search across document collections:
+
+```python
+# Knowledge base search
+knowledge_space = TextSimilaritySpace(
+    text=document_schema.content,
+    model="sentence-transformers/all-mpnet-base-v2",
+    cache_size=20000
+)
+
+# Index and query
+index = Index([knowledge_space])
+# Query: "How to optimize database performance?"
+# Finds semantically similar documents even with different wording
+````
+
+### Product Recommendations
+
+Product discovery based on descriptions:
+
+```python
+# E-commerce product similarity
+product_space = TextSimilaritySpace(
+    text=product_schema.description,
+    model="sentence-transformers/all-MiniLM-L6-v2"
+)
+
+# Combine with other features
+product_index = Index([
+    product_space,
+    CategoricalSimilaritySpace(category_input=product_schema.category),
+    NumberSpace(number=product_schema.price)
+])
+```
+
+### Content Moderation
+
+Detect similar content for moderation:
+
+```python
+# Content similarity detection
+content_space = TextSimilaritySpace(
+    text=post_schema.content,
+    model="sentence-transformers/all-MiniLM-L6-v2"
+)
+
+# Find potentially duplicate or similar posts
+```
+
+### Multi-Field Text Processing
+
+Process multiple text fields together:
+
+```python
+# Combine title and content for better context
+article_space = TextSimilaritySpace(
+    text=[article_schema.title, article_schema.content],
+    model="sentence-transformers/all-mpnet-base-v2"
+)
+```
+
+## Performance Optimization
+
+### Caching Strategy
+
+<Tip>
+  **Cache Size**: Set `cache_size` based on your expected unique text inputs.
+  For high-traffic applications with repetitive queries, larger cache sizes
+  (50k-100k) can significantly improve performance.
+</Tip>
+
+### Model Selection
+
+<Tip>
+  **Model Trade-offs**: Smaller models (MiniLM) are faster but may be less
+  accurate. Larger models (MPNet) provide better quality but require more
+  computational resources.
+</Tip>
+
+### Chunking Optimization
+
+<Warning>
+  **Chunk Size**: Very small chunks may lose context, while very large chunks
+  may dilute important information. Start with 250-500 characters and adjust
+  based on your content type.
+</Warning>
+
+## Best Practices
+
+### Text Preprocessing
+
+```python
+# Example: Clean text before processing
+@schema
+class CleanDocumentSchema:
+    id: str
+    raw_content: str
+    clean_content: str  # Preprocessed text
+
+# Use clean_content for better embeddings
+text_space = TextSimilaritySpace(
+    text=document_schema.clean_content,
+    model="sentence-transformers/all-MiniLM-L6-v2"
+)
+```
+
+### Model Versioning
+
+<Note>
+  **Model Consistency**: Use specific model versions in production to ensure
+  consistent embeddings across deployments. Avoid using "latest" tags that may
+  change.
+</Note>
+
+### Memory Management
+
+<Warning>
+  **Resource Usage**: Text embedding models can be memory-intensive. Monitor
+  GPU/CPU usage and consider model size when scaling to multiple instances.
+</Warning>
+
+## Integration Example
+
+```python
+from superlinked import (
+    TextSimilaritySpace, InMemoryApp, Index,
+    InMemorySource, chunk
+)
+
+# Complete setup for semantic search
+@schema
+class DocumentSchema:
+    id: str
+    title: str
+    content: str
+    category: str
+
+document_schema = DocumentSchema()
+
+# Create chunked text space for long documents
+chunked_content = chunk(
+    text=document_schema.content,
+    chunk_size=400,
+    chunk_overlap=50
+)
+
+text_space = TextSimilaritySpace(
+    text=chunked_content,
+    model="sentence-transformers/all-mpnet-base-v2",
+    cache_size=25000
+)
+
+# Set up the application
+source = InMemorySource(document_schema)
+index = Index([text_space])
+app = InMemoryApp(sources=[source], indices=[index])
+
+# Now ready for semantic search across chunked documents
+```

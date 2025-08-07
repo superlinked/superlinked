@@ -1,0 +1,34 @@
+---
+title: "DefaultQueryResultConverter"
+description: "Default implementation of QueryResultConverter that returns QueryResult objects"
+---
+
+## DefaultQueryResultConverter
+
+```python
+DefaultQueryResultConverter()
+```
+
+Default implementation of QueryResultConverter that converts internal query results into standard QueryResult objects.
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `DefaultQueryResultConverter` 
+- → `QueryResultConverter`
+- → `ABC`
+- → `Generic`
+
+### Methods
+
+#### convert()
+
+```python
+convert(query_result) -> QueryResult
+```
+
+<ParamField path="query_result" type="InternalQueryResult" required>
+The internal query result to convert.
+</ParamField>
+
+**Returns**: `QueryResult` - The converted query result as a standard QueryResult object.

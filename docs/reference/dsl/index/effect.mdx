@@ -1,0 +1,54 @@
+---
+title: "Effect"
+description: "Conditional interaction within a space that modifies vector behavior based on events or conditions"
+---
+
+## Effect
+
+```python
+Effect(space, affected_schema_reference, affecting_schema_reference, filter_)
+```
+
+An effect represents a conditional interaction within a `Space` where the `affecting_schema_reference` interacted with the `affected_schema_reference`. It allows you to real-time adjust embeddings based on interaction. e.g.: A `User` schema interacts with a `Post` schema, if `event.type == 'like'`.
+
+### Parameters
+
+<ParamField path="space" type="Space[AggregationInputT, EmbeddingInputT]" required>
+The space where the effect applies.
+</ParamField>
+
+<ParamField path="affected_schema_reference" type="SchemaReference" required>
+The schema reference that is being affected by the interaction.
+</ParamField>
+
+<ParamField path="affecting_schema_reference" type="SchemaReference | MultipliedSchemaReference" required>
+The schema reference that is causing the effect on the affected schema.
+</ParamField>
+
+<ParamField path="filter_" type="ComparisonOperation[SchemaField]" required>
+The filter condition that determines when this effect should be applied.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `Effect` 
+- → `Generic`
+
+### Properties
+
+<ParamField path="affected_schema_reference" type="SchemaReference">
+The schema reference that is being affected by this effect.
+</ParamField>
+
+<ParamField path="affecting_schema_reference" type="SchemaReference | MultipliedSchemaReference">
+The schema reference that is causing this effect.
+</ParamField>
+
+<ParamField path="filter_" type="ComparisonOperation[SchemaField]">
+The filter condition for when this effect should be applied.
+</ParamField>
+
+<ParamField path="space" type="Space[AggregationInputT, EmbeddingInputT]">
+The space where this effect is applied.
+</ParamField>

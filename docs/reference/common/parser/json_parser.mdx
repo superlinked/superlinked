@@ -1,0 +1,283 @@
+---
+title: "JsonParser"
+description: "Parse JSON objects into schema-compliant data using dot-separated path mapping"
+---
+
+The `JsonParser` class specializes in parsing JSON objects into schema-compliant data structures. It extends the base `DataParser` functionality to handle nested JSON data with dot-separated path mapping for accessing nested fields.
+
+## Constructor
+
+Create a new JSON parser for a specific schema with optional path mapping.
+
+```python
+JsonParser(schema, mapping=None)
+```
+
+### Parameters
+
+<ParamField path="schema" type="IdSchemaObjectT" required>
+  The target schema object that describes the desired output format. This schema
+  defines the structure and fields that the parsed JSON should conform to.
+</ParamField>
+
+<ParamField path="mapping" type="Mapping[SchemaField, str]" default="None">
+  Optional path mapping rules that define how JSON paths correspond to schema
+  fields. Uses dot-separated notation to access nested JSON properties.
+</ParamField>
+
+### Example
+
+```python
+from superlinked import JsonParser, schema
+
+@schema
+class UserSchema:
+    id: str
+    name: str
+    email: str
+    age: int
+    city: str
+
+user_schema = UserSchema()
+
+# Create parser with nested path mapping
+parser = JsonParser(
+    schema=user_schema,
+    mapping={
+        user_schema.id: "user.id",
+        user_schema.name: "user.profile.fullName",
+        user_schema.email: "user.contact.email",
+        user_schema.age: "user.profile.age",
+        user_schema.city: "user.address.city"
+    }
+)
+```
+
+<Warning>
+  The constructor will raise an `InvalidInputException` if the schema
+  parameter is of an invalid type.
+</Warning>
+
+## Methods
+
+### unmarshal()
+
+Parse JSON data into schema-compliant objects using the defined path mapping.
+
+```python
+unmarshal(data: dict[str, Any] | Sequence[dict[str, Any]]) -> list[ParsedSchema]
+```
+
+<ParamField
+  path="data"
+  type="dict[str, Any] | Sequence[dict[str, Any]]"
+  required
+>
+  The JSON data to parse. Can be a single JSON object (dict) or a list of JSON
+  objects.
+</ParamField>
+
+**Returns**: `list[ParsedSchema]` - A list of ParsedSchema objects, one for each JSON object processed.
+
+#### Example
+
+```python
+# Sample nested JSON data
+json_data = {
+    "user": {
+        "id": "U123",
+        "profile": {
+            "fullName": "John Doe",
+            "age": 30
+        },
+        "contact": {
+            "email": "john@example.com"
+        },
+        "address": {
+            "city": "New York"
+        }
+    }
+}
+
+# Parse single JSON object
+parsed_data = parser.unmarshal(json_data)
+
+# Parse multiple JSON objects
+json_array = [json_data, another_json_object]
+parsed_array = parser.unmarshal(json_array)
+```
+
+## Path Mapping
+
+The JsonParser uses dot-separated notation to access nested JSON properties:
+
+### Simple Field Access
+
+```python
+mapping = {
+    schema.name: "name",           # Root level field
+    schema.email: "contact.email"  # Nested field
+}
+```
+
+### Complex Nested Access
+
+```python
+mapping = {
+    schema.product_name: "product.details.name",
+    schema.price: "pricing.amount.value",
+    schema.category: "product.category.primary.name"
+}
+```
+
+### Array Access
+
+Access array elements by index:
+
+```python
+mapping = {
+    schema.first_tag: "tags.0",      # First element
+    schema.primary_image: "images.0.url"  # Nested in array
+}
+```
+
+## Use Cases
+
+### API Response Processing
+
+Perfect for processing API responses with nested data:
+
+```python
+# API response from user service
+api_response = {
+    "status": "success",
+    "data": {
+        "users": [
+            {
+                "id": "1",
+                "profile": {"name": "Alice", "age": 25},
+                "preferences": {"theme": "dark"}
+            }
+        ]
+    }
+}
+
+# Map API structure to schema
+parser = JsonParser(
+    user_schema,
+    mapping={
+        user_schema.id: "data.users.0.id",
+        user_schema.name: "data.users.0.profile.name"
+    }
+)
+```
+
+### Configuration File Processing
+
+Parse complex configuration files:
+
+```python
+# Configuration JSON
+config = {
+    "database": {
+        "host": "localhost",
+        "connection": {
+            "timeout": 30,
+            "pool_size": 10
+        }
+    }
+}
+
+@schema
+class DatabaseConfig:
+    host: str
+    timeout: int
+    pool_size: int
+
+config_parser = JsonParser(
+    DatabaseConfig(),
+    mapping={
+        DatabaseConfig().host: "database.host",
+        DatabaseConfig().timeout: "database.connection.timeout",
+        DatabaseConfig().pool_size: "database.connection.pool_size"
+    }
+)
+```
+
+### Multi-Source Data Integration
+
+Combine data from different JSON sources:
+
+```python
+# Different API formats
+source_a = {"user_info": {"name": "John"}}
+source_b = {"profile": {"user": {"name": "John"}}}
+
+# Same schema, different mappings
+parser_a = JsonParser(user_schema, {user_schema.name: "user_info.name"})
+parser_b = JsonParser(user_schema, {user_schema.name: "profile.user.name"})
+```
+
+## Best Practices
+
+<Tip>
+  **Path Validation**: Always validate that the JSON paths in your mapping exist
+  in your source data. Missing paths will cause parsing failures.
+</Tip>
+
+<Tip>
+  **Type Consistency**: Ensure the values at your mapped JSON paths match the
+  expected schema field types. The parser will attempt type conversion but
+  explicit handling is safer.
+</Tip>
+
+<Warning>
+  **Deep Nesting**: Very deep nesting paths can impact performance and
+  readability. Consider flattening complex JSON structures when possible.
+</Warning>
+
+<Note>
+  **Array Handling**: When working with arrays, remember that indices are
+  zero-based. Consider using multiple parsers for different array element
+  patterns.
+</Note>
+
+## Integration Example
+
+```python
+from superlinked import JsonParser, TextSimilaritySpace, CategoricalSimilaritySpace
+
+# Define schema for product data
+@schema
+class ProductSchema:
+    id: str
+    name: str
+    description: str
+    category: str
+    price: float
+
+product_schema = ProductSchema()
+
+# Create parser for e-commerce API format
+parser = JsonParser(
+    product_schema,
+    mapping={
+        product_schema.id: "product.sku",
+        product_schema.name: "product.title",
+        product_schema.description: "product.details.description",
+        product_schema.category: "product.category.name",
+        product_schema.price: "pricing.current.amount"
+    }
+)
+
+# Process API data
+api_data = fetch_products_from_api()
+parsed_products = parser.unmarshal(api_data)
+
+# Create vector spaces
+text_space = TextSimilaritySpace(text=product_schema.description)
+category_space = CategoricalSimilaritySpace(
+    category_input=product_schema.category,
+    categories=["electronics", "clothing", "books"]
+)
+```

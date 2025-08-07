@@ -1,0 +1,52 @@
+---
+title: "RadiusClause"
+description: "Query clause for distance-based filtering with radius constraints"
+---
+
+## RadiusClause
+
+```python
+RadiusClause(value_param)
+```
+
+### Parameters
+
+<ParamField path="value_param" type="TypedParam | Evaluated[TypedParam]" required>
+The parameter that specifies the radius value.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `RadiusClause` 
+- → `SingleValueParamQueryClause`
+- → `QueryClause`
+- → `ABC`
+
+### Static Methods
+
+#### from_param()
+
+```python
+from_param(radius) -> RadiusClause
+```
+
+<ParamField path="radius" type="FloatParamType" required>
+The radius parameter to create the clause from.
+</ParamField>
+
+**Returns**: `RadiusClause` - A new radius clause instance.
+
+### Methods
+
+#### get_altered_knn_search_params()
+
+```python
+get_altered_knn_search_params(knn_search_clause_params) -> KNNSearchClauseParams
+```
+
+<ParamField path="knn_search_clause_params" type="KNNSearchClauseParams" required>
+The KNN search parameters to modify with the radius.
+</ParamField>
+
+**Returns**: `KNNSearchClauseParams` - The modified search parameters with the radius applied.

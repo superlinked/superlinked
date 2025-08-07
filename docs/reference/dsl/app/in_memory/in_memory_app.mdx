@@ -1,0 +1,258 @@
+---
+title: "InMemoryApp"
+description: "In-memory application implementation for development, testing, and rapid prototyping with Superlinked"
+---
+
+The `InMemoryApp` class provides an in-memory implementation of the App interface, designed for development, testing, and rapid prototyping. It stores all data and vectors in memory, making it perfect for experimentation without external dependencies.
+
+## Constructor
+
+Create a new in-memory application with the specified configuration.
+
+```python
+InMemoryApp(sources, indices, vector_database=None, context)
+```
+
+### Parameters
+
+<ParamField path="sources" type="Sequence[InMemorySource]" required>
+  List of in-memory data sources that will provide input data. Must be
+  `InMemorySource` instances for compatibility with the in-memory execution
+  model.
+</ParamField>
+
+<ParamField path="indices" type="Sequence[Index]" required>
+  List of indices that organize your vector spaces for querying. These define
+  how your data will be structured and searched.
+</ParamField>
+
+<ParamField path="vector_database" type="VectorDatabase | None" default="None">
+  Vector database instance for storage. If not provided, defaults to an
+  in-memory vector database that stores everything in RAM.
+</ParamField>
+
+<ParamField path="context" type="ExecutionContext" required>
+  Execution context that provides configuration and runtime information for the
+  application.
+</ParamField>
+
+### Example
+
+```python
+from superlinked import (
+    InMemoryApp, InMemorySource, Index,
+    TextSimilaritySpace, InMemoryVectorDatabase
+)
+
+@schema
+class MovieSchema:
+    id: str
+    title: str
+    description: str
+    genre: str
+
+movie_schema = MovieSchema()
+
+# Create components
+source = InMemorySource(movie_schema)
+text_space = TextSimilaritySpace(text=movie_schema.description)
+index = Index([text_space])
+
+# Create the in-memory app
+app = InMemoryApp(
+    sources=[source],
+    indices=[index],
+    vector_database=None,  # Will use default in-memory storage
+    context=execution_context
+)
+```
+
+## Inheritance
+
+The `InMemoryApp` extends several classes to provide comprehensive functionality:
+
+**Inheritance Chain**:
+
+- `InMemoryApp`
+- → `InteractiveApp`
+- → `OnlineApp`
+- → `App`
+- → `ABC` + `Generic`
+- → `QueryMixin`
+
+This inheritance provides:
+
+- **Base App functionality** from `App`
+- **Online processing capabilities** from `OnlineApp`
+- **Interactive features** from `InteractiveApp`
+- **Query operations** from `QueryMixin`
+
+## Key Features
+
+### Memory-Based Storage
+
+All data and vectors are stored in RAM, providing:
+
+- **Fast Access**: No disk I/O overhead
+- **Simple Setup**: No external database required
+- **Easy Testing**: Isolated, reproducible environments
+
+### Interactive Capabilities
+
+Inherited from `InteractiveApp`:
+
+- Real-time data ingestion
+- Immediate query feedback
+- Dynamic schema updates
+
+### Query Support
+
+Built-in querying through `QueryMixin`:
+
+- Vector similarity search
+- Filtering capabilities
+- Natural language queries
+
+## Use Cases
+
+### Development and Prototyping
+
+Perfect for initial development and experimentation:
+
+```python
+# Quick setup for testing new ideas
+app = InMemoryApp(
+    sources=[source],
+    indices=[index]
+)
+
+# Add test data
+app.ingest_data([
+    {"id": "1", "title": "The Matrix", "description": "Sci-fi action movie"},
+    {"id": "2", "title": "Inception", "description": "Mind-bending thriller"}
+])
+
+# Test queries immediately
+results = app.query("science fiction movies")
+```
+
+### Unit Testing
+
+Ideal for unit and integration tests:
+
+```python
+import pytest
+
+def test_movie_search():
+    # Create isolated test environment
+    app = InMemoryApp(sources=[source], indices=[index])
+
+    # Test data ingestion
+    test_movies = [{"id": "test1", "title": "Test Movie"}]
+    app.ingest_data(test_movies)
+
+    # Verify search functionality
+    results = app.query("test")
+    assert len(results) == 1
+    assert results[0]["title"] == "Test Movie"
+```
+
+### Demo Applications
+
+Great for demonstrations and proof-of-concepts:
+
+```python
+# Demo setup with sample data
+demo_app = InMemoryApp(sources=[source], indices=[index])
+
+# Load sample dataset
+sample_data = load_sample_movies()
+demo_app.ingest_data(sample_data)
+
+# Ready for live demonstration
+```
+
+### Educational Purposes
+
+Excellent for learning and teaching vector search concepts:
+
+```python
+# Educational example showing vector similarity
+app = InMemoryApp(sources=[source], indices=[index])
+
+# Add educational examples
+examples = [
+    {"id": "1", "description": "A red apple"},
+    {"id": "2", "description": "A green apple"},
+    {"id": "3", "description": "A red car"}
+]
+app.ingest_data(examples)
+
+# Demonstrate similarity search
+results = app.query("red fruit")  # Should find red apple
+```
+
+## Performance Characteristics
+
+### Advantages
+
+<Tip>
+  **Speed**: All operations are performed in memory, providing the fastest
+  possible access times for development scenarios.
+</Tip>
+
+<Tip>
+  **Simplicity**: No external dependencies or complex setup required. Perfect
+  for getting started quickly.
+</Tip>
+
+### Limitations
+
+<Warning>
+  **Memory Usage**: All data is stored in RAM. Not suitable for large datasets
+  that exceed available memory.
+</Warning>
+
+<Warning>
+  **Persistence**: Data is lost when the application shuts down. Not appropriate
+  for production use cases requiring data persistence.
+</Warning>
+
+<Warning>
+  **Scalability**: Limited by single-machine memory constraints. Cannot scale
+  horizontally.
+</Warning>
+
+## Best Practices
+
+<Tip>
+  **Development Workflow**: Use `InMemoryApp` for initial development, then
+  migrate to `RestApp` or `OnlineApp` for production deployment.
+</Tip>
+
+<Note>
+  **Data Size**: Keep datasets small (typically under 1GB) to ensure responsive
+  performance and avoid memory issues.
+</Note>
+
+<Note>
+  **Testing**: Excellent choice for automated testing due to fast setup/teardown
+  and isolated environments.
+</Note>
+
+## Migration Path
+
+When ready for production, transition to appropriate app types:
+
+```python
+# Development with InMemoryApp
+dev_app = InMemoryApp(sources=[source], indices=[index])
+
+# Production with RestApp
+prod_app = RestApp(
+    sources=[rest_source],
+    indices=[index],
+    queries=[query_config],
+    vector_database=production_db
+)
+```

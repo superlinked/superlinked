@@ -1,0 +1,44 @@
+---
+title: "Binary Predicate"
+description: "Binary predicate classes for query filtering operations"
+---
+
+## BinaryPredicate
+
+```python
+BinaryPredicate(left_operand, binary_op, right_operand)
+```
+
+### Parameters
+
+<ParamField path="left_operand" type="ComparisonOperand" required>
+The left operand of the binary operation.
+</ParamField>
+
+<ParamField path="binary_op" type="BinaryOp" required>
+The binary operation to perform.
+</ParamField>
+
+<ParamField path="right_operand" type="ComparisonOperand" required>
+The right operand of the binary operation.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `BinaryPredicate` 
+- → `QueryPredicate`
+
+### Properties
+
+<ParamField path="binary_op" type="BinaryOp">
+The binary operation type.
+</ParamField>
+
+<ParamField path="left_operand" type="ComparisonOperand">
+The left operand of the operation.
+</ParamField>
+
+<ParamField path="right_operand" type="ComparisonOperand">
+The right operand of the operation.
+</ParamField>

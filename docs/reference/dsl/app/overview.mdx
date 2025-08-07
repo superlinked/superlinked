@@ -1,0 +1,92 @@
+---
+title: "App Overview"
+description: "Application components for different deployment modes including in-memory, interactive, REST, and online applications"
+icon: window
+---
+
+The App module provides various application types and deployment modes for running Superlinked in different environments, from development and testing to production deployments.
+
+## Core Application Components
+
+Foundation components for all application types:
+
+<CardGroup cols={1}>
+  <Card 
+    title="App" 
+    icon="window" 
+    href="/reference/dsl/app/app"
+  >
+    Base application class and core functionality
+  </Card>
+</CardGroup>
+
+## Application Types
+
+Choose the right application type for your deployment needs:
+
+<CardGroup cols={2}>
+  <Card 
+    title="In Memory App" 
+    icon="memory" 
+    href="/reference/dsl/app/in_memory/in_memory_app"
+  >
+    Fast in-memory application for development and testing
+  </Card>
+  <Card 
+    title="Interactive App" 
+    icon="terminal" 
+    href="/reference/dsl/app/interactive/interactive_app"
+  >
+    Interactive application for experimentation and prototyping
+  </Card>
+  <Card 
+    title="REST App" 
+    icon="globe" 
+    href="/reference/dsl/app/rest/rest_app"
+  >
+    REST API application for web service deployment
+  </Card>
+  <Card 
+    title="Online App" 
+    icon="cloud" 
+    href="/reference/dsl/app/online/online_app"
+  >
+    Online application for production cloud deployment
+  </Card>
+</CardGroup>
+
+## Key Features
+
+Application components provide:
+
+- **Multiple Deployment Modes**: Choose the right mode for your environment
+- **Scalability Options**: From local development to distributed production
+- **API Integration**: Built-in REST API support for web applications
+- **Development Support**: Interactive modes for rapid prototyping
+- **Production Ready**: Robust online deployment capabilities
+
+<Info>
+Different application types are optimized for specific use cases. In-memory apps are ideal for development, while REST and online apps are designed for production deployments.
+</Info>
+
+## Deployment Patterns
+
+Common deployment scenarios:
+
+- **Development**: Use In Memory App for rapid iteration and testing
+- **Experimentation**: Use Interactive App for data exploration and prototyping
+- **Web Services**: Use REST App for API-driven applications
+- **Production**: Use Online App for scalable cloud deployments
+
+<Tip>
+Start with In Memory App during development for fast iteration, then transition to REST or Online App for production deployment.
+</Tip>
+
+## Application Lifecycle
+
+Typical application workflow:
+
+1. **Define**: Configure your application with schemas, indices, and queries
+2. **Initialize**: Set up the application with your chosen deployment mode
+3. **Deploy**: Run the application in your target environment
+4. **Query**: Execute searches and retrieve results through the application interface 

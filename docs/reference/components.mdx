@@ -1,0 +1,150 @@
+---
+title: "Components"
+description: "Complete reference documentation for all Superlinked framework components"
+---
+
+This section provides comprehensive API documentation for all components in the Superlinked framework. Each component is documented with detailed parameter descriptions, usage examples, and best practices.
+
+## Common Module
+
+Core utilities for data processing and schema management.
+
+### Data Processing
+
+<AccordionGroup>
+<Accordion title="DAG Components">
+- [PeriodTime](/reference/common/dag/period_time) - Time-based filtering and decay parameters
+</Accordion>
+
+<Accordion title="Data Parsers">
+  - [DataParser](/reference/common/parser/data_parser) - Base data parsing
+  functionality - [DataFrameParser](/reference/common/parser/dataframe_parser) -
+  Pandas DataFrame processing -
+  [JsonParser](/reference/common/parser/json_parser) - JSON data handling
+</Accordion>
+
+<Accordion title="Schema Components">
+- [Schema](/reference/common/schema/schema) - Main schema definition
+- [SchemaObject](/reference/common/schema/schema_object) - Individual schema objects
+- [EventSchema](/reference/common/schema/event_schema) - Event-based schema definitions
+- [EventSchemaObject](/reference/common/schema/event_schema_object) - Event schema objects
+- [IdSchemaObject](/reference/common/schema/id_schema_object) - ID-based schema objects
+</Accordion>
+</AccordionGroup>
+
+## DSL Module
+
+Domain-specific language for vector computation and search.
+
+### Application Framework
+
+<AccordionGroup>
+<Accordion title="App Components">
+- [App](/reference/dsl/app/app) - Base application class
+- [InMemoryApp](/reference/dsl/app/in_memory/in_memory_app) - In-memory execution
+- [InteractiveApp](/reference/dsl/app/interactive/interactive_app) - Interactive development
+- [OnlineApp](/reference/dsl/app/online/online_app) - Production deployment
+- [RestApp](/reference/dsl/app/rest/rest_app) - REST API interface
+</Accordion>
+
+<Accordion title="Executor Components">
+- [Executor](/reference/dsl/executor/executor) - Base execution engine
+- [InMemoryExecutor](/reference/dsl/executor/in_memory/in_memory_executor) - Memory-based execution
+- [InteractiveExecutor](/reference/dsl/executor/interactive/interactive_executor) - Interactive execution
+- [QueryExecutor](/reference/dsl/executor/query/query_executor) - Query processing
+- [RestExecutor](/reference/dsl/executor/rest/rest_executor) - REST API execution
+- [RestConfiguration](/reference/dsl/executor/rest/rest_configuration) - REST configuration
+- [RestDescriptor](/reference/dsl/executor/rest/rest_descriptor) - REST API descriptions
+- [RestHandler](/reference/dsl/executor/rest/rest_handler) - REST request handling
+</Accordion>
+</AccordionGroup>
+
+### Vector Operations
+
+<AccordionGroup>
+<Accordion title="Index Components">
+- [Index](/reference/dsl/index/index) - Vector index management
+- [Effect](/reference/dsl/index/effect) - Conditional vector modifications
+- **Utilities**: [AggregationEffectGroup](/reference/dsl/index/util/aggregation_effect_group), [EventAggregationNodeUtil](/reference/dsl/index/util/event_aggregation_node_util)
+</Accordion>
+
+<Accordion title="Space Components">
+- [Space](/reference/dsl/space/space) - Base vector space
+- [TextSimilaritySpace](/reference/dsl/space/text_similarity_space) - Text embeddings
+- [CategoricalSimilaritySpace](/reference/dsl/space/categorical_similarity_space) - Categorical encodings
+- [NumberSpace](/reference/dsl/space/number_space) - Numerical transformations
+- [RecencySpace](/reference/dsl/space/recency_space) - Time-based decay
+- [ImageSpace](/reference/dsl/space/image_space) - Image embeddings
+- [CustomSpace](/reference/dsl/space/custom_space) - Custom transformations
+</Accordion>
+</AccordionGroup>
+
+### Query System
+
+<AccordionGroup>
+<Accordion title="Query Components">
+- [Query](/reference/dsl/query/query) - Main query interface
+- [QueryDescriptor](/reference/dsl/query/query_descriptor) - Query configuration
+- [QueryFilters](/reference/dsl/query/query_filters) - Filtering capabilities
+- [Result](/reference/dsl/query/result) - Query results handling
+</Accordion>
+
+<Accordion title="Natural Language Querying">
+  - [NLQHandler](/reference/dsl/query/nlq/nlq_handler) - Natural language
+  processing -
+  [NLQClauseCollector](/reference/dsl/query/nlq/nlq_clause_collector) - Query
+  clause extraction -
+  [QuerySuggestionModel](/reference/dsl/query/nlq/suggestion/query_suggestion_model)
+  - Query suggestions
+</Accordion>
+
+<Accordion title="Query Clauses">
+- [HardFilterClause](/reference/dsl/query/query_clause/hard_filter_clause) - Exact filtering
+- [LooksLikeFilterClause](/reference/dsl/query/query_clause/looks_like_filter_clause) - Similarity filtering
+- [LimitClause](/reference/dsl/query/query_clause/limit_clause) - Result limiting
+- [SelectClause](/reference/dsl/query/query_clause/select_clause) - Field selection
+</Accordion>
+</AccordionGroup>
+
+### Data Sources & Storage
+
+<AccordionGroup>
+<Accordion title="Source Components">
+- [Source](/reference/dsl/source/source) - Base data source
+- [InMemorySource](/reference/dsl/source/in_memory_source) - Memory-based sources
+- [InteractiveSource](/reference/dsl/source/interactive_source) - Interactive data input
+- [RestSource](/reference/dsl/source/rest_source) - REST API sources
+- [DataLoaderSource](/reference/dsl/source/data_loader_source) - Batch data loading
+</Accordion>
+
+<Accordion title="Storage Components">
+- [VectorDatabase](/reference/dsl/storage/vector_database) - Base vector database
+- [InMemoryVectorDatabase](/reference/dsl/storage/in_memory_vector_database) - Memory storage
+- [QdrantVectorDatabase](/reference/dsl/storage/qdrant_vector_database) - Qdrant integration
+- [RedisVectorDatabase](/reference/dsl/storage/redis_vector_database) - Redis integration
+- [MongoDbVectorDatabase](/reference/dsl/storage/mongo_db_vector_database) - MongoDB integration
+- [TopKVectorDatabase](/reference/dsl/storage/topk_vector_database) - Top-K optimization
+</Accordion>
+</AccordionGroup>
+
+### Registry System
+
+<AccordionGroup>
+  <Accordion title="Registry Components">
+    - [SuperlinkedRegistry](/reference/dsl/registry/superlinked_registry) -
+    Component registration - [Exception](/reference/dsl/registry/exception) -
+    Registry error handling
+  </Accordion>
+</AccordionGroup>
+
+## Navigation Tips
+
+<Tip>
+  Use the search functionality to quickly find specific components or methods
+  you're looking for.
+</Tip>
+
+<Note>
+  Each component page includes detailed parameter documentation, usage examples,
+  and integration guidance.
+</Note>

@@ -1,0 +1,300 @@
+---
+title: "Query"
+description: "Create parameterized search queries against vector indices with flexible weighting and placeholder support"
+---
+
+The `Query` class represents a search query configuration that can be executed against a vector index. It supports parameterized queries with placeholders and custom space weighting for multi-dimensional searches.
+
+## Constructor
+
+Create a new query with the specified index and optional space weights.
+
+```python
+Query(index, weights=None)
+```
+
+### Parameters
+
+<ParamField path="index" type="Index" required>
+The vector index to search against. This index contains the vector spaces and data that will be queried.
+</ParamField>
+
+<ParamField path="weights" type="Mapping[Space, float | int | Param] | None" default="None">
+Optional mapping of vector spaces to their weights in the final similarity score. If None, all spaces receive equal weight. Supports both fixed values and parameterized weights using Param objects.
+</ParamField>
+
+### Example
+
+```python
+from superlinked import Query, Index, TextSimilaritySpace, NumberSpace, Param
+
+@schema
+class ProductSchema:
+    id: str
+    name: str
+    description: str
+    price: float
+
+product_schema = ProductSchema()
+
+# Create spaces and index
+text_space = TextSimilaritySpace(text=product_schema.description)
+price_space = NumberSpace(number=product_schema.price)
+product_index = Index([text_space, price_space])
+
+# Basic query with equal weights
+basic_query = Query(index=product_index)
+
+# Query with custom space weights
+weighted_query = Query(
+    index=product_index,
+    weights={
+        text_space: 0.7,  # 70% weight on text similarity
+        price_space: 0.3  # 30% weight on price similarity
+    }
+)
+
+# Query with parameterized weights
+param_query = Query(
+    index=product_index,
+    weights={
+        text_space: Param("text_weight", default=0.8),
+        price_space: Param("price_weight", default=0.2)
+    }
+)
+```
+
+## Methods
+
+### find()
+
+Find and configure a query for a specific schema within the index.
+
+```python
+find(schema: IdSchemaObject) -> QueryDescriptor
+```
+
+<ParamField path="schema" type="IdSchemaObject" required>
+The schema object to search for. Must be present in the query's index.
+</ParamField>
+
+**Returns**: `QueryDescriptor` - A query descriptor object that provides methods for configuring the search criteria, filters, and result formatting.
+
+**Raises**: `InvalidInputException` - If the specified schema is not found in the index.
+
+#### Example
+
+```python
+# Create query descriptor for product searches
+query_descriptor = weighted_query.find(product_schema)
+
+# The query descriptor provides methods for configuring the search
+results = query_descriptor \
+    .similar(text_space, "laptop computer") \
+    .filter(product_schema.price < 1000) \
+    .limit(10) \
+    .select(product_schema.name, product_schema.price)
+```
+
+## Query Configuration Patterns
+
+### Basic Similarity Search
+
+Simple search across all spaces with equal weighting:
+
+```python
+# Equal weight search
+query = Query(index=product_index)
+results = query.find(product_schema) \
+    .similar(text_space, "wireless headphones") \
+    .limit(5)
+```
+
+### Weighted Multi-Space Search
+
+Emphasize different aspects of similarity:
+
+```python
+# Emphasize text over price
+query = Query(
+    index=product_index,
+    weights={
+        text_space: 0.8,   # High importance on text matching
+        price_space: 0.2   # Lower importance on price similarity
+    }
+)
+```
+
+### Parameterized Queries
+
+Create reusable queries with runtime parameters:
+
+```python
+# Dynamic weighting based on user preferences
+flexible_query = Query(
+    index=product_index,
+    weights={
+        text_space: Param("content_importance", default=0.6),
+        price_space: Param("price_importance", default=0.4)
+    }
+)
+
+# Execute with different parameters
+results_content_focused = flexible_query.find(product_schema) \
+    .similar(text_space, Param("search_text")) \
+    .execute(search_text="gaming laptop", content_importance=0.9, price_importance=0.1)
+
+results_price_focused = flexible_query.find(product_schema) \
+    .similar(text_space, Param("search_text")) \
+    .execute(search_text="gaming laptop", content_importance=0.3, price_importance=0.7)
+```
+
+## Use Cases
+
+### E-commerce Search
+
+Multi-dimensional product search with customizable relevance:
+
+```python
+# Product search with text, category, and price considerations
+product_query = Query(
+    index=product_index,
+    weights={
+        text_space: 0.5,
+        category_space: 0.3,
+        price_space: 0.2
+    }
+)
+
+search_results = product_query.find(product_schema) \
+    .similar(text_space, "smartphone") \
+    .filter(product_schema.category == "electronics") \
+    .filter(product_schema.price.between(200, 800)) \
+    .limit(20)
+```
+
+### Content Recommendation
+
+Weighted content discovery based on multiple signals:
+
+```python
+# Article recommendation balancing content, recency, and popularity
+article_query = Query(
+    index=article_index,
+    weights={
+        content_space: 0.6,
+        recency_space: 0.25,
+        popularity_space: 0.15
+    }
+)
+
+recommendations = article_query.find(article_schema) \
+    .with_vector(article_schema, user_read_article_id) \
+    .filter(article_schema.category.in_(user_interests)) \
+    .limit(10)
+```
+
+### Personalized Search
+
+User-specific search with dynamic weighting:
+
+```python
+# Personalized search that adapts to user behavior
+personalized_query = Query(
+    index=content_index,
+    weights={
+        semantic_space: Param("semantic_weight"),
+        popularity_space: Param("popularity_weight"),
+        recency_space: Param("recency_weight")
+    }
+)
+
+# Different users get different weight distributions
+results = personalized_query.find(content_schema) \
+    .similar(semantic_space, user_query) \
+    .execute(
+        semantic_weight=user_preferences.semantic_importance,
+        popularity_weight=user_preferences.popularity_importance,
+        recency_weight=user_preferences.recency_importance
+    )
+```
+
+## Best Practices
+
+### Weight Distribution
+
+<Tip>
+**Balanced Weighting**: Ensure your space weights sum to a reasonable total (typically 1.0) for predictable scoring behavior. This makes it easier to interpret similarity scores.
+</Tip>
+
+### Performance Optimization
+
+<Tip>
+**Space Selection**: Only include spaces that are relevant to your search use case. Unnecessary spaces add computational overhead without improving results.
+</Tip>
+
+### Parameterization
+
+<Warning>
+**Parameter Validation**: When using Param objects, ensure proper validation and default values to prevent runtime errors from missing parameters.
+</Warning>
+
+<Note>
+**Query Reusability**: Design parameterized queries for reusability across different search scenarios rather than creating new Query objects for each search.
+</Note>
+
+## Integration Example
+
+```python
+from superlinked import (
+    Query, Index, TextSimilaritySpace, CategoricalSimilaritySpace,
+    NumberSpace, RecencySpace, Param
+)
+
+# Complete multi-dimensional search setup
+@schema
+class ProductSchema:
+    id: str
+    name: str
+    description: str
+    category: str
+    price: float
+    created_at: int
+
+product_schema = ProductSchema()
+
+# Create comprehensive vector spaces
+text_space = TextSimilaritySpace(text=product_schema.description)
+category_space = CategoricalSimilaritySpace(
+    category_input=product_schema.category,
+    categories=["electronics", "clothing", "books", "home"]
+)
+price_space = NumberSpace(number=product_schema.price)
+recency_space = RecencySpace(timestamp=product_schema.created_at)
+
+# Build index with all spaces
+comprehensive_index = Index([text_space, category_space, price_space, recency_space])
+
+# Create flexible query with parameterized weights
+flexible_search = Query(
+    index=comprehensive_index,
+    weights={
+        text_space: Param("text_importance", default=0.4),
+        category_space: Param("category_importance", default=0.2),
+        price_space: Param("price_importance", default=0.2),
+        recency_space: Param("recency_importance", default=0.2)
+    }
+)
+
+# Execute searches with different emphasis
+semantic_search = flexible_search.find(product_schema) \
+    .similar(text_space, "wireless bluetooth headphones") \
+    .filter(product_schema.price < 200) \
+    .limit(10) \
+    .execute(text_importance=0.8, category_importance=0.1, price_importance=0.1)
+
+browse_search = flexible_search.find(product_schema) \
+    .filter(product_schema.category == "electronics") \
+    .limit(20) \
+    .execute(category_importance=0.6, recency_importance=0.4)
+```
