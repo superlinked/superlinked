@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-from beartype.typing import Any, Generic, Sequence, cast
+from beartype.typing import Any, Sequence, cast
 
 from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.parser.data_parser import DataParser
@@ -26,11 +26,10 @@ from superlinked.framework.common.parser.parsed_schema import (
     ParsedSchemaField,
 )
 from superlinked.framework.common.schema.event_schema_object import EventSchemaObject
-from superlinked.framework.common.schema.id_schema_object import IdSchemaObjectT
 from superlinked.framework.common.schema.schema_object import Blob, SchemaField
 
 
-class DataFrameParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, pd.DataFrame]):
+class DataFrameParser(DataParser[pd.DataFrame]):
     """
     DataFrameParser gets a `pd.DataFrame` and using column-string mapping
     it transforms the `DataFrame` to a desired schema.

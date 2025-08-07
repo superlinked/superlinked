@@ -18,7 +18,8 @@ from typing_extensions import override
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.number_embedding_node import NumberEmbeddingNode
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
-from superlinked.framework.common.schema.schema_object import Number, SchemaObject
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
+from superlinked.framework.common.schema.schema_object import Number
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationConfig,
     AvgAggregationConfig,
@@ -117,7 +118,7 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
         self.number = SpaceFieldSet[float](self, set(number_fields))
         self._aggregation_config_type_by_mode = self.__init_aggregation_config_type_by_mode()
         self._transformation_config = self._init_transformation_config(self._embedding_config, aggregation_mode)
-        self.__schema_node_map: dict[SchemaObject, EmbeddingNode[float, float]] = {
+        self.__schema_node_map: dict[IdSchemaObject, EmbeddingNode[float, float]] = {
             number_field.schema_obj: NumberEmbeddingNode(
                 parent=SchemaFieldNode(number_field),
                 transformation_config=self._transformation_config,
@@ -130,7 +131,7 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
     @override
     def _embedding_node_by_schema(
         self,
-    ) -> dict[SchemaObject, EmbeddingNode[float, float]]:
+    ) -> dict[IdSchemaObject, EmbeddingNode[float, float]]:
         return self.__schema_node_map
 
     @property
@@ -208,5 +209,5 @@ class NumberSpace(Space[float, float], HasSpaceFieldSet):
         return TransformationConfig(normalization_config, aggregation_config, embedding_config)
 
     @override
-    def _create_default_node(self, schema: SchemaObject) -> EmbeddingNode[float, float]:
+    def _create_default_node(self, schema: IdSchemaObject) -> EmbeddingNode[float, float]:
         return NumberEmbeddingNode(None, self._transformation_config, self.number.fields, schema)

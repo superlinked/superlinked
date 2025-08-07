@@ -22,9 +22,9 @@ from superlinked.framework.common.dag.categorical_similarity_node import (
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import (
     SchemaField,
-    SchemaObject,
     String,
     StringList,
 )
@@ -137,7 +137,7 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
             )
             for single_category in non_none_category_input
         }
-        self.__schema_node_map: dict[SchemaObject, EmbeddingNode[Vector, list[str]]] = {
+        self.__schema_node_map: dict[IdSchemaObject, EmbeddingNode[Vector, list[str]]] = {
             schema_field.schema_obj: node for schema_field, node in unchecked_category_node_map.items()
         }
 
@@ -145,7 +145,7 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
     @override
     def _embedding_node_by_schema(
         self,
-    ) -> dict[SchemaObject, EmbeddingNode[Vector, list[str]]]:
+    ) -> dict[IdSchemaObject, EmbeddingNode[Vector, list[str]]]:
         return self.__schema_node_map
 
     def _init_transformation_config(
@@ -157,7 +157,7 @@ class CategoricalSimilaritySpace(Space[Vector, list[str]], HasSpaceFieldSet):
         return TransformationConfig(normalization_config, aggregation_config, embedding_config)
 
     @override
-    def _create_default_node(self, schema: SchemaObject) -> EmbeddingNode[Vector, list[str]]:
+    def _create_default_node(self, schema: IdSchemaObject) -> EmbeddingNode[Vector, list[str]]:
         return CategoricalSimilarityNode(None, self.transformation_config, self.__category.fields, schema)
 
     @property

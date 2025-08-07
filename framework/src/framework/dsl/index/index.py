@@ -29,7 +29,7 @@ from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.schema.event_schema_object import EventSchemaObject
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
-from superlinked.framework.common.schema.schema_object import SchemaField, SchemaObject
+from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationInputT,
 )
@@ -126,7 +126,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
         self._logger.info("initialized index")
 
     @property
-    def schemas(self) -> Sequence[SchemaObject]:
+    def schemas(self) -> Sequence[IdSchemaObject]:
         return self.__schemas
 
     @property
@@ -134,7 +134,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
         return self.__spaces
 
     @property
-    def _space_schemas(self) -> set[SchemaObject]:
+    def _space_schemas(self) -> set[IdSchemaObject]:
         return self.__space_schemas
 
     @property
@@ -170,7 +170,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
         return self.__dag
 
     @property
-    def _schema_type_schema_mapper(self) -> dict[type[SchemaObject], IdSchemaObject]:
+    def _schema_type_schema_mapper(self) -> dict[type[IdSchemaObject], IdSchemaObject]:
         return self.__schema_type_schema_mapper
 
     def has_space(self, space: Space) -> bool:
@@ -185,20 +185,20 @@ class Index:  # pylint: disable=too-many-instance-attributes
         """
         return space in self.__spaces
 
-    def has_schema(self, schema: SchemaObject) -> bool:
+    def has_schema(self, schema: IdSchemaObject) -> bool:
         """
         Check, if the given schema is listed as an input to any of the spaces of the index.
 
         Args:
-            schema (SchemaObject): The schema to check.
+            schema (IdSchemaObject): The schema to check.
 
         Returns:
             bool: True if the index has the schema, False otherwise.
         """
         return schema in self.__schemas
 
-    def __init_space_schemas(self, validated_spaces: Sequence[Space]) -> set[SchemaObject]:
-        seen = set[SchemaObject]()
+    def __init_space_schemas(self, validated_spaces: Sequence[Space]) -> set[IdSchemaObject]:
+        seen = set[IdSchemaObject]()
         seen_add = seen.add
         return {
             schema
@@ -209,7 +209,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
         }
 
     def __init_effects_with_schema(
-        self, effects: Sequence[Effect], schemas: set[SchemaObject]
+        self, effects: Sequence[Effect], schemas: set[IdSchemaObject]
     ) -> list[EffectWithReferencedSchemaObject]:
         return [EffectWithReferencedSchemaObject.from_base_effect(effect, schemas) for effect in effects]
 
@@ -227,7 +227,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
         spaces: Sequence[Space],
         effects: Sequence[EffectWithReferencedSchemaObject],
         effect_modifier: EffectModifier,
-        schemas: set[SchemaObject],
+        schemas: set[IdSchemaObject],
     ) -> IndexNode:
         index_parents = set[Node[Vector]]()
         for schema in schemas:
@@ -248,7 +248,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
     def __init_parent_for_index_or_concatenation(
         self,
         space: Space[AggregationInputT, EmbeddingInputT],
-        schema: SchemaObject,
+        schema: IdSchemaObject,
         effects: Sequence[EffectWithReferencedSchemaObject],
         effect_modifier: EffectModifier,
     ) -> Node[Vector]:
@@ -260,7 +260,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
     def _get_aggregation_effect_group(
         effects: Sequence[EffectWithReferencedSchemaObject],
         space: Space[AggregationInputT, EmbeddingInputT],
-        schema: SchemaObject,
+        schema: IdSchemaObject,
     ) -> AggregationEffectGroup | None:
         filtered_effects = [
             effect
@@ -288,7 +288,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
 
     def __init_schema_type_schema_mapper(
         self, effects: Sequence[EffectWithReferencedSchemaObject]
-    ) -> dict[type[SchemaObject], IdSchemaObject]:
+    ) -> dict[type[IdSchemaObject], IdSchemaObject]:
         resolved_schema_references = {
             effect_with_schema.resolved_affected_schema_reference for effect_with_schema in effects
         }.union({effect_with_schema.resolved_affecting_schema_reference for effect_with_schema in effects})

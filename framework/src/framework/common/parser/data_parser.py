@@ -27,15 +27,12 @@ from superlinked.framework.common.parser.parsed_schema import (
 )
 from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.schema.event_schema_object import EventSchemaObject
-from superlinked.framework.common.schema.id_schema_object import (
-    IdSchemaObject,
-    IdSchemaObjectT,
-)
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import SFT, Blob, SchemaField
 from superlinked.framework.common.source.types import SourceTypeT
 
 
-class DataParser(ABC, Generic[IdSchemaObjectT, SourceTypeT]):
+class DataParser(ABC, Generic[SourceTypeT]):
     """
     A DataParser describes the interface to get a source data to the format of a defined schema with mapping support.
 
@@ -44,7 +41,7 @@ class DataParser(ABC, Generic[IdSchemaObjectT, SourceTypeT]):
             as `SchemaField`-`str` pairs such as `{movie_schema.title: "movie_title"}`.
     """
 
-    def __init__(self, schema: IdSchemaObjectT, mapping: Mapping[SchemaField, str] | None = None) -> None:
+    def __init__(self, schema: IdSchemaObject, mapping: Mapping[SchemaField, str] | None = None) -> None:
         """
         Initialize DataParser
 
@@ -52,7 +49,7 @@ class DataParser(ABC, Generic[IdSchemaObjectT, SourceTypeT]):
         that can be extended by DataParser realizations.
 
         Args:
-            schema (IdSchemaObjectT): SchemaObject describing the desired output.
+            schema (IdSchemaObject): IdSchemaObject describing the desired output.
             mapping (Mapping[SchemaField, str], optional): Realizations can use the `SchemaField` to `str` mapping
                 to define their custom mapping logic.
 
@@ -143,7 +140,7 @@ class DataParser(ABC, Generic[IdSchemaObjectT, SourceTypeT]):
     def _get_path(self, field: SchemaField[SFT]) -> str:
         return self.mapping.get(field, field.name)
 
-    def __validate_mapping_against_schema(self, schema: IdSchemaObjectT, mapping: Mapping[SchemaField, str]) -> None:
+    def __validate_mapping_against_schema(self, schema: IdSchemaObject, mapping: Mapping[SchemaField, str]) -> None:
         schema_fields = list(schema.schema_fields) + [schema.id]
         if self._is_event_data_parser:
             schema_fields.append(cast(EventSchemaObject, schema).created_at)

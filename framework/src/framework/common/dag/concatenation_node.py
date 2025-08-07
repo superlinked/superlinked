@@ -23,7 +23,7 @@ from superlinked.framework.common.dag.persistence_params import PersistenceParam
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.interface.has_length import HasLength
-from superlinked.framework.common.schema.schema_object import SchemaObject
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.space.config.normalization.normalization_config import (
     ConstantNormConfig,
 )
@@ -54,7 +54,7 @@ class ConcatenationNode(Node[Vector], HasLength):
         return {"class_name": type(self).__name__}
 
     @override
-    def project_parents_to_schema(self, schema: SchemaObject) -> Sequence[Node]:
+    def project_parents_to_schema(self, schema: IdSchemaObject) -> Sequence[Node]:
         if schema in self.schemas:
             return self.parents
         return []

@@ -21,7 +21,7 @@ from beartype.typing import Mapping
 
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.exception import InvalidStateException
-from superlinked.framework.common.schema.schema_object import SchemaObject
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.storage.entity.entity_id import EntityId
 from superlinked.framework.common.storage_manager.node_info import NodeInfo
 from superlinked.framework.online.online_entity_cache import OnlineEntityCache
@@ -61,7 +61,7 @@ class EventMetadataHandler:
     def _calculate_oldest_ts(self, previous_oldest_ts: int, created_at: int) -> int:
         return min(previous_oldest_ts, created_at) if previous_oldest_ts else created_at
 
-    def read(self, schema: SchemaObject, object_id: str, online_entity_cache: OnlineEntityCache) -> EventMetadata:
+    def read(self, schema: IdSchemaObject, object_id: str, online_entity_cache: OnlineEntityCache) -> EventMetadata:
         def get_event_metadata_item(object_id: str, field_name: str) -> int:
             entity_id = EntityId(schema_id=schema._schema_name, object_id=object_id)
             event_metadata_item = (
@@ -85,7 +85,7 @@ class EventMetadataHandler:
 
     def write(
         self,
-        schema: SchemaObject,
+        schema: IdSchemaObject,
         event_metadata_items: Mapping[str, EventMetadata],
         online_entity_cache: OnlineEntityCache,
     ) -> None:

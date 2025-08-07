@@ -20,7 +20,8 @@ from typing_extensions import override
 
 from superlinked.framework.common.dag.node import Node, NodeDataT
 from superlinked.framework.common.data_types import Vector
-from superlinked.framework.common.schema.schema_object import SchemaField, SchemaObject
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
+from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationInputT,
 )
@@ -42,7 +43,7 @@ class EmbeddingNode(
         parents: Sequence[Node | None],
         transformation_config: TransformationConfig[AggregationInputT, NodeDataT],
         fields_for_identification: set[SchemaField],
-        schema: SchemaObject | None = None,
+        schema: IdSchemaObject | None = None,
     ) -> None:
         super().__init__(
             Vector,

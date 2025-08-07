@@ -12,27 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from beartype.typing import Any, Generic, cast
+from beartype.typing import Any, cast
 from pydantic.alias_generators import to_snake
 
 from superlinked.framework.common.parser.data_parser import DataParser
 from superlinked.framework.common.parser.json_parser import JsonParser
-from superlinked.framework.common.schema.id_schema_object import IdSchemaObjectT
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.dsl.executor.rest.rest_descriptor import RestDescriptor
 from superlinked.framework.online.source.online_source import OnlineSource
 
 
-class RestSource(OnlineSource[IdSchemaObjectT, dict[str, Any]], Generic[IdSchemaObjectT]):
+class RestSource(OnlineSource[dict[str, Any]]):
     def __init__(
         self,
-        schema: IdSchemaObjectT,
+        schema: IdSchemaObject,
         parser: DataParser | None = None,
         rest_descriptor: RestDescriptor | None = None,
-    ):
+    ) -> None:
         super().__init__(
             schema,
             cast(
-                DataParser[IdSchemaObjectT, dict[str, Any]],
+                DataParser[dict[str, Any]],
                 parser or JsonParser(schema),
             ),
         )

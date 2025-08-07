@@ -32,7 +32,6 @@ from superlinked.framework.common.schema.event_schema_object import (
     SchemaReference,
 )
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
-from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationInputT,
 )
@@ -58,7 +57,7 @@ class EffectWithReferencedSchemaObject(Generic[AggregationInputT, EmbeddingInput
         )
 
     @classmethod
-    def from_base_effect(cls, base_effect: Effect, schemas: set[SchemaObject]) -> EffectWithReferencedSchemaObject:
+    def from_base_effect(cls, base_effect: Effect, schemas: set[IdSchemaObject]) -> EffectWithReferencedSchemaObject:
         (
             resolved_affected_schema_reference,
             resolved_affecting_schema_reference,
@@ -76,7 +75,7 @@ class EffectWithReferencedSchemaObject(Generic[AggregationInputT, EmbeddingInput
 
     @staticmethod
     def _init_resolved_schema_reference_fields(
-        effect: Effect, schemas: set[SchemaObject]
+        effect: Effect, schemas: set[IdSchemaObject]
     ) -> tuple[ResolvedSchemaReference, ResolvedSchemaReference]:
         resolved_affected_schema_reference = EffectWithReferencedSchemaObject._get_resolved_schema_reference(
             effect.affected_schema_reference, schemas
@@ -110,7 +109,7 @@ class EffectWithReferencedSchemaObject(Generic[AggregationInputT, EmbeddingInput
     @staticmethod
     def _get_resolved_schema_reference(
         unchecked_schema_reference: SchemaReference | MultipliedSchemaReference,
-        schemas: set[SchemaObject],
+        schemas: set[IdSchemaObject],
     ) -> ResolvedSchemaReference:
         (
             schema_reference,
@@ -139,7 +138,7 @@ class EffectWithReferencedSchemaObject(Generic[AggregationInputT, EmbeddingInput
 
     @staticmethod
     def _get_schema_object_for_reference(
-        schema_reference: SchemaReference, schemas: set[SchemaObject]
+        schema_reference: SchemaReference, schemas: set[IdSchemaObject]
     ) -> IdSchemaObject:
         schema_ = next(
             (schema_ for schema_ in schemas if isinstance(schema_, schema_reference._referenced_schema)),

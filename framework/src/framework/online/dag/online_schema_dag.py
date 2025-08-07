@@ -20,7 +20,7 @@ from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
-from superlinked.framework.common.schema.schema_object import SchemaObject
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_index_node import OnlineIndexNode
 from superlinked.framework.online.dag.online_node import OnlineNode
@@ -36,7 +36,7 @@ class OnlineSchemaDag:
     Must have exactly one leaf `Node` of type `OnlineIndexNode`.
     """
 
-    def __init__(self, schema: SchemaObject, nodes: Sequence[OnlineNode]) -> None:
+    def __init__(self, schema: IdSchemaObject, nodes: Sequence[OnlineNode]) -> None:
         self.__validate(schema, nodes)
         self.__nodes = nodes
         self.__base_nodes = [online_node.node for online_node in self.nodes]
@@ -62,7 +62,7 @@ class OnlineSchemaDag:
     def __init_persistable_nodes(self, nodes: Sequence[OnlineNode]) -> list[Node]:
         return [node.node for node in nodes if cast(Node, node.node).persist_node_result]
 
-    def __validate(self, schema: SchemaObject, nodes: Sequence[OnlineNode]) -> None:
+    def __validate(self, schema: IdSchemaObject, nodes: Sequence[OnlineNode]) -> None:
         class_name = type(self).__name__
         leaf_nodes = [node for node in nodes if len(node.children) == 0]
         if len(leaf_nodes) != 1:

@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from beartype.typing import Any, Generic, Sequence, cast
+from beartype.typing import Any, Sequence, cast
 
 from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.parser.data_parser import DataParser
@@ -27,7 +27,6 @@ from superlinked.framework.common.schema.event_schema_object import (
     EventSchemaObject,
     SchemaReference,
 )
-from superlinked.framework.common.schema.id_schema_object import IdSchemaObjectT
 from superlinked.framework.common.schema.schema_object import SFT, Blob, SchemaField
 from superlinked.framework.common.util.dot_separated_path_util import (
     DotSeparatedPathUtil,
@@ -35,7 +34,7 @@ from superlinked.framework.common.util.dot_separated_path_util import (
 )
 
 
-class JsonParser(Generic[IdSchemaObjectT], DataParser[IdSchemaObjectT, dict[str, Any]]):
+class JsonParser(DataParser[dict[str, Any]]):
     """
     JsonParser gets a `Json` object and using `str` based dot separated path mapping
     it transforms the `Json` to a desired schema.

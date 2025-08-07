@@ -24,12 +24,12 @@ from superlinked.framework.common.dag.image_embedding_node import ImageEmbedding
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import InvalidInputException
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.image_data import ImageData
 from superlinked.framework.common.schema.schema_object import (
     Blob,
     DescribedBlob,
     SchemaField,
-    SchemaObject,
     String,
 )
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
@@ -182,11 +182,11 @@ class ImageSpace(Space[Vector, ImageData]):
     @override
     def _embedding_node_by_schema(
         self,
-    ) -> dict[SchemaObject, EmbeddingNode[Vector, ImageData]]:
+    ) -> dict[IdSchemaObject, EmbeddingNode[Vector, ImageData]]:
         return self.__embedding_node_by_schema
 
     @override
-    def _create_default_node(self, schema: SchemaObject) -> EmbeddingNode[Vector, ImageData]:
+    def _create_default_node(self, schema: IdSchemaObject) -> EmbeddingNode[Vector, ImageData]:
         return ImageEmbeddingNode(None, None, self._transformation_config, self._all_fields, schema)
 
     @property
@@ -231,7 +231,7 @@ class ImageSpace(Space[Vector, ImageData]):
         description_fields: Sequence[String | None],
         all_fields: set[SchemaField],
         transformation_config: TransformationConfig[Vector, ImageData],
-    ) -> dict[SchemaObject, EmbeddingNode[Vector, ImageData]]:
+    ) -> dict[IdSchemaObject, EmbeddingNode[Vector, ImageData]]:
         return {
             image_field.schema_obj: ImageEmbeddingNode(
                 image_blob_node=SchemaFieldNode(image_field),

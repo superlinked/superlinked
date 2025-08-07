@@ -30,7 +30,6 @@ from superlinked.framework.common.exception import (
 from superlinked.framework.common.interface.evaluated import Evaluated
 from superlinked.framework.common.schema.id_field import IdField
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
-from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.telemetry.telemetry_registry import telemetry
 from superlinked.framework.dsl.query.clause_params import QueryVectorClauseParams
@@ -108,7 +107,7 @@ class BaseLooksLikeFilterClause(NLQCompatible, SingleValueParamQueryClause, ABC)
         return cast(str, value), weight
 
     async def __get_looks_like_vector(
-        self, index_node_id: str, schema_obj: SchemaObject, object_id: str, storage_manager: StorageManager
+        self, index_node_id: str, schema_obj: IdSchemaObject, object_id: str, storage_manager: StorageManager
     ) -> Vector:
         with telemetry.span(
             "storage.read.node.result",

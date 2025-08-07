@@ -17,7 +17,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from dataclasses import dataclass
 
-from beartype.typing import Any, Generic, Sequence, TypeVar, cast
+from beartype.typing import TYPE_CHECKING, Any, Generic, Sequence, TypeVar, cast
 from typing_extensions import override
 
 from superlinked.framework.common.data_types import PythonTypes
@@ -33,58 +33,13 @@ from superlinked.framework.common.interface.comparison_operation_type import (
     ComparisonOperationType,
 )
 from superlinked.framework.common.schema.blob_information import BlobInformation
-from superlinked.framework.common.schema.schema_field_descriptor import (
-    SchemaFieldDescriptor,
-)
 from superlinked.framework.common.util.collection_util import CollectionUtil
 
-# Exclude from documentation.
-# A better approach would be to separate this file into atomic objects,
-# which is blocked due to circular dependency issues.
-__pdoc__ = {}
-__pdoc__["SchemaFieldDescriptor"] = False
-
+if TYPE_CHECKING:
+    from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 
 # SchemaFieldType
 SFT = TypeVar("SFT", bound=PythonTypes)
-SchemaObjectT = TypeVar("SchemaObjectT", bound="SchemaObject")
-
-
-class SchemaObject:
-    """
-    `@schema` decorated class that has multiple `SchemaField`s.
-
-    Use it to represent your structured data to reference during the vector embedding process.
-    """
-
-    def __init__(self, base_cls: type) -> None:
-        self._base_cls = base_cls
-        self._schema_fields = self._init_schema_fields()
-        self._schema_fields_by_name = {field.name: field for field in self._schema_fields}
-
-    @abstractmethod
-    def _init_schema_fields(self) -> Sequence[SchemaField]: ...
-
-    @property
-    def _base_class_name(self) -> str:
-        return self._base_cls.__name__
-
-    @property
-    def _schema_name(self) -> str:
-        return self._base_class_name
-
-    @property
-    def schema_fields(self) -> Sequence[SchemaField]:
-        return self._schema_fields
-
-    def __str__(self) -> str:
-        schema_fields = ", ".join([f"(name={field.name}, type={field.type_.__name__})" for field in self.schema_fields])
-        return f"{type(self).__name__}(schema_name={self._schema_name}, schema_fields=[{schema_fields}])"
-
-    def _init_field(self: SchemaObjectT, field_descriptor: SchemaFieldDescriptor) -> SchemaField:
-        value = field_descriptor.type_(field_descriptor.name, self, field_descriptor.nullable)
-        setattr(self, field_descriptor.name, value)
-        return value
 
 
 class SchemaField(ComparisonOperand, Generic[SFT]):
@@ -96,7 +51,7 @@ class SchemaField(ComparisonOperand, Generic[SFT]):
     to feed the vector embedding process.
     """
 
-    def __init__(self, name: str, schema_obj: SchemaObjectT, type_: type[SFT], nullable: bool) -> None:
+    def __init__(self, name: str, schema_obj: IdSchemaObject, type_: type[SFT], nullable: bool) -> None:
         super().__init__(SchemaField)
         self.name = name
         self.schema_obj = schema_obj
@@ -143,7 +98,7 @@ class String(SchemaField[str]):
     e.g.: `TextEmbeddingSpace` expects a String field as an input.
     """
 
-    def __init__(self, name: str, schema_obj: SchemaObjectT, nullable: bool) -> None:
+    def __init__(self, name: str, schema_obj: IdSchemaObject, nullable: bool) -> None:
         super().__init__(name, schema_obj, str, nullable)
 
     def __add__(self, other: object) -> DescribedBlob:
@@ -164,7 +119,7 @@ class Timestamp(SchemaField[int]):
     e.g.: `RecencySpace` expects a Timestamp field as an input.
     """
 
-    def __init__(self, name: str, schema_obj: SchemaObjectT, nullable: bool) -> None:
+    def __init__(self, name: str, schema_obj: IdSchemaObject, nullable: bool) -> None:
         super().__init__(name, schema_obj, int, nullable)
 
     @property
@@ -186,7 +141,7 @@ class Blob(SchemaField[BlobInformation]):
     e.g.: `ImageSpace` expects a blob field as an input.
     """
 
-    def __init__(self, name: str, schema_obj: SchemaObjectT, nullable: bool) -> None:
+    def __init__(self, name: str, schema_obj: IdSchemaObject, nullable: bool) -> None:
         super().__init__(name, schema_obj, BlobInformation, nullable)
 
     def __add__(self, other: object) -> DescribedBlob:
@@ -221,7 +176,7 @@ class Float(Number[float]):
     Field of a schema that represents a float.
     """
 
-    def __init__(self, name: str, schema_obj: SchemaObjectT, nullable: bool) -> None:
+    def __init__(self, name: str, schema_obj: IdSchemaObject, nullable: bool) -> None:
         super().__init__(name, schema_obj, float, nullable)
 
     @property
@@ -235,7 +190,7 @@ class Integer(Number[int]):
     Field of a schema that represents an integer.
     """
 
-    def __init__(self, name: str, schema_obj: SchemaObjectT, nullable: bool) -> None:
+    def __init__(self, name: str, schema_obj: IdSchemaObject, nullable: bool) -> None:
         super().__init__(name, schema_obj, int, nullable)
 
     @property
@@ -249,7 +204,7 @@ class Boolean(SchemaField[bool]):
     Field of a schema that represents a boolean.
     """
 
-    def __init__(self, name: str, schema_obj: SchemaObjectT, nullable: bool) -> None:
+    def __init__(self, name: str, schema_obj: IdSchemaObject, nullable: bool) -> None:
         super().__init__(name, schema_obj, bool, nullable)
 
     @property
@@ -277,7 +232,7 @@ class FloatList(SchemaField[list[float]]):
     Field of a schema that represents a vector.
     """
 
-    def __init__(self, name: str, schema_obj: SchemaObjectT, nullable: bool) -> None:
+    def __init__(self, name: str, schema_obj: IdSchemaObject, nullable: bool) -> None:
         super().__init__(name, schema_obj, list[float], nullable)
 
     @override
@@ -299,7 +254,7 @@ class StringList(SchemaField[list[str]]):
     Field of a schema that represents a list of strings.
     """
 
-    def __init__(self, name: str, schema_obj: SchemaObjectT, nullable: bool) -> None:
+    def __init__(self, name: str, schema_obj: IdSchemaObject, nullable: bool) -> None:
         super().__init__(name, schema_obj, list[str], nullable)
 
     @override

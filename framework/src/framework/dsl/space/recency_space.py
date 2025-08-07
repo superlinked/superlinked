@@ -23,7 +23,8 @@ from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.period_time import PeriodTime
 from superlinked.framework.common.dag.recency_node import RecencyNode
 from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
-from superlinked.framework.common.schema.schema_object import SchemaObject, Timestamp
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
+from superlinked.framework.common.schema.schema_object import Timestamp
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationConfig,
     AvgAggregationConfig,
@@ -122,7 +123,7 @@ class RecencySpace(Space[int, int], HasSpaceFieldSet):  # pylint: disable=too-ma
         self._transformation_config = self._init_transformation_config(
             self._embedding_config, self._aggregation_mode, recency_periods
         )
-        self._schema_node_map: dict[SchemaObject, EmbeddingNode[int, int]] = {
+        self._schema_node_map: dict[IdSchemaObject, EmbeddingNode[int, int]] = {
             field.schema_obj: RecencyNode(
                 parent=SchemaFieldNode(field),
                 transformation_config=self._transformation_config,
@@ -158,7 +159,7 @@ class RecencySpace(Space[int, int], HasSpaceFieldSet):  # pylint: disable=too-ma
     @override
     def _embedding_node_by_schema(
         self,
-    ) -> dict[SchemaObject, EmbeddingNode[int, int]]:
+    ) -> dict[IdSchemaObject, EmbeddingNode[int, int]]:
         return self._schema_node_map
 
     @property
@@ -204,5 +205,5 @@ class RecencySpace(Space[int, int], HasSpaceFieldSet):  # pylint: disable=too-ma
         )
 
     @override
-    def _create_default_node(self, schema: SchemaObject) -> EmbeddingNode[int, int]:
+    def _create_default_node(self, schema: IdSchemaObject) -> EmbeddingNode[int, int]:
         return RecencyNode(None, self._transformation_config, self.timestamp.fields, schema)
