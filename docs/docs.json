@@ -12,6 +12,72 @@
     "light": "/logo/sl_docs_logo_dark.svg",
     "dark": "/logo/sl_docs_logo_light.svg"
   },
+  "redirects": [
+    {
+      "source": "/reference/components/parser/:slug*",
+      "destination": "/reference/common/parser/:slug*"
+    },
+    {
+      "source": "/reference/components/schema/:slug*",
+      "destination": "/reference/common/schema/:slug*"
+    },
+    {
+      "source": "/reference/components/dag/:slug*",
+      "destination": "/reference/common/dag/:slug*"
+    },
+    {
+      "source": "/reference/components/index/:slug*",
+      "destination": "/reference/dsl/index/:slug*"
+    },
+    {
+      "source": "/reference/components/index-1/:slug*",
+      "destination": "/reference/dsl/query/:slug*"
+    },
+    {
+      "source": "/reference/components/index-2/:slug*",
+      "destination": "/reference/dsl/app/:slug*"
+    },
+    {
+      "source": "/reference/components/index-3/:slug*",
+      "destination": "/reference/dsl/storage/:slug*"
+    },
+    {
+      "source": "/reference/components/index-4/:slug*",
+      "destination": "/reference/dsl/registry/:slug*"
+    },
+    {
+      "source": "/reference/components/index-5/:slug*",
+      "destination": "/reference/dsl/source/:slug*"
+    },
+    {
+      "source": "/reference/components/index-6/:slug*",
+      "destination": "/reference/dsl/space/:slug*"
+    },
+    {
+      "source": "/reference/components/index-7/:slug*",
+      "destination": "/reference/dsl/executor/:slug*"
+    },
+    {
+      "source": "/recipes/multi-modal-semantic-search/hotel-search",
+      "destination": "/recipes/hotel-search"
+    },
+    {
+      "source": "/recipes/recommendation-system/ecomm-recsys",
+      "destination": "/recipes/ecomm-recsys"
+    },
+    {
+      "source": "/tutorials/:slug*",
+      "destination": "/use-cases/:slug*"
+    },
+    {
+      "source": "/reference/changelog",
+      "destination": "/changelog"
+    },
+    {
+      "source": "/reference/components/:slug*",
+      "destination": "/reference/:slug*"
+    }
+  ],
   "navigation": {
     "tabs": [
       {
