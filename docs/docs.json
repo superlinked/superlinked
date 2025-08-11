@@ -414,6 +414,12 @@
       "linkedin": "https://linkedin.com/company/superlinked"
     }
   },
+  "integrations": {
+    "posthog": {
+        "apiKey": "phc_zaYdE9XDKL06N2kiQv8zNSy7Ki4sgNvgeT7N0IMjTWR",
+        "apiHost": "https://us.i.posthog.com"
+    }
+  },
   "redirects": [
     {
       "source": "/reference/components/parser/:slug*",
