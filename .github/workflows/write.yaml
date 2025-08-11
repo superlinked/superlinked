@@ -1,45 +1,59 @@
+# DISABLED: This workflow is kept for reference but not currently active
+# To re-enable, uncomment the sections below and remove this disabled job
+
 name: Write References in docs/SUMMARY.md
 
+# This workflow is currently disabled - only manual triggers are allowed
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'docs/reference/common/**'
-      - 'docs/reference/dsl/**'
+  workflow_dispatch:  # Manual trigger only - won't run automatically
+  # Original triggers (commented out for reference):
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'docs/reference/common/**'
+  #     - 'docs/reference/dsl/**'
 
 jobs:
-  run-python-script:
+  # Placeholder job that does nothing - workflow is disabled
+  disabled:
     runs-on: ubuntu-latest
-    permissions: 
-      contents: write
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        persist-credentials: false
+      - name: Workflow Disabled
+        run: echo "This workflow is disabled and kept for reference only"
+        continue-on-error: true
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
+  # Original workflow (commented out for reference)
+  # run-python-script:
+  #   runs-on: ubuntu-latest
+  #   permissions: 
+  #     contents: write
+  #   steps:
+  #   - name: Checkout repository
+  #     uses: actions/checkout@v4
+  #     with:
+  #       persist-credentials: false
 
-    - name: Run Python Script
-      run: python docs/scripts/set-reference.py
+  #   - name: Set up Python
+  #     uses: actions/setup-python@v4
+  #     with:
+  #       python-version: '3.x'
 
+  #   - name: Run Python Script
+  #     run: python docs/scripts/set-reference.py
 
-    - name: Commit and push if there are changes
-      env:
-        GIT_AUTHOR_NAME: ${{ secrets.SLRELEASE_NAME }}
-        GIT_AUTHOR_EMAIL: ${{ secrets.SLRELEASE_EMAIL }}
-        GIT_COMMITTER_NAME: ${{ secrets.SLRELEASE_NAME }}
-        GIT_COMMITTER_EMAIL: ${{ secrets.SLRELEASE_EMAIL }}
-        GITHUB_TOKEN: ${{ secrets.SLRELEASE_DOCS_WRITE_TOKEN }}
-      run: |
-        git add .
-        git commit -m "docs: update summary.md" || exit 0  # Exit 0 if no changes
+  #   - name: Commit and push if there are changes
+  #     env:
+  #       GIT_AUTHOR_NAME: ${{ secrets.SLRELEASE_NAME }}
+  #       GIT_AUTHOR_EMAIL: ${{ secrets.SLRELEASE_EMAIL }}
+  #       GIT_COMMITTER_NAME: ${{ secrets.SLRELEASE_NAME }}
+  #       GIT_COMMITTER_EMAIL: ${{ secrets.SLRELEASE_EMAIL }}
+  #       GITHUB_TOKEN: ${{ secrets.SLRELEASE_DOCS_WRITE_TOKEN }}
+  #     run: |
+  #       git add .
+  #       git commit -m "docs: update summary.md" || exit 0  # Exit 0 if no changes
     
-    - name: Push changes
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ secrets.SLRELEASE_DOCS_WRITE_TOKEN }}
+  #   - name: Push changes
+  #     uses: ad-m/github-push-action@master
+  #     with:
+  #       github_token: ${{ secrets.SLRELEASE_DOCS_WRITE_TOKEN }}
