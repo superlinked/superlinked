@@ -13,15 +13,21 @@
 # limitations under the License.
 
 
+from __future__ import annotations
+
 from collections.abc import Sequence
 
+from beartype.typing import TYPE_CHECKING
 from typing_extensions import override
 
 from superlinked.framework.common.interface.comparison_operation_type import (
     EQUALITY_COMPARISON_OPERATION_TYPES,
     ComparisonOperationType,
 )
-from superlinked.framework.common.schema.schema_object import SchemaField, SchemaObjectT
+from superlinked.framework.common.schema.schema_object import SchemaField
+
+if TYPE_CHECKING:
+    from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 
 ID_FIELD_NAME = "id"
 
@@ -31,7 +37,7 @@ class IdField(SchemaField[str]):
     A class representing the ID field of a schema.
     """
 
-    def __init__(self, schema_obj: SchemaObjectT, id_field_name: str) -> None:
+    def __init__(self, schema_obj: IdSchemaObject, id_field_name: str) -> None:
         super().__init__(id_field_name, schema_obj, str, nullable=False)
 
     @property

@@ -32,7 +32,6 @@ from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import (
     ConcreteSchemaField,
     SchemaField,
-    SchemaObject,
 )
 from superlinked.framework.common.storage.entity.entity import Entity
 from superlinked.framework.common.storage.entity.entity_data import EntityData
@@ -205,7 +204,7 @@ class StorageManager:
 
     def _validate_knn_search_input(
         self,
-        schema: SchemaObject,
+        schema: IdSchemaObject,
         returned_schema_fields: Sequence[SchemaField] | None,
     ) -> None:
         if not returned_schema_fields:
@@ -225,7 +224,7 @@ class StorageManager:
         }
 
     def _compose_filter_field_data(
-        self, schema: SchemaObject, filters: Sequence[ComparisonOperation[SchemaField]]
+        self, schema: IdSchemaObject, filters: Sequence[ComparisonOperation[SchemaField]]
     ) -> Sequence[ComparisonOperation[Field]]:
         return [
             ComparisonOperation(
@@ -307,7 +306,7 @@ class StorageManager:
 
     # TODO FAB-3639 - legacy-readwrite-interfaces
     def write_node_data(
-        self, schema: SchemaObject, node_data_by_object_id: Mapping[str, dict[str, PythonTypes]], node_id: str
+        self, schema: IdSchemaObject, node_data_by_object_id: Mapping[str, dict[str, PythonTypes]], node_id: str
     ) -> None:
         entity_data_items = [
             self._compose_entity_data(schema, object_id, node_id, node_data)
@@ -317,7 +316,7 @@ class StorageManager:
 
     # TODO FAB-3639 - legacy-readwrite-interfaces
     def _compose_entity_data(
-        self, schema: SchemaObject, object_id: str, node_id: str, node_data: dict[str, PythonTypes]
+        self, schema: IdSchemaObject, object_id: str, node_id: str, node_data: dict[str, PythonTypes]
     ) -> EntityData:
         entity_id = self._entity_builder.compose_entity_id(schema._schema_name, object_id)
         field_data = list(self._entity_builder._admin_fields.create_header_field_data(entity_id))
@@ -327,7 +326,7 @@ class StorageManager:
     # TODO FAB-3639 - legacy-readwrite-interfaces
     def read_node_results(
         self,
-        schemas_with_object_ids: Sequence[tuple[SchemaObject, str]],
+        schemas_with_object_ids: Sequence[tuple[IdSchemaObject, str]],
         node_id: str,
         result_type: type[ResultTypeT],
     ) -> list[ResultTypeT | None]:
@@ -336,7 +335,7 @@ class StorageManager:
     # TODO FAB-3639 - legacy-readwrite-interfaces
     async def read_node_results_async(
         self,
-        schemas_with_object_ids: Sequence[tuple[SchemaObject, str]],
+        schemas_with_object_ids: Sequence[tuple[IdSchemaObject, str]],
         node_id: str,
         result_type: type[ResultTypeT],
     ) -> list[ResultTypeT | None]:
@@ -356,7 +355,7 @@ class StorageManager:
     # TODO FAB-3639 - legacy-readwrite-interfaces
     async def read_node_result(
         self,
-        schema: SchemaObject,
+        schema: IdSchemaObject,
         object_id: str,
         node_id: str,
         result_type: type[ResultTypeT],
@@ -403,7 +402,7 @@ class StorageManager:
     # TODO FAI-2737 to solve the parameters
     def read_node_data(
         self,
-        schema: SchemaObject,
+        schema: IdSchemaObject,
         object_ids: Sequence[str],
         node_id: str,
         node_data_descriptor: dict[str, type[NodeDataValueT]],
@@ -436,7 +435,7 @@ class StorageManager:
         }
 
     # TODO FAB-3639 - legacy-readwrite-interfaces
-    def _compose_entity(self, schema: SchemaObject, object_id: str, fields: Sequence[Field]) -> Entity:
+    def _compose_entity(self, schema: IdSchemaObject, object_id: str, fields: Sequence[Field]) -> Entity:
         entity_id = self._entity_builder.compose_entity_id(schema._schema_name, object_id)
         entity = self._entity_builder.compose_entity(entity_id, fields)
         return entity

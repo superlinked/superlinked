@@ -32,7 +32,7 @@ from superlinked.framework.common.parser.parsed_schema import (
     ParsedSchema,
     ParsedSchemaWithEvent,
 )
-from superlinked.framework.common.schema.schema_object import SchemaObject
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.event_aggregator import (
     EventAggregator,
@@ -149,7 +149,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
             for parsed_schema in parsed_schemas
         ]
 
-    def __get_single_schema(self, parsed_schemas: Sequence[ParsedSchema]) -> SchemaObject:
+    def __get_single_schema(self, parsed_schemas: Sequence[ParsedSchema]) -> IdSchemaObject:
         for parsed_schema in parsed_schemas:
             if parsed_schema.schema != self.node.affected_schema.schema:
                 raise InvalidInputException(
@@ -161,7 +161,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
 
     def _load_stored_result_by_id(
         self,
-        schema: SchemaObject,
+        schema: IdSchemaObject,
         object_ids: Sequence[str],
         online_entity_cache: OnlineEntityCache,
     ) -> dict[str, Vector]:

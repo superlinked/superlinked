@@ -16,11 +16,11 @@ from beartype.typing import Any, Generic
 from typing_extensions import override
 
 from superlinked.framework.common.dag.node import Node, NodeDataT
-from superlinked.framework.common.schema.schema_object import SchemaObject
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 
 
 class ConstantNode(Generic[NodeDataT], Node[NodeDataT]):
-    def __init__(self, value: NodeDataT, schema: SchemaObject) -> None:
+    def __init__(self, value: NodeDataT, schema: IdSchemaObject) -> None:
         super().__init__(type(value), [], schemas={schema})
         self.value = value
 

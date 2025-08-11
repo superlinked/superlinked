@@ -23,7 +23,7 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import NT, Node, NodeDataT
 from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
-from superlinked.framework.common.schema.schema_object import SchemaObject
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.storage.entity.entity_id import EntityId
 from superlinked.framework.common.storage_manager.node_info import NodeInfo
 from superlinked.framework.common.storage_manager.node_result_data import NodeResultData
@@ -188,7 +188,7 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
 
     def load_stored_results(
         self,
-        schemas_with_object_ids: Sequence[tuple[SchemaObject, str]],
+        schemas_with_object_ids: Sequence[tuple[IdSchemaObject, str]],
         online_entity_cache: OnlineEntityCache,
     ) -> list[NodeDataT | None]:
         entity_ids = [
@@ -204,7 +204,7 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
 
     def load_stored_results_with_default(
         self,
-        schemas_with_object_ids: Sequence[tuple[SchemaObject, str]],
+        schemas_with_object_ids: Sequence[tuple[IdSchemaObject, str]],
         default_value: NodeDataT,
         online_entity_cache: OnlineEntityCache,
     ) -> list[NodeDataT]:

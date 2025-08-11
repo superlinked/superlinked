@@ -24,7 +24,7 @@ from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
-from superlinked.framework.common.schema.schema_object import SchemaObject
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.online_entity_cache import OnlineEntityCache
@@ -42,7 +42,7 @@ class OnlineIndexNode(OnlineNode[IndexNode, Vector], HasLength):
     def length(self) -> int:
         return self.node.length
 
-    def get_parent_for_schema(self, schema: SchemaObject) -> OnlineNode:
+    def get_parent_for_schema(self, schema: IdSchemaObject) -> OnlineNode:
         active_parents = [parent for parent in self.parents if schema in cast(Node, parent.node).schemas]
         if len(active_parents) != 1:
             raise InvalidStateException(

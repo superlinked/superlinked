@@ -15,17 +15,24 @@
 import os
 import sys
 import threading
+import warnings
 from contextlib import contextmanager
 from dataclasses import dataclass
 
-import instructor
 import openai as openAILib
 import structlog
 from beartype.typing import Any, Generator
-from instructor.exceptions import InstructorRetryException
-from pydantic import BaseModel
+from pydantic import BaseModel, PydanticDeprecatedSince20
 
 from superlinked.framework.common.settings import settings
+
+with warnings.catch_warnings():
+    warnings.filterwarnings(
+        "ignore",
+        category=PydanticDeprecatedSince20,
+    )
+    import instructor
+    from instructor.exceptions import InstructorRetryException
 
 logger = structlog.getLogger()
 

@@ -21,7 +21,7 @@ from typing_extensions import override
 from superlinked.framework.common.observable import TransformerPublisher
 from superlinked.framework.common.parser.data_parser import DataParser
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
-from superlinked.framework.common.schema.id_schema_object import IdSchemaObjectT
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.settings import settings
 from superlinked.framework.common.source.source import Source
 from superlinked.framework.common.source.types import SourceTypeT
@@ -29,16 +29,8 @@ from superlinked.framework.common.source.types import SourceTypeT
 logger = structlog.get_logger()
 
 
-class OnlineSource(
-    Generic[IdSchemaObjectT, SourceTypeT],
-    TransformerPublisher[SourceTypeT, ParsedSchema],
-    Source[IdSchemaObjectT, SourceTypeT],
-):
-    def __init__(
-        self,
-        schema: IdSchemaObjectT,
-        parser: DataParser[IdSchemaObjectT, SourceTypeT],
-    ) -> None:
+class OnlineSource(Generic[SourceTypeT], TransformerPublisher[SourceTypeT, ParsedSchema], Source[SourceTypeT]):
+    def __init__(self, schema: IdSchemaObject, parser: DataParser[SourceTypeT]) -> None:
         TransformerPublisher.__init__(self, chunk_size=settings.ONLINE_PUT_CHUNK_SIZE)
         Source.__init__(self, schema, parser)
         self._logger = logger.bind(

@@ -32,7 +32,6 @@ from superlinked.framework.common.schema.schema_field_descriptor import (
 from superlinked.framework.common.schema.schema_object import (
     ConcreteSchemaField,
     SchemaField,
-    SchemaObjectT,
 )
 
 # Referenced schema type
@@ -103,7 +102,7 @@ class CreatedAtField(SchemaField[int]):
     A class representing creation time. A unix timestamp field in a schema object.
     """
 
-    def __init__(self, schema_obj: SchemaObjectT, created_at_field_name: str) -> None:
+    def __init__(self, schema_obj: EventSchemaObject, created_at_field_name: str) -> None:
         super().__init__(created_at_field_name, schema_obj, int, nullable=False)
 
     @property

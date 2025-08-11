@@ -22,7 +22,6 @@ from superlinked.framework.common.exception import (
     NotFoundException,
 )
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
-from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.storage_manager.header import Header
 from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.dsl.executor.in_memory.in_memory_executor import InMemoryApp
@@ -181,7 +180,7 @@ class VectorSampler:
         entity_ids = list({self.__get_id_for_standalone_entity_origin_id_for_chunk(header) for header in headers})
         return self.get_vectors_by_ids(entity_ids, index, schema)
 
-    def _read_node_results(self, schema: SchemaObject, node_id: str, result_type: type) -> Sequence[Header]:
+    def _read_node_results(self, schema: IdSchemaObject, node_id: str, result_type: type) -> Sequence[Header]:
         entity_builder = self.__app.storage_manager._entity_builder
         in_memory_vdb = cast(InMemoryVDB, self.__app.storage_manager._vdb_connector)
 

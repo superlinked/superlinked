@@ -3,6 +3,19 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [33.6.0] - 2025-08-07
+
+### Changed
+
+- Update contributing docs
+- Update conventional-pre-commit hook to v4.2.0
+- Suppress pydantic deprecation warnings from instructor import
+- Trigger release
+
+### Removed
+
+- Remove codeowners
+
 ## [33.5.1] - 2025-08-04
 
 ### Fixed
@@ -6122,6 +6135,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove unnecessary call
 - Remove extra field
 
+[33.6.0]: https://github.com/superlinked/superlinked/compare/v33.5.2..v33.6.0
 [33.5.1]: https://github.com/superlinked/superlinked/compare/v33.5.0..v33.5.1
 [33.4.0]: https://github.com/superlinked/superlinked/compare/v33.3.0..v33.4.0
 [33.3.0]: https://github.com/superlinked/superlinked/compare/v33.2.0..v33.3.0

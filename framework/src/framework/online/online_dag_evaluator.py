@@ -33,7 +33,6 @@ from superlinked.framework.common.parser.parsed_schema import (
 )
 from superlinked.framework.common.schema.event_schema_object import SchemaReference
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
-from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.storage.entity.entity_id import EntityId
 from superlinked.framework.common.storage_manager.entity_data_request import (
     EntityDataRequest,
@@ -57,7 +56,7 @@ class OnlineDagEvaluator:
     def __init__(
         self,
         dag: Dag,
-        schemas: set[SchemaObject],
+        schemas: set[IdSchemaObject],
         storage_manager: StorageManager,
     ) -> None:
         super().__init__()
@@ -205,9 +204,9 @@ class OnlineDagEvaluator:
 
     def __init_schema_online_schema_dag_mapper(
         self,
-        schemas: set[SchemaObject],
+        schemas: set[IdSchemaObject],
         dag: Dag,
-    ) -> dict[SchemaObject, OnlineSchemaDag]:
+    ) -> dict[IdSchemaObject, OnlineSchemaDag]:
         return {
             schema: OnlineSchemaDagCompiler(set(dag.nodes)).compile_schema_dag(dag.project_to_schema(schema))
             for schema in schemas
@@ -245,7 +244,7 @@ class OnlineDagEvaluator:
     def __log_evaluate(
         self,
         parsed_schemas: Sequence[ParsedSchema],
-        index_schema: SchemaObject,
+        index_schema: IdSchemaObject,
         results: Sequence[EvaluationResult[Vector] | None],
     ) -> None:
         logger_to_use = logger.bind(schema=index_schema._schema_name)

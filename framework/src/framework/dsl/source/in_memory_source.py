@@ -14,15 +14,11 @@
 
 from beartype.typing import Generic
 
-from superlinked.framework.common.schema.id_schema_object import IdSchemaObjectT
 from superlinked.framework.common.source.types import SourceTypeT
 from superlinked.framework.dsl.source.interactive_source import InteractiveSource
 
 
-class InMemorySource(
-    InteractiveSource[IdSchemaObjectT, SourceTypeT],
-    Generic[IdSchemaObjectT, SourceTypeT],
-):
+class InMemorySource(InteractiveSource[SourceTypeT], Generic[SourceTypeT]):
     """
     InMemorySource represents a source of data, where you can put your data. This will supply
     the index with the data it needs to index and search in.

@@ -16,7 +16,7 @@ from beartype.typing import Any
 from typing_extensions import override
 
 from superlinked.framework.common.dag.node import Node, NodeDataT
-from superlinked.framework.common.schema.schema_object import SchemaObject
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.util.named_function_evaluator import NamedFunction
 
 
@@ -24,7 +24,7 @@ class NamedFunctionNode(Node[NodeDataT]):
     def __init__(
         self,
         named_function: NamedFunction,
-        schema: SchemaObject,
+        schema: IdSchemaObject,
         return_type: type[NodeDataT],
     ) -> None:
         super().__init__(return_type, [], schemas={schema})

@@ -488,10 +488,7 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
         if self.get_clause_by_type(SelectClause) is None:
             clauses.append(
                 SelectClause.from_param(
-                    self.schema,
-                    fields=self.index._fields,
-                    vector_parts=[],
-                    fields_to_exclude=self.index._fields_to_exclude,
+                    self.schema, fields=[], vector_parts=[], fields_to_exclude=self.index._fields_to_exclude
                 )
             )
         altered_query_descriptor = self.__append_clauses(clauses)

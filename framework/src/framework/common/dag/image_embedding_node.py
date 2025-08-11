@@ -16,8 +16,9 @@ from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.schema.blob_information import BlobInformation
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.image_data import ImageData
-from superlinked.framework.common.schema.schema_object import SchemaField, SchemaObject
+from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.space.config.transformation_config import (
     TransformationConfig,
 )
@@ -30,7 +31,7 @@ class ImageEmbeddingNode(EmbeddingNode[Vector, ImageData]):
         description_node: Node[str] | None,
         transformation_config: TransformationConfig[Vector, ImageData],
         fields_for_identification: set[SchemaField],
-        schema: SchemaObject | None = None,
+        schema: IdSchemaObject | None = None,
     ) -> None:
         super().__init__(
             [image_blob_node, description_node],

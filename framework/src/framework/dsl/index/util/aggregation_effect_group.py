@@ -18,7 +18,7 @@ from dataclasses import dataclass
 
 from beartype.typing import Generic, Sequence
 
-from superlinked.framework.common.schema.schema_object import SchemaObject
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationInputT,
 )
@@ -38,5 +38,5 @@ class AggregationEffectGroup(Generic[AggregationInputT, EmbeddingInputT]):
     """
 
     space: Space[AggregationInputT, EmbeddingInputT]
-    affected_schema: SchemaObject
+    affected_schema: IdSchemaObject
     effects: Sequence[EffectWithReferencedSchemaObject[AggregationInputT, EmbeddingInputT]]

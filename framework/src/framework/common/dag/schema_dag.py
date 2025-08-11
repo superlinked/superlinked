@@ -15,7 +15,7 @@
 from superlinked.framework.common.dag.index_node import IndexNode
 from superlinked.framework.common.dag.node import Node
 from superlinked.framework.common.exception import InvalidStateException
-from superlinked.framework.common.schema.schema_object import SchemaObject
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 
 
 class SchemaDag:
@@ -23,13 +23,13 @@ class SchemaDag:
     Represents a `Dag`'s projection to a particular schema. Must have exactly 1 leaf `Node` of type `IndexNode`.
     """
 
-    def __init__(self, schema: SchemaObject, nodes: list[Node]) -> None:
+    def __init__(self, schema: IdSchemaObject, nodes: list[Node]) -> None:
         self.__validate(nodes)
         self.__schema = schema
         self.__nodes = nodes
 
     @property
-    def schema(self) -> SchemaObject:
+    def schema(self) -> IdSchemaObject:
         return self.__schema
 
     @property

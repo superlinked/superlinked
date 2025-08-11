@@ -24,7 +24,8 @@ from superlinked.framework.common.dag.schema_field_node import SchemaFieldNode
 from superlinked.framework.common.dag.text_embedding_node import TextEmbeddingNode
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import InvalidInputException
-from superlinked.framework.common.schema.schema_object import SchemaObject, String
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
+from superlinked.framework.common.schema.schema_object import String
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     VectorAggregationConfig,
 )
@@ -100,7 +101,7 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
         self._transformation_config = self._init_transformation_config(
             model, model_cache_dir, cache_size, model_handler, embedding_engine_config
         )
-        self._schema_node_map: dict[SchemaObject, EmbeddingNode[Vector, str]] = {
+        self._schema_node_map: dict[IdSchemaObject, EmbeddingNode[Vector, str]] = {
             self._get_root(unchecked_text).schema_obj: self._generate_embedding_node(
                 unchecked_text, self._transformation_config
             )
@@ -149,11 +150,11 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
     @override
     def _embedding_node_by_schema(
         self,
-    ) -> dict[SchemaObject, EmbeddingNode[Vector, str]]:
+    ) -> dict[IdSchemaObject, EmbeddingNode[Vector, str]]:
         return self._schema_node_map
 
     @override
-    def _create_default_node(self, schema: SchemaObject) -> EmbeddingNode[Vector, str]:
+    def _create_default_node(self, schema: IdSchemaObject) -> EmbeddingNode[Vector, str]:
         return TextEmbeddingNode(None, self._transformation_config, self.text.fields, schema)
 
     @property

@@ -24,12 +24,12 @@ from superlinked.framework.common.dag.chunking_node import ChunkingNode
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
 from superlinked.framework.common.data_types import NodeDataTypes
 from superlinked.framework.common.exception import InvalidInputException
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import (
     ConcreteSchemaField,
     DescribedBlob,
     Number,
     SchemaField,
-    SchemaObject,
 )
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
     AggregationInputT,
@@ -104,21 +104,21 @@ class Space(
     def _allow_empty_fields(self) -> bool: ...
 
     @abstractmethod
-    def _create_default_node(self, schema: SchemaObject) -> EmbeddingNode[AggregationInputT, EmbeddingInputT]: ...
+    def _create_default_node(self, schema: IdSchemaObject) -> EmbeddingNode[AggregationInputT, EmbeddingInputT]: ...
 
     @property
     @abstractmethod
     def _embedding_node_by_schema(
         self,
-    ) -> dict[SchemaObject, EmbeddingNode[AggregationInputT, EmbeddingInputT]]: ...
+    ) -> dict[IdSchemaObject, EmbeddingNode[AggregationInputT, EmbeddingInputT]]: ...
 
-    def _get_embedding_node(self, schema: SchemaObject) -> EmbeddingNode[AggregationInputT, EmbeddingInputT]:
+    def _get_embedding_node(self, schema: IdSchemaObject) -> EmbeddingNode[AggregationInputT, EmbeddingInputT]:
         if node := self._embedding_node_by_schema.get(schema):
             return node
         return self._handle_embedding_node_not_present(schema)
 
     def _handle_embedding_node_not_present(
-        self, schema: SchemaObject
+        self, schema: IdSchemaObject
     ) -> EmbeddingNode[AggregationInputT, EmbeddingInputT]:
         embedding_node = self._create_default_node(schema)
         self._embedding_node_by_schema[schema] = embedding_node

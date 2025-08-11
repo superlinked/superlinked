@@ -31,7 +31,6 @@ from superlinked.framework.common.parser.parsed_schema import (
     ParsedSchemaWithEvent,
 )
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
-from superlinked.framework.common.schema.schema_object import SchemaObject
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
 from superlinked.framework.common.telemetry.telemetry_registry import telemetry
 from superlinked.framework.dsl.index.index import Index
@@ -55,13 +54,13 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
         self.context = context
         self.storage_manager = storage_manager
         self._index = index
-        self._mandatory_field_names_by_schema: Mapping[SchemaObject, Sequence[str]] = (
+        self._mandatory_field_names_by_schema: Mapping[IdSchemaObject, Sequence[str]] = (
             self._init_mandatory_field_names_by_schema(index)
         )
 
-    def _init_mandatory_field_names_by_schema(self, index: Index) -> defaultdict[SchemaObject, list[str]]:
-        mandatory_field_names_by_schema: defaultdict[SchemaObject, list[str]] = defaultdict(list)
-        id_field_names_by_schema: dict[SchemaObject, str] = {
+    def _init_mandatory_field_names_by_schema(self, index: Index) -> defaultdict[IdSchemaObject, list[str]]:
+        mandatory_field_names_by_schema: defaultdict[IdSchemaObject, list[str]] = defaultdict(list)
+        id_field_names_by_schema: dict[IdSchemaObject, str] = {
             schema: schema.id.name for schema in index.schemas if isinstance(schema, IdSchemaObject)
         }
         for field in index.non_nullable_fields:

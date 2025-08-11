@@ -19,7 +19,7 @@ from beartype.typing import Any, Generic, cast
 
 from superlinked.framework.common.parser.data_parser import DataParser
 from superlinked.framework.common.parser.dataframe_parser import DataFrameParser
-from superlinked.framework.common.schema.id_schema_object import IdSchemaObjectT
+from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.source.types import SourceTypeT
 from superlinked.framework.online.source.online_source import OnlineSource
 
@@ -41,20 +41,14 @@ class DataLoaderConfig:
     pandas_read_kwargs: dict[str, Any] | None = None
 
 
-class DataLoaderSource(OnlineSource[IdSchemaObjectT, SourceTypeT], Generic[IdSchemaObjectT, SourceTypeT]):
+class DataLoaderSource(OnlineSource[SourceTypeT], Generic[SourceTypeT]):
     def __init__(
         self,
-        schema: IdSchemaObjectT,
+        schema: IdSchemaObject,
         data_loader_config: DataLoaderConfig,
-        parser: DataParser[IdSchemaObjectT, SourceTypeT] | None = None,
-    ):
-        super().__init__(
-            schema,
-            cast(
-                DataParser[IdSchemaObjectT, SourceTypeT],
-                parser or DataFrameParser(schema),
-            ),
-        )
+        parser: DataParser[SourceTypeT] | None = None,
+    ) -> None:
+        super().__init__(schema, cast(DataParser[SourceTypeT], parser or DataFrameParser(schema)))
         self.__data_loader_config = data_loader_config
 
     @property
