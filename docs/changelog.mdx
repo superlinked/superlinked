@@ -4,6 +4,86 @@ description: Superlinked through time.
 icon: clock-rotate-left
 ---
 
+<Update label="June 20, 2025" description="Framework v28.0.0 - v28.8.2 • Batch v3.1.0 - v3.11.0 • Server v1.29.5 - v1.34.1">
+
+## Added
+
+- **Custom OpenAI Base URL**: Support for setting a custom base URL for OpenAI client configuration. This allows integration with custom OpenAI deployments. [Version: 28.8.0]
+- **Model Dimension Cache Update**: Update to the model dimension cache, including changes to the model name cleaning logic. [Version: 28.7.0]
+- **Aiohttp Version Pinning**: Pinned the version of aiohttp to ensure compatibility and stability in network requests. [Version: 28.6.0]
+- **Modal OOM Safety**: Enhanced modal with Out-Of-Memory (OOM) safety measures to handle GPU overflows efficiently. [Version: 28.5.0]
+- **Redis Connection Pooling**: Implementation of Redis connection pooling to enhance efficiency and performance. [Version: 28.4.0]
+- **Asynchronous Query Operations**: Transitioned query evaluations for Redis and NLQ to asynchronous operations, enhancing query handling efficiency. [Version: 28.3.0]
+- **Configurable Redis Search**: Introduced configurable search settings for Redis, including options for adjusting hybrid policy and batch sizes. [Version: 28.1.0]
+- **Redis Hybrid Policy Support (Batch)**: Updates to support users changing the Redis hybrid policy.
+- **Data Clustering (Batch)**: Added data clustering by join id during the embed stage.
+- **Batch Processing Configuration**: Configuration updates to enhance batch processing.
+- **Async Query Handling (Server)**: Implemented async query handling to support batched queries in the server for improved performance.
+- **Redis Hybrid Policy Headers (Server)**: Modified framework to include options for changing Redis hybrid policies with two new headers.
+
+## Changed
+
+- **Redis Health Check Removal**: Removed Redis's health_check_interval to prevent timeout issues. [Version: 28.8.2]
+- **Async Redis Client Update**: Removed refresh from async Redis client to avoid recursion errors. [Version: 28.8.1]
+- **Enhanced Async Handling**: Added missing async for read_node_result, enhanced resilient async handling and Redis improvements. [Version: 28.5.1]
+- **Coroutine Reuse Fix**: Resolved RuntimeError preventing coroutine reuse. [Version: 28.4.1]
+- **Model Download Stability**: Mitigated model download issues impacting connection stability. [Version: 28.1.5]
+- **Batch Worker Consistency**: Addressed model partial download issues for batch workers to ensure consistency. [Version: 28.1.4]
+- **Model Name Prefix Removal**: Removed model name prefix from downloader to assist in accurate model retrieval. [Version: 28.1.3]
+- **Embedding Engine Manager**: Adjusted Embedding Engine Manager implementation to function as a true singleton. [Version: 28.1.2]
+- **Half Precision Embedding**: Only disable half precision embedding in CI and macOS environments. For migration, set SUPERLINKED_DISABLE_HALF_PRECISION_EMBEDDING to "True" if needed. [Version: 28.1.1]
+- **Error Message Guidance**: Rephrased error messages to guide users in adjusting their data ingestion configurations.
+- **Performance Improvements (Batch)**: Critical updates to jobs.py for performance improvements.
+- **Error Logging Enhancement (Batch)**: Improved error logging for non-recoverable job failures.
+- **Dataframe and Vector Handling (Batch)**: Bugs fixed in dataframe joining and vector handling.
+- **Performance Analysis (Batch)**: Removed unnecessary vector count from logs for better performance analysis.
+- **Blob Loading Fix (Batch)**: Resolved Blob loading and bucket configuration issues.
+- **Asyncio Loop Enforcement (Server)**: Enforced the use of asyncio type loop for better compatibility and performance.
+- **Secret Detection Resolution (Server)**: Resolved secret detection issues to ensure secure handling of sensitive information. Updated to version 28.8.1.
+- **GZip Middleware (Server)**: Added GZip middleware to enhance server performance by compressing HTTP responses.
+
+
+</Update>
+
+<Update label="June 6, 2025" description="Framework v25.1.0 - v28.0.0 • Batch v2.29.1 - v3.1.0 • Server v1.26.1 - v1.29.5">
+
+## Breaking Changes
+
+- **Framework (v27.0.0)**: Replaced Text type with Tag type for string fields in Redis backend, for optimal performance and query accuracy. See migration instructions below.
+- **Framework (v26.0.0)**: All metadata fields (admin fields) are now indexed as UNF TAGs in Redis for improved latency—origin_id is now optionally returned, controlled via configuration. See migration instructions below.
+
+## Added
+
+- **Boolean Field Type**: Introduced Boolean field type to schema; now fully supported in Redis. [Version: 25.1.0]
+- **Boolean Query Syntax**: Introduced `boolean.field.is_()` and `boolean.field.is_not_()` to enable more ergonomic boolean query syntax. [Version: 27.5.0]
+- **Boolean Type Demonstration**: Added Boolean type demonstration in hard filter notebook; extended hard filtering capabilities in examples. [Version: 27.6.0]
+- **EngineManager Abstraction**: Introduced EngineManager abstraction to decouple model caching and embedding (enables multiple embedding handler configs, less memory usage, reduced serialization). [Version: 28.0.0]
+- **Boolean Field Support (Batch)**: Added Boolean field support across schemas, improving integration with Redis databases. [Version: 25.1.0]
+- **Error Code Filtering (Batch)**: Added error code filtering to reliably alert on non-recoverable Spark job failures, integrating with alerting workflows.
+
+## Changed
+
+- **RedisVL Update**: Updated RedisVL to resolve compatibility and build issues. [Version: 27.2.2]
+- **Redis Hybrid Policy**: Set sensible default values for Redis hybrid policy and batch size for improved search performance.
+- **Dependency Management**: Several Python dependencies (e.g., async-timeout, attrs, ml-dtypes) now marked as optional for improved redis/colab support; conditional dependencies fine-tuned for redis environment.
+- **Batch Executor Refactor**: Refactored batch executor to create embedding engine manager at the executor level rather than driver/worker, minimizing unnecessary serialization and memory usage. [Version: 28.0.0]
+
+## Fixed
+
+- **Spark and Dataproc Settings (Batch)**: Added Spark and Dataproc settings to enable easier persistence and retrieval of executor logs for debugging and alerting.
+- **Job Submission Logic (Batch)**: Improved job submission logic to exit and cancel Dataproc jobs on unrecoverable errors, minimizing cluster resource waste.
+- **RedisVL Update (Server)**: Updated redisvl to the latest compatible version.
+
+## Migration Guide
+
+### Text-to-Tag migration in Redis
+Re-ingest your data to use the new performance optimized types.
+
+### Admin field indexing change
+Metadata and admin fields are now indexed as TAGs, not returned by default. If you previously relied on origin_id being returned in query responses, you must set `QUERY_TO_RETURN_ORIGIN_ID=True` in your settings to retain previous behavior.
+
+</Update>
+
 <Update label="May 25, 2025" description="Framework v23.2.0 - v25.1.0 • Batch v2.22.0 - v2.29.0 • Server v1.25.0 - v1.26.0">
 
 ## Breaking Changes
