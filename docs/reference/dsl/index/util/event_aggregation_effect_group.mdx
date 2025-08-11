@@ -1,0 +1,108 @@
+---
+title: "Event Aggregation Effect Group"
+description: "Group of effects with the same space, event schema, affected schema and affecting schema"
+---
+
+## EventAggregationEffectGroup
+
+```python
+EventAggregationEffectGroup(key, effects)
+```
+
+Group of effects with the same space, event schema, affected schema and affecting schema.
+
+### Parameters
+
+<ParamField path="key" type="GroupKey[AggregationInputT, EmbeddingInputT]" required>
+The group key that defines the grouping criteria.
+</ParamField>
+
+<ParamField path="effects" type="Sequence[EffectWithReferencedSchemaObject]" required>
+The sequence of effects that belong to this group.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `EventAggregationEffectGroup` 
+- → `Generic`
+
+### Properties
+
+<ParamField path="effects" type="Sequence[EffectWithReferencedSchemaObject]">
+The collection of effects in this group.
+</ParamField>
+
+<ParamField path="key" type="GroupKey[AggregationInputT, EmbeddingInputT]">
+The key that defines how effects are grouped together.
+</ParamField>
+
+### Static Methods
+
+#### group_by_event_and_affecting_schema()
+
+```python
+group_by_event_and_affecting_schema(effects) -> list[EventAggregationEffectGroup[AggregationInputT, EmbeddingInputT]]
+```
+
+<ParamField path="effects" type="Sequence[EffectWithReferencedSchemaObject[AggregationInputT, EmbeddingInputT]]" required>
+The effects to group.
+</ParamField>
+
+**Returns**: `list[EventAggregationEffectGroup[AggregationInputT, EmbeddingInputT]]` - The grouped effects.
+
+## GroupKey
+
+```python
+GroupKey(event_schema, resolved_affected_schema_reference, resolved_affecting_schema, resolved_affecting_reference_field)
+```
+
+### Parameters
+
+<ParamField path="event_schema" type="EventSchemaObject" required>
+The event schema for this group key.
+</ParamField>
+
+<ParamField path="resolved_affected_schema_reference" type="ResolvedSchemaReference" required>
+The resolved schema reference for the affected schema.
+</ParamField>
+
+<ParamField path="resolved_affecting_schema" type="IdSchemaObject" required>
+The resolved affecting schema object.
+</ParamField>
+
+<ParamField path="resolved_affecting_reference_field" type="SchemaReference" required>
+The resolved affecting reference field.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `GroupKey` 
+- → `Generic`
+
+### Properties
+
+<ParamField path="affected_schema_object_reference" type="SchemaObjectReference">
+Reference to the affected schema object.
+</ParamField>
+
+<ParamField path="affecting_schema_object_reference" type="SchemaObjectReference">
+Reference to the affecting schema object.
+</ParamField>
+
+<ParamField path="event_schema" type="EventSchemaObject">
+The event schema associated with this key.
+</ParamField>
+
+<ParamField path="resolved_affected_schema_reference" type="ResolvedSchemaReference">
+The resolved reference for the affected schema.
+</ParamField>
+
+<ParamField path="resolved_affecting_reference_field" type="SchemaReference">
+The resolved field reference for the affecting schema.
+</ParamField>
+
+<ParamField path="resolved_affecting_schema" type="IdSchemaObject">
+The resolved affecting schema object.
+</ParamField>

@@ -1,0 +1,56 @@
+---
+title: "WeightBySpaceClause"
+description: "Query clause for applying custom weights to different vector spaces"
+---
+
+## WeightBySpaceClause
+
+```python
+WeightBySpaceClause(space_weight_map=<factory>)
+```
+
+### Parameters
+
+<ParamField path="space_weight_map" type="SpaceWeightMap" default="<factory>">
+Mapping of spaces to their corresponding weight parameters.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `WeightBySpaceClause` 
+- → `QueryClause`
+- → `NLQCompatible`
+- → `ABC`
+
+### Properties
+
+<ParamField path="annotation_by_space_annotation" type="dict[str, str]">
+Mapping of space annotations to their corresponding annotations.
+</ParamField>
+
+<ParamField path="params" type="Sequence[TypedParam | Evaluated[TypedParam]]">
+Sequence of parameters used in this clause.
+</ParamField>
+
+<ParamField path="space_weight_map" type="SpaceWeightMap">
+The mapping of spaces to their weight parameters.
+</ParamField>
+
+### Static Methods
+
+#### from_params()
+
+```python
+from_params(weight_param_by_space, all_space) -> WeightBySpaceClause
+```
+
+<ParamField path="weight_param_by_space" type="Mapping[Space, NumericParamType]" required>
+Mapping of spaces to their weight parameters.
+</ParamField>
+
+<ParamField path="all_space" type="Sequence[Space]" required>
+All spaces available for weighting.
+</ParamField>
+
+**Returns**: `WeightBySpaceClause` - A new weight by space clause instance.

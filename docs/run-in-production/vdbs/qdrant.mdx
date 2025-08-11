@@ -1,0 +1,85 @@
+---
+title: "Qdrant"
+description: "This document provides clear steps on how to use and integrate Qdrant with Superlinked."
+---
+
+## Configuring your existing managed Qdrant
+
+To use Superlinked with Qdrant, start a managed instance provided by Qdrant (a free-tier is available). For detailed steps on initializing a managed instance, refer to the [Start a Managed Qdrant Instance](#start-a-managed-qdrant-instance) section below.
+
+Once your Qdrant instance is up and running, ensure it is accessible from the server that will use it. Additionally, configure the necessary authentication settings as described below.
+
+## Modifications in your configuration
+
+To integrate Qdrant, you need to add the `QdrantVectorDatabase` class and include it in the executor. Here’s how you can do it:
+
+```python
+from superlinked import framework as sl
+
+vector_database = sl.QdrantVectorDatabase(
+    "<your_qdrant_url>", # (Mandatory) This is your qdrant URL generally with a port but without any extra fields
+    "<your_api_key>", # (Mandatory) This is the api key to your qdrant cluster
+    # The following params must be in a form of kwarg params. Here you can specify anything that the official python client enables. For more details visit:
+    # https://python-client.qdrant.tech/qdrant_client.qdrant_client.
+    default_query_limit=10, # This optional parameter specifies the maximum number of query results returned. If not set, it defaults to 10.
+)
+```
+
+Once you have configured the vector database just simply pass it to the executor.
+
+```python
+...
+executor = sl.RestExecutor(
+    sources=[source],
+    indices=[index],
+    queries=[sl.RestQuery(sl.RestDescriptor("query"), query)],
+    vector_database=vector_database,
+)
+...
+```
+
+## Start a Managed Qdrant Instance
+
+<Steps>
+<Step title="Access Qdrant Cloud and navigate to cluster creation">
+  Navigate to [Qdrant](https://cloud.qdrant.io/login) and sign in.
+  
+  Click on "Overview" on the left side of the page to access cluster management.
+</Step>
+
+<Step title="Choose cluster configuration">
+  You can create either free-tier or production-ready clusters:
+  
+  **Free-tier specifications:**
+  - 0.5 vCPU
+  - 1GB memory  
+  - 4GB disk space
+  - Running on 1 node
+  
+  You can also choose your preferred platform, location and whether high-availability (HA) is necessary.
+  
+  <Note>
+  You can customize these parameters with a paid plan for production workloads.
+  </Note>
+</Step>
+
+<Step title="Create the cluster">
+  After configuring your preferences, create the cluster.
+  
+  <Check>
+  Wait for the cluster to be fully provisioned and show as "Running" status.
+  </Check>
+</Step>
+
+<Step title="Generate and secure API key">
+  After the cluster is created, generate an API key and save it to a secure place.
+  
+  <Warning>
+  You won't be able to see the API key again after generation. This key is required for the QdrantVectorDatabase configuration.
+  </Warning>
+</Step>
+</Steps>
+
+## Example app with Qdrant
+
+You can find an example that utilizes Qdrant [here](https://github.com/superlinked/superlinked/blob/main/docs/run-in-production/vdbs/qdrant/app_with_qdrant.py).

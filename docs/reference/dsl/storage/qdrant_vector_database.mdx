@@ -1,0 +1,56 @@
+---
+title: "QdrantVectorDatabase"
+description: "Qdrant implementation of the VectorDatabase for high-performance vector search and storage"
+---
+
+Qdrant implementation of the VectorDatabase. This class provides a Qdrant-based vector database connector.
+
+## Constructor
+
+```python
+QdrantVectorDatabase(url, api_key, default_query_limit=10, timeout=None, search_algorithm=SearchAlgorithm.FLAT, vector_precision=Precision.FLOAT16, prefer_grpc=None, **extra_params)
+```
+
+Initialize the QdrantVectorDatabase with connection parameters and configuration options.
+
+### Parameters
+
+<ParamField path="url" type="str" required>
+The URL of the Qdrant server.
+</ParamField>
+
+<ParamField path="api_key" type="str" required>
+The API key for authenticating with the Qdrant cluster.
+</ParamField>
+
+<ParamField path="default_query_limit" type="int" default="10">
+Default limit for vector search results. Set to Qdrant's default of 10.
+</ParamField>
+
+<ParamField path="timeout" type="int | None" default="None">
+Timeout in seconds for Qdrant operations. If None, uses Qdrant's default timeout of 5 seconds.
+</ParamField>
+
+<ParamField path="search_algorithm" type="SearchAlgorithm" default="SearchAlgorithm.FLAT">
+The search algorithm to use for vector indexing and retrieval. Defaults to FLAT.
+</ParamField>
+
+<ParamField path="vector_precision" type="Precision" default="Precision.FLOAT16">
+Precision level for storing vectors. Defaults to FLOAT16.
+</ParamField>
+
+<ParamField path="prefer_grpc" type="bool | None" default="None">
+Whether to prefer gRPC protocol for Qdrant operations. If None, defaults to False.
+</ParamField>
+
+<ParamField path="**extra_params" type="Any">
+Additional parameters for configuring the Qdrant connection.
+</ParamField>
+
+## Inheritance
+
+**Inheritance Chain**: 
+- `QdrantVectorDatabase` 
+- → `VectorDatabase`
+- → `ABC` 
+- → `Generic`

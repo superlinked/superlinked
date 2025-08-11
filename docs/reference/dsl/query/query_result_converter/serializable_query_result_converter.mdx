@@ -1,0 +1,34 @@
+---
+title: "SerializableQueryResultConverter"
+description: "QueryResultConverter implementation that produces serializable query results"
+---
+
+## SerializableQueryResultConverter
+
+```python
+SerializableQueryResultConverter()
+```
+
+QueryResultConverter implementation that converts internal query results into serializable format for transmission or storage.
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `SerializableQueryResultConverter` 
+- → `QueryResultConverter`
+- → `ABC`
+- → `Generic`
+
+### Methods
+
+#### convert()
+
+```python
+convert(query_result) -> dict[str, Any]
+```
+
+<ParamField path="query_result" type="InternalQueryResult" required>
+The internal query result to convert.
+</ParamField>
+
+**Returns**: `dict[str, Any]` - The converted query result as a serializable dictionary.

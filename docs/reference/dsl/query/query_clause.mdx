@@ -1,0 +1,136 @@
+---
+title: "Query Clause"
+description: "Base classes and interfaces for building query clauses in Superlinked"
+---
+
+Base classes and interfaces that provide the foundation for all query clause implementations in Superlinked.
+
+## NLQCompatible
+
+```python
+NLQCompatible()
+```
+
+Helper class that provides a standard way to create an ABC using inheritance for natural language query compatibility.
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `NLQCompatible` 
+- → `ABC`
+
+### Descendants
+
+Classes that implement NLQ compatibility:
+
+- `NLQCompatibleClauseHandler`
+- `BaseLooksLikeFilterClause`
+- `HardFilterClause`
+- `SimilarFilterClause`
+- `WeightBySpaceClause`
+
+### Properties
+
+<ParamField path="annotation_by_space_annotation" type="dict[str, str]">
+Mapping of space annotations to their corresponding annotation strings.
+</ParamField>
+
+<ParamField path="is_type_mandatory_in_nlq" type="bool">
+Whether the type is mandatory in natural language queries.
+</ParamField>
+
+<ParamField path="nlq_annotations" type="list[NLQAnnotation]">
+List of natural language query annotations.
+</ParamField>
+
+### Methods
+
+#### get_allowed_values()
+
+```python
+get_allowed_values(param) -> set[ParamInputType]
+```
+
+<ParamField path="param" type="TypedParam | Evaluated[TypedParam]" required>
+The parameter to get allowed values for.
+</ParamField>
+
+**Returns**: `set[ParamInputType]` - Set of allowed values for the parameter.
+
+## QueryClause
+
+```python
+QueryClause()
+```
+
+Abstract base class for all query clause implementations.
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `QueryClause` 
+- → `ABC`
+
+### Descendants
+
+All query clause implementations:
+
+- `SingleValueParamQueryClause`
+- `WeightBySpaceClause`
+- `SelectClause`
+
+### Properties
+
+<ParamField path="params" type="Sequence[TypedParam | Evaluated[TypedParam]]">
+Sequence of parameters used by this query clause.
+</ParamField>
+
+### Methods
+
+#### get_altered_knn_search_params()
+
+```python
+get_altered_knn_search_params(knn_search_clause_params) -> KNNSearchClauseParams
+```
+
+<ParamField path="knn_search_clause_params" type="KNNSearchClauseParams" required>
+The KNN search parameters to modify.
+</ParamField>
+
+**Returns**: `KNNSearchClauseParams` - The modified search parameters.
+
+#### get_altered_nql_params()
+
+```python
+get_altered_nql_params(nlq_clause_params) -> NLQClauseParams
+```
+
+<ParamField path="nlq_clause_params" type="NLQClauseParams" required>
+The NLQ clause parameters to modify.
+</ParamField>
+
+**Returns**: `NLQClauseParams` - The modified NLQ parameters.
+
+#### get_altered_query_vector_params()
+
+```python
+get_altered_query_vector_params(query_vector_params, index_node_id, query_schema, storage_manager) -> QueryVectorClauseParams
+```
+
+<ParamField path="query_vector_params" type="QueryVectorClauseParams" required>
+The query vector parameters to modify.
+</ParamField>
+
+<ParamField path="index_node_id" type="str" required>
+The index node identifier.
+</ParamField>
+
+<ParamField path="query_schema" type="IdSchemaObject" required>
+The schema object for the query.
+</ParamField>
+
+<ParamField path="storage_manager" type="StorageManager" required>
+The storage manager instance.
+</ParamField>
+
+**Returns**: `QueryVectorClauseParams` - The modified query vector parameters.

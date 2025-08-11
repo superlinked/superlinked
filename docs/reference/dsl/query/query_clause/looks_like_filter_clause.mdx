@@ -1,0 +1,70 @@
+---
+title: "LooksLikeFilterClause"
+description: "Query clause for ID-based similarity filtering with weighted results"
+---
+
+## LooksLikeFilterClause
+
+```python
+LooksLikeFilterClause(value_param, schema_field, weight_param)
+```
+
+### Parameters
+
+<ParamField path="value_param" type="TypedParam | Evaluated[TypedParam]" required>
+The parameter that specifies the ID value to filter by.
+</ParamField>
+
+<ParamField path="schema_field" type="IdField" required>
+The ID field in the schema to compare against.
+</ParamField>
+
+<ParamField path="weight_param" type="TypedParam | Evaluated[TypedParam]" required>
+The parameter that specifies the weight for this filter.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `LooksLikeFilterClause` 
+- → `BaseLooksLikeFilterClause`
+- → `NLQCompatible`
+- → `SingleValueParamQueryClause`
+- → `QueryClause`
+- → `ABC`
+
+### Properties
+
+<ParamField path="nlq_annotations" type="list[NLQAnnotation]">
+List of natural language query annotations for this clause.
+</ParamField>
+
+<ParamField path="schema_field" type="IdField">
+The ID field used for similarity comparison.
+</ParamField>
+
+<ParamField path="weight_param" type="TypedParam | Evaluated[TypedParam]">
+The weight parameter for this filter.
+</ParamField>
+
+### Static Methods
+
+#### from_param()
+
+```python
+from_param(id_, id_param, weight) -> LooksLikeFilterClause
+```
+
+<ParamField path="id_" type="IdField" required>
+The ID field to filter on.
+</ParamField>
+
+<ParamField path="id_param" type="StringParamType" required>
+The parameter containing the ID value.
+</ParamField>
+
+<ParamField path="weight" type="NumericParamType" required>
+The weight parameter for the filter.
+</ParamField>
+
+**Returns**: `LooksLikeFilterClause` - A new looks like filter clause instance.

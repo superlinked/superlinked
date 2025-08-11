@@ -1,0 +1,248 @@
+---
+title: "InteractiveSource"
+description: "Interactive data source enabling real-time data ingestion with immediate vector processing and search availability"
+---
+
+The `InteractiveSource` class provides an interactive implementation of the Source interface that allows real-time data ingestion during application runtime. It's designed for scenarios where you need to add data continuously while the application is running and have it immediately available for search.
+
+## Constructor
+
+Create a new interactive source with the specified schema and optional parser.
+
+```python
+InteractiveSource(schema, parser=None)
+```
+
+### Parameters
+
+<ParamField path="schema" type="IdSchemaObjectT" required>
+The schema object that defines the structure of data this source will handle. All data added to this source must conform to this schema.
+</ParamField>
+
+<ParamField path="parser" type="DataParser | None" default="None">
+Optional data parser for processing input data. If None, defaults to JsonParser for handling JSON-formatted data.
+</ParamField>
+
+**Raises**: `InvalidInputException` - If the schema is not an instance of SchemaObject.
+
+## Inheritance
+
+The `InteractiveSource` extends several classes to provide comprehensive functionality:
+
+**Inheritance Chain**: 
+- `InteractiveSource` 
+- → `OnlineSource` 
+- → `TransformerPublisher`
+- → `Source` 
+- → `Generic`
+
+### Descendants
+
+- [**InMemorySource**](/reference/dsl/source/in_memory_source) - Extends InteractiveSource with in-memory storage
+
+## Methods
+
+### put()
+
+Add data to the InteractiveSource for immediate processing and indexing.
+
+```python
+put(data: SourceTypeT | Sequence[SourceTypeT]) -> None
+```
+
+<ParamField path="data" type="SourceTypeT | Sequence[SourceTypeT]" required>
+The data to add to the source. Can be a single data item or a sequence of items. Data must conform to the source's schema.
+</ParamField>
+
+This operation processes the data immediately, including:
+- Schema validation
+- Data parsing (if parser is configured)
+- Vector generation through associated spaces
+- Index updates for immediate search availability
+
+**Note**: This operation can take time as vectorization happens immediately when data is added.
+
+### allow_data_ingestion()
+
+Enable data ingestion for this source.
+
+```python
+allow_data_ingestion() -> None
+```
+
+This method prepares the source to accept data through the `put()` method. Called automatically during source initialization in most cases.
+
+## Key Features
+
+### Real-Time Processing
+
+- **Immediate Availability**: Data becomes searchable as soon as it's added
+- **Live Updates**: Indices are updated in real-time without requiring restarts
+- **Continuous Operation**: Add data while the application is actively serving queries
+
+### Interactive Development
+
+- **Incremental Testing**: Add data piece by piece and test search results immediately
+- **Development Flexibility**: Modify datasets during development without restarting
+- **Rapid Iteration**: Quick feedback loop for testing different data scenarios
+
+## Use Cases
+
+### Interactive Development Environments
+
+Perfect for Jupyter notebooks and interactive development:
+
+```python
+from superlinked import InteractiveSource, schema
+
+@schema
+class ArticleSchema:
+    id: str
+    title: str
+    content: str
+    category: str
+
+article_schema = ArticleSchema()
+source = InteractiveSource(article_schema)
+
+# Add data incrementally during development
+source.put({
+    "id": "1",
+    "title": "Introduction to AI",
+    "content": "Artificial Intelligence basics...",
+    "category": "tutorial"
+})
+
+# Test search immediately, then add more data
+source.put({
+    "id": "2", 
+    "title": "Advanced ML Techniques",
+    "content": "Deep learning and neural networks...",
+    "category": "advanced"
+})
+```
+
+### Live Data Streaming
+
+Real-time data ingestion from streams or APIs:
+
+```python
+# Live news feed processing
+news_source = InteractiveSource(news_schema)
+
+# Continuously add articles as they come in
+for article in news_feed:
+    processed_article = preprocess_article(article)
+    news_source.put(processed_article)
+    # Article immediately available for search
+```
+
+### A/B Testing and Experimentation
+
+Dynamic content testing without restarts:
+
+```python
+# Base dataset
+base_source = InteractiveSource(content_schema)
+base_source.put(baseline_content)
+
+# Add experimental content dynamically
+for experiment_item in experimental_content:
+    base_source.put(experiment_item)
+    # Test search behavior with new content
+```
+
+### Training and Education
+
+Interactive demonstrations and tutorials:
+
+```python
+# Start with empty dataset for tutorial
+tutorial_source = InteractiveSource(product_schema)
+
+# Add products step by step during presentation
+tutorial_source.put({"id": "1", "name": "Laptop", "category": "electronics"})
+# Demonstrate search with one item
+
+tutorial_source.put({"id": "2", "name": "Book", "category": "education"})
+# Show how search results change with more data
+```
+
+## Performance Characteristics
+
+### Advantages
+
+- **Real-Time Updates**: Immediate data availability without batch processing delays
+- **Development Speed**: Fast iteration cycles for testing and development
+- **Flexibility**: Dynamic data modification during runtime
+
+### Considerations
+
+- **Processing Overhead**: Each `put()` operation includes full processing pipeline
+- **Memory Usage**: Data accumulates in memory over time
+- **Synchronous Processing**: `put()` blocks until processing is complete
+
+## Best Practices
+
+### Data Ingestion Patterns
+
+<Tip>
+**Batch When Possible**: For multiple items, use a single `put()` call with a list rather than multiple individual calls to improve performance.
+</Tip>
+
+### Error Handling
+
+<Warning>
+**Schema Validation**: Always validate data against the schema before calling `put()` to prevent processing failures.
+</Warning>
+
+### Memory Management
+
+<Note>
+**Memory Monitoring**: Monitor memory usage when continuously adding data, especially in long-running applications.
+</Note>
+
+### Development Workflow
+
+<Tip>
+**Incremental Testing**: Use InteractiveSource to build up test datasets incrementally and verify search behavior at each step.
+</Tip>
+
+## Integration Pattern
+
+InteractiveSource integrates seamlessly with the Superlinked pipeline:
+
+1. **Data Input**: Call `put()` with new data
+2. **Schema Validation**: Data is validated against the associated schema
+3. **Parsing**: Optional parser processes the data format
+4. **Vector Generation**: Data flows through associated spaces for embedding
+5. **Index Updates**: All relevant indices are updated immediately
+6. **Search Availability**: Data becomes immediately searchable
+
+## Error Handling
+
+Common error scenarios and handling:
+
+- **Schema Mismatch**: Ensure data structure matches the schema exactly
+- **Parser Errors**: Validate data format if using custom parsers  
+- **Memory Limits**: Monitor memory usage for long-running applications
+- **Processing Failures**: Handle vectorization errors gracefully
+
+## Comparison with Other Sources
+
+### vs InMemorySource
+
+- **InteractiveSource**: Base class focused on real-time ingestion
+- **InMemorySource**: Extends InteractiveSource with memory-specific optimizations
+
+### vs RestSource  
+
+- **InteractiveSource**: Programmatic data addition via `put()` method
+- **RestSource**: Data ingestion through HTTP REST endpoints
+
+### vs DataLoaderSource
+
+- **InteractiveSource**: Real-time, incremental data addition
+- **DataLoaderSource**: Batch loading from files and external sources
+
+The InteractiveSource provides the foundation for real-time data ingestion patterns while maintaining the flexibility needed for interactive development and testing scenarios.

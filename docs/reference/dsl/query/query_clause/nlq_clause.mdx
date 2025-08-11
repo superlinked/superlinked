@@ -1,0 +1,38 @@
+---
+title: "NLQClause"
+description: "Query clause for natural language query processing"
+---
+
+## NLQClause
+
+```python
+NLQClause(nlq_input_param)
+```
+
+### Parameters
+
+<ParamField path="nlq_input_param" type="TypedParam | Evaluated[TypedParam]" required>
+The parameter containing the natural language query input.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `NLQClause` 
+- → `SingleValueParamQueryClause`
+- → `QueryClause`
+- → `ABC`
+
+### Static Methods
+
+#### from_param()
+
+```python
+from_param(nlq_input) -> NLQClause
+```
+
+<ParamField path="nlq_input" type="StrParamType" required>
+The natural language query input parameter.
+</ParamField>
+
+**Returns**: `NLQClause` - A new natural language query clause instance.

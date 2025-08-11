@@ -1,0 +1,96 @@
+---
+title: "Param"
+description: "Create parameter placeholders for dynamic query values that can be provided at execution time"
+---
+
+The `Param` class represents a parameter placeholder that allows you to create dynamic queries where values are provided during execution rather than at query definition time. This enables reusable query templates with runtime customization.
+
+## Constructor
+
+Create a new parameter with the specified configuration.
+
+```python
+Param(name, description=None, default=None, options=None)
+```
+
+### Parameters
+
+<ParamField path="name" type="str" required>
+The unique name of the parameter. This identifier is used when providing values during query execution.
+</ParamField>
+
+<ParamField path="description" type="str | None" default="None">
+Description of the parameter. Used for natural language query processing to help understand the parameter's purpose.
+</ParamField>
+
+<ParamField path="default" type="ParamInputType | None" default="None">
+Default value to use if not overridden by query parameters. Natural language queries will use default values when specific values aren't provided.
+</ParamField>
+
+<ParamField path="options" type="Sequence[ParamInputType | None] | None" default="None">
+Allowed values for this parameter. If provided, only these values will be accepted during query execution.
+</ParamField>
+
+## Static Methods
+
+### init_default()
+
+Create a parameter with only a default value specified.
+
+```python
+@staticmethod
+init_default(default: ParamInputType | None = None) -> Param
+```
+
+<ParamField path="default" type="ParamInputType | None" default="None">
+The default value for the parameter.
+</ParamField>
+
+**Returns**: `Param` - A new parameter instance with the specified default value.
+
+## Attributes
+
+The `Param` class stores the following attributes:
+
+- **name** (`str`): The unique name of the parameter
+- **description** (`str | None`): Optional description for natural language query support  
+- **default** (`ParamInputType | None`): Default value if not overridden
+- **options** (`Sequence[ParamInputType | None] | None`): Constrained list of allowed values
+
+## Parameter Usage
+
+Parameters serve as placeholders in query definitions and are resolved with actual values during query execution. They enable:
+
+- **Dynamic Queries**: Create reusable query templates
+- **Runtime Flexibility**: Change search criteria without rebuilding queries
+- **Natural Language Integration**: Support AI-powered query parameter filling
+- **Validation**: Constrain parameter values to specific options
+- **Default Handling**: Provide fallback values for optional parameters
+
+## Value Types
+
+Parameters can accept various input types depending on the context:
+
+- **Strings**: For text search terms, field names, categories
+- **Numbers**: For weights, limits, numerical filters
+- **Booleans**: For binary flags and switches  
+- **Lists**: For multi-value parameters like categories or tags
+- **Complex Types**: Schema-specific types for advanced use cases
+
+## Best Practices
+
+<Tip>
+**Descriptive Names**: Use clear, descriptive parameter names that indicate their purpose and expected value type.
+</Tip>
+
+<Tip>
+**Default Values**: Provide sensible defaults for optional parameters to ensure queries work even when some parameters aren't specified.
+</Tip>
+
+<Warning>
+**Option Validation**: When using the `options` parameter, ensure all possible values are included to prevent runtime validation errors.
+</Warning>
+
+<Note>
+**Natural Language**: Parameter descriptions are particularly important for natural language query processing, as they help the AI understand parameter intent.
+</Note>

@@ -1,0 +1,24 @@
+---
+title: "QueryParamModelValidator"
+description: "Validator for query parameter models in NLQ processing"
+---
+
+## QueryParamModelValidator
+
+```python
+QueryParamModelValidator()
+```
+
+### Static Methods
+
+#### build()
+
+```python
+build(clause_collector) -> PydanticDescriptorProxy[ModelValidatorDecoratorInfo]
+```
+
+<ParamField path="clause_collector" type="NLQClauseCollector" required>
+The clause collector containing query clauses and parameter information.
+</ParamField>
+
+**Returns**: `PydanticDescriptorProxy[ModelValidatorDecoratorInfo]` - A Pydantic model validator for query parameters.

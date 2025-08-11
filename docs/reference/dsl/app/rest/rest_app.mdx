@@ -1,0 +1,365 @@
+---
+title: "RestApp"
+description: "REST API application implementation for production deployments with HTTP endpoint support"
+---
+
+The `RestApp` class provides a REST API implementation of the App interface, designed for production deployments. It exposes HTTP endpoints for data ingestion and querying, making it suitable for web services and API-based integrations.
+
+## Constructor
+
+Create a new REST application with comprehensive API configuration.
+
+```python
+RestApp(
+    sources,
+    indices,
+    queries,
+    vector_database,
+    context,
+    endpoint_configuration,
+    queue=None,
+    blob_handler=None
+)
+```
+
+### Parameters
+
+<ParamField
+  path="sources"
+  type="Sequence[RestSource | DataLoaderSource]"
+  required
+>
+  List of sources that can be either REST sources for real-time data or data
+  loader sources for batch processing. These define how data enters your system.
+</ParamField>
+
+<ParamField path="indices" type="Sequence[Index]" required>
+  List of indices to be used by the REST application. These organize your vector
+  spaces for efficient querying through the API.
+</ParamField>
+
+<ParamField path="queries" type="Sequence[RestQuery]" required>
+  List of query configurations that define the available REST API endpoints for
+  searching and retrieving data.
+</ParamField>
+
+<ParamField path="vector_database" type="VectorDatabase" required>
+  Vector database instance for persistent storage. This is where your vectors
+  will be stored and retrieved from.
+</ParamField>
+
+<ParamField path="context" type="ExecutionContext" required>
+  Execution context that provides configuration and runtime settings for the
+  REST application.
+</ParamField>
+
+<ParamField
+  path="endpoint_configuration"
+  type="RestEndpointConfiguration"
+  required
+>
+  Configuration for REST endpoints including routes, authentication, and API
+  behavior settings.
+</ParamField>
+
+<ParamField path="queue" type="Queue[dict] | None" default="None">
+  Optional messaging queue for persisting ingested data. Enables asynchronous
+  processing and data durability.
+</ParamField>
+
+<ParamField path="blob_handler" type="BlobHandler | None" default="None">
+  Optional blob handler for managing file uploads and binary data through the
+  REST API.
+</ParamField>
+
+### Example
+
+```python
+from superlinked import (
+    RestApp, RestSource, Index, RestQuery,
+    QdrantVectorDatabase, RestEndpointConfiguration
+)
+
+@schema
+class ProductSchema:
+    id: str
+    name: str
+    description: str
+    price: float
+
+product_schema = ProductSchema()
+
+# Configure REST components
+rest_source = RestSource(product_schema)
+text_space = TextSimilaritySpace(text=product_schema.description)
+index = Index([text_space])
+
+# Define API queries
+product_query = RestQuery(
+    name="search_products",
+    index=index,
+    query_descriptor=query_descriptor
+)
+
+# Set up vector database
+vector_db = QdrantVectorDatabase(
+    url="http://localhost:6333",
+    collection_name="products"
+)
+
+# Configure API endpoints
+endpoint_config = RestEndpointConfiguration(
+    base_url="/api/v1",
+    enable_auth=True,
+    rate_limit=100
+)
+
+# Create REST application
+app = RestApp(
+    sources=[rest_source],
+    indices=[index],
+    queries=[product_query],
+    vector_database=vector_db,
+    context=execution_context,
+    endpoint_configuration=endpoint_config
+)
+```
+
+## Properties
+
+### data_loader_sources
+
+```python
+data_loader_sources: Sequence[DataLoaderSource]
+```
+
+Returns the list of DataLoaderSource instances associated with the RestApp. These sources handle batch data loading operations.
+
+**Returns**: `Sequence[DataLoaderSource]` - A sequence of DataLoaderSource instances.
+
+### handler
+
+```python
+handler: RestHandler
+```
+
+Returns the RestHandler instance that manages HTTP request processing and routing for the application.
+
+**Returns**: `RestHandler` - The REST request handler instance.
+
+## Inheritance
+
+The `RestApp` extends the application hierarchy to provide REST-specific functionality:
+
+**Inheritance Chain**:
+
+- `RestApp`
+- → `OnlineApp`
+- → `App`
+- → `ABC` + `Generic`
+- → `QueryMixin`
+
+This provides:
+
+- **Base App functionality** from `App`
+- **Online processing capabilities** from `OnlineApp`
+- **Query operations** from `QueryMixin`
+- **HTTP API handling** specific to `RestApp`
+
+## API Endpoints
+
+### Data Ingestion Endpoints
+
+The RestApp automatically creates endpoints for data ingestion:
+
+```http
+POST /api/v1/ingest/{source_name}
+Content-Type: application/json
+
+{
+  "data": [
+    {
+      "id": "1",
+      "name": "Product Name",
+      "description": "Product description",
+      "price": 99.99
+    }
+  ]
+}
+```
+
+### Query Endpoints
+
+Query endpoints are created based on your RestQuery configurations:
+
+```http
+POST /api/v1/query/{query_name}
+Content-Type: application/json
+
+{
+  "query": "find similar products",
+  "limit": 10,
+  "filters": {
+    "price": {"min": 50, "max": 200}
+  }
+}
+```
+
+### Health Check Endpoints
+
+Built-in endpoints for monitoring:
+
+```http
+GET /api/v1/health
+GET /api/v1/ready
+```
+
+## Production Features
+
+### Scalability
+
+- **Horizontal Scaling**: Deploy multiple instances behind a load balancer
+- **Database Persistence**: Persistent vector storage for production data
+- **Async Processing**: Queue-based data ingestion for high throughput
+
+### Security
+
+- **Authentication**: Configurable auth mechanisms
+- **Rate Limiting**: Built-in rate limiting for API protection
+- **Input Validation**: Automatic request validation against schemas
+
+### Monitoring
+
+- **Logging**: Comprehensive request and error logging
+- **Metrics**: Built-in performance metrics collection
+- **Health Checks**: Kubernetes-ready health endpoints
+
+## Use Cases
+
+### API-First Applications
+
+Build vector search APIs for web and mobile applications:
+
+```python
+# E-commerce search API
+ecommerce_app = RestApp(
+    sources=[product_source],
+    indices=[product_index],
+    queries=[search_query, recommendation_query],
+    vector_database=production_db,
+    endpoint_configuration=api_config
+)
+
+# Deploy with uvicorn or gunicorn
+# uvicorn app:ecommerce_app --host 0.0.0.0 --port 8000
+```
+
+### Microservices Architecture
+
+Deploy as a microservice in containerized environments:
+
+```dockerfile
+FROM python:3.9
+COPY . /app
+WORKDIR /app
+RUN pip install superlinked
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+### Real-Time Search Services
+
+Provide real-time vector search capabilities:
+
+```python
+# Real-time recommendation service
+recommendation_app = RestApp(
+    sources=[user_interaction_source],
+    indices=[user_preference_index],
+    queries=[recommendation_query],
+    vector_database=redis_db,
+    queue=kafka_queue  # For real-time updates
+)
+```
+
+## Best Practices
+
+### Configuration Management
+
+<Tip>
+  **Environment Variables**: Use environment variables for database URLs, API
+  keys, and other configuration that varies between environments.
+</Tip>
+
+### Data Handling
+
+<Tip>
+  **Batch Processing**: Use DataLoaderSource for bulk data ingestion and
+  RestSource for real-time updates.
+</Tip>
+
+<Warning>
+  **Rate Limiting**: Always configure appropriate rate limits to prevent API
+  abuse and ensure fair resource usage.
+</Warning>
+
+### Monitoring and Observability
+
+<Note>
+  **Logging**: Enable comprehensive logging for debugging and monitoring API
+  usage patterns.
+</Note>
+
+<Warning>
+  **Error Handling**: Implement proper error handling and return meaningful HTTP
+  status codes and error messages.
+</Warning>
+
+## Deployment Example
+
+```python
+# Complete production setup
+from superlinked import RestApp, RestExecutor
+
+# Create executor with production configuration
+executor = RestExecutor(
+    sources=[rest_source, batch_loader],
+    indices=[search_index],
+    queries=[search_query, filter_query],
+    vector_database=qdrant_db,
+    endpoint_configuration=RestEndpointConfiguration(
+        base_url="/api/v1",
+        cors_enabled=True,
+        rate_limit=1000,
+        enable_auth=True
+    )
+)
+
+# Run the application
+app = executor.run()
+
+# Deploy with production WSGI server
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000, workers=4)
+```
+
+## Integration with Frontend
+
+```javascript
+// Frontend integration example
+const searchProducts = async (query) => {
+  const response = await fetch("/api/v1/query/search_products", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    body: JSON.stringify({
+      query: query,
+      limit: 20,
+    }),
+  });
+
+  return await response.json();
+};
+```

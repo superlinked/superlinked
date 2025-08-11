@@ -1,0 +1,52 @@
+---
+title: "ImageSpace"
+description: "Space for generating vector representations from images using OpenCLIP models"
+---
+
+## Constructor
+
+```python
+ImageSpace(image, model="clip-ViT-B-32", model_cache_dir=None, model_handler=ModelHandler.SENTENCE_TRANSFORMERS, embedding_engine_config=None)
+```
+
+Initialize the ImageSpace instance for generating vector representations from images, supporting models from the OpenCLIP project.
+
+### Parameters
+
+<ParamField path="image" type="Blob | DescribedBlob | Sequence[Blob | DescribedBlob]" required>
+The image content as a Blob or DescribedBlob (write image+description), or a sequence of them.
+</ParamField>
+
+<ParamField path="model" type="str" default="clip-ViT-B-32">
+The model identifier for generating image embeddings. Defaults to "clip-ViT-B-32".
+</ParamField>
+
+<ParamField path="model_handler" type="ModelHandler" default="ModelHandler.SENTENCE_TRANSFORMERS">
+The handler for the model, defaults to ModelHandler.SENTENCE_TRANSFORMERS.
+</ParamField>
+
+<ParamField path="model_cache_dir" type="Path | None" default="None">
+Directory to cache downloaded models. If None, uses the default cache directory. Defaults to None.
+</ParamField>
+
+<ParamField path="embedding_engine_config" type="EmbeddingEngineConfig | None" default="None">
+Configuration for the embedding engine. Defaults to EmbeddingEngineConfig().
+</ParamField>
+
+**Raises**: `InvalidInputException` - If the image and description fields are not from the same schema.
+
+## Inheritance
+
+**Inheritance Chain**: 
+- `ImageSpace` 
+- → `Space`
+- → `HasTransformationConfig` 
+- → `HasLength`
+- → `Generic`
+- → `ABC`
+
+## Properties
+
+<ParamField path="transformation_config" type="TransformationConfig[Vector, ImageData]">
+Configuration for transforming image data into vectors.
+</ParamField>

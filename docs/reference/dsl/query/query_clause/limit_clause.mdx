@@ -1,0 +1,52 @@
+---
+title: "LimitClause"
+description: "Query clause for limiting the number of results returned"
+---
+
+## LimitClause
+
+```python
+LimitClause(value_param)
+```
+
+### Parameters
+
+<ParamField path="value_param" type="TypedParam | Evaluated[TypedParam]" required>
+The parameter that specifies the result limit value.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `LimitClause` 
+- → `SingleValueParamQueryClause`
+- → `QueryClause`
+- → `ABC`
+
+### Static Methods
+
+#### from_param()
+
+```python
+from_param(limit) -> LimitClause
+```
+
+<ParamField path="limit" type="IntParamType" required>
+The limit parameter to create the clause from.
+</ParamField>
+
+**Returns**: `LimitClause` - A new limit clause instance.
+
+### Methods
+
+#### get_altered_knn_search_params()
+
+```python
+get_altered_knn_search_params(knn_search_clause_params) -> KNNSearchClauseParams
+```
+
+<ParamField path="knn_search_clause_params" type="KNNSearchClauseParams" required>
+The KNN search parameters to modify with the limit.
+</ParamField>
+
+**Returns**: `KNNSearchClauseParams` - The modified search parameters with the limit applied.

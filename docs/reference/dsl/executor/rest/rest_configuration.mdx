@@ -1,0 +1,79 @@
+---
+title: "REST Configuration"
+description: "Configuration classes for REST endpoint setup and query handling"
+---
+
+## RestEndpointConfiguration
+
+```python
+RestEndpointConfiguration(**data)
+```
+
+A base class for creating Pydantic models for REST endpoint configuration.
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `RestEndpointConfiguration` 
+- → `ImmutableBaseModel`
+- → `BaseModel`
+
+### Class Variables
+
+<ParamField path="api_root_path" type="str">
+Root path for the API endpoints.
+</ParamField>
+
+<ParamField path="ingest_path_prefix" type="str">
+Path prefix for data ingestion endpoints.
+</ParamField>
+
+<ParamField path="query_path_prefix" type="str">
+Path prefix for query endpoints.
+</ParamField>
+
+<ParamField path="model_config" type="ConfigDict">
+Pydantic model configuration settings.
+</ParamField>
+
+### Static Methods
+
+#### add_slash_to_api_root_path()
+
+```python
+add_slash_to_api_root_path(values: dict) -> dict
+```
+
+Utility method to ensure API root path has proper slash formatting.
+
+## RestQuery
+
+```python
+RestQuery(rest_descriptor, query_descriptor)
+```
+
+Configuration class that combines REST descriptor with query descriptor for endpoint setup.
+
+### Parameters
+
+<ParamField path="rest_descriptor" type="RestDescriptor" required>
+The REST descriptor configuration for this query.
+</ParamField>
+
+<ParamField path="query_descriptor" type="QueryDescriptor" required>
+The query descriptor defining the query behavior.
+</ParamField>
+
+### Properties
+
+<ParamField path="path" type="str | None">
+The configured endpoint path for this query.
+</ParamField>
+
+<ParamField path="query_descriptor" type="QueryDescriptor">
+The query descriptor associated with this REST query.
+</ParamField>
+
+<ParamField path="rest_descriptor" type="RestDescriptor">
+The REST descriptor configuration for this query.
+</ParamField>

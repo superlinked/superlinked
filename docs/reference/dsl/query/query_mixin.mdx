@@ -1,0 +1,80 @@
+---
+title: "QueryMixin"
+description: "Mixin class providing query execution capabilities for application classes"
+---
+
+## QueryMixin
+
+```python
+QueryMixin()
+```
+
+A mixin class that provides query execution capabilities for classes that include it. This class sets up the necessary infrastructure to execute queries on a set of indices using a storage manager.
+
+### Descendants
+
+- [**OnlineApp**](/reference/dsl/app/online/online_app)
+
+### Methods
+
+#### async_query()
+
+```python
+async_query(query_descriptor, **params) -> QueryResult
+```
+
+Execute a query asynchronously using the provided QueryDescriptor and additional parameters.
+
+<ParamField path="query_descriptor" type="QueryDescriptor" required>
+The query object containing the query details.
+</ParamField>
+
+<ParamField path="**params" type="Any" required>
+Additional parameters for the query execution.
+</ParamField>
+
+**Returns**: `QueryResult` - The result of the asynchronous query execution.
+
+#### query()
+
+```python
+query(query_descriptor, **params) -> QueryResult
+```
+
+Execute a query using the provided QueryDescriptor and additional parameters.
+
+<ParamField path="query_descriptor" type="QueryDescriptor" required>
+The query object containing the query details.
+</ParamField>
+
+<ParamField path="**params" type="Any" required>
+Additional parameters for the query execution.
+</ParamField>
+
+**Returns**: `QueryResult` - The result of the query execution.
+
+**Raises**: `InvalidInputException` - If the query index is not found among the executor's indices.
+
+#### setup_query_execution()
+
+```python
+setup_query_execution(indices) -> None
+```
+
+Set up the query execution environment by initializing a mapping between indices and their corresponding QueryVectorFactory instances.
+
+<ParamField path="indices" type="Sequence[Index]" required>
+A sequence of Index instances to be used for query execution.
+</ParamField>
+
+#### setup_query_result_converter()
+
+```python
+setup_query_result_converter(query_result_converter) -> None
+```
+
+Set up the query result converter to be used for converting the query results.
+
+<ParamField path="query_result_converter" type="QueryResultConverter" required>
+The query result converter instance.
+</ParamField>

@@ -1,0 +1,114 @@
+---
+title: "Index Validator"
+description: "Validation utilities for index components including spaces, fields, and effects"
+---
+
+
+The `IndexValidator` class provides static validation methods for index components, ensuring that spaces, fields, effects, and exclusion fields are properly configured and compatible with the index system.
+
+## Methods
+
+### validate_effects
+
+```python
+@staticmethod
+validate_effects(
+    effects: Effect | Sequence[Effect] | None, 
+    spaces: Sequence[Space]
+) -> list[Effect]
+```
+
+Validates and processes effects for the index, ensuring they are compatible with the provided spaces.
+
+#### Parameters
+
+<ParamField path="effects" type="Effect | Sequence[Effect] | None" required>
+The effect or sequence of effects to validate. Can be a single Effect, a sequence of Effects, or None.
+</ParamField>
+
+<ParamField path="spaces" type="Sequence[Space]" required>
+The sequence of spaces that the effects should be validated against.
+</ParamField>
+
+#### Returns
+
+<ResponseField name="return" type="list[Effect]">
+A validated list of Effect objects that are compatible with the provided spaces.
+</ResponseField>
+
+### validate_fields
+
+```python
+@staticmethod
+validate_fields(
+    fields: SchemaField | Sequence[SchemaField | None] | None
+) -> Sequence[SchemaField]
+```
+
+Validates and processes schema fields for the index, ensuring they are properly configured.
+
+#### Parameters
+
+<ParamField path="fields" type="SchemaField | Sequence[SchemaField | None] | None" required>
+The field or sequence of fields to validate. Can be a single SchemaField, a sequence of SchemaFields (with possible None values), or None.
+</ParamField>
+
+#### Returns
+
+<ResponseField name="return" type="Sequence[SchemaField]">
+A validated sequence of SchemaField objects with None values filtered out.
+</ResponseField>
+
+### validate_fields_to_exclude
+
+```python
+@staticmethod
+validate_fields_to_exclude(
+    fields_to_exclude: SchemaField | Sequence[SchemaField | None] | None
+) -> Sequence[SchemaField]
+```
+
+Validates and processes fields that should be excluded from the index.
+
+#### Parameters
+
+<ParamField path="fields_to_exclude" type="SchemaField | Sequence[SchemaField | None] | None" required>
+The field or sequence of fields to exclude from the index. Can be a single SchemaField, a sequence of SchemaFields (with possible None values), or None.
+</ParamField>
+
+#### Returns
+
+<ResponseField name="return" type="Sequence[SchemaField]">
+A validated sequence of SchemaField objects that should be excluded from the index.
+</ResponseField>
+
+### validate_spaces
+
+```python
+@staticmethod
+validate_spaces(
+    spaces: Space | Sequence[Space]
+) -> list[Space]
+```
+
+Validates and processes spaces for the index, ensuring they are properly configured and compatible.
+
+#### Parameters
+
+<ParamField path="spaces" type="Space | Sequence[Space]" required>
+The space or sequence of spaces to validate. Can be a single Space or a sequence of Space objects.
+</ParamField>
+
+#### Returns
+
+<ResponseField name="return" type="list[Space]">
+A validated list of Space objects that are properly configured for use in an index.
+</ResponseField>
+
+## Usage
+
+The `IndexValidator` class is typically used internally by the index system to ensure that all components are properly validated before being used in an index configuration. All methods are static and can be called directly on the class without instantiation.
+
+<Note>
+These validation methods help ensure data integrity and compatibility within the index system by validating spaces, fields, and effects before they are used in index operations.
+</Note>

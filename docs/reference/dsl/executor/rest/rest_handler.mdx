@@ -1,0 +1,38 @@
+---
+title: "RestHandler"
+description: "Handler for managing REST endpoints and routing for sources and queries"
+---
+
+## RestHandler
+
+```python
+RestHandler(query_mixin, sources, queries, endpoint_config)
+```
+
+### Parameters
+
+<ParamField path="query_mixin" type="QueryMixin" required>
+Query mixin providing query functionality.
+</ParamField>
+
+<ParamField path="sources" type="Sequence[RestSource]" required>
+Sequence of REST sources to handle.
+</ParamField>
+
+<ParamField path="queries" type="Sequence[RestQuery]" required>
+Sequence of REST queries to handle.
+</ParamField>
+
+<ParamField path="endpoint_config" type="RestEndpointConfiguration" required>
+Configuration for REST endpoints.
+</ParamField>
+
+### Properties
+
+<ParamField path="path_to_query_map" type="Mapping[str, RestQuery]">
+Mapping from endpoint paths to their corresponding REST queries.
+</ParamField>
+
+<ParamField path="path_to_source_map" type="Mapping[str, RestSource]">
+Mapping from endpoint paths to their corresponding REST sources.
+</ParamField>

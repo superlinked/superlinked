@@ -1,0 +1,34 @@
+---
+title: "NLQClauseCollector"
+description: "Collector for organizing and managing NLQ-compatible query clauses"
+---
+
+## NLQClauseCollector
+
+```python
+NLQClauseCollector(clauses, space_weight_param_info)
+```
+
+### Parameters
+
+<ParamField path="clauses" type="Sequence[QueryClause]" required>
+The query clauses to collect and organize.
+</ParamField>
+
+<ParamField path="space_weight_param_info" type="SpaceWeightParamInfo" required>
+Information about space weight parameters.
+</ParamField>
+
+### Properties
+
+<ParamField path="all_params_have_value_set" type="bool">
+Whether all parameters in the collected clauses have values set.
+</ParamField>
+
+<ParamField path="clause_handlers" type="Sequence[NLQCompatibleClauseHandler]">
+Sequence of clause handlers for processing NLQ-compatible clauses.
+</ParamField>
+
+<ParamField path="space_weight_param_info" type="SpaceWeightParamInfo">
+Information about space weight parameters for the collected clauses.
+</ParamField>

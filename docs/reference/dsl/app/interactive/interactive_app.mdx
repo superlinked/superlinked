@@ -1,0 +1,48 @@
+---
+title: "InteractiveApp"
+description: "Interactive implementation of the App class for real-time data ingestion and querying"
+---
+
+## InteractiveApp
+
+```python
+InteractiveApp(sources, indices, vector_database, context, init_search_indices=True)
+```
+
+Interactive implementation of the App class for real-time data ingestion and querying.
+
+### Parameters
+
+<ParamField path="sources" type="Sequence[InteractiveSource]" required>
+List of interactive sources for data ingestion.
+</ParamField>
+
+<ParamField path="indices" type="Sequence[Index]" required>
+List of indices for data retrieval and storage.
+</ParamField>
+
+<ParamField path="vector_database" type="VectorDatabase" required>
+Vector database instance for managing vector data.
+</ParamField>
+
+<ParamField path="context" type="ExecutionContext" required>
+The execution context providing necessary runtime information.
+</ParamField>
+
+<ParamField path="init_search_indices" type="bool" default="True">
+Whether to initialize search indices during setup.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `InteractiveApp` 
+- → `OnlineApp`
+- → `App`
+- → `ABC`
+- → `Generic`
+- → `QueryMixin`
+
+### Descendants
+
+- [**InMemoryApp**](/reference/dsl/app/in_memory/in_memory_app)

@@ -1,0 +1,497 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "maple",
+  "name": "Superlinked",
+  "colors": {
+    "primary": "#FF5722",
+    "light": "#F2F0EC",
+    "dark": "#050505"
+  },
+  "favicon": "/favicon.ico",
+  "logo": {
+    "light": "/logo/sl_docs_logo_dark.svg",
+    "dark": "/logo/sl_docs_logo_light.svg"
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "index",
+              "getting-started/why-superlinked",
+              "getting-started/installation",
+              "getting-started/basic-building-blocks"
+            ]
+          },
+          {
+            "group": "Run in Production",
+            "pages": [
+              "run-in-production/overview",
+              {
+                "group": "Setup Superlinked Server",
+                "pages": [
+                  "run-in-production/setup/index",
+                  "run-in-production/setup/configuring-your-app",
+                  "run-in-production/setup/interacting-with-app-via-api"
+                ]
+              },
+              {
+                "group": "Supported Vector Databases",
+                "pages": [
+                  "run-in-production/vdbs/index",
+                  "run-in-production/vdbs/redis",
+                  "run-in-production/vdbs/mongodb",
+                  "run-in-production/vdbs/qdrant",
+                  "run-in-production/vdbs/topk"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Concepts",
+            "pages": [
+              "concepts/overview",
+              "concepts/multiple-embeddings",
+              "concepts/dynamic-parameters"
+            ]
+          },
+          {
+            "group": "Help & FAQ",
+            "pages": ["help-and-faq/logging", "help-and-faq/support"]
+          }
+        ]
+      },
+      {
+        "tab": "Examples",
+        "groups": [
+          {
+            "group": "Recipes",
+            "pages": [
+              "recipes/overview",
+              {
+                "group": "Multi-Modal Semantic Search",
+                "pages": [
+                  "recipes/multi-modal-semantic-search",
+                  "recipes/hotel-search"
+                ]
+              },
+              {
+                "group": "Recommendation System",
+                "pages": [
+                  "recipes/recommendation-system",
+                  "recipes/ecomm-recsys"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Use Cases & Tutorials",
+            "pages": [
+              "use-cases/overview",
+              "use-cases/semantic-search-news",
+              "use-cases/semantic-search-movies",
+              "use-cases/semantic-search-product-images-descriptions",
+              "use-cases/recsys-ecomm",
+              "use-cases/rag-hr",
+              "use-cases/analytics-user-acquisition",
+              "use-cases/analytics-keyword-expansion"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Reference",
+        "groups": [
+          {
+            "group": "Reference",
+            "pages": [
+              "reference/overview", 
+              "reference/components",
+              {
+                "group": "Parser",
+                "pages": [
+                  "reference/common/parser/overview",
+                  "reference/common/parser/data_parser",
+                  "reference/common/parser/dataframe_parser",
+                  "reference/common/parser/json_parser"
+                ]
+              },
+              {
+                "group": "Schema",
+                "pages": [
+                  "reference/common/schema/overview",
+                  "reference/common/schema/event_schema_object",
+                  "reference/common/schema/event_schema",
+                  "reference/common/schema/id_schema_object",
+                  "reference/common/schema/schema",
+                  "reference/common/schema/schema_object"
+                ]
+              },
+              {
+                "group": "DAG",
+                "pages": [
+                  "reference/common/dag/overview",
+                  "reference/common/dag/period_time"
+                ]
+              },
+              {
+                "group": "Index",
+                "pages": [
+                  "reference/dsl/index/overview",
+                  "reference/dsl/index/index.m",
+                  "reference/dsl/index/effect",
+                  "reference/dsl/index/index_validator",
+                  {
+                    "group": "Util",
+                    "pages": [
+                      "reference/dsl/index/util/event_aggregation_node_util",
+                      "reference/dsl/index/util/aggregation_node_util",
+                      "reference/dsl/index/util/event_aggregation_effect_group",
+                      "reference/dsl/index/util/aggregation_effect_group",
+                      "reference/dsl/index/util/effect_with_referenced_schema_object"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Query",
+                "pages": [
+                  "reference/dsl/query/overview",
+                  "reference/dsl/query/query_vector_factory",
+                  "reference/dsl/query/natural_language_query_param_handler",
+                  "reference/dsl/query/query",
+                  "reference/dsl/query/clause_params",
+                  "reference/dsl/query/query_param_information",
+                  "reference/dsl/query/space_weight_param_info",
+                  "reference/dsl/query/result",
+                  "reference/dsl/query/query_user_config",
+                  "reference/dsl/query/query_filter_information",
+                  "reference/dsl/query/query_mixin",
+                  "reference/dsl/query/param",
+                  "reference/dsl/query/query_filter_validator",
+                  "reference/dsl/query/nlq_param_evaluator",
+                  "reference/dsl/query/param_evaluator",
+                  "reference/dsl/query/typed_param",
+                  "reference/dsl/query/query_param_value_setter",
+                  "reference/dsl/query/query_weighting",
+                  "reference/dsl/query/query_filters",
+                  "reference/dsl/query/query_clause",
+                  "reference/dsl/query/query_descriptor",
+                  "reference/dsl/query/nlq_pydantic_model_builder",
+                  {
+                    "group": "Nlq",
+                    "pages": [
+                      "reference/dsl/query/nlq/exception",
+                      "reference/dsl/query/nlq/nlq_handler",
+                      "reference/dsl/query/nlq/nlq_compatible_clause_handler",
+                      "reference/dsl/query/nlq/nlq_clause_collector",
+                      {
+                        "group": "Suggestion",
+                        "pages": [
+                          "reference/dsl/query/nlq/suggestion/query_suggestions_prompt_builder",
+                          "reference/dsl/query/nlq/suggestion/query_suggestion_model"
+                        ]
+                      },
+                      {
+                        "group": "Param Filler",
+                        "pages": [
+                          "reference/dsl/query/nlq/param_filler/query_param_prompt_builder",
+                          "reference/dsl/query/nlq/param_filler/query_param_model_validator_info",
+                          "reference/dsl/query/nlq/param_filler/query_param_model_builder",
+                          "reference/dsl/query/nlq/param_filler/nlq_annotation",
+                          "reference/dsl/query/nlq/param_filler/query_param_model_validator"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Query Result Converter",
+                    "pages": [
+                      "reference/dsl/query/query_result_converter/serializable_query_result_converter",
+                      "reference/dsl/query/query_result_converter/query_result_converter",
+                      "reference/dsl/query/query_result_converter/default_query_result_converter"
+                    ]
+                  },
+                  {
+                    "group": "Query Clause",
+                    "pages": [
+                      "reference/dsl/query/query_clause/hard_filter_clause",
+                      "reference/dsl/query/query_clause/nlq_clause",
+                      "reference/dsl/query/query_clause/nlq_system_prompt_clause",
+                      "reference/dsl/query/query_clause/looks_like_filter_clause",
+                      "reference/dsl/query/query_clause/looks_like_filter_clause_weights_by_space",
+                      "reference/dsl/query/query_clause/overriden_now_clause",
+                      "reference/dsl/query/query_clause/limit_clause",
+                      "reference/dsl/query/query_clause/weight_by_space_clause",
+                      "reference/dsl/query/query_clause/select_clause",
+                      "reference/dsl/query/query_clause/single_value_param_query_clause",
+                      "reference/dsl/query/query_clause/similar_filter_clause",
+                      "reference/dsl/query/query_clause/radius_clause",
+                      "reference/dsl/query/query_clause/base_looks_like_filter_clause",
+                      "reference/dsl/query/query_clause/query_clause",
+                      "reference/dsl/query/query_clause/space_weight_map"
+                    ]
+                  },
+                  {
+                    "group": "Predicate",
+                    "pages": [
+                      "reference/dsl/query/predicate/binary_predicate",
+                      "reference/dsl/query/predicate/query_predicate",
+                      "reference/dsl/query/predicate/binary_op"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "App",
+                "pages": [
+                  "reference/dsl/app/overview",
+                  "reference/dsl/app/app",
+                  {
+                    "group": "In Memory",
+                    "pages": [
+                      "reference/dsl/app/in_memory/in_memory_app"
+                    ]
+                  },
+                  {
+                    "group": "Interactive",
+                    "pages": [
+                      "reference/dsl/app/interactive/interactive_app"
+                    ]
+                  },
+                  {
+                    "group": "Rest",
+                    "pages": [
+                      "reference/dsl/app/rest/rest_app"
+                    ]
+                  },
+                  {
+                    "group": "Online",
+                    "pages": [
+                      "reference/dsl/app/online/online_app"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Storage",
+                "pages": [
+                  "reference/dsl/storage/overview",
+                  "reference/dsl/storage/redis_vector_database",
+                  "reference/dsl/storage/in_memory_vector_database",
+                  "reference/dsl/storage/topk_vector_database",
+                  "reference/dsl/storage/vector_database",
+                  "reference/dsl/storage/qdrant_vector_database",
+                  "reference/dsl/storage/mongo_db_vector_database"
+                ]
+              },
+              {
+                "group": "Registry",
+                "pages": [
+                  "reference/dsl/registry/overview",
+                  "reference/dsl/registry/exception",
+                  "reference/dsl/registry/superlinked_registry"
+                ]
+              },
+              {
+                "group": "Source",
+                "pages": [
+                  "reference/dsl/source/overview",
+                  "reference/dsl/source/interactive_source",
+                  "reference/dsl/source/data_loader_source",
+                  "reference/dsl/source/source",
+                  "reference/dsl/source/types",
+                  "reference/dsl/source/in_memory_source",
+                  "reference/dsl/source/rest_source"
+                ]
+              },
+              {
+                "group": "Space",
+                "pages": [
+                  "reference/dsl/space/overview",
+                  "reference/dsl/space/recency_space",
+                  "reference/dsl/space/image_space",
+                  "reference/dsl/space/text_similarity_space",
+                  "reference/dsl/space/number_space",
+                  "reference/dsl/space/space_field_set",
+                  "reference/dsl/space/categorical_similarity_space",
+                  "reference/dsl/space/input_aggregation_mode",
+                  "reference/dsl/space/custom_space",
+                  "reference/dsl/space/has_space_field_set",
+                  "reference/dsl/space/space",
+                  "reference/dsl/space/image_space_field_set"
+                ]
+              },
+              {
+                "group": "Executor",
+                "pages": [
+                  "reference/dsl/executor/overview",
+                  "reference/dsl/executor/exception",
+                  "reference/dsl/executor/executor",
+                  {
+                    "group": "In Memory",
+                    "pages": [
+                      "reference/dsl/executor/in_memory/in_memory_executor"
+                    ]
+                  },
+                  {
+                    "group": "Query",
+                    "pages": [
+                      "reference/dsl/executor/query/query_executor"
+                    ]
+                  },
+                  {
+                    "group": "Interactive",
+                    "pages": [
+                      "reference/dsl/executor/interactive/interactive_executor"
+                    ]
+                  },
+                  {
+                    "group": "Rest",
+                    "pages": [
+                      "reference/dsl/executor/rest/rest_descriptor",
+                      "reference/dsl/executor/rest/rest_executor",
+                      "reference/dsl/executor/rest/rest_configuration",
+                      "reference/dsl/executor/rest/rest_handler"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Changelog",
+        "groups": [
+          {
+            "group": "Updates",
+            "pages": ["changelog"]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Website",
+          "href": "https://superlinked.com",
+          "icon": "house"
+        },
+        {
+          "anchor": "GitHub",
+          "href": "https://github.com/superlinked/superlinked",
+          "icon": "github"
+        },
+        {
+          "anchor": "VectorHub",
+          "href": "https://superlinked.com/vectorhub",
+          "icon": "globe"
+        }
+      ]
+    }
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Community",
+        "href": "https://github.com/superlinked/superlinked/discussions"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Try Superlinked",
+      "href": "https://links.superlinked.com/form-sldocs"
+    }
+  },
+  "footer": {
+    "socials": {
+      "x": "https://x.com/superlinked",
+      "github": "https://github.com/superlinked/superlinked",
+      "linkedin": "https://linkedin.com/company/superlinked"
+    }
+  },
+  "integrations": {
+    "posthog": {
+        "apiKey": "phc_zaYdE9XDKL06N2kiQv8zNSy7Ki4sgNvgeT7N0IMjTWR",
+        "apiHost": "https://us.i.posthog.com"
+    }
+  },
+  "contextual": {
+   "options": [
+     "copy",
+     "view",
+     "chatgpt",
+     "claude"
+   ]
+ },
+  "redirects": [
+    {
+      "source": "/reference/components/parser/:slug*",
+      "destination": "/reference/common/parser/:slug*"
+    },
+    {
+      "source": "/reference/components/schema/:slug*",
+      "destination": "/reference/common/schema/:slug*"
+    },
+    {
+      "source": "/reference/components/dag/:slug*",
+      "destination": "/reference/common/dag/:slug*"
+    },
+    {
+      "source": "/reference/components/index/:slug*",
+      "destination": "/reference/dsl/index/:slug*"
+    },
+    {
+      "source": "/reference/components/index-1/:slug*",
+      "destination": "/reference/dsl/query/:slug*"
+    },
+    {
+      "source": "/reference/components/index-2/:slug*",
+      "destination": "/reference/dsl/app/:slug*"
+    },
+    {
+      "source": "/reference/components/index-3/:slug*",
+      "destination": "/reference/dsl/storage/:slug*"
+    },
+    {
+      "source": "/reference/components/index-4/:slug*",
+      "destination": "/reference/dsl/registry/:slug*"
+    },
+    {
+      "source": "/reference/components/index-5/:slug*",
+      "destination": "/reference/dsl/source/:slug*"
+    },
+    {
+      "source": "/reference/components/index-6/:slug*",
+      "destination": "/reference/dsl/space/:slug*"
+    },
+    {
+      "source": "/reference/components/index-7/:slug*",
+      "destination": "/reference/dsl/executor/:slug*"
+    },
+    {
+      "source": "/recipes/multi-modal-semantic-search/hotel-search",
+      "destination": "/recipes/hotel-search"
+    },
+    {
+      "source": "/recipes/recommendation-system/ecomm-recsys",
+      "destination": "/recipes/ecomm-recsys"
+    },
+    {
+      "source": "/tutorials/:slug*",
+      "destination": "/use-cases/:slug*"
+    },
+    {
+      "source": "/reference/changelog",
+      "destination": "/changelog"
+    },
+    {
+      "source": "/reference/components/:slug*",
+      "destination": "/reference/:slug*"
+    }
+  ]
+}

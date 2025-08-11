@@ -1,0 +1,95 @@
+---
+title: "SelectClause"
+description: "Query clause for selecting specific schema fields to return in results"
+---
+
+## SelectClause
+
+```python
+SelectClause(
+    value_param,
+    schema,
+    vector_parts,
+    fields_to_exclude
+)
+```
+
+### Parameters
+
+<ParamField path="value_param" type="TypedParam | Evaluated[TypedParam]" required>
+The typed parameter or evaluated typed parameter for the select clause.
+</ParamField>
+
+<ParamField path="schema" type="IdSchemaObject" required>
+The schema object that defines the structure of the data.
+</ParamField>
+
+<ParamField path="vector_parts" type="Sequence[Space]" required>
+The sequence of spaces that define the vector components.
+</ParamField>
+
+<ParamField path="fields_to_exclude" type="Sequence[SchemaField]" required>
+The sequence of schema fields to exclude from the query results.
+</ParamField>
+
+### Inheritance
+
+**Inheritance Chain**: 
+- `SelectClause` 
+- → `QueryClause`
+- → `ABC`
+
+### Properties
+
+<ParamField path="fields_to_exclude" type="Sequence[SchemaField]">
+The sequence of schema fields to exclude from the query results.
+</ParamField>
+
+<ParamField path="schema" type="IdSchemaObject">
+The schema object that defines the structure of the data.
+</ParamField>
+
+### Static Methods
+
+#### from_param()
+
+```python
+from_param(
+    schema,
+    fields,
+    vector_parts,
+    fields_to_exclude
+) -> SelectClause
+```
+
+<ParamField path="schema" type="IdSchemaObject" required>
+The schema object that defines the structure of the data.
+</ParamField>
+
+<ParamField path="fields" type="Param | Sequence[str]" required>
+The parameter or sequence of field names to select.
+</ParamField>
+
+<ParamField path="vector_parts" type="Sequence[Space]" required>
+The sequence of spaces that define the vector components.
+</ParamField>
+
+<ParamField path="fields_to_exclude" type="Sequence[SchemaField]" required>
+The sequence of schema fields to exclude from the query results.
+</ParamField>
+
+**Returns**: `SelectClause` - A new select clause instance with the specified configuration.
+
+### Methods
+
+#### get_altered_knn_search_params()
+
+```python
+get_altered_knn_search_params(knn_search_clause_params) -> KNNSearchClauseParams
+```
+
+<ParamField path="knn_search_clause_params" type="KNNSearchClauseParams" required>
+The KNN search parameters to modify with the selected fields.
+</ParamField>
+
+**Returns**: `KNNSearchClauseParams` - The modified search parameters with the selected fields applied.

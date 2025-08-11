@@ -1,0 +1,70 @@
+---
+title: "NLQHandler"
+description: "Handler for processing natural language queries and parameter filling"
+---
+
+## NLQHandler
+
+```python
+NLQHandler(client_config)
+```
+
+### Parameters
+
+<ParamField path="client_config" type="OpenAIClientConfig" required>
+Configuration for the OpenAI client used in natural language processing.
+</ParamField>
+
+### Methods
+
+#### fill_params()
+
+```python
+fill_params(natural_query, clauses, space_weight_param_info, system_prompt=None) -> dict[str, Any]
+```
+
+<ParamField path="natural_query" type="str" required>
+The natural language query to process.
+</ParamField>
+
+<ParamField path="clauses" type="Sequence[QueryClause]" required>
+The query clauses to fill parameters for.
+</ParamField>
+
+<ParamField path="space_weight_param_info" type="SpaceWeightParamInfo" required>
+Information about space weight parameters.
+</ParamField>
+
+<ParamField path="system_prompt" type="str | None" default="None">
+Optional system prompt for query processing.
+</ParamField>
+
+**Returns**: `dict[str, Any]` - Dictionary of filled parameter values.
+
+#### suggest_improvements()
+
+```python
+suggest_improvements(clauses, space_weight_param_info, natural_query, feedback, system_prompt=None) -> QuerySuggestionsModel
+```
+
+<ParamField path="clauses" type="Sequence[QueryClause]" required>
+The query clauses to suggest improvements for.
+</ParamField>
+
+<ParamField path="space_weight_param_info" type="SpaceWeightParamInfo" required>
+Information about space weight parameters.
+</ParamField>
+
+<ParamField path="natural_query" type="str | None" required>
+The natural language query to improve.
+</ParamField>
+
+<ParamField path="feedback" type="str | None" required>
+User feedback for the suggestions.
+</ParamField>
+
+<ParamField path="system_prompt" type="str | None" default="None">
+Optional system prompt for suggestion generation.
+</ParamField>
+
+**Returns**: `QuerySuggestionsModel` - Model containing query suggestions.
