@@ -420,6 +420,14 @@
         "apiHost": "https://us.i.posthog.com"
     }
   },
+  "contextual": {
+   "options": [
+     "copy",
+     "view",
+     "chatgpt",
+     "claude"
+   ]
+ },
   "redirects": [
     {
       "source": "/reference/components/parser/:slug*",
