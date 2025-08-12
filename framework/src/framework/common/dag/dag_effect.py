@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from dataclasses import dataclass
+from __future__ import annotations
 
-from beartype.typing import Any
+from dataclasses import dataclass
 
 from superlinked.framework.common.dag.resolved_schema_reference import (
     ResolvedSchemaReference,
@@ -35,15 +35,13 @@ class DagEffect:
             f"event_schema={self.event_schema._schema_name})"
         )
 
-    def is_same_effect_except_for_multiplier(self, other: Any) -> bool:
+    def is_same_effect_except_for_multiplier(self, other: DagEffect) -> bool:
         if other == self:
             return True
-        if isinstance(other, DagEffect):
-            return bool(
-                self.resolved_affected_schema_reference == other.resolved_affected_schema_reference
-                and self.event_schema == other.event_schema
-                and self.resolved_affecting_schema_reference.reference_field
-                == other.resolved_affecting_schema_reference.reference_field
-                and self.resolved_affecting_schema_reference.schema == other.resolved_affecting_schema_reference.schema
-            )
-        return False
+        return bool(
+            self.resolved_affected_schema_reference == other.resolved_affected_schema_reference
+            and self.event_schema == other.event_schema
+            and self.resolved_affecting_schema_reference.reference_field
+            == other.resolved_affecting_schema_reference.reference_field
+            and self.resolved_affecting_schema_reference.schema == other.resolved_affecting_schema_reference.schema
+        )

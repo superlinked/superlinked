@@ -149,11 +149,15 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
     ) -> dict[DagEffect, list[ParsedSchemaWithEvent]]:
         effect_to_parsed_schemas: dict[DagEffect, list[ParsedSchemaWithEvent]] = defaultdict(list)
         for event_parsed_schema in event_parsed_schemas:
+            covered_affected_schemas: set[ResolvedSchemaReference] = set()
             for effect in self._get_matching_effects(event_parsed_schema):
+                if effect.resolved_affected_schema_reference in covered_affected_schemas:
+                    continue
                 if schema_with_event := self._create_parsed_schema_with_event(
                     effect.resolved_affected_schema_reference, event_parsed_schema
                 ):
                     effect_to_parsed_schemas[effect].append(schema_with_event)
+                    covered_affected_schemas.add(effect.resolved_affected_schema_reference)
         return dict(effect_to_parsed_schemas)
 
     def _get_matching_effects(self, event_schema: EventParsedSchema) -> list[DagEffect]:
