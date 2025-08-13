@@ -37,7 +37,10 @@ from superlinked.framework.common.storage.search_index.manager.search_index_mana
 from superlinked.framework.common.storage.search_index.search_algorithm import (
     SearchAlgorithm,
 )
-from superlinked.framework.common.telemetry.telemetry_registry import telemetry
+from superlinked.framework.common.telemetry.telemetry_registry import (
+    TelemetryAttributeType,
+    telemetry,
+)
 from superlinked.framework.dsl.query.query_user_config import QueryUserConfig
 from superlinked.framework.storage.common.vdb_settings import VDBSettings
 from superlinked.framework.storage.in_memory.object_serializer import ObjectSerializer
@@ -112,12 +115,15 @@ class VDBConnector(ABC, Generic[VDBKNNSearchConfigT]):
         )
 
     async def write_entities(self, entity_data: Sequence[EntityData]) -> None:
-        labels = {"entity_data_count": len(entity_data), "vdb_type": type(self).__name__}
+        labels: dict[str, TelemetryAttributeType] = {
+            "entity_data_count": len(entity_data),
+            "vdb_type": type(self).__name__,
+        }
         telemetry.record_metric("vdb.write.count", 1, labels)
         return await self._write_entities(entity_data)
 
     async def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
-        labels = {"entity_count": len(entities), "vdb_type": type(self).__name__}
+        labels: dict[str, TelemetryAttributeType] = {"entity_count": len(entities), "vdb_type": type(self).__name__}
         telemetry.record_metric("vdb.read.count", 1, labels)
         return await self._read_entities(entities)
 

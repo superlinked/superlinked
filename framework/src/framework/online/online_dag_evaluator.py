@@ -40,7 +40,10 @@ from superlinked.framework.common.storage_manager.entity_data_request import (
     NodeResultRequest,
 )
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
-from superlinked.framework.common.telemetry.telemetry_registry import telemetry
+from superlinked.framework.common.telemetry.telemetry_registry import (
+    TelemetryAttributeType,
+    telemetry,
+)
 from superlinked.framework.compiler.online.online_schema_dag_compiler import (
     OnlineSchemaDagCompiler,
 )
@@ -123,7 +126,7 @@ class OnlineDagEvaluator:
         all_results = []
         for dag_effect_group, parsed_schema_with_events in effect_group_to_parsed_schemas.items():
             online_schema_dag = self._dag_effect_group_to_online_schema_dag[dag_effect_group]
-            labels = {
+            labels: dict[str, TelemetryAttributeType] = {
                 "schema": dag_effect_group.affected_schema._schema_name,
                 "n_entities": len(parsed_schema_with_events),
                 "is_event": True,

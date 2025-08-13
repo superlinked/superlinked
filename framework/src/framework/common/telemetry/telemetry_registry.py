@@ -17,7 +17,7 @@ from contextlib import AbstractContextManager
 from enum import Enum
 
 import structlog
-from beartype.typing import Any, Type
+from beartype.typing import Mapping, Sequence, Type
 from opentelemetry import metrics, trace
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.trace import TracerProvider
@@ -29,6 +29,8 @@ from superlinked.framework.common.exception import NotImplementedException
 logger = structlog.getLogger(__name__)
 
 DEFAULT_NAME = "superlinked"
+
+TelemetryAttributeType = str | bool | int | float | Sequence[str] | Sequence[bool] | Sequence[int] | Sequence[float]
 
 
 class MetricType(Enum):
@@ -43,16 +45,19 @@ class Metric(ABC):
         metric_type: MetricType,
         description: str = "",
         unit: str = "1",
-        default_labels: dict[str, Any] | None = None,
+        default_labels: Mapping[str, TelemetryAttributeType] | None = None,
     ) -> None:
         self.name = name
         self.metric_type = metric_type
         self._description = description
         self._unit = unit
-        self._default_labels = default_labels or {}
+        self._default_labels: Mapping[str, TelemetryAttributeType] = dict(default_labels or {})
 
-    def record(self, value: int | float, labels: dict[str, Any] | None = None) -> None:
-        combined_labels = {**self._default_labels, **(labels or {})}
+    def record(self, value: int | float, labels: Mapping[str, TelemetryAttributeType] | None = None) -> None:
+        combined_labels = {
+            **self._default_labels,
+            **(labels or {}),
+        }
         logger.debug("metric recorded", metric_name=self.name, value=value, labels=combined_labels)
         self._record(value, combined_labels)
 
@@ -61,7 +66,7 @@ class Metric(ABC):
         pass
 
     @abstractmethod
-    def _record(self, value: int | float, labels: dict[str, Any]) -> None:
+    def _record(self, value: int | float, labels: Mapping[str, TelemetryAttributeType]) -> None:
         pass
 
 
@@ -72,7 +77,7 @@ class HistogramMetric(Metric):
         metric_type: MetricType,
         description: str = "",
         unit: str = "1",
-        default_labels: dict[str, Any] | None = None,
+        default_labels: Mapping[str, TelemetryAttributeType] | None = None,
     ) -> None:
         super().__init__(name, metric_type, description, unit, default_labels)
         self._instance: metrics.Histogram | None = None
@@ -82,7 +87,7 @@ class HistogramMetric(Metric):
         self._instance = meter.create_histogram(name=self.name, description=self._description, unit=self._unit)
 
     @override
-    def _record(self, value: int | float, labels: dict[str, Any] | None = None) -> None:
+    def _record(self, value: int | float, labels: Mapping[str, TelemetryAttributeType] | None = None) -> None:
         if self._instance:
             self._instance.record(value, attributes=labels)
 
@@ -94,7 +99,7 @@ class CounterMetric(Metric):
         metric_type: MetricType,
         description: str = "",
         unit: str = "1",
-        default_labels: dict[str, Any] | None = None,
+        default_labels: Mapping[str, TelemetryAttributeType] | None = None,
     ) -> None:
         super().__init__(name, metric_type, description, unit, default_labels)
         self._instance: metrics.Counter | None = None
@@ -104,19 +109,19 @@ class CounterMetric(Metric):
         self._instance = meter.create_counter(name=self.name, description=self._description, unit=self._unit)
 
     @override
-    def _record(self, value: int | float, labels: dict[str, Any] | None = None) -> None:
+    def _record(self, value: int | float, labels: Mapping[str, TelemetryAttributeType] | None = None) -> None:
         if self._instance:
             self._instance.add(value, attributes=labels)
 
 
 class TelemetryRegistry:
-    METRIC_CONSTRUCTORS: dict[MetricType, Type[Metric]] = {
+    METRIC_CONSTRUCTORS: Mapping[MetricType, Type[Metric]] = {
         MetricType.COUNTER: CounterMetric,
         MetricType.HISTOGRAM: HistogramMetric,
     }
 
     def __init__(self) -> None:
-        self._default_labels: dict[str, Any] = {}
+        self._default_labels: dict[str, TelemetryAttributeType] = {}
         self._metrics: dict[str, Metric] = {}
         self._meter: metrics.Meter | None = None
         self._tracer: trace.Tracer | None = None
@@ -141,9 +146,7 @@ class TelemetryRegistry:
             number_of_metrics_registered=len(self._metrics),
         )
 
-    def add_labels(self, labels: dict[str, Any]) -> None:
-        if not labels:
-            return
+    def add_labels(self, labels: Mapping[str, TelemetryAttributeType]) -> None:
         self._default_labels.update(labels)
         logger.debug("default labels updated", default_labels=self._default_labels)
 
@@ -168,7 +171,9 @@ class TelemetryRegistry:
             return self._tracer
         return NoOpTracer()
 
-    def record_metric(self, name: str, value: int | float, labels: dict[str, Any] | None = None) -> None:
+    def record_metric(
+        self, name: str, value: int | float, labels: Mapping[str, TelemetryAttributeType | None] | None = None
+    ) -> None:
         if not self._meter:
             logger.debug("not yet initialized, cannot record metric", metric_name=name)
             return
@@ -178,16 +183,27 @@ class TelemetryRegistry:
             return
         metric.record(value, self._sanitize_labels(labels))
 
-    def span(self, name: str, attributes: dict[str, Any] | None = None) -> AbstractContextManager[trace.Span]:
+    def span(
+        self, name: str, attributes: Mapping[str, TelemetryAttributeType | None] | None = None
+    ) -> AbstractContextManager[trace.Span]:
         tracer = self._get_tracer()
-        attributes = self._sanitize_labels(attributes) or {}
-        merged_attributes = {**self._default_labels, **attributes}
-        return tracer.start_as_current_span(name, attributes=merged_attributes)
+        sanitized_attributes = self._sanitize_labels(attributes) or {}
+        return tracer.start_as_current_span(
+            name,
+            attributes={
+                **self._default_labels,
+                **sanitized_attributes,
+            },
+        )
 
-    def _sanitize_labels(self, labels: dict[str, Any] | None) -> dict[str, Any] | None:
+    def _sanitize_labels(
+        self,
+        labels: Mapping[str, TelemetryAttributeType | None] | None,
+    ) -> dict[str, TelemetryAttributeType] | None:
         if not labels:
-            return labels
+            return None
         return {k: v for k, v in labels.items() if v is not None}
+
 
 telemetry = TelemetryRegistry()
 
