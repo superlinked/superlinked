@@ -176,13 +176,18 @@ class TelemetryRegistry:
         if not metric:
             logger.warning("metric not found", metric_name=name)
             return
-        metric.record(value, labels)
+        metric.record(value, self._sanitize_labels(labels))
 
     def span(self, name: str, attributes: dict[str, Any] | None = None) -> AbstractContextManager[trace.Span]:
         tracer = self._get_tracer()
-        merged_attributes = {**self._default_labels, **(attributes or {})}
+        attributes = self._sanitize_labels(attributes) or {}
+        merged_attributes = {**self._default_labels, **attributes}
         return tracer.start_as_current_span(name, attributes=merged_attributes)
 
+    def _sanitize_labels(self, labels: dict[str, Any] | None) -> dict[str, Any] | None:
+        if not labels:
+            return labels
+        return {k: v for k, v in labels.items() if v is not None}
 
 telemetry = TelemetryRegistry()
 
