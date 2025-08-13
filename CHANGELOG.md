@@ -3,6 +3,19 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [33.7.6] - 2025-08-13
+
+### Added
+
+- Add proper typing for telemetry attributes
+
+### Fixed
+
+- Handle nones in labels
+- Type issue
+- Change dict to mapping where possible
+- Align return types
+
 ## [33.7.5] - 2025-08-13
 
 ### Fixed
@@ -6148,6 +6161,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove unnecessary call
 - Remove extra field
 
+[33.7.6]: https://github.com/superlinked/superlinked/compare/v33.7.5..v33.7.6
 [33.7.5]: https://github.com/superlinked/superlinked/compare/v33.7.4..v33.7.5
 [33.7.4]: https://github.com/superlinked/superlinked/compare/v33.7.3..v33.7.4
 [33.6.0]: https://github.com/superlinked/superlinked/compare/v33.5.2..v33.6.0
