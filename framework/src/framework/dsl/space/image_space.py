@@ -63,8 +63,6 @@ from superlinked.framework.dsl.space.space import Space
 
 logger = structlog.getLogger()
 
-DEFAULT_DESCRIPTION_FIELD_PREFIX = "__SL_DEFAULT_DESCRIPTION_"
-
 
 class ImageSpace(Space[Vector, ImageData]):
     """

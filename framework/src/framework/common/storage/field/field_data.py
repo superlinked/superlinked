@@ -15,11 +15,10 @@
 
 from __future__ import annotations
 
-from beartype.typing import Any, Generic, Sequence, TypeVar, get_args
+from beartype.typing import Generic, TypeVar, get_args
 
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import InvalidInputException
-from superlinked.framework.common.schema.image_data import ImageData
 from superlinked.framework.common.storage.field.field import Field
 from superlinked.framework.common.storage.field.field_data_type import FieldDataType
 from superlinked.framework.common.storage.field_type_converter import (
@@ -52,51 +51,6 @@ class FieldData(Field, Generic[FT]):
     @classmethod
     def from_field(cls, field: Field, value: FT) -> FieldData:
         return cls(field.data_type, field.name, value)
-
-
-class BlobFieldData(FieldData[str]):
-    def __init__(self, name: str, value: str) -> None:
-        super().__init__(FieldDataType.BLOB, name, value)
-
-
-class ImageDataFieldData(FieldData[ImageData]):
-    def __init__(self, name: str, value: ImageData) -> None:
-        super().__init__(FieldDataType.IMAGE_DATA, name, value)
-
-
-class DoubleFieldData(FieldData[float]):
-    def __init__(self, name: str, value: float) -> None:
-        super().__init__(FieldDataType.DOUBLE, name, value)
-
-
-class IntFieldData(FieldData[int]):
-    def __init__(self, name: str, value: int) -> None:
-        super().__init__(FieldDataType.INT, name, value)
-
-
-class BooleanFieldData(FieldData[bool]):
-    def __init__(self, name: str, value: bool) -> None:
-        super().__init__(FieldDataType.BOOLEAN, name, value)
-
-
-class JsonFieldData(FieldData[dict[str, Any]]):
-    def __init__(self, name: str, value: dict[str, Any]) -> None:
-        super().__init__(FieldDataType.JSON, name, value)
-
-
-class FloatListFieldData(FieldData[Sequence[float]]):
-    def __init__(self, name: str, value: Sequence[float]) -> None:
-        super().__init__(FieldDataType.FLOAT_LIST, name, value)
-
-
-class StringListFieldData(FieldData[list[str]]):
-    def __init__(self, name: str, value: list[str]) -> None:
-        super().__init__(FieldDataType.STRING_LIST, name, value)
-
-
-class StringFieldData(FieldData[str]):
-    def __init__(self, name: str, value: str) -> None:
-        super().__init__(FieldDataType.STRING, name, value)
 
 
 class VectorFieldData(FieldData[Vector]):

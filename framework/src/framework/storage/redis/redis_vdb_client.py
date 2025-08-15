@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import time
 
 from redis import Redis as SyncRedis
 from redis.asyncio import Redis as AsyncRedis
@@ -28,7 +27,6 @@ class RedisVDBClient:
 
     def __init__(self, connection_string: str) -> None:
         self._connection_string = connection_string
-        self._last_activity_time = time.time()
         self.__async_client = self._create_async_client()
         self.__sync_client = self._create_sync_client()
 

@@ -20,7 +20,6 @@ from superlinked.framework.common.parser.parsed_schema import (
     ParsedSchema,
     ParsedSchemaField,
 )
-from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.storage.entity.entity import Entity
 from superlinked.framework.common.storage.entity.entity_data import EntityData
@@ -101,21 +100,6 @@ class EntityBuilder:
     ) -> ParsedSchemaField:
         return ParsedSchemaField.from_schema_field(
             schema_field_by_field_name[schema_field_data.name], schema_field_data.value
-        )
-
-    def parse_entity_data(
-        self,
-        schema: IdSchemaObject,
-        entity_data: EntityData,
-        schema_field_by_field_name: dict[str, SchemaField],
-    ) -> ParsedSchema:
-        return ParsedSchema(
-            schema,
-            entity_data.id_.object_id,
-            [
-                self.parse_schema_field_data(field_data, schema_field_by_field_name)
-                for field_data in entity_data.field_data.values()
-            ],
         )
 
     def compose_field_from_node_data_descriptor(

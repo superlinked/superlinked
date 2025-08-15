@@ -15,7 +15,6 @@
 from abc import ABC, abstractmethod
 
 from beartype.typing import Generic, Sequence, TypeVar, cast
-from typing_extensions import override
 
 from superlinked.framework.common.util.collection_util import CollectionUtil
 
@@ -71,12 +70,3 @@ class TransformerPublisher(Generic[ReceivedMessageT, PublishedMessageT]):
         for transformed_batch in CollectionUtil.chunk_list(data=transformed_messages, chunk_size=self._chunk_size):
             for subscriber in self._subscribers:
                 subscriber.update(transformed_batch)
-
-
-class Publisher(
-    TransformerPublisher[PublishedMessageT, PublishedMessageT],
-    Generic[PublishedMessageT],
-):
-    @override
-    def transform(self, message: PublishedMessageT) -> list[PublishedMessageT]:
-        return [message]

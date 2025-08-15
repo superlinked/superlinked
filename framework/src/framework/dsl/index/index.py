@@ -115,7 +115,6 @@ class Index:  # pylint: disable=too-many-instance-attributes
         self.__node = self.__init_index_node(self.__spaces, effects_with_schema, event_modifier, self.__space_schemas)
         self.__dag_effects = self.__init_dag_effects(effects_with_schema)
         self.__dag = self.__init_dag(self.__node, self.__dag_effects)
-        self.__schema_type_schema_mapper = self.__init_schema_type_schema_mapper(effects_with_schema)
         self._logger = logger.bind(
             node_id=self._node_id,
             space_ids=[hash(space) for space in self._spaces],
@@ -168,22 +167,6 @@ class Index:  # pylint: disable=too-many-instance-attributes
     @property
     def _dag(self) -> Dag:
         return self.__dag
-
-    @property
-    def _schema_type_schema_mapper(self) -> dict[type[IdSchemaObject], IdSchemaObject]:
-        return self.__schema_type_schema_mapper
-
-    def has_space(self, space: Space) -> bool:
-        """
-        Check, if the given space is present in the index.
-
-        Args:
-            space (Space): The space to check.
-
-        Returns:
-            bool: True if the index has the space, False otherwise.
-        """
-        return space in self.__spaces
 
     def has_schema(self, schema: IdSchemaObject) -> bool:
         """
@@ -285,14 +268,3 @@ class Index:  # pylint: disable=too-many-instance-attributes
             list(dag_dict.values()),
             dag_effects,
         )
-
-    def __init_schema_type_schema_mapper(
-        self, effects: Sequence[EffectWithReferencedSchemaObject]
-    ) -> dict[type[IdSchemaObject], IdSchemaObject]:
-        resolved_schema_references = {
-            effect_with_schema.resolved_affected_schema_reference for effect_with_schema in effects
-        }.union({effect_with_schema.resolved_affecting_schema_reference for effect_with_schema in effects})
-        return {
-            resolved_schema_reference.reference_field._referenced_schema: resolved_schema_reference.schema
-            for resolved_schema_reference in resolved_schema_references
-        }

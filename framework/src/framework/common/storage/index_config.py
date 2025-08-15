@@ -13,9 +13,9 @@
 # limitations under the License.
 
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
-from beartype.typing import Any, Sequence
+from beartype.typing import Sequence
 
 from superlinked.framework.common.storage.search_index.index_field_descriptor import (
     IndexFieldDescriptor,
@@ -28,7 +28,6 @@ class IndexConfig:
     index_name: str
     vector_field_descriptor: VectorIndexFieldDescriptor
     field_descriptors: Sequence[IndexFieldDescriptor]
-    index_params: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         field_descriptors = list(self.field_descriptors)

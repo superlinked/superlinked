@@ -88,9 +88,6 @@ class SchemaField(ComparisonOperand, Generic[SFT]):
         return not SchemaField._built_in_equal(left_operand, right_operand)
 
 
-SchemaFieldT = TypeVar("SchemaFieldT", bound=SchemaField)
-
-
 class String(SchemaField[str]):
     """
     Field of a schema that represents a string value.
@@ -278,4 +275,3 @@ class DescribedBlob:
 
 
 ConcreteSchemaField = String | Timestamp | Float | Integer | Boolean | FloatList | StringList | Blob
-ConcreteSchemaFieldT = TypeVar("ConcreteSchemaFieldT", bound="ConcreteSchemaField")

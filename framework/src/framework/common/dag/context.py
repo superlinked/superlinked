@@ -41,9 +41,7 @@ from superlinked.framework.common.visualize.query_output_recorder import (
 ContextValue: TypeAlias = int | float | str | Mapping | list | bool | None
 T = TypeVar("T", bound=ContextValue)
 CONTEXT_COMMON = "common"
-CONTEXT_COMMON_ENVIRONMENT = "environment"
 CONTEXT_COMMON_NOW = "now"
-LOAD_DEFAULT_NODE_INPUT = "load_default_node_input"
 SPACE_WEIGHT_PARAM_NAME = "weight"
 
 

@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from beartype.typing import Sequence, cast
+from beartype.typing import Sequence
 from typing_extensions import override
 
 from superlinked.framework.common.dag.concatenation_node import ConcatenationNode
@@ -77,8 +77,3 @@ class OnlineConcatenationNode(DefaultOnlineNode[ConcatenationNode, Vector], HasL
             if not isinstance(result.value, Vector)
         ):
             raise InvalidInputException(f"{self.class_name} can only process `Vector` inputs.")
-
-    def _split_vector(self, vector: Vector, parents_without_duplicates: Sequence[OnlineNode]) -> list[Vector]:
-        lengths = [cast(HasLength, parent).length for parent in parents_without_duplicates]
-        vectors: list[Vector] = vector.split(lengths)
-        return vectors

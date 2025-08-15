@@ -88,14 +88,6 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
         context.dag_output_recorder.record(self.node_id, results)
         return results
 
-    def evaluate_next_single(
-        self,
-        parsed_schema: ParsedSchema,
-        context: ExecutionContext,
-        online_entity_cache: OnlineEntityCache,
-    ) -> EvaluationResult[NodeDataT] | None:
-        return self.evaluate_next([parsed_schema], context, online_entity_cache)[0]
-
     def evaluate_parent(
         self,
         parent: OnlineNode,

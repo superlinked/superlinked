@@ -20,10 +20,8 @@ from beartype.typing import Callable
 
 
 class ParentValidationType(Enum):
-    LESS_THAN_TWO_PARENTS = (lambda len: len < 2, "less than 2 parents")
     AT_LEAST_ONE_PARENT = (lambda len: len >= 1, "at least 1 parent")
     EXACTLY_ONE_PARENT = (lambda len: len == 1, "exactly 1 parent")
-    ONE_OR_TWO_PARENTS = (lambda len: len in [1, 2], "1 or 2 parents")
     NO_PARENTS = (lambda len: len == 0, "no parents")
     NO_VALIDATION = (lambda len: True, "no validation")
 

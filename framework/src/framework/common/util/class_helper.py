@@ -19,13 +19,11 @@ import sys
 from types import ModuleType
 
 import structlog
-from beartype.typing import Sequence, TypeVar
+from beartype.typing import Sequence
 
 from superlinked.framework.common.exception import InvalidInputException
 
 logger = structlog.getLogger()
-
-BaseClassT = TypeVar("BaseClassT")
 
 
 class ClassHelper:

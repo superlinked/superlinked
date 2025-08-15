@@ -34,7 +34,6 @@ SCHEMA_FIELD_TYPES = frozenset(
     }
 )
 
-COMPARISON_OPERATORS = frozenset({"__gt__", "__lt__", "__ge__", "__le__", "__eq__", "__ne__"})
 
 # The base Schema class fullname
 SCHEMA_BASE_CLASS = "superlinked.framework.common.schema.schema.Schema"

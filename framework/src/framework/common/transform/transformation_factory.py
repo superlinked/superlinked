@@ -82,13 +82,6 @@ class BaseTransformations(Generic[AggregationInputT, EmbeddingInputT]):
 
 class TransformationFactory:
     @staticmethod
-    def create_normalization_transformation(
-        transformation_config: TransformationConfig[AggregationInputT, EmbeddingInputT],
-    ) -> NormalizationStep:
-        normalization = NormalizationFactory.create_normalization(transformation_config.normalization_config)
-        return NormalizationStep(normalization)
-
-    @staticmethod
     def create_embedding_transformation(
         transformation_config: TransformationConfig[AggregationInputT, EmbeddingInputT],
         embedding_engine_manager: EmbeddingEngineManager | None = None,

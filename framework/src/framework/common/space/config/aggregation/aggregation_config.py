@@ -30,7 +30,6 @@ class AggregationConfig(ABC, Generic[AggregationInputT]):
         return {"class_name": type(self).__name__, "aggregation_input_type": self.aggregation_input_type.__name__}
 
 
-AggregationConfigT = TypeVar("AggregationConfigT", bound=AggregationConfig)
 NumberAggregationInputT = TypeVar("NumberAggregationInputT", float, int)
 
 
