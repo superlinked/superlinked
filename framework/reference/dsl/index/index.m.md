@@ -52,12 +52,3 @@ Classes
         
         Returns:
             bool: True if the index has the schema, False otherwise.
-
-    `has_space(self, space: superlinked.framework.dsl.space.space.Space) ‑> bool`
-    :   Check, if the given space is present in the index.
-        
-        Args:
-            space (Space): The space to check.
-        
-        Returns:
-            bool: True if the index has the space, False otherwise.
