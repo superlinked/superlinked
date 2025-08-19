@@ -116,7 +116,7 @@ class OnlineAggregationNode(DefaultOnlineNode[AggregationNode, Vector], HasLengt
         return [
             Weighted(parent_result.value, weighted_parent.weight)
             for parent_result, weighted_parent in zip(parent_result_values, self.node.weighted_parents)
-            if parent_result.value and not cast(Vector, parent_result.value).is_empty
+            if parent_result.value is not None
         ]
 
     def _no_event_present(self, weighted_vectors: Sequence[Weighted[Vector]]) -> bool:

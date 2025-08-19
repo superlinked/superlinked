@@ -144,10 +144,13 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
     def _to_evaluation_results(
         self, parsed_schemas: Sequence[ParsedSchema], id_to_result: Mapping[str, Vector]
     ) -> list[EvaluationResult[Vector] | None]:
-        return [
-            EvaluationResult(self._get_single_evaluation_result(id_to_result[parsed_schema.id_]))
-            for parsed_schema in parsed_schemas
-        ]
+        return [self.__to_evaluation_result(id_to_result[parsed_schema.id_]) for parsed_schema in parsed_schemas]
+
+    def __to_evaluation_result(self, result: Vector) -> EvaluationResult[Vector] | None:
+        # Return None for empty vectors to prevent storing empty vectors in the database
+        if result.is_empty:
+            return None
+        return EvaluationResult(self._get_single_evaluation_result(result))
 
     def __get_single_schema(self, parsed_schemas: Sequence[ParsedSchema]) -> IdSchemaObject:
         for parsed_schema in parsed_schemas:
