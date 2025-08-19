@@ -135,7 +135,7 @@ Classes
     * superlinked.framework.common.schema.schema_object.Integer
 
 `SchemaField(name: str, schema_obj: IdSchemaObject, type_: type[SFT], nullable: bool)`
-:   A SchemaField is a generic field of your `@schema` decorated class.
+:   A SchemaField is a generic field of your `Schema` child class.
     
     `SchemaField`s are the basic building block for inputs that will be referenced in an embedding space.
     Sub-types of a `SchemaField` are typed data representations that you can use to transform and load data

@@ -1,9 +1,15 @@
 Module superlinked.framework.common.schema.event_schema
 =======================================================
 
-Functions
----------
+Classes
+-------
 
-`event_schema(cls: type[~T]) ‑> type[~T] | type[superlinked.framework.common.schema.event_schema_object.EventSchemaObject]`
-:   Use this decorator to annotate your class as an event schema
-    that can be used to represent events between other schemas.
+`EventSchema()`
+:   Custom decorated event schema class.
+    Event schemas can be used to reference other schema and to define interactions between schemas.
+
+    ### Ancestors (in MRO)
+
+    * superlinked.framework.common.schema.event_schema_object.EventSchemaObject
+    * superlinked.framework.common.schema.id_schema_object.IdSchemaObject
+    * abc.ABC
