@@ -13,35 +13,19 @@
 # limitations under the License.
 
 
-from beartype.typing import Sequence, cast
+from beartype.typing import Sequence
 from typing_extensions import Self, override
 
 from superlinked.framework.common.schema.event_schema_object import (
     CreatedAtField,
     EventSchemaObject,
 )
-from superlinked.framework.common.schema.schema import T
 from superlinked.framework.common.schema.schema_factory import SchemaFactory
 from superlinked.framework.common.schema.schema_field_descriptor import (
     SchemaFieldDescriptor,
 )
 from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.schema.schema_type import SchemaType
-
-# Exclude from documentation.
-__pdoc__ = {}
-__pdoc__["EventSchema"] = False
-
-
-def event_schema(cls: type[T]) -> type[T] | type[EventSchemaObject]:
-    """
-    Use this decorator to annotate your class as an event schema
-    that can be used to represent events between other schemas.
-    """
-    return cast(
-        type[T] | type[EventSchemaObject],
-        SchemaFactory.decorate(cls, SchemaType.EVENT_SCHEMA),
-    )
 
 
 class EventSchema(EventSchemaObject):

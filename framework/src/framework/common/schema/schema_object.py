@@ -44,7 +44,7 @@ SFT = TypeVar("SFT", bound=PythonTypes)
 
 class SchemaField(ComparisonOperand, Generic[SFT]):
     """
-    A SchemaField is a generic field of your `@schema` decorated class.
+    A SchemaField is a generic field of your `Schema` child class.
 
     `SchemaField`s are the basic building block for inputs that will be referenced in an embedding space.
     Sub-types of a `SchemaField` are typed data representations that you can use to transform and load data

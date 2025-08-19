@@ -22,7 +22,6 @@ from superlinked.framework.common.schema.event_schema_object import (
     CreatedAtField,
     SchemaReference,
 )
-from superlinked.framework.common.schema.general_type import T
 from superlinked.framework.common.schema.id_schema_object import ID_FIELD_NAME, IdField
 from superlinked.framework.common.schema.schema_field_descriptor import (
     SchemaFieldDescriptor,
@@ -73,17 +72,6 @@ class SchemaValidator:
     def validate_created_at_field(self, descriptors: Sequence[SchemaFieldDescriptor]) -> None:
         if self.__schema_type == SchemaType.EVENT_SCHEMA:
             self._validate_mandatory_single_field(descriptors, CreatedAtField, CREATED_AT_FIELD_NAME)
-
-    def check_unannotated_members(self, cls: type[T]) -> None:
-        base_members = dir(type("base_members", (object,), {}))
-        base_members += ["__annotations__"]
-        for t in inspect.getmembers(cls):
-            if t[0] not in base_members:
-                schema_type_str = "Schema" if self.__schema_type == SchemaType.SCHEMA else "Event schema"
-                member_str = type(t[1]).__name__
-                raise InvalidInputException(
-                    f"{schema_type_str} cannot have functions nor instantiated attributes, got {member_str} {t[0]}."
-                )
 
     def _validate_mandatory_single_field(
         self, descriptors: Sequence[SchemaFieldDescriptor], field_type: type, field_name: str

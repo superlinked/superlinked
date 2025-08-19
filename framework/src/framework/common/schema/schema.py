@@ -14,10 +14,9 @@
 
 from __future__ import annotations
 
-from beartype.typing import Sequence, cast
+from beartype.typing import Sequence
 from typing_extensions import Self, override
 
-from superlinked.framework.common.schema.general_type import T
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_factory import SchemaFactory
 from superlinked.framework.common.schema.schema_field_descriptor import (
@@ -25,24 +24,6 @@ from superlinked.framework.common.schema.schema_field_descriptor import (
 )
 from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.schema.schema_type import SchemaType
-
-# Exclude from documentation.
-__pdoc__ = {}
-__pdoc__["Schema"] = False
-
-
-def schema(cls: type[T]) -> type[T] | type[IdSchemaObject]:
-    """
-    Use this decorator to annotate your class as a schema
-    that can be used to represent your structured data.
-
-    Schemas translate to entities in the embedding space
-    that you can search by or search for.
-    """
-    return cast(
-        type[T] | type[IdSchemaObject],
-        SchemaFactory.decorate(cls, SchemaType.SCHEMA),
-    )
 
 
 class Schema(IdSchemaObject):

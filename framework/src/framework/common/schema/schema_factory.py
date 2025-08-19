@@ -19,17 +19,13 @@ from types import NoneType, UnionType
 from beartype.typing import Sequence, Union, get_args
 
 from superlinked.framework.common.exception import InvalidStateException
-from superlinked.framework.common.schema.event_schema_object import (
-    CreatedAtField,
-    EventSchemaObject,
-)
+from superlinked.framework.common.schema.event_schema_object import EventSchemaObject
 from superlinked.framework.common.schema.general_type import T
 from superlinked.framework.common.schema.id_field import IdField
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_field_descriptor import (
     SchemaFieldDescriptor,
 )
-from superlinked.framework.common.schema.schema_object import SchemaField
 from superlinked.framework.common.schema.schema_type import SchemaType
 from superlinked.framework.common.schema.schema_validator import SchemaValidator
 from superlinked.framework.common.util.generic_class_util import GenericClassUtil
@@ -94,29 +90,3 @@ class SchemaFactory:
             for name, type_ in schema_cls.__annotations__.items()
             if inspect.isclass(type_) and issubclass(type_, field_type)
         )
-
-    @staticmethod
-    def decorate(schema_cls: type[T], schema_type: SchemaType) -> type[IdSchemaObject | EventSchemaObject]:
-        SchemaValidator(schema_type).check_unannotated_members(schema_cls)
-        schema_information = SchemaFactory.calculate_schema_information(schema_cls, schema_type)
-
-        class Decorated(schema_information.base_class):  # type: ignore
-            def __init__(self) -> None:
-                if schema_information.base_class is EventSchemaObject:
-                    created_at_field_name = SchemaFactory.get_field_name_or_raise(schema_cls, CreatedAtField)
-                    super().__init__(
-                        schema_cls,
-                        schema_information.id_field_name,
-                        created_at_field_name,
-                    )
-                else:
-                    super().__init__(schema_cls, schema_information.id_field_name)
-
-            def _init_schema_fields(self) -> Sequence[SchemaField]:
-                """Returns all declared SchemaFields. Does not include the mandatory "id" field."""
-                return [
-                    self._init_field(schema_field_descriptor)
-                    for schema_field_descriptor in schema_information.schema_field_descriptors
-                ]
-
-        return Decorated

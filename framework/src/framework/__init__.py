@@ -58,13 +58,13 @@ from superlinked.framework.common.nlq.open_ai import OpenAIClientConfig
 from superlinked.framework.common.parser.dataframe_parser import DataFrameParser
 from superlinked.framework.common.parser.json_parser import JsonParser
 from superlinked.framework.common.precision import Precision
-from superlinked.framework.common.schema.event_schema import EventSchema, event_schema
+from superlinked.framework.common.schema.event_schema import EventSchema
 from superlinked.framework.common.schema.event_schema_object import (
     CreatedAtField,
     SchemaReference,
 )
 from superlinked.framework.common.schema.id_field import IdField
-from superlinked.framework.common.schema.schema import Schema, schema
+from superlinked.framework.common.schema.schema import Schema
 from superlinked.framework.common.schema.schema_object import (
     Blob,
     Boolean,
@@ -158,9 +158,6 @@ __all__ = [
     # Framework Common schema parents
     "EventSchema",
     "Schema",
-    # Framework Common schema decorators
-    "event_schema",
-    "schema",
     # Framework Common Fields
     "Blob",
     "CreatedAtField",
