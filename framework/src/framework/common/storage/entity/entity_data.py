@@ -15,11 +15,13 @@
 
 from dataclasses import dataclass
 
-from superlinked.framework.common.storage.entity.entity_id import EntityId
+from superlinked.framework.common.storage.entity.base_entity import BaseEntity
 from superlinked.framework.common.storage.field.field_data import FieldData
 
 
 @dataclass(frozen=True)
-class EntityData:
-    id_: EntityId
-    field_data: dict[str, FieldData]
+class EntityData(BaseEntity[FieldData]):
+
+    @property
+    def field_data(self) -> dict[str, FieldData]:
+        return self.fields

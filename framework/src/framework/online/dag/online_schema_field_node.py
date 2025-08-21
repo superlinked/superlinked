@@ -37,20 +37,22 @@ class OnlineSchemaFieldNode(Generic[SFT], OnlineNode[SchemaFieldNode, SFT]):
         super().__init__(node, parents, ParentValidationType.NO_PARENTS)
 
     @override
-    def evaluate_self(
+    async def evaluate_self(
         self,
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
         online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult[SFT] | None]:
         parsed_schema_values = [self._get_parsed_schema_value(parsed_schema) for parsed_schema in parsed_schemas]
-        stored_results = self._calculate_stored_result_by_id(parsed_schemas, parsed_schema_values, online_entity_cache)
+        stored_results = await self._calculate_stored_result_by_id(
+            parsed_schemas, parsed_schema_values, online_entity_cache
+        )
         return [
             self._to_result(stored_results.get(parsed_schema.id_) if value is None else value)
             for parsed_schema, value in zip(parsed_schemas, parsed_schema_values)
         ]
 
-    def _calculate_stored_result_by_id(
+    async def _calculate_stored_result_by_id(
         self,
         parsed_schemas: Sequence[ParsedSchema],
         parsed_schema_values: Sequence[SFT | None],
@@ -67,7 +69,10 @@ class OnlineSchemaFieldNode(Generic[SFT], OnlineNode[SchemaFieldNode, SFT]):
             for parsed_schema_id in parsed_schema_ids_without_value
         ]
         return dict(
-            zip(parsed_schema_ids_without_value, self.load_stored_results(schemas_with_object_ids, online_entity_cache))
+            zip(
+                parsed_schema_ids_without_value,
+                await self.load_stored_results(schemas_with_object_ids, online_entity_cache),
+            )
         )
 
     def _get_parsed_schema_value(self, parsed_schema: ParsedSchema) -> SFT | None:

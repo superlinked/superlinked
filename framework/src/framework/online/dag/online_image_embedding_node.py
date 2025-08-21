@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from itertools import chain
 
 from beartype.typing import Sequence, cast
@@ -34,7 +35,6 @@ from superlinked.framework.common.transform.transform import Step
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
 )
-from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.common.util.image_util import ImageUtil
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
@@ -74,13 +74,15 @@ class OnlineImageEmbeddingNode(OnlineNode[ImageEmbeddingNode, Vector], HasLength
         return self._embedding_transformation
 
     @override
-    def evaluate_self(  # pylint: disable=too-many-locals
+    async def evaluate_self(  # pylint: disable=too-many-locals
         self,
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
         online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult[Vector] | None]:
-        image_data_list = [self._get_image_data(parsed_schema) for parsed_schema in parsed_schemas]
+        image_data_list = await asyncio.gather(
+            *[self._get_image_data(parsed_schema) for parsed_schema in parsed_schemas]
+        )
         empty_indices = []
         valid_indices = []
         valid_image_data = []
@@ -92,31 +94,31 @@ class OnlineImageEmbeddingNode(OnlineNode[ImageEmbeddingNode, Vector], HasLength
             else:
                 valid_indices.append(i)
                 valid_image_data.append(image_data_list[i])
-        empty_results = self.load_stored_results_with_default(
+        empty_results = await self.load_stored_results_with_default(
             [(parsed_schema.schema, parsed_schema.id_) for parsed_schema in empty_parsed_schemas],
             self.node.transformation_config.embedding_config.default_vector,
             online_entity_cache,
         )
-        valid_results = AsyncUtil.run(self.embedding_transformation.transform(valid_image_data, context))
+        valid_results = await self.embedding_transformation.transform(valid_image_data, context)
         results: list[EvaluationResult[Vector] | None] = [None] * len(image_data_list)  # type: ignore
         for idx, result in chain(zip(empty_indices, empty_results), zip(valid_indices, valid_results)):
             results[idx] = EvaluationResult(self._get_single_evaluation_result(result))
         return results
 
-    def _get_image_data(self, parsed_schema: ParsedSchema) -> ImageData:
-        image, description = self.__load_input(parsed_schema)
+    async def _get_image_data(self, parsed_schema: ParsedSchema) -> ImageData:
+        image, description = await self.__load_input(parsed_schema)
         loaded_image: Image | None = None
         if image is not None and image.data is not None:
             loaded_image = ImageUtil.open_image(image.data)
         return ImageData(loaded_image, description)
 
-    def __load_input(self, parsed_schema: ParsedSchema) -> tuple[BlobInformation | None, str | None]:
+    async def __load_input(self, parsed_schema: ParsedSchema) -> tuple[BlobInformation | None, str | None]:
         description = self._get_field_value(parsed_schema, self._description_node)
         if description is not None and not isinstance(description, str):
             raise InvalidStateException("Invalid image description type.", description_type=type(description).__name__)
         image = self._get_field_value(parsed_schema, self._image_node)
         if image is not None and not isinstance(image, BlobInformation):
-            image = self._blob_loader.load([image])[0]
+            image = (await self._blob_loader.load([image]))[0]
         return image, (description if description else None)
 
     def _get_field_value(

@@ -14,6 +14,8 @@
 
 from __future__ import annotations
 
+import asyncio
+
 from beartype.typing import Sequence, cast
 from typing_extensions import override
 
@@ -32,7 +34,6 @@ from superlinked.framework.common.space.embedding.model_based.singleton_embeddin
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
 )
-from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.online.dag.default_online_node import DefaultOnlineNode
 from superlinked.framework.online.dag.evaluation_result import SingleEvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
@@ -62,14 +63,16 @@ class OnlineAggregationNode(DefaultOnlineNode[AggregationNode, Vector], HasLengt
             raise InvalidInputException(f"{cls.__name__} must have parents with the same length.")
 
     @override
-    def _evaluate_singles(
+    async def _evaluate_singles(
         self,
         parent_results: Sequence[dict[OnlineNode, SingleEvaluationResult]],
         context: ExecutionContext,
     ) -> Sequence[Vector | None]:
-        return [self._evaluate_single(parent_result, context) for parent_result in parent_results]
+        return await asyncio.gather(
+            *[self._evaluate_single(parent_result, context) for parent_result in parent_results]
+        )
 
-    def _evaluate_single(
+    async def _evaluate_single(
         self,
         parent_results: dict[OnlineNode, SingleEvaluationResult],
         context: ExecutionContext,
@@ -78,11 +81,9 @@ class OnlineAggregationNode(DefaultOnlineNode[AggregationNode, Vector], HasLengt
         not_empty_weighted_vectors = self._get_not_empty_weighted_vectors(list(parent_results.values()))
         if self._no_event_present(not_empty_weighted_vectors):
             return not_empty_weighted_vectors[0].item
-        return AsyncUtil.run(
-            self._aggregation_transformation.transform(
-                not_empty_weighted_vectors,
-                context,
-            )
+        return await self._aggregation_transformation.transform(
+            not_empty_weighted_vectors,
+            context,
         )
 
     def _check_evaluation_inputs(

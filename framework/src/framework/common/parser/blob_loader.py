@@ -13,15 +13,16 @@
 # limitations under the License.
 
 
+import asyncio
 import base64
 import binascii
 from collections import defaultdict
-from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlparse
 
-import requests
+import aiofiles
+import aiohttp
 import structlog
-from beartype.typing import Any, Callable, Sequence
+from beartype.typing import Any, Awaitable, Callable, Sequence
 from PIL.Image import Image
 
 from superlinked.framework.blob.blob_handler_factory import (
@@ -46,7 +47,7 @@ GCS_URL_IDENTIFIER = "storage.cloud.google.com"
 class BlobLoader:
     def __init__(self, allow_bytes: bool, blob_handler_config: BlobHandlerConfig | None = None) -> None:
         self.allow_bytes = allow_bytes
-        self._scheme_to_load_function: dict[str, Callable[[Sequence[str]], list[BlobInformation]]] = {
+        self._scheme_to_load_function: dict[str, Callable[[Sequence[str]], Awaitable[list[BlobInformation]]]] = {
             "file": BlobLoader._load_from_local,
             "": BlobLoader._load_from_local,
             "http": BlobLoader._load_from_url,
@@ -55,7 +56,7 @@ class BlobLoader:
         if handler := BlobHandlerFactory.create_blob_handler(blob_handler_config):
             self._scheme_to_load_function[handler.get_supported_cloud_storage_scheme()] = handler.download
 
-    def load(self, blob_like_inputs: Sequence[str | Image | None | Any]) -> list[BlobInformation | None]:
+    async def load(self, blob_like_inputs: Sequence[str | Image | None | Any]) -> list[BlobInformation | None]:
         logger_to_use = logger.bind(n_blobs=len(blob_like_inputs))
         logger_to_use.info("started blob loading")
         with telemetry.span(
@@ -68,7 +69,9 @@ class BlobLoader:
             parsed_inputs = [
                 self._parse(blob_input) if blob_input is not None else None for blob_input in blob_like_inputs
             ]
-            parsed_to_loaded_data = self._load_parsed_inputs([parsed for parsed in parsed_inputs if parsed is not None])
+            parsed_to_loaded_data = await self._load_parsed_inputs(
+                [parsed for parsed in parsed_inputs if parsed is not None]
+            )
             results = [parsed_to_loaded_data[parsed] if parsed is not None else None for parsed in parsed_inputs]
         logger_to_use.info("finished blob loading")
         if len(results) != len(blob_like_inputs):
@@ -87,17 +90,18 @@ class BlobLoader:
             return ImageUtil.encode_b64(blob_like_input)
         return blob_like_input
 
-    def _load_parsed_inputs(self, parsed_inputs: Sequence[str]) -> dict[str, BlobInformation]:
-        loader_to_inputs: dict[Callable[[Sequence[str]], list[BlobInformation]], set[str]] = defaultdict(set)
+    async def _load_parsed_inputs(self, parsed_inputs: Sequence[str]) -> dict[str, BlobInformation]:
+        loader_to_inputs: dict[Callable[[Sequence[str]], Awaitable[list[BlobInformation]]], set[str]] = defaultdict(set)
         for parsed_input in parsed_inputs:
             loader_to_inputs[self._get_loader(parsed_input)].add(parsed_input)
+        loader_results = await asyncio.gather(*[loader(list(inputs)) for loader, inputs in loader_to_inputs.items()])
         return {
             parsed_input: loaded_bytes
-            for loader, inputs in loader_to_inputs.items()
-            for parsed_input, loaded_bytes in zip(inputs, loader(list(inputs)))
+            for inputs, loaded_data in zip(loader_to_inputs.values(), loader_results)
+            for parsed_input, loaded_bytes in zip(inputs, loaded_data)
         }
 
-    def _get_loader(self, blob_like_input: str) -> Callable[[Sequence[str]], list[BlobInformation]]:
+    def _get_loader(self, blob_like_input: str) -> Callable[[Sequence[str]], Awaitable[list[BlobInformation]]]:
         if self._is_base64_encoded(blob_like_input):
             if not self.allow_bytes:
                 logger.error("byte input not enabled", allow_bytes=self.allow_bytes)
@@ -120,37 +124,39 @@ class BlobLoader:
             return False
 
     @staticmethod
-    def _load_from_local(paths: Sequence[str]) -> list[BlobInformation]:
-        def read_file(path: str) -> BlobInformation:
-            with open(path, "rb") as f:
-                return BlobInformation(base64.b64encode(f.read()), path)
+    async def _load_from_local(paths: Sequence[str]) -> list[BlobInformation]:
+        async def read_file(path: str) -> BlobInformation:
+            async with aiofiles.open(path, "rb") as f:
+                content = await f.read()
+            return BlobInformation(base64.b64encode(content), path)
 
-        with ThreadPoolExecutor() as executor:
-            return list(executor.map(read_file, paths))
+        return await asyncio.gather(*[read_file(path) for path in paths])
 
     @staticmethod
-    def _load_from_bytes(blob_like_inputs: Sequence[str]) -> list[BlobInformation]:
+    async def _load_from_bytes(blob_like_inputs: Sequence[str]) -> list[BlobInformation]:
         return [
             BlobInformation(base64.b64encode(base64.b64decode(blob_like_input, validate=True)), None)
             for blob_like_input in blob_like_inputs
         ]
 
     @staticmethod
-    def _load_from_url(urls: Sequence[str]) -> list[BlobInformation]:
-        def fetch(url: str) -> BlobInformation:
+    @staticmethod
+    async def _load_from_url(urls: Sequence[str]) -> list[BlobInformation]:
+        async def async_fetch(session: aiohttp.ClientSession, url: str) -> BlobInformation:
             try:
-                response = requests.get(url, timeout=settings.REQUEST_TIMEOUT)
-                response.raise_for_status()
-                BlobLoader._validate_response_content(url, response)
-                return BlobInformation(base64.b64encode(response.content), url)
-            except requests.RequestException as exc:
+                async with session.get(url, timeout=aiohttp.ClientTimeout(total=settings.REQUEST_TIMEOUT)) as response:
+                    response.raise_for_status()
+                    BlobLoader._validate_response_content(url, response)
+                    content = await response.read()
+                    return BlobInformation(base64.b64encode(content), url)
+            except aiohttp.ClientError as exc:
                 raise UnexpectedResponseException(f"Failed to load URL: {url}.") from exc
 
-        with ThreadPoolExecutor() as executor:
-            return list(executor.map(fetch, urls))
+        async with aiohttp.ClientSession() as session:
+            return await asyncio.gather(*[async_fetch(session, url) for url in urls])
 
     @staticmethod
-    def _validate_response_content(url: str, response: requests.Response) -> None:
+    def _validate_response_content(url: str, response: aiohttp.ClientResponse) -> None:
         content_type = response.headers.get("Content-Type", "").lower()
         if "html" not in content_type:
             return

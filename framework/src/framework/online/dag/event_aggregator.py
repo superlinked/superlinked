@@ -36,7 +36,6 @@ from superlinked.framework.common.space.normalization.normalization import L1Nor
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
 )
-from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.online.dag.event_metadata_handler import EventMetadata
 
 
@@ -63,16 +62,14 @@ class EventAggregator:
             transform_config_with_no_norm, SingletonEmbeddingEngineManager()
         )
 
-    def calculate_event_vector(self) -> Vector:
+    async def calculate_event_vector(self) -> Vector:
         weighted_affecting_vector = Weighted(
             self._params.affecting_vector.item,
             self._params.affecting_vector.weight,
         )
-        aggregated_affecting_vector = AsyncUtil.run(
-            self._aggregation_transformation.transform(
-                [weighted_affecting_vector],
-                self._params.context,
-            )
+        aggregated_affecting_vector = await self._aggregation_transformation.transform(
+            [weighted_affecting_vector],
+            self._params.context,
         )
         weighted_affecting_vector = Weighted(
             aggregated_affecting_vector,
@@ -85,11 +82,9 @@ class EventAggregator:
             if not weighted_vector.item.is_empty
         ]
         normalized_weighted_vectors = self.calculate_normalized_weighted_vectors(not_empty_weighted_vectors)
-        return AsyncUtil.run(
-            self._aggregation_transformation.transform(
-                normalized_weighted_vectors,
-                self._params.context,
-            )
+        return await self._aggregation_transformation.transform(
+            normalized_weighted_vectors,
+            self._params.context,
         )
 
     def calculate_normalized_weighted_vectors(

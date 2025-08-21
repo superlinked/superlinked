@@ -94,7 +94,7 @@ class TopKVDBConnector(VDBConnector):
         self._client.upsert_partial(self.collection_name, docs)
 
     @override
-    async def _read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
+    async def _read_entities(self, entities: Sequence[Entity]) -> list[EntityData]:
         if not entities:
             return []
 

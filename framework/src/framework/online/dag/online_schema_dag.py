@@ -83,12 +83,12 @@ class OnlineSchemaDag:
                 root_schema_name=list(root_node_schemas)[0]._base_class_name,
             )
 
-    def evaluate(
+    async def evaluate(
         self,
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
         online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult[Vector] | None]:
         with context.dag_output_recorder.visualize_dag_context(self.__base_nodes):
-            results = self.leaf_node.evaluate_next(parsed_schemas, context, online_entity_cache)
+            results = await self.leaf_node.evaluate_next(parsed_schemas, context, online_entity_cache)
         return results

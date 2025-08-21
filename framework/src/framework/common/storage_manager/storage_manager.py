@@ -19,6 +19,7 @@ from beartype.typing import Any, Mapping, Sequence, TypeVar, cast
 
 from superlinked.framework.common.dag.index_node import IndexNode
 from superlinked.framework.common.data_types import NodeDataTypes, PythonTypes, Vector
+from superlinked.framework.common.delayed_evaluator import DelayedEvaluator
 from superlinked.framework.common.exception import (
     InvalidInputException,
     NotImplementedException,
@@ -33,6 +34,7 @@ from superlinked.framework.common.schema.schema_object import (
     ConcreteSchemaField,
     SchemaField,
 )
+from superlinked.framework.common.settings import settings
 from superlinked.framework.common.storage.entity.entity import Entity
 from superlinked.framework.common.storage.entity.entity_data import EntityData
 from superlinked.framework.common.storage.entity.entity_id import EntityId
@@ -91,8 +93,14 @@ class StorageManager:
         vdb_connector: VDBConnector,
     ) -> None:
         self._vdb_connector = vdb_connector
-        self._storage_naming = StorageNaming()
-        self._entity_builder = EntityBuilder(self._storage_naming)
+        self._entity_builder = EntityBuilder()
+        self._delayed_read_evaluator = DelayedEvaluator(
+            settings.BATCHED_VDB_READ_WAIT_TIME_MS, self._vdb_connector.read_entities
+        )
+        self._delayed_write_evaluator = DelayedEvaluator(
+            settings.BATCHED_VDB_WRITE_WAIT_TIME_MS,
+            self._vdb_connector.write_entities,  # type: ignore
+        )
 
     async def close_connection(self) -> None:
         await self._vdb_connector.close_connection()
@@ -112,7 +120,7 @@ class StorageManager:
     def _compile_create_search_index_params(self, params: SearchIndexParams) -> IndexConfig:
         vector_index_field_descriptor, index_field_descriptors = self._compile_indexed_fields_to_descriptors(params)
         return IndexConfig(
-            self._storage_naming.get_index_name_from_node_id(params.node_id),
+            StorageNaming.get_index_name_from_node_id(params.node_id),
             vector_index_field_descriptor,
             index_field_descriptors,
         )
@@ -150,7 +158,7 @@ class StorageManager:
         return [
             IndexFieldDescriptor(
                 self._get_index_field_type_of_schema_field(cast(ConcreteSchemaField, schema_field)),
-                self._storage_naming.generate_field_name_from_schema_field(schema_field),
+                StorageNaming.generate_field_name_from_schema_field(schema_field),
             )
             for schema_field in schema_fields
         ]
@@ -168,7 +176,7 @@ class StorageManager:
         **params: Any,
     ) -> Sequence[SearchResultItem]:
         self._validate_knn_search_input(schema, knn_search_params.schema_fields_to_return)
-        index_name = self._storage_naming.get_index_name_from_node_id(index_node.node_id)
+        index_name = StorageNaming.get_index_name_from_node_id(index_node.node_id)
         vector_field = cast(
             VectorFieldData,
             self._entity_builder.compose_field_data(index_node.node_id, knn_search_params.vector),
@@ -268,7 +276,7 @@ class StorageManager:
             index_vector,
         )
 
-    def write_combined_ingestion_result(
+    async def write_combined_ingestion_result(
         self,
         parsed_schemas: Sequence[ParsedSchema],
         cached_items: Mapping[EntityId, Mapping[str, NodeInfo]],
@@ -286,8 +294,9 @@ class StorageManager:
             for entity_id, node_id_to_node_info in cached_items.items()
         ]
         entity_data_items.extend(cached_entity_data)
-        AsyncUtil.run(self._vdb_connector.write_entities(entity_data_items))
+        await self._delayed_write_evaluator.evaluate(entity_data_items)
 
+    # TODO FAB-3639 - legacy-readwrite-interfaces
     def write_parsed_schema_fields(
         self, parsed_schemas: Sequence[ParsedSchema], fields_to_exclude: Sequence[SchemaField]
     ) -> None:
@@ -295,14 +304,14 @@ class StorageManager:
             self._entity_builder.compose_entity_data_from_parsed_schema(parsed_schema, fields_to_exclude)
             for parsed_schema in parsed_schemas
         ]
-        AsyncUtil.run(self._vdb_connector.write_entities(entities_to_write))
+        AsyncUtil.run(self._delayed_write_evaluator.evaluate(entities_to_write))
 
     # TODO FAB-3639 - legacy-readwrite-interfaces
     def write_node_results(self, node_data_items: Sequence[NodeResultData]) -> None:
         entities_to_write = [
             self._entity_builder.compose_entity_data_from_node_result(node_data) for node_data in node_data_items
         ]
-        AsyncUtil.run(self._vdb_connector.write_entities(entities_to_write))
+        AsyncUtil.run(self._delayed_write_evaluator.evaluate(entities_to_write))
 
     # TODO FAB-3639 - legacy-readwrite-interfaces
     def write_node_data(
@@ -312,7 +321,7 @@ class StorageManager:
             self._compose_entity_data(schema, object_id, node_id, node_data)
             for object_id, node_data in node_data_by_object_id.items()
         ]
-        AsyncUtil.run(self._vdb_connector.write_entities(entity_data_items))
+        AsyncUtil.run(self._delayed_write_evaluator.evaluate(entity_data_items))
 
     # TODO FAB-3639 - legacy-readwrite-interfaces
     def _compose_entity_data(
@@ -345,7 +354,7 @@ class StorageManager:
         ]
         result_field = self._entity_builder.compose_field(node_id, result_type)
         entities = [self._entity_builder.compose_entity(entity_id, [result_field]) for entity_id in entity_ids]
-        entity_data = await self._vdb_connector.read_entities(entities)
+        entity_data = await self._delayed_read_evaluator.evaluate(entities)
 
         def cast_value_if_not_none(field_data: FieldData | None) -> ResultTypeT | None:
             return cast(ResultTypeT, field_data.value) if field_data is not None else None
@@ -362,11 +371,13 @@ class StorageManager:
     ) -> ResultTypeT | None:
         return next(iter(await self.read_node_results_async([(schema, object_id)], node_id, result_type)))
 
-    def read_entity_data_requests(self, entity_data_requests: Sequence[EntityDataRequest]) -> list[dict[str, NodeInfo]]:
+    async def read_entity_data_requests(
+        self, entity_data_requests: Sequence[EntityDataRequest]
+    ) -> list[dict[str, NodeInfo]]:
         entities, node_requests_to_fields = zip(
             *[self._create_entity_and_node_request_to_field(request) for request in entity_data_requests]
         )
-        entity_data = AsyncUtil.run(self._vdb_connector.read_entities(entities))
+        entity_data = await self._delayed_read_evaluator.evaluate(entities)
         return [
             self._create_node_id_to_node_info(node_request_to_field, ed.field_data)
             for node_request_to_field, ed in zip(node_requests_to_fields, entity_data)
@@ -413,7 +424,7 @@ class StorageManager:
         node_data_key_by_field_name = {field.name: key for key, field in field_by_node_data_key.items()}
         fields = list(field_by_node_data_key.values())
         entities = [self._compose_entity(schema, object_id, fields) for object_id in object_ids]
-        entity_data_items = AsyncUtil.run(self._vdb_connector.read_entities(entities))
+        entity_data_items = AsyncUtil.run(self._delayed_read_evaluator.evaluate(entities))
         node_data_items = {
             object_id: {
                 node_data_key_by_field_name[field_data.name]: cast(NodeDataValueT, field_data.value)

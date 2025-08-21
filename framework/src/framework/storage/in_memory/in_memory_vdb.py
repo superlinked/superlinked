@@ -71,7 +71,7 @@ class InMemoryVDB(VDBConnector[VDBKNNSearchConfig]):
             self._vdb[row_id].update({name: fd.value for name, fd in ed.field_data.items()})
 
     @override
-    async def _read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
+    async def _read_entities(self, entities: Sequence[Entity]) -> list[EntityData]:
         return [
             EntityData(
                 entity.id_,

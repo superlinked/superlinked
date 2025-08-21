@@ -71,7 +71,7 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
         return mandatory_field_names_by_schema
 
     @override
-    def update(self, messages: Sequence[ParsedSchema]) -> None:
+    async def update(self, messages: Sequence[ParsedSchema]) -> None:
         """Process incoming messages and update vdb"""
 
         for message in messages:
@@ -94,7 +94,7 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
                     "schemas": list({msg.schema._schema_name for msg in regular_msgs}),
                 },
             ):
-                self.evaluator.evaluate(regular_msgs, self.context, online_entity_cache)
+                await self.evaluator.evaluate(regular_msgs, self.context, online_entity_cache)
         if event_msgs:
             with telemetry.span(
                 "processor.process.events",
@@ -103,7 +103,7 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
                     "schemas": list({msg.schema._schema_name for msg in event_msgs}),
                 },
             ):
-                self._process_events(event_msgs, online_entity_cache)
+                await self._process_events(event_msgs, online_entity_cache)
         with telemetry.span(
             "storage.write.fields",
             attributes={
@@ -112,7 +112,7 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
                 "schemas": list({msg.schema._schema_name for msg in regular_msgs}),
             },
         ):
-            self.storage_manager.write_combined_ingestion_result(
+            await self.storage_manager.write_combined_ingestion_result(
                 regular_msgs,
                 online_entity_cache.changes,
                 online_entity_cache.origin_ids,
@@ -137,12 +137,14 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
                 f"Message with id '{message.id_}' is missing mandatory index fields: {missing_fields_text}."
             )
 
-    def _process_events(
+    async def _process_events(
         self, event_parsed_schemas: Sequence[EventParsedSchema], online_entity_cache: OnlineEntityCache
     ) -> None:
         effect_to_parsed_schemas = self._map_effect_to_parsed_schemas(event_parsed_schemas)
         effect_group_to_parsed_schemas = self._map_effect_group_to_parsed_schemas(effect_to_parsed_schemas)
-        self.evaluator.evaluate_by_dag_effect_group(effect_group_to_parsed_schemas, self.context, online_entity_cache)
+        await self.evaluator.evaluate_by_dag_effect_group(
+            effect_group_to_parsed_schemas, self.context, online_entity_cache
+        )
 
     def _map_effect_to_parsed_schemas(
         self, event_parsed_schemas: Sequence[EventParsedSchema]

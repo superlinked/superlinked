@@ -50,6 +50,10 @@ class ModalEngine(EmbeddingEngine[ModalEngineConfig]):
         embeddings = await self.__send_request(pre_processed_inputs)
         return embeddings
 
+    @override
+    def is_query_prompt_supported(self) -> bool:
+        return False  # TODO FAI-3674 - needs to be added
+
     def _pre_process_inputs(self, inputs: Sequence[ModelEmbeddingInputT]) -> list[str | bytes]:
         return [
             (
@@ -86,3 +90,8 @@ class ModalEngine(EmbeddingEngine[ModalEngineConfig]):
                 )
                 await asyncio.sleep(current_delay)
                 current_delay = current_delay * 2
+
+    @classmethod
+    @override
+    def _get_clean_model_name(cls, model_name: str) -> str:
+        return model_name

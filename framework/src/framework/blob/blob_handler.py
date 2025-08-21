@@ -28,7 +28,7 @@ class BlobHandler:
         pass
 
     @abstractmethod
-    def download(self, object_keys: Sequence[str]) -> list[BlobInformation]:
+    async def download(self, object_keys: Sequence[str]) -> list[BlobInformation]:
         pass
 
     @abstractmethod

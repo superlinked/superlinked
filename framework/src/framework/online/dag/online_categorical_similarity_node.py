@@ -14,6 +14,8 @@
 
 from __future__ import annotations
 
+import asyncio
+
 from beartype.typing import Sequence
 from typing_extensions import override
 
@@ -31,7 +33,6 @@ from superlinked.framework.common.transform.transform import Step
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
 )
-from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.online_entity_cache import OnlineEntityCache
@@ -58,24 +59,26 @@ class OnlineCategoricalSimilarityNode(OnlineNode[CategoricalSimilarityNode, Vect
         return self._embedding_transformation
 
     @override
-    def evaluate_self(
+    async def evaluate_self(
         self,
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
         online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult[Vector] | None]:
         if len(self.parents) == 0:
-            results = self.load_stored_results_with_default(
+            results = await self.load_stored_results_with_default(
                 [(parsed_schema.schema, parsed_schema.id_) for parsed_schema in parsed_schemas],
                 Vector.init_zero_vector(self.node.length),
                 online_entity_cache,
             )
         else:
-            parent_results = self.evaluate_parent(self.parents[0], parsed_schemas, context, online_entity_cache)
-            results = [self._evaluate_parent_result(parent_result, context) for parent_result in parent_results]
+            parent_results = await self.evaluate_parent(self.parents[0], parsed_schemas, context, online_entity_cache)
+            results = await asyncio.gather(
+                *[self._evaluate_parent_result(parent_result, context) for parent_result in parent_results]
+            )
         return [self._wrap_in_evaluation_result(result) for result in results]
 
-    def _evaluate_parent_result(
+    async def _evaluate_parent_result(
         self,
         parent_result: EvaluationResult | None,
         context: ExecutionContext,
@@ -84,4 +87,4 @@ class OnlineCategoricalSimilarityNode(OnlineNode[CategoricalSimilarityNode, Vect
             return Vector.init_zero_vector(self.length)
         input_ = parent_result.main.value
         categories = input_ if isinstance(input_, list) else [input_]
-        return AsyncUtil.run(self.embedding_transformation.transform(categories, context))
+        return await self.embedding_transformation.transform(categories, context)

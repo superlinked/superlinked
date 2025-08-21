@@ -34,7 +34,7 @@ class OnlineComparisonFilterNode(DefaultOnlineNode[ComparisonFilterNode, bool]):
         super().__init__(node, parents, ParentValidationType.EXACTLY_ONE_PARENT)
 
     @override
-    def _evaluate_singles(
+    async def _evaluate_singles(
         self,
         parent_results: Sequence[dict[OnlineNode, SingleEvaluationResult]],
         context: ExecutionContext,

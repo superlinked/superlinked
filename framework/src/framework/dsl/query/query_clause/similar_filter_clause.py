@@ -91,7 +91,8 @@ class SimilarFilterClause(SingleValueParamQueryClause, NLQCompatible):
         node_id = self.field_set.space._get_embedding_node(query_schema).node_id
         node_input = QueryNodeInput(
             QueryNodeInputValue(
-                cast(NodeDataTypes, self.field_set._generate_space_input(weighted_value.item)), weighted_value.weight
+                cast(NodeDataTypes, await self.field_set._generate_space_input(weighted_value.item)),
+                weighted_value.weight,
             ),
             False,
         )

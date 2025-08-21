@@ -23,6 +23,8 @@ from superlinked.framework.common.precision import Precision
 from superlinked.framework.common.settings import settings
 from superlinked.framework.common.storage.entity.entity import Entity
 from superlinked.framework.common.storage.entity.entity_data import EntityData
+from superlinked.framework.common.storage.entity.entity_id import EntityId
+from superlinked.framework.common.storage.entity.entity_merger import EntityMerger
 from superlinked.framework.common.storage.index_config import IndexConfig
 from superlinked.framework.common.storage.query.vdb_knn_search_config import (
     VDBKNNSearchConfig,
@@ -120,19 +122,25 @@ class VDBConnector(ABC, Generic[VDBKNNSearchConfigT]):
             "vdb_type": type(self).__name__,
         }
         telemetry.record_metric("vdb.write.count", 1, labels)
-        return await self._write_entities(entity_data)
+        unique_entity_data_items = EntityMerger.get_unique_entities(entity_data)
+        return await self._write_entities(unique_entity_data_items)
 
-    async def read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
+    async def read_entities(self, entities: Sequence[Entity]) -> list[EntityData]:
         labels: dict[str, TelemetryAttributeType] = {"entity_count": len(entities), "vdb_type": type(self).__name__}
         telemetry.record_metric("vdb.read.count", 1, labels)
-        return await self._read_entities(entities)
+        unique_entities = EntityMerger.get_unique_entities(entities)
+        unique_entity_data = await self._read_entities(unique_entities)
+        entity_data_map: dict[EntityId, EntityData] = {
+            entity_data.id_: entity_data for entity_data in unique_entity_data
+        }
+        return EntityMerger.build_entity_data_for_original_entities(entities, entity_data_map)
 
     @abstractmethod
     async def _write_entities(self, entity_data: Sequence[EntityData]) -> None:
         pass
 
     @abstractmethod
-    async def _read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
+    async def _read_entities(self, entities: Sequence[Entity]) -> list[EntityData]:
         pass
 
     async def knn_search(

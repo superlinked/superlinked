@@ -36,10 +36,10 @@ class ImageSpaceFieldSet(SpaceFieldSet[ImageData]):
         return str
 
     @override
-    def _generate_space_input(self, value: PythonTypes) -> ImageData:
+    async def _generate_space_input(self, value: PythonTypes) -> ImageData:
         if not isinstance(value, (str, PIL.Image.Image)):
             raise InvalidStateException(f"Invalid type of input for {type(self).__name__}.", input_type=type(value))
-        loaded_image = blob_loader.load([value])[0]
+        loaded_image = (await blob_loader.load([value]))[0]
         opened_image: PIL.Image.Image | None = None
         if loaded_image and loaded_image.data:
             opened_image = ImageUtil.open_image(loaded_image.data)
@@ -54,7 +54,7 @@ class ImageDescriptionSpaceFieldSet(SpaceFieldSet[ImageData]):
         return str
 
     @override
-    def _generate_space_input(self, value: PythonTypes) -> ImageData:
+    async def _generate_space_input(self, value: PythonTypes) -> ImageData:
         if not isinstance(value, str):
             raise InvalidStateException(f"Invalid type of input for {type(self).__name__}.", input_type=type(value))
         return ImageData(image=None, description=value)

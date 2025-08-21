@@ -13,6 +13,7 @@
 # limitations under the License.
 
 
+import asyncio
 import warnings
 from pathlib import Path
 
@@ -75,20 +76,33 @@ class OpenCLIPEngine(EmbeddingEngine[EmbeddingEngineConfig]):
     async def embed(self, inputs: Sequence[ModelEmbeddingInputT], is_query_context: bool) -> list[list[float]]:
         text_inputs = [input_ for input_ in inputs if isinstance(input_, str)]
         image_inputs = [input_ for input_ in inputs if isinstance(input_, PILImage)]
-        with torch.no_grad():
-            text_encodings = self.encode_texts(text_inputs)
-            image_encodings = self.encode_images(image_inputs)
+        text_encodings, image_encodings = await asyncio.gather(
+            asyncio.to_thread(self._encode_texts_with_no_grad, text_inputs),
+            asyncio.to_thread(self._encode_images_with_no_grad, image_inputs),
+        )
         encodings = CollectionUtil.combine_values_based_on_type(
             inputs, text_encodings, image_encodings, type_condition=str
         )
         return [self._normalize_encoding(encoding).tolist() for encoding in encodings]
+
+    @override
+    def is_query_prompt_supported(self) -> bool:
+        return False
+
+    def _encode_texts_with_no_grad(self, text_inputs: Sequence[str]) -> torch.Tensor:
+        with torch.no_grad():
+            return self.encode_texts(text_inputs)
+
+    def _encode_images_with_no_grad(self, image_inputs: Sequence[PILImage]) -> torch.Tensor:
+        with torch.no_grad():
+            return self.encode_images(image_inputs)
 
     def _get_embedding_model(self) -> tuple[CLIP, Compose]:
         device = GpuEmbeddingUtil.get_device()
         model_downloader = ModelDownloader()
         cache_dir = model_downloader.get_cache_dir(self._model_cache_dir)
         if self.__is_model_name_from_hugging_face(self._model_name):
-            clean_model_name = self._model_name.replace(HF_HUB_PREFIX, "")
+            clean_model_name = self._get_clean_model_name(self._model_name)
             model_downloader.ensure_model_downloaded(clean_model_name, cache_dir)
         model_lock = model_downloader._get_model_lock(self._model_name)
         model_lock_timeout = settings.MODEL_LOCK_TIMEOUT_SECONDS
@@ -104,7 +118,9 @@ class OpenCLIPEngine(EmbeddingEngine[EmbeddingEngineConfig]):
             )
         except OSError:
             logger.warning("Model download issue, forcing re-download.")
-            model_downloader.ensure_model_downloaded(clean_model_name, cache_dir, force_download=True)
+            if self.__is_model_name_from_hugging_face(self._model_name):
+                clean_model_name = self._get_clean_model_name(self._model_name)
+                model_downloader.ensure_model_downloaded(clean_model_name, cache_dir, force_download=True)
             model_and_transforms = create_model_and_transforms(
                 self._model_name,
                 device=device,
@@ -154,3 +170,8 @@ class OpenCLIPEngine(EmbeddingEngine[EmbeddingEngineConfig]):
     @classmethod
     def __is_model_name_from_hugging_face(cls, model_name: str) -> bool:
         return model_name.startswith(HF_HUB_PREFIX)
+
+    @classmethod
+    @override
+    def _get_clean_model_name(cls, model_name: str) -> str:
+        return model_name.replace(HF_HUB_PREFIX, "")

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 
+import asyncio
 import warnings
 from pathlib import Path
 
@@ -50,6 +51,7 @@ with warnings.catch_warnings():
 
 logger = structlog.getLogger()
 
+PROMPTS_KEY = "prompts"
 QUERY_PROMPT_NAME = "query"
 
 
@@ -62,13 +64,21 @@ class SentenceTransformersEngine(EmbeddingEngine[EmbeddingEngineConfig]):
     @override
     async def embed(self, inputs: Sequence[ModelEmbeddingInputT], is_query_context: bool) -> list[list[float]]:
         prompt_name = self._calculate_prompt_name(self._model, is_query_context)
-        return list(
-            self._model.encode(
-                list(inputs),  # type: ignore[arg-type] # it also accepts Image
-                prompt_name=prompt_name,
-                show_progress_bar=False,
+
+        def sync_encode() -> list[list[float]]:
+            return list(
+                self._model.encode(
+                    list(inputs),  # type: ignore[arg-type] # it also accepts Image
+                    prompt_name=prompt_name,
+                    show_progress_bar=False,
+                )
             )
-        )
+
+        return await asyncio.to_thread(sync_encode)
+
+    @override
+    def is_query_prompt_supported(self) -> bool:
+        return QUERY_PROMPT_NAME in self._model._model_config.get(PROMPTS_KEY, {})
 
     def _initialize_model(self) -> SentenceTransformer:
         model_downloader = ModelDownloader()
@@ -110,3 +120,10 @@ class SentenceTransformersEngine(EmbeddingEngine[EmbeddingEngineConfig]):
         return (
             QUERY_PROMPT_NAME if is_query_context and QUERY_PROMPT_NAME in model.prompts else model.default_prompt_name
         )
+
+    @classmethod
+    @override
+    def _get_clean_model_name(cls, model_name: str) -> str:
+        if "/" not in model_name:
+            return f"sentence-transformers/{model_name}"
+        return model_name

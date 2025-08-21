@@ -174,7 +174,7 @@ class QdrantVDBConnector(VDBConnector[VDBKNNSearchConfig]):
         return non_existing_points, existing_points
 
     @override
-    async def _read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
+    async def _read_entities(self, entities: Sequence[Entity]) -> list[EntityData]:
         returned_field_names = {field.name for entity in entities for field in entity.fields.values()} | {
             ID_PAYLOAD_FIELD_NAME
         }

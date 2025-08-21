@@ -55,6 +55,10 @@ class Settings(YamlBasedSettings):
     # Embedding specific settings
     ENABLE_MPS: bool = False
     SUPERLINKED_RESIZE_IMAGES: bool = False
+    # Batching specific settings
+    BATCHED_EMBEDDING_WAIT_TIME_MS: int = 5
+    BATCHED_VDB_READ_WAIT_TIME_MS: int = 5
+    BATCHED_VDB_WRITE_WAIT_TIME_MS: int = 5
     # Embedding specific settings - model
     MODEL_WARMUP: bool = False
     MODEL_CACHE_DIR: str | None = None

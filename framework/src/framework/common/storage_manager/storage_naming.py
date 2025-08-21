@@ -25,13 +25,16 @@ class StorageNaming:
     SCHEMA_INDEX_NAME = "__schema__"
     SCHEMA_FIELD_PREFIX = "__schema_field__"
 
-    def get_index_name_from_node_id(self, node_id: str) -> str:
+    @classmethod
+    def get_index_name_from_node_id(cls, node_id: str) -> str:
         return f"{StorageNaming.INDEX_PREFIX}{node_id}"
 
-    def generate_field_name_from_schema_field(self, schema_field: SchemaField) -> str:
+    @classmethod
+    def generate_field_name_from_schema_field(cls, schema_field: SchemaField) -> str:
         if isinstance(schema_field, IdField):
             return StorageNaming.OBJECT_ID_INDEX_NAME
         return f"{StorageNaming.SCHEMA_FIELD_PREFIX}{schema_field.schema_obj._schema_name}_{schema_field.name}"
 
-    def generate_node_data_field_name(self, node_id: str, node_data_key: str) -> str:
+    @classmethod
+    def generate_node_data_field_name(cls, node_id: str, node_data_key: str) -> str:
         return f"{StorageNaming.NODE_DATA_PREFIX}{node_id}_{node_data_key}"

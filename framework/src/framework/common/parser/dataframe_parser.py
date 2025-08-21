@@ -35,7 +35,7 @@ class DataFrameParser(DataParser[pd.DataFrame]):
     it transforms the `DataFrame` to a desired schema.
     """
 
-    def unmarshal(self, data: pd.DataFrame) -> list[ParsedSchema]:
+    async def unmarshal(self, data: pd.DataFrame) -> list[ParsedSchema]:
         """
         Parses the given DataFrame into a list of ParsedSchema objects according to the defined schema and mapping.
         Args:
@@ -52,7 +52,7 @@ class DataFrameParser(DataParser[pd.DataFrame]):
 
         if blob_cols := [key for key, value in schema_cols.items() if isinstance(value, Blob)]:
             for col in blob_cols:
-                data_copy[col] = self.blob_loader.load(list(data_copy[col]))
+                data_copy[col] = await self.blob_loader.load(list(data_copy[col]))
 
         if self._is_event_data_parser:
             self.__ensure_created_at(data_copy)

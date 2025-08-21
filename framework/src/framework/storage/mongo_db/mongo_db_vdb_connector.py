@@ -87,7 +87,7 @@ class MongoDBVDBConnector(VDBConnector[VDBKNNSearchConfig]):
             [UpdateOne({"_id": doc["_id"]}, {"$set": doc}, upsert=True) for doc in docs]
         )
 
-    async def _read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
+    async def _read_entities(self, entities: Sequence[Entity]) -> list[EntityData]:
         if not entities:
             return []
 

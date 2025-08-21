@@ -59,7 +59,7 @@ class SpaceFieldSet(Generic[SIT]):
     def field_names_text(self) -> Sequence[str]:
         return ",".join([f"{field.schema_obj._schema_name}.{field.name}" for field in self.fields])
 
-    def _generate_space_input(self, value: PythonTypes) -> SIT:
+    async def _generate_space_input(self, value: PythonTypes) -> SIT:
         return cast(SIT, value)
 
     def get_field_for_schema(self, schema_: Any) -> SchemaField | None:

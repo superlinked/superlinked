@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from abc import ABC, ABCMeta, abstractmethod
 
 import structlog
@@ -75,39 +76,48 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
             [self._get_single_evaluation_result(chunk) for chunk in (chunks or [])],
         )
 
-    def evaluate_next(
+    async def evaluate_next(
         self,
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
         online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult[NodeDataT] | None]:
         with context.dag_output_recorder.record_evaluation_exception(self.node_id):
-            results = self.evaluate_self(parsed_schemas, context, online_entity_cache)
+            results = await self.evaluate_self(parsed_schemas, context, online_entity_cache)
             if self.node.persist_node_result:
-                self.persist(results, parsed_schemas, online_entity_cache)
+                await self.persist(results, parsed_schemas, online_entity_cache)
         context.dag_output_recorder.record(self.node_id, results)
         return results
 
-    def evaluate_parent(
+    async def evaluate_next_single(
+        self,
+        parsed_schema: ParsedSchema,
+        context: ExecutionContext,
+        online_entity_cache: OnlineEntityCache,
+    ) -> EvaluationResult[NodeDataT] | None:
+        return (await self.evaluate_next([parsed_schema], context, online_entity_cache))[0]
+
+    async def evaluate_parent(
         self,
         parent: OnlineNode,
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
         online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult | None]:
-        parents_results = self.evaluate_parents([parent], parsed_schemas, context, online_entity_cache)
+        parents_results = await self.evaluate_parents([parent], parsed_schemas, context, online_entity_cache)
         return [parents_result.get(parent) for parents_result in parents_results]
 
-    def evaluate_parents(
+    async def evaluate_parents(
         self,
         parents: Sequence[OnlineNode],
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
         online_entity_cache: OnlineEntityCache,
     ) -> list[dict[OnlineNode, EvaluationResult]]:
-        parent_result_map = {
-            parent: parent.evaluate_next(parsed_schemas, context, online_entity_cache) for parent in parents
-        }
+        parent_evaluations = await asyncio.gather(
+            *[parent.evaluate_next(parsed_schemas, context, online_entity_cache) for parent in parents]
+        )
+        parent_result_map = dict(zip(parents, parent_evaluations))
         results_by_schema = [
             {parent: parent_result_map[parent][schema_idx] for parent in parents}
             for schema_idx in range(len(parsed_schemas))
@@ -126,7 +136,7 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
         return {parent: result for parent, result in parents_result.items() if result is not None}
 
     @abstractmethod
-    def evaluate_self(
+    async def evaluate_self(
         self,
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
@@ -134,7 +144,7 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
     ) -> list[EvaluationResult[NodeDataT] | None]:
         pass
 
-    def persist(
+    async def persist(
         self,
         results: Sequence[EvaluationResult[NodeDataT] | None],
         parsed_schemas: Sequence[ParsedSchema],
@@ -178,7 +188,7 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
             n_results=len(node_data_items),
         )
 
-    def load_stored_results(
+    async def load_stored_results(
         self,
         schemas_with_object_ids: Sequence[tuple[IdSchemaObject, str]],
         online_entity_cache: OnlineEntityCache,
@@ -187,14 +197,14 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
             EntityId(schema_id=schema._schema_name, object_id=object_id)
             for schema, object_id in schemas_with_object_ids
         ]
-        batch_results = online_entity_cache.get_node_results(
+        batch_results = await online_entity_cache.get_node_results(
             entity_ids=entity_ids,
             node_id=self.node_id,
             node_data_type=self.node.node_data_type,
         )
         return [cast(NodeDataT | None, batch_results[entity_id]) for entity_id in entity_ids]
 
-    def load_stored_results_with_default(
+    async def load_stored_results_with_default(
         self,
         schemas_with_object_ids: Sequence[tuple[IdSchemaObject, str]],
         default_value: NodeDataT,
@@ -202,16 +212,16 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
     ) -> list[NodeDataT]:
         return [
             default_value if result is None else result
-            for result in self.load_stored_results(schemas_with_object_ids, online_entity_cache)
+            for result in await self.load_stored_results(schemas_with_object_ids, online_entity_cache)
         ]
 
-    def load_stored_results_or_raise_exception(
+    async def load_stored_results_or_raise_exception(
         self,
         parsed_schemas: Sequence[ParsedSchema],
         online_entity_cache: OnlineEntityCache,
     ) -> list[NodeDataT]:
         schemas_with_object_ids = [(parsed_schema.schema, parsed_schema.id_) for parsed_schema in parsed_schemas]
-        stored_results = self.load_stored_results(schemas_with_object_ids, online_entity_cache)
+        stored_results = await self.load_stored_results(schemas_with_object_ids, online_entity_cache)
         if none_indices := [i for i, stored_result in enumerate(stored_results) if stored_result is None]:
             wrong_parsed_schema_params = [
                 f"{parsed_schemas[index].schema._schema_name}, {parsed_schemas[index].id_}" for index in none_indices

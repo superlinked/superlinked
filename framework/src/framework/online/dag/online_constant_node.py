@@ -36,7 +36,7 @@ class OnlineConstantNode(OnlineNode[ConstantNode[NodeDataT], NodeDataT]):
         super().__init__(node, parents, ParentValidationType.NO_PARENTS)
 
     @override
-    def evaluate_self(
+    async def evaluate_self(
         self,
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,

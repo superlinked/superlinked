@@ -25,6 +25,7 @@ from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.settings import settings
 from superlinked.framework.common.source.source import Source
 from superlinked.framework.common.source.types import SourceTypeT
+from superlinked.framework.common.util.async_util import AsyncUtil
 
 logger = structlog.get_logger()
 
@@ -38,8 +39,11 @@ class OnlineSource(Generic[SourceTypeT], TransformerPublisher[SourceTypeT, Parse
         )
 
     @override
-    def transform(self, message: SourceTypeT) -> list[ParsedSchema]:
-        return self.parser.unmarshal(message)
+    async def transform(self, message: SourceTypeT) -> list[ParsedSchema]:
+        return await self.parser.unmarshal(message)
 
     def put(self, data: SourceTypeT | Sequence[SourceTypeT]) -> None:
-        self._dispatch(data)
+        AsyncUtil.run(self.put_async(data))
+
+    async def put_async(self, data: SourceTypeT | Sequence[SourceTypeT]) -> None:
+        await self._dispatch(data)

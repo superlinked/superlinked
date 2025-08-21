@@ -34,11 +34,7 @@ from superlinked.framework.common.storage_manager.storage_naming import StorageN
 
 
 class EntityBuilder:
-    def __init__(
-        self,
-        storage_naming: StorageNaming,
-    ) -> None:
-        self._storage_naming = storage_naming
+    def __init__(self) -> None:
         self._admin_fields = AdminFields()
 
     def compose_entity_id(self, schema_id: str, object_id: str) -> EntityId:
@@ -50,7 +46,7 @@ class EntityBuilder:
     def convert_schema_field_to_field(self, schema_field: SchemaField) -> Field:
         return Field(
             FieldTypeConverter.convert_schema_field_type(type(schema_field)),
-            self._storage_naming.generate_field_name_from_schema_field(schema_field),
+            StorageNaming.generate_field_name_from_schema_field(schema_field),
         )
 
     def convert_parsed_schema_field_to_field_data(self, parsed_schema_field: ParsedSchemaField) -> FieldData:
@@ -106,7 +102,7 @@ class EntityBuilder:
         self, node_id: str, node_data_key: str, node_data_type: type[PythonTypes]
     ) -> Field:
         return self.compose_field(
-            self._storage_naming.generate_node_data_field_name(node_id, node_data_key),
+            StorageNaming.generate_node_data_field_name(node_id, node_data_key),
             node_data_type,
         )
 
@@ -131,7 +127,7 @@ class EntityBuilder:
         return [
             FieldData(
                 FieldTypeConverter.convert_node_data_type(type(value)),
-                self._storage_naming.generate_node_data_field_name(node_id, key),
+                StorageNaming.generate_node_data_field_name(node_id, key),
                 value,
             )
             for key, value in node_data.items()

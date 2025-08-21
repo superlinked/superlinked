@@ -14,6 +14,8 @@
 
 from __future__ import annotations
 
+import asyncio
+
 from beartype.typing import Any, Sequence, cast
 
 from superlinked.framework.common.exception import InvalidInputException
@@ -40,7 +42,7 @@ class JsonParser(DataParser[dict[str, Any]]):
     it transforms the `Json` to a desired schema.
     """
 
-    def unmarshal(self, data: dict[str, Any] | Sequence[dict[str, Any]]) -> list[ParsedSchema]:
+    async def unmarshal(self, data: dict[str, Any] | Sequence[dict[str, Any]]) -> list[ParsedSchema]:
         """
         Parses the given Json into a list of ParsedSchema objects according to the defined schema and mapping.
 
@@ -53,17 +55,21 @@ class JsonParser(DataParser[dict[str, Any]]):
 
         if isinstance(data, dict):
             data = [data]
-        return self._unmarshal_multiple(data)
+        return await self._unmarshal_multiple(data)
 
-    def _unmarshal_multiple(self, json_datas: Sequence[dict[str, Any]]) -> list[ParsedSchema]:
+    async def _unmarshal_multiple(self, json_datas: Sequence[dict[str, Any]]) -> list[ParsedSchema]:
         ids = [self.__ensure_id(json_data) for json_data in json_datas]
+
+        parsed_values_for_each_field = await asyncio.gather(
+            *[self._parse_schema_field_values(field, json_datas) for field in self._schema.schema_fields]
+        )
         parsed_fields_for_each_field = [
             [
                 ParsedSchemaField.from_schema_field(field, parsed_value)
-                for parsed_value in self._parse_schema_field_values(field, json_datas)
+                for parsed_value in parsed_values
                 if parsed_value is not None
             ]
-            for field in self._schema.schema_fields
+            for field, parsed_values in zip(self._schema.schema_fields, parsed_values_for_each_field)
         ]
         parsed_fields_for_each_data = self._transpose_parsed_fields(json_datas, parsed_fields_for_each_field)
         return [
@@ -129,7 +135,7 @@ class JsonParser(DataParser[dict[str, Any]]):
             )
         return cast(int, created_at)
 
-    def _parse_schema_field_values(
+    async def _parse_schema_field_values(
         self, field: SchemaField[SFT], datas: Sequence[dict[str, Any]]
     ) -> Sequence[SFT | None]:
         path: str = self._get_path(field)
@@ -139,7 +145,7 @@ class JsonParser(DataParser[dict[str, Any]]):
             return [cast(SFT, str(parsed_value)) if parsed_value else None for parsed_value in parsed_values]
 
         if isinstance(field, Blob):
-            return cast(Sequence[SFT], self.blob_loader.load(parsed_values))
+            return cast(Sequence[SFT], await self.blob_loader.load(parsed_values))
 
         return parsed_values
 

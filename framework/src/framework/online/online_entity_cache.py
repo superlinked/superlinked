@@ -65,7 +65,7 @@ class OnlineEntityCache:
     def set_origin(self, entity_id: EntityId, origin_id: str) -> None:
         self._entity_to_origin[entity_id] = origin_id
 
-    def get_node_results(
+    async def get_node_results(
         self, entity_ids: Sequence[EntityId], node_id: str, node_data_type: type[NodeDataTypes]
     ) -> dict[EntityId, NodeDataTypes | None]:
         cached_results: dict[EntityId, NodeDataTypes | None] = {}
@@ -81,7 +81,7 @@ class OnlineEntityCache:
                 EntityDataRequest(entity_id, [NodeResultRequest(node_id, node_data_type)])
                 for entity_id in entities_to_load
             ]
-            stored_entities = self._storage_manager.read_entity_data_requests(entity_data_requests)
+            stored_entities = await self._storage_manager.read_entity_data_requests(entity_data_requests)
             batch_entity_info = dict(zip(entities_to_load, stored_entities))
             self.load_node_info_into_cache(batch_entity_info)
             for entity_id, stored_entity in batch_entity_info.items():

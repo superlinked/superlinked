@@ -49,7 +49,7 @@ class QueueSubscriber(Generic[PayloadT], Subscriber[PayloadT]):
         self.__queue_message_version = ResourceSettings().external_message_bus.QUEUE_MESSAGE_VERSION
 
     @override
-    def update(self, messages: Sequence[PayloadT]) -> None:
+    async def update(self, messages: Sequence[PayloadT]) -> None:
         if self.__topic_name is not None:
             for item in messages:
                 if isinstance(item, dict):

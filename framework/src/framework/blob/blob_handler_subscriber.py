@@ -32,7 +32,7 @@ class BlobHandlerSubscriber(Subscriber[ParsedSchema]):
         super().__init__()
         self.__blob_handler = blob_handler
 
-    def update(self, messages: Sequence[ParsedSchema]) -> None:
+    async def update(self, messages: Sequence[ParsedSchema]) -> None:
         for message in messages:
             blob_fields = [field for field in message.fields if isinstance(field.schema_field, Blob)]
             for blob_field in blob_fields:

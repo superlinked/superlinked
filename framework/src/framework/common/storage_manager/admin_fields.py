@@ -56,18 +56,17 @@ class AdminFieldDescriptor:
 
 class AdminFields:
     def __init__(self) -> None:
-        self.schema_id = AdminFieldDescriptor(Field(FieldDataType.METADATA_STRING, StorageNaming.SCHEMA_INDEX_NAME))
-        self.object_id = AdminFieldDescriptor(Field(FieldDataType.METADATA_STRING, StorageNaming.OBJECT_ID_INDEX_NAME))
+        name_to_field = {
+            field_name: Field(FieldDataType.METADATA_STRING, field_name) for field_name in self.get_admin_field_names()
+        }
+        self.schema_id = AdminFieldDescriptor(name_to_field[StorageNaming.SCHEMA_INDEX_NAME])
+        self.object_id = AdminFieldDescriptor(name_to_field[StorageNaming.OBJECT_ID_INDEX_NAME])
         self.origin_id = AdminFieldDescriptor(
-            Field(FieldDataType.METADATA_STRING, StorageNaming.ORIGIN_ID_INDEX_NAME),
+            name_to_field[StorageNaming.ORIGIN_ID_INDEX_NAME],
             True,
             should_be_returned=settings.QUERY_TO_RETURN_ORIGIN_ID,
         )
-        self.__admin_field_descriptors = [
-            self.schema_id,
-            self.object_id,
-            self.origin_id,
-        ]
+        self.__admin_field_descriptors = [self.schema_id, self.object_id, self.origin_id]
         admin_fields = [admin_field_descriptor.field for admin_field_descriptor in self.__admin_field_descriptors]
         self.__admin_field_names = [admin_field.name for admin_field in admin_fields]
         self.__header_fields = [
@@ -123,3 +122,7 @@ class AdminFields:
         if value is None:
             raise InvalidStateException("None value found for the non-null admin field.")
         return value
+
+    @classmethod
+    def get_admin_field_names(cls) -> list[str]:
+        return [StorageNaming.SCHEMA_INDEX_NAME, StorageNaming.OBJECT_ID_INDEX_NAME, StorageNaming.ORIGIN_ID_INDEX_NAME]

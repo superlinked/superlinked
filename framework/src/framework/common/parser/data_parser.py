@@ -104,7 +104,7 @@ class DataParser(ABC, Generic[SourceTypeT]):
         return isinstance(value_to_check, int)
 
     @abstractmethod
-    def unmarshal(self, data: SourceTypeT) -> list[ParsedSchema]:
+    async def unmarshal(self, data: SourceTypeT) -> list[ParsedSchema]:
         """
         Get the source data and parse it to the desired Schema with the defined mapping.
 

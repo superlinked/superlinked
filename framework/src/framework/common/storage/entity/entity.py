@@ -14,11 +14,10 @@
 
 from dataclasses import dataclass
 
-from superlinked.framework.common.storage.entity.entity_id import EntityId
+from superlinked.framework.common.storage.entity.base_entity import BaseEntity
 from superlinked.framework.common.storage.field.field import Field
 
 
-@dataclass
-class Entity:
-    id_: EntityId
-    fields: dict[str, Field]
+@dataclass(frozen=True)
+class Entity(BaseEntity[Field]):
+    pass

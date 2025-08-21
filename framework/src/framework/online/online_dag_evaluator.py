@@ -99,7 +99,7 @@ class OnlineDagEvaluator:
             )
         return next(iter(unique_schemas))
 
-    def evaluate(
+    async def evaluate(
         self,
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
@@ -111,18 +111,18 @@ class OnlineDagEvaluator:
             "dag.evaluate",
             attributes={"schema": index_schema._schema_name, "n_entities": len(parsed_schemas), "is_event": False},
         ):
-            results = online_schema_dag.evaluate(parsed_schemas, context, online_entity_cache)
+            results = await online_schema_dag.evaluate(parsed_schemas, context, online_entity_cache)
         self.__log_evaluate(parsed_schemas, index_schema, results)
         return results
 
-    def evaluate_by_dag_effect_group(
+    async def evaluate_by_dag_effect_group(
         self,
         effect_group_to_parsed_schemas: Mapping[DagEffectGroup, list[ParsedSchemaWithEvent]],
         context: ExecutionContext,
         online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult[Vector] | None]:
         entity_data_requests = self._build_event_entity_data_requests(effect_group_to_parsed_schemas)
-        self._query_entity_data_requests(entity_data_requests, online_entity_cache)
+        await self._query_entity_data_requests(entity_data_requests, online_entity_cache)
         all_results = []
         for dag_effect_group, parsed_schema_with_events in effect_group_to_parsed_schemas.items():
             online_schema_dag = self._dag_effect_group_to_online_schema_dag[dag_effect_group]
@@ -132,7 +132,7 @@ class OnlineDagEvaluator:
                 "is_event": True,
             }
             with telemetry.span("dag.evaluate", attributes=labels):
-                results = online_schema_dag.evaluate(parsed_schema_with_events, context, online_entity_cache)
+                results = await online_schema_dag.evaluate(parsed_schema_with_events, context, online_entity_cache)
             logger.info("evaluated events", n_records=len(results))
             all_results.extend(results)
         return all_results
@@ -194,10 +194,10 @@ class OnlineDagEvaluator:
         schema_candidates = [dag_effect_group.affected_schema, dag_effect_group.affecting_schema]
         return next(iter(schema for schema in schema_candidates if isinstance(schema, referenced_schema_type)), None)
 
-    def _query_entity_data_requests(
+    async def _query_entity_data_requests(
         self, entity_data_requests: Sequence[EntityDataRequest], online_entity_cache: OnlineEntityCache
     ) -> None:
-        stored_results = self._storage_manager.read_entity_data_requests(entity_data_requests)
+        stored_results = await self._storage_manager.read_entity_data_requests(entity_data_requests)
         online_entity_cache.load_node_info_into_cache(
             {
                 entity_data_request.entity_id: node_result

@@ -28,7 +28,6 @@ from superlinked.framework.blob.blob_metadata import BlobMetadata
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.schema.blob_information import BlobInformation
-from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.common.util.gcs_utils import GCSFileOps
 
 logger = structlog.getLogger()
@@ -51,8 +50,8 @@ class GcsBlobHandler(BlobHandler):
         future.add_done_callback(lambda f: self._task_done_callback(f, object_key, data))
 
     @override
-    def download(self, object_keys: Sequence[str]) -> list[BlobInformation]:
-        downloaded_items = AsyncUtil.run(self._download(object_keys))
+    async def download(self, object_keys: Sequence[str]) -> list[BlobInformation]:
+        downloaded_items = await self._download(object_keys)
         return [
             BlobInformation(base64.b64encode(downloaded_item), object_key)
             for object_key, downloaded_item in zip(object_keys, downloaded_items)

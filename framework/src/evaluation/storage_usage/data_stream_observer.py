@@ -45,7 +45,7 @@ class DataStreamObserver(Subscriber):
         return self.__immeasurable_messages_count
 
     @override
-    def update(self, messages: Sequence[PublishedMessageT]) -> None:
+    async def update(self, messages: Sequence[PublishedMessageT]) -> None:
         if not messages:
             return
         file_info = [self.__get_file_info(message) for message in messages]

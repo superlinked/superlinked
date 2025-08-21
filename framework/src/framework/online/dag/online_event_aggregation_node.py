@@ -89,7 +89,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         return self.node.length
 
     @override
-    def evaluate_self(
+    async def evaluate_self(
         self,
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
@@ -102,7 +102,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
             raise InvalidStateException("Cannot process a mix of event and non-event parsed schemas.")
         unique_object_ids = list({parsed_schema.id_ for parsed_schema in parsed_schemas})
         schema = self.__get_single_schema(parsed_schemas)
-        id_to_result = self._load_stored_result_by_id(schema, unique_object_ids, online_entity_cache)
+        id_to_result = await self._load_stored_result_by_id(schema, unique_object_ids, online_entity_cache)
         if self._input_to_aggregate is None or parsed_schema_types[0] != ParsedSchemaWithEvent:
             return self._to_evaluation_results(parsed_schemas, id_to_result)
         relevant_parsed_schemas = [
@@ -111,7 +111,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
             if self.node.event_schema == parsed_schema.event_parsed_schema.schema
         ]
 
-        event_id_to_affecting_info = self._calculate_event_id_to_affecting_info(
+        event_id_to_affecting_info = await self._calculate_event_id_to_affecting_info(
             context, relevant_parsed_schemas, self._input_to_aggregate, online_entity_cache
         )
         for parsed_schema in relevant_parsed_schemas:
@@ -125,7 +125,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
                     affecting_info.number_of_weights,
                     stored_event_metadata,
                 )
-                id_to_result[parsed_schema.id_] = EventAggregator(
+                id_to_result[parsed_schema.id_] = await EventAggregator(
                     EventAggregatorParams(
                         context,
                         id_to_result[parsed_schema.id_],
@@ -162,13 +162,13 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
                 )
         return parsed_schemas[0].schema
 
-    def _load_stored_result_by_id(
+    async def _load_stored_result_by_id(
         self,
         schema: IdSchemaObject,
         object_ids: Sequence[str],
         online_entity_cache: OnlineEntityCache,
     ) -> dict[str, Vector]:
-        stored_results = self.load_stored_results(
+        stored_results = await self.load_stored_results(
             [(schema, object_id) for object_id in object_ids], online_entity_cache
         )
         return {
@@ -176,7 +176,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
             for object_id, stored_result in zip(object_ids, stored_results)
         }
 
-    def _calculate_event_id_to_affecting_info(
+    async def _calculate_event_id_to_affecting_info(
         self,
         context: ExecutionContext,
         parsed_schemas: Sequence[ParsedSchemaWithEvent],
@@ -184,13 +184,13 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         online_entity_cache: OnlineEntityCache,
     ) -> dict[str, EventAffectingInfo]:
         event_parsed_schemas = [parsed_schema.event_parsed_schema for parsed_schema in parsed_schemas]
-        vectors = self._calculate_affecting_vectors(
+        vectors = await self._calculate_affecting_vectors(
             context, event_parsed_schemas, input_to_aggregate, online_entity_cache
         )
-        weights = self._calculate_affecting_weights(context, event_parsed_schemas, online_entity_cache)
+        weights = await self._calculate_affecting_weights(context, event_parsed_schemas, online_entity_cache)
         return self._event_effect_handler.calculate_affecting_info_by_event_id(event_parsed_schemas, vectors, weights)
 
-    def _calculate_affecting_vectors(
+    async def _calculate_affecting_vectors(
         self,
         context: ExecutionContext,
         event_parsed_schemas: Sequence[EventParsedSchema],
@@ -203,21 +203,21 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
             )
             for event_parsed_schema in event_parsed_schemas
         ]
-        parent_results = self.evaluate_parent(
+        parent_results = await self.evaluate_parent(
             input_to_aggregate, affecting_parsed_schemas, context, online_entity_cache
         )
         return [
             self._event_effect_handler.map_parent_result_to_vector(parent_result) for parent_result in parent_results
         ]
 
-    def _calculate_affecting_weights(
+    async def _calculate_affecting_weights(
         self,
         context: ExecutionContext,
         event_parsed_schemas: Sequence[EventParsedSchema],
         online_entity_cache: OnlineEntityCache,
     ) -> list[list[float]]:
         filter_parents = list(self.weighted_filter_parents.keys())
-        parent_results = self.evaluate_parents(filter_parents, event_parsed_schemas, context, online_entity_cache)
+        parent_results = await self.evaluate_parents(filter_parents, event_parsed_schemas, context, online_entity_cache)
         affecting_weights = [
             [self.weighted_filter_parents[parent] for parent, result in parent_result.items() if result.main.value]
             for parent_result in parent_results

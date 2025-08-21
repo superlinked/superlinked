@@ -80,7 +80,7 @@ class RedisVDBConnector(VDBConnector[RedisVDBKNNSearchConfig]):
             await _pipeline.execute()
 
     @override
-    async def _read_entities(self, entities: Sequence[Entity]) -> Sequence[EntityData]:
+    async def _read_entities(self, entities: Sequence[Entity]) -> list[EntityData]:
         valid_entities = [entity for entity in entities if entity.fields]
         if not valid_entities:
             return []
@@ -121,7 +121,7 @@ class RedisVDBConnector(VDBConnector[RedisVDBKNNSearchConfig]):
         return [
             ResultEntityData(
                 id_=result.entity_id,
-                field_data={
+                fields={
                     field.name: (self._encoder.decode_field(field, result.field_name_to_data[field.name]))
                     for field in vdb_knn_search_params.fields_to_return
                 },

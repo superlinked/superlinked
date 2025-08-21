@@ -12,10 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import annotations
 
-from beartype.typing import TypeVar
-from PIL.Image import Image as PILImage
+from dataclasses import dataclass
 
-ModelEmbeddingInput = str | PILImage
-ModelEmbeddingInputT = TypeVar("ModelEmbeddingInputT", bound=ModelEmbeddingInput)
+from beartype.typing import Generic, TypeVar
+
+from superlinked.framework.common.storage.entity.entity_id import EntityId
+
+FieldT = TypeVar("FieldT")
+
+
+@dataclass(frozen=True)
+class BaseEntity(Generic[FieldT]):
+    id_: EntityId
+    fields: dict[str, FieldT]
+
+
+EntityT = TypeVar("EntityT", bound=BaseEntity)

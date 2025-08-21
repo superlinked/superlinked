@@ -59,7 +59,7 @@ class OnlineIndexNode(OnlineNode[IndexNode, Vector], HasLength):
         return cast(OnlineNode[Node[Vector], Vector], next(iter(active_parents)))
 
     @override
-    def evaluate_self(
+    async def evaluate_self(
         self,
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
@@ -67,7 +67,7 @@ class OnlineIndexNode(OnlineNode[IndexNode, Vector], HasLength):
     ) -> list[EvaluationResult[Vector] | None]:
         parent: OnlineNode = self.__get_parent_for_parsed_schemas(parsed_schemas)
         parent_results = cast(
-            list[EvaluationResult], self.evaluate_parent(parent, parsed_schemas, context, online_entity_cache)
+            list[EvaluationResult], await self.evaluate_parent(parent, parsed_schemas, context, online_entity_cache)
         )
         return [
             EvaluationResult(

@@ -14,6 +14,8 @@
 
 from __future__ import annotations
 
+import asyncio
+
 from beartype.typing import Sequence
 from typing_extensions import override
 
@@ -49,21 +51,23 @@ class OnlineChunkingNode(OnlineNode[ChunkingNode, str]):
         return chunker.chunk_text(text, chunk_size, chunk_overlap, split_chars_keep, split_chars_remove)
 
     @override
-    def evaluate_self(
+    async def evaluate_self(
         self,
         parsed_schemas: Sequence[ParsedSchema],
         context: ExecutionContext,
         online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult[str] | None]:
-        return [self.evaluate_self_single(schema, context, online_entity_cache) for schema in parsed_schemas]
+        return await asyncio.gather(
+            *[self.evaluate_self_single(schema, context, online_entity_cache) for schema in parsed_schemas]
+        )
 
-    def evaluate_self_single(
+    async def evaluate_self_single(
         self,
         parsed_schema: ParsedSchema,
         context: ExecutionContext,
         online_entity_cache: OnlineEntityCache,
     ) -> EvaluationResult[str] | None:
-        parent_result = self.evaluate_parent(self.parents[0], [parsed_schema], context, online_entity_cache)[0]
+        parent_result = (await self.evaluate_parent(self.parents[0], [parsed_schema], context, online_entity_cache))[0]
         if parent_result is None:
             return None
         if len(parent_result.chunks) > 0:
