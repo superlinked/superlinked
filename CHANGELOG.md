@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Remove decorator-based schema definition in favor of class inheritance BREAKING
 
+## [33.7.8] - 2025-08-19
+
+### Removed
+
+- Remove custom deprecation check
+
 ## [33.7.6] - 2025-08-13
 
 ### Added
@@ -37,8 +43,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [33.6.0] - 2025-08-07
 
+### Added
+
+- Add aiofiles type stubs for async file operations
+
 ### Changed
 
+- Update poetry deps
 - Update contributing docs
 - Update conventional-pre-commit hook to v4.2.0
 - Suppress pydantic deprecation warnings from instructor import
@@ -6168,6 +6179,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove extra field
 
 [34.0.0]: https://github.com/superlinked/superlinked/compare/v33.7.8..v34.0.0
+[33.7.8]: https://github.com/superlinked/superlinked/compare/v33.7.7..v33.7.8
 [33.7.6]: https://github.com/superlinked/superlinked/compare/v33.7.5..v33.7.6
 [33.7.5]: https://github.com/superlinked/superlinked/compare/v33.7.4..v33.7.5
 [33.7.4]: https://github.com/superlinked/superlinked/compare/v33.7.3..v33.7.4
