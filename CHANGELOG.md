@@ -3,6 +3,17 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [35.0.1] - 2025-08-22
+
+### Changed
+
+- Extract method to handle requests during sleep delay
+
+### Fixed
+
+- Continuous batch processing in DelayedEvaluator
+- Handle new requests during batch processing delay
+
 ## [34.0.0] - 2025-08-19
 
 ### Removed
@@ -6178,6 +6189,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove unnecessary call
 - Remove extra field
 
+[35.0.1]: https://github.com/superlinked/superlinked/compare/v35.0.0..v35.0.1
 [34.0.0]: https://github.com/superlinked/superlinked/compare/v33.7.8..v34.0.0
 [33.7.8]: https://github.com/superlinked/superlinked/compare/v33.7.7..v33.7.8
 [33.7.6]: https://github.com/superlinked/superlinked/compare/v33.7.5..v33.7.6
