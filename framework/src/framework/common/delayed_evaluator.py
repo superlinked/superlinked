@@ -82,6 +82,17 @@ class DelayedEvaluator(Generic[InputT, OutputT]):
                 if not request.future.done():
                     request.future.set_exception(e)
             raise
+        await self._handle_when_other_request_arrived_during_sleep()
+
+    async def _handle_when_other_request_arrived_during_sleep(self) -> None:
+        """To avoid freezing requests"""
+        if self._lock is None:
+            raise InvalidStateException("Lock must not be None.")
+        async with self._lock:
+            if self._pending_requests:
+                self._batch_task = asyncio.create_task(self._process_batch_after_delay())
+            else:
+                self._batch_task = None
 
     async def _process_batch_requests(self, requests: Sequence[DelayedRequest[InputT, OutputT]]) -> None:
         results = await self._evaluate_fn([input_item for request in requests for input_item in request.inputs])
