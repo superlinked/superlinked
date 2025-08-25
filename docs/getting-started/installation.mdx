@@ -116,7 +116,7 @@ source.put([
     },
 ])
 
-result = app.query(query, natural_query="best toothbrushes", limit=1)
+result = app.query(query, natural_language_query="best toothbrushes", limit=1)
 
 # Examine the extracted parameters from your query
 print(json.dumps(result.metadata, indent=2))
