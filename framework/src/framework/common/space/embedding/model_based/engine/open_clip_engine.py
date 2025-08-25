@@ -20,7 +20,6 @@ from pathlib import Path
 import structlog
 import torch
 from beartype.typing import Any, Sequence, cast
-from PIL.Image import Image as PILImage
 from torchvision.transforms.transforms import Compose
 from typing_extensions import override
 
@@ -44,6 +43,7 @@ from superlinked.framework.common.space.embedding.model_based.model_downloader i
 )
 from superlinked.framework.common.util.collection_util import CollectionUtil
 from superlinked.framework.common.util.gpu_embedding_util import GpuEmbeddingUtil
+from superlinked.framework.common.util.image_util import PILImage
 
 with warnings.catch_warnings():
     warnings.filterwarnings(

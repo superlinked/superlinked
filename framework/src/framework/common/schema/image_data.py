@@ -14,10 +14,10 @@
 
 from dataclasses import dataclass
 
-from PIL.Image import Image
+from superlinked.framework.common.util.image_util import PILImage
 
 
 @dataclass(frozen=True)
 class ImageData:
-    image: Image | None
+    image: PILImage | None
     description: str | None

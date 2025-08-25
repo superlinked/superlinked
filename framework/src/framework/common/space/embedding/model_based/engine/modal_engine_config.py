@@ -29,8 +29,6 @@ class ModalEngineConfig(EmbeddingEngineConfig):  # pylint: disable=too-many-inst
     modal_batch_size: int = 5000
     modal_max_retries: int = 10
     modal_retry_delay: float = 0.2
-    modal_image_format: str | None = "WebP"
-    modal_image_quality: int = 95
 
     @override
     def __str__(self) -> str:
@@ -41,7 +39,5 @@ class ModalEngineConfig(EmbeddingEngineConfig):  # pylint: disable=too-many-inst
             f"modal_batch_size={self.modal_batch_size}",
             f"modal_max_retries={self.modal_max_retries}",
             f"modal_retry_delay={self.modal_retry_delay}",
-            f"modal_image_format={self.modal_image_format}",
-            f"modal_image_quality={self.modal_image_quality}",
         ]
         return f"{super().__str__()}, " + ", ".join(attributes)

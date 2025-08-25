@@ -28,6 +28,7 @@ logger = structlog.getLogger()
 
 YAML_FILENAME = "config.yaml"
 FRAMEWORK_SECTION = "framework"
+IMAGE_SECTION = "image"
 RESOURCE_SECTION = "resource"
 
 
@@ -54,7 +55,6 @@ class Settings(YamlBasedSettings):
     APP_ID: str = "default"
     # Embedding specific settings
     ENABLE_MPS: bool = False
-    SUPERLINKED_RESIZE_IMAGES: bool = False
     # Batching specific settings
     BATCHED_EMBEDDING_WAIT_TIME_MS: int = 5
     BATCHED_VDB_READ_WAIT_TIME_MS: int = 5
@@ -81,11 +81,9 @@ class Settings(YamlBasedSettings):
     # DAG visualization
     ENABLE_DAG_VISUALIZATION: bool = False
     DAG_VISUALIZATION_OUTPUT_DIR: str | None = None
-
-    """Online settings"""
+    # Online settings
     ONLINE_PUT_CHUNK_SIZE: int = 10000
-
-    """Query settings"""
+    # Query settings
     QUERY_TO_RETURN_ORIGIN_ID: bool = False
     # NLQ specific params
     SUPERLINKED_NLQ_MAX_RETRIES: int = 3
@@ -112,6 +110,18 @@ class Settings(YamlBasedSettings):
                 "Ensure all parameters are set for proper blob handler functionality.",
                 params=blob_params,
             )
+
+
+class ImageSettings(YamlBasedSettings):
+    RESIZE_IMAGES: bool = True
+    RESIZE_IMAGE_WIDTH: int = 224
+    RESIZE_IMAGE_HEIGHT: int = 224
+    IMAGE_FORMAT: str = "WebP"
+    IMAGE_QUALITY: int = 95
+
+    model_config = SettingsConfigDict(
+        yaml_file=YAML_FILENAME, yaml_config_section=IMAGE_SECTION, extra="ignore", frozen=True
+    )
 
 
 class ExternalMessageBusSettings(BaseModel):
@@ -163,6 +173,7 @@ class ResourceSettings(YamlBasedSettings):
 
 
 settings = Settings(_env_nested_delimiter="__")
+image_settings = ImageSettings(_env_nested_delimiter="__")
 resource_settings = ResourceSettings(_env_nested_delimiter="__")
 
 __all__ = ["settings", "resource_settings"]

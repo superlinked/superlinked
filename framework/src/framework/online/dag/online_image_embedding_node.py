@@ -18,7 +18,6 @@ import asyncio
 from itertools import chain
 
 from beartype.typing import Sequence, cast
-from PIL.Image import Image
 from typing_extensions import override
 
 from superlinked.framework.common.dag.context import ExecutionContext
@@ -35,7 +34,7 @@ from superlinked.framework.common.transform.transform import Step
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
 )
-from superlinked.framework.common.util.image_util import ImageUtil
+from superlinked.framework.common.util.image_util import PILImage
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.online_entity_cache import OnlineEntityCache
@@ -107,9 +106,7 @@ class OnlineImageEmbeddingNode(OnlineNode[ImageEmbeddingNode, Vector], HasLength
 
     async def _get_image_data(self, parsed_schema: ParsedSchema) -> ImageData:
         image, description = await self.__load_input(parsed_schema)
-        loaded_image: Image | None = None
-        if image is not None and image.data is not None:
-            loaded_image = ImageUtil.open_image(image.data)
+        loaded_image: PILImage | None = image.data if image and image.data else None
         return ImageData(loaded_image, description)
 
     async def __load_input(self, parsed_schema: ParsedSchema) -> tuple[BlobInformation | None, str | None]:

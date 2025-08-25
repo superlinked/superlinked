@@ -55,14 +55,7 @@ class ModalEngine(EmbeddingEngine[ModalEngineConfig]):
         return False  # TODO FAI-3674 - needs to be added
 
     def _pre_process_inputs(self, inputs: Sequence[ModelEmbeddingInputT]) -> list[str | bytes]:
-        return [
-            (
-                input_
-                if isinstance(input_, str)
-                else ImageUtil.encode_bytes(input_, self._config.modal_image_format, self._config.modal_image_quality)
-            )
-            for input_ in inputs
-        ]
+        return [(input_ if isinstance(input_, str) else ImageUtil.encode_bytes(input_)) for input_ in inputs]
 
     async def __send_request(self, inputs: Sequence[str | bytes]) -> list[list[float]]:
         retry_count = 0

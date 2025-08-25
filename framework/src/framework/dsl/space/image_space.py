@@ -16,7 +16,6 @@ from pathlib import Path
 
 import structlog
 from beartype.typing import Sequence
-from PIL.Image import Image
 from typing_extensions import override
 
 from superlinked.framework.common.dag.embedding_node import EmbeddingNode
@@ -55,6 +54,7 @@ from superlinked.framework.common.space.embedding.model_based.singleton_embeddin
     SingletonEmbeddingEngineManager,
 )
 from superlinked.framework.common.util.async_util import AsyncUtil
+from superlinked.framework.common.util.image_util import PILImage
 from superlinked.framework.dsl.space.image_space_field_set import (
     ImageDescriptionSpaceFieldSet,
     ImageSpaceFieldSet,
@@ -110,7 +110,7 @@ class ImageSpace(Space[Vector, ImageData]):
                 model_handler, model, model_cache_dir, embedding_engine_config
             )
         )
-        self.image = ImageSpaceFieldSet(self, set(image_fields), allowed_param_types=[str, Image])
+        self.image = ImageSpaceFieldSet(self, set(image_fields), allowed_param_types=[str, PILImage])
         self.description = ImageDescriptionSpaceFieldSet(
             self,
             set(description for description in description_fields if description is not None),

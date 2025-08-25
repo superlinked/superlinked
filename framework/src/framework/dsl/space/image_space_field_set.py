@@ -14,15 +14,13 @@
 
 from dataclasses import dataclass
 
-import PIL
-import PIL.Image
 from typing_extensions import override
 
 from superlinked.framework.common.data_types import PythonTypes
 from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.parser.blob_loader import BlobLoader
 from superlinked.framework.common.schema.image_data import ImageData
-from superlinked.framework.common.util.image_util import ImageUtil
+from superlinked.framework.common.util.image_util import PILImage
 from superlinked.framework.dsl.space.space_field_set import SpaceFieldSet
 
 blob_loader = BlobLoader(allow_bytes=True)
@@ -37,12 +35,10 @@ class ImageSpaceFieldSet(SpaceFieldSet[ImageData]):
 
     @override
     async def _generate_space_input(self, value: PythonTypes) -> ImageData:
-        if not isinstance(value, (str, PIL.Image.Image)):
+        if not isinstance(value, (str, PILImage)):
             raise InvalidStateException(f"Invalid type of input for {type(self).__name__}.", input_type=type(value))
-        loaded_image = (await blob_loader.load([value]))[0]
-        opened_image: PIL.Image.Image | None = None
-        if loaded_image and loaded_image.data:
-            opened_image = ImageUtil.open_image(loaded_image.data)
+        loaded_image = loaded_image = (await blob_loader.load([value]))[0]
+        opened_image: PILImage | None = loaded_image.data if loaded_image and loaded_image.data else None
         return ImageData(image=opened_image, description=None)
 
 

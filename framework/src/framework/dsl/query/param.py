@@ -16,9 +16,9 @@
 from __future__ import annotations
 
 from beartype.typing import Any, Sequence, TypeAlias
-from PIL.Image import Image
 
 from superlinked.framework.common.exception import InvalidInputException
+from superlinked.framework.common.util.image_util import PILImage
 from superlinked.framework.common.util.type_validator import TypeValidator
 
 UNSET_PARAM_NAME = "__UNSET_PARAM_NAME__"
@@ -91,7 +91,7 @@ class Param:
 
 
 ParamInputType: TypeAlias = (
-    Sequence[str] | Sequence[float] | Image | str | int | float | bool | tuple[str | None, str | None]
+    Sequence[str] | Sequence[float] | PILImage | str | int | float | bool | tuple[str | None, str | None]
 )
 ParamType: TypeAlias = ParamInputType | None | Param
 StringParamType: TypeAlias = str | Param
