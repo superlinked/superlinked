@@ -22,6 +22,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [33.7.8] - 2025-08-19
 
+### Added
+
+- Add aiofiles type stubs for async file operations
+
+### Changed
+
+- Open_image to handle b64
+- Update poetry deps
+
 ### Removed
 
 - Remove custom deprecation check
@@ -54,13 +63,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [33.6.0] - 2025-08-07
 
-### Added
-
-- Add aiofiles type stubs for async file operations
-
 ### Changed
 
-- Update poetry deps
 - Update contributing docs
 - Update conventional-pre-commit hook to v4.2.0
 - Suppress pydantic deprecation warnings from instructor import
