@@ -19,7 +19,7 @@ from typing_extensions import override
 from superlinked.framework.common.precision import Precision
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class EmbeddingEngineConfig:
     """
     Args:
