@@ -3,6 +3,14 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [36.1.0] - 2025-08-28
+
+### Changed
+
+- Improve modal performance
+- Update embedder.py
+- Align with batch
+
 ## [36.0.0] - 2025-08-27
 
 ### Changed
@@ -6205,6 +6213,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove unnecessary call
 - Remove extra field
 
+[36.1.0]: https://github.com/superlinked/superlinked/compare/v36.0.0..v36.1.0
 [36.0.0]: https://github.com/superlinked/superlinked/compare/v35.1.1..v36.0.0
 [35.1.1]: https://github.com/superlinked/superlinked/compare/v35.1.0..v35.1.1
 [35.0.1]: https://github.com/superlinked/superlinked/compare/v35.0.0..v35.0.1
