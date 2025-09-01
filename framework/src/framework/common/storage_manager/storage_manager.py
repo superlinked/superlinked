@@ -73,6 +73,7 @@ from superlinked.framework.common.storage_manager.search_result_item import (
     SearchResultItem,
 )
 from superlinked.framework.common.storage_manager.storage_naming import StorageNaming
+from superlinked.framework.common.telemetry.telemetry_registry import telemetry
 from superlinked.framework.common.util.async_util import AsyncUtil
 from superlinked.framework.dsl.query.query_user_config import QueryUserConfig
 
@@ -294,7 +295,8 @@ class StorageManager:
             for entity_id, node_id_to_node_info in cached_items.items()
         ]
         entity_data_items.extend(cached_entity_data)
-        await self._delayed_write_evaluator.evaluate(entity_data_items)
+        with telemetry.span("vdb.write", attributes={"n_entities": len(entity_data_items)}):
+            await self._delayed_write_evaluator.evaluate(entity_data_items)
 
     # TODO FAB-3639 - legacy-readwrite-interfaces
     def write_parsed_schema_fields(
@@ -377,7 +379,8 @@ class StorageManager:
         entities, node_requests_to_fields = zip(
             *[self._create_entity_and_node_request_to_field(request) for request in entity_data_requests]
         )
-        entity_data = await self._delayed_read_evaluator.evaluate(entities)
+        with telemetry.span("vdb.read", attributes={"n_entities": len(entities)}):
+            entity_data = await self._delayed_read_evaluator.evaluate(entities)
         return [
             self._create_node_id_to_node_info(node_request_to_field, ed.field_data)
             for node_request_to_field, ed in zip(node_requests_to_fields, entity_data)
