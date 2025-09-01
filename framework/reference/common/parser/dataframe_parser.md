@@ -29,7 +29,7 @@ Classes
 
     ### Methods
 
-    `unmarshal(self, data: pd.DataFrame) ‑> list[superlinked.framework.common.parser.parsed_schema.ParsedSchema]`
+    `unmarshal_single(self, data: pd.DataFrame) ‑> list[superlinked.framework.common.parser.parsed_schema.ParsedSchema]`
     :   Parses the given DataFrame into a list of ParsedSchema objects according to the defined schema and mapping.
         Args:
             data (pd.DataFrame): Pandas DataFrame input.

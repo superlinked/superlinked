@@ -34,14 +34,6 @@ Classes
     * superlinked.framework.common.parser.dataframe_parser.DataFrameParser
     * superlinked.framework.common.parser.json_parser.JsonParser
 
-    ### Instance variables
-
-    `allow_bytes_input: bool`
-    :
-
-    `blob_loader: BlobLoader`
-    :
-
     ### Methods
 
     `marshal(self, parsed_schemas: ParsedSchema | list[ParsedSchema]) ‑> list[~SourceTypeT]`
@@ -53,14 +45,11 @@ Classes
         Returns:
             list[SourceTypeT]: A list of the original source data format after marshalling the parsed data.
 
-    `set_allow_bytes_input(self, value: bool) ‑> None`
-    :
-
-    `unmarshal(self, data: SourceTypeT) ‑> list[superlinked.framework.common.parser.parsed_schema.ParsedSchema]`
+    `unmarshal(self, data: Sequence[SourceTypeT]) ‑> list[superlinked.framework.common.parser.parsed_schema.ParsedSchema]`
     :   Get the source data and parse it to the desired Schema with the defined mapping.
         
         Args:
-            data (TSourceType): Source data that corresponds to the DataParser's type.
+            data (Sequence[TSourceType]): Source data that corresponds to the DataParser's type.
         
         Returns:
             list[ParsedSchema]: A list of ParsedSchema objects.
