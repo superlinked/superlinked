@@ -58,7 +58,7 @@ class RecencyEmbedding(InvertibleEmbedding[int, RecencyEmbeddingConfig]):
         return self._max_period_time
 
     @override
-    async def embed(self, input_: int, context: ExecutionContext) -> Vector:
+    def embed(self, input_: int, context: ExecutionContext) -> Vector:
         recency_vectors = [
             self.calc_recency_vector_for_period_time(input_, period_time_param, context)
             for period_time_param in self._period_time_list

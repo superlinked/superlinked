@@ -14,8 +14,6 @@
 
 from __future__ import annotations
 
-import asyncio
-
 from beartype.typing import Sequence, cast
 from typing_extensions import override
 
@@ -49,7 +47,7 @@ class OnlineNumberEmbeddingNode(
         parents: list[OnlineNode],
     ) -> None:
         super().__init__(node, parents)
-        self._embedding_transformation = TransformationFactory.create_embedding_transformation(
+        self._embedding_transformation = TransformationFactory.create_multi_embedding_transformation(
             self.node.transformation_config, SingletonEmbeddingEngineManager()
         )
         self.embedding_config = cast(NumberEmbeddingConfig, self.node.transformation_config.embedding_config)
@@ -60,7 +58,7 @@ class OnlineNumberEmbeddingNode(
         return self.node.length
 
     @property
-    def embedding_transformation(self) -> Step[float, Vector]:
+    def embedding_transformation(self) -> Step[Sequence[float], list[Vector]]:
         return self._embedding_transformation
 
     @override
@@ -70,26 +68,32 @@ class OnlineNumberEmbeddingNode(
         context: ExecutionContext,
         online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult[Vector] | None]:
+        results = await self._calculate_results(parsed_schemas, context, online_entity_cache)
+        return [self._wrap_in_evaluation_result(result) for result in results]
+
+    async def _calculate_results(
+        self, parsed_schemas: Sequence[ParsedSchema], context: ExecutionContext, online_entity_cache: OnlineEntityCache
+    ) -> list[Vector]:
         if self.embedding_config.should_return_default(context):
-            results = [self.node.transformation_config.embedding_config.default_vector] * len(parsed_schemas)
-        elif len(self.parents) == 0:
-            results = await self.load_stored_results_with_default(
+            return [self.node.transformation_config.embedding_config.default_vector] * len(parsed_schemas)
+        if len(self.parents) == 0:
+            return await self.load_stored_results_with_default(
                 [(parsed_schema.schema, parsed_schema.id_) for parsed_schema in parsed_schemas],
                 Vector.init_zero_vector(self.node.length),
                 online_entity_cache,
             )
-        else:
-            parent_results = await self.evaluate_parent(self.parents[0], parsed_schemas, context, online_entity_cache)
-            results = await asyncio.gather(
-                *[self._evaluate_parent_result(parent_result, context) for parent_result in parent_results]
-            )
-        return [self._wrap_in_evaluation_result(result) for result in results]
+        return await self._evaluate_multiple(parsed_schemas, context, online_entity_cache)
 
-    async def _evaluate_parent_result(
-        self,
-        parent_result: EvaluationResult | None,
-        context: ExecutionContext,
-    ) -> Vector:
-        if parent_result is None:
-            return Vector.init_zero_vector(self.node.length)
-        return await self.embedding_transformation.transform(parent_result.main.value, context)
+    async def _evaluate_multiple(
+        self, parsed_schemas: Sequence[ParsedSchema], context: ExecutionContext, online_entity_cache: OnlineEntityCache
+    ) -> list[Vector]:
+        parent_results = await self.evaluate_parent(self.parents[0], parsed_schemas, context, online_entity_cache)
+        index_result_pairs = [
+            (i, parent_result.main.value) for i, parent_result in enumerate(parent_results) if parent_result is not None
+        ]
+        if not index_result_pairs:
+            return [Vector.init_zero_vector(self.node.length)] * len(parent_results)
+        values = [value for _, value in index_result_pairs]
+        transformed_vectors = await self.embedding_transformation.transform(values, context)
+        index_to_vector = dict(zip((i for i, _ in index_result_pairs), transformed_vectors))
+        return [index_to_vector.get(i, Vector.init_zero_vector(self.node.length)) for i in range(len(parent_results))]

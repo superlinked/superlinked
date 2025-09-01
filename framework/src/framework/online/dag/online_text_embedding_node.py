@@ -77,16 +77,13 @@ class OnlineTextEmbeddingNode(DefaultOnlineNode[TextEmbeddingNode, Vector], HasL
         parent_results: Sequence[dict[OnlineNode, SingleEvaluationResult[str]]],
         context: ExecutionContext,
     ) -> Sequence[Vector | None]:
-        none_indices = [i for i, parent_result in enumerate(parent_results) if not parent_result]
-        non_none_parent_results = [parent_result for parent_result in parent_results if parent_result]
-        input_ = list(
-            map(
-                lambda parent_result: list(parent_result.values())[0].value,
-                non_none_parent_results,
-            )
-        )
-        embedded_texts: list[Vector | None] = list(await self.__embed_texts(input_, context))
-        for i in none_indices:
+        parent_result_values = [
+            list(parent_result.values())[0].value if parent_result else None for parent_result in parent_results
+        ]
+        empty_indices = [i for i, value in enumerate(parent_result_values) if not value]
+        valid_values = [value for value in parent_result_values if value]
+        embedded_texts: list[Vector | None] = list(await self.__embed_texts(valid_values, context))
+        for i in reversed(empty_indices):
             embedded_texts.insert(i, None)
         return embedded_texts
 

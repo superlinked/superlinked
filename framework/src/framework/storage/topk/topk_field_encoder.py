@@ -70,8 +70,7 @@ class TopKFieldEncoder:
         return self._encode_vector(Vector(float_list))
 
     def _decode_float_list(self, float_list: list[float]) -> list[float]:
-        vector = self._decode_vector(float_list)
-        return [float(x) for x in vector.value.tolist()]
+        return self._decode_vector(float_list).to_list()
 
     def _encode_int(self, int_: int) -> int:
         return int_

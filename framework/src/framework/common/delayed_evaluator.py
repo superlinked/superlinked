@@ -15,12 +15,16 @@
 from __future__ import annotations
 
 import asyncio
+import time
 from dataclasses import dataclass, field
 from itertools import accumulate
 
+import structlog
 from beartype.typing import Awaitable, Callable, Generic, Sequence, TypeVar, cast
 
 from superlinked.framework.common.exception import InvalidStateException
+
+logger = structlog.getLogger()
 
 InputT = TypeVar("InputT")
 OutputT = TypeVar("OutputT")
@@ -47,16 +51,24 @@ class DelayedEvaluator(Generic[InputT, OutputT]):
         eval_fn: Async function that processes a batch of inputs and returns results
     """
 
-    def __init__(self, delay_ms: int, eval_fn: Callable[[Sequence[InputT]], Awaitable[list[OutputT]]]) -> None:
+    def __init__(
+        self,
+        delay_ms: int,
+        eval_fn: Callable[[Sequence[InputT]], Awaitable[list[OutputT]]],
+        task_name: str | None = None,
+    ) -> None:
         self._delay_ms = delay_ms
         self._evaluate_fn = eval_fn
+        self._task_name = task_name or "delayed evaluation"
         self._pending_requests: list[DelayedRequest[InputT, OutputT]] = []
         self._batch_task: asyncio.Task[None] | None = None
         self._lock = None if self._delay_ms <= 0 else asyncio.Lock()
 
     async def evaluate(self, inputs: Sequence[InputT]) -> list[OutputT]:
+        if not inputs:
+            return []
         if self._delay_ms <= 0:
-            return await self._evaluate_fn(inputs)
+            return await self._evaluate_with_logging(inputs)
         request = DelayedRequest[InputT, OutputT](inputs)
         if self._lock is None:
             raise InvalidStateException("Lock must not be None.")
@@ -95,9 +107,22 @@ class DelayedEvaluator(Generic[InputT, OutputT]):
                 self._batch_task = None
 
     async def _process_batch_requests(self, requests: Sequence[DelayedRequest[InputT, OutputT]]) -> None:
-        results = await self._evaluate_fn([input_item for request in requests for input_item in request.inputs])
+        results = await self._evaluate_with_logging(
+            [input_item for request in requests for input_item in request.inputs]
+        )
         positions = [0] + list(accumulate(len(request.inputs) for request in requests))
         for request, start, end in zip(requests, positions, positions[1:]):
             if not request.future.done():
                 result = cast(list[OutputT], None if results is None else results[start:end])
                 request.future.set_result(result)
+
+    async def _evaluate_with_logging(self, inputs: Sequence[InputT]) -> list[OutputT]:
+        start_time = time.perf_counter()
+        results = await self._evaluate_fn(inputs)
+        logger.info(
+            f"Processed {self._task_name}",
+            n_items=len(inputs),
+            duration_ms=round((time.perf_counter() - start_time) * 1000),
+            wait_ms=self._delay_ms,
+        )
+        return results

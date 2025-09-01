@@ -25,7 +25,6 @@ from superlinked.framework.common.exception import NotImplementedException
 from superlinked.framework.common.settings import settings
 from superlinked.framework.common.space.embedding.model_based.embedding_input import (
     ModelEmbeddingInput,
-    ModelEmbeddingInputT,
 )
 from superlinked.framework.common.space.embedding.model_based.engine.embedding_engine import (
     EmbeddingEngine,
@@ -72,7 +71,7 @@ class EmbeddingEngineManager:
         self,
         model_handler: ModelHandlerType,
         model_name: str,
-        inputs: Sequence[ModelEmbeddingInputT],
+        inputs: Sequence[ModelEmbeddingInput],
         is_query_context: bool,
         model_cache_dir: Path | None,
         config: EmbeddingEngineConfig,
@@ -104,7 +103,8 @@ class EmbeddingEngineManager:
         if not settings.MODEL_WARMUP and clean_model_name in MODEL_DIMENSION_BY_NAME:
             return MODEL_DIMENSION_BY_NAME[clean_model_name]
         length = await self._get_engine(model_handler, model_name, model_cache_dir, config).length
-        logger.info("Consider caching model dimension.", model_name=clean_model_name, dimension=length)
+        if model_handler not in [ModelHandler.MODAL, TextModelHandler.MODAL]:
+            logger.info("Consider caching model dimension.", model_name=clean_model_name, dimension=length)
         return length
 
     def clear_engines(self) -> None:
@@ -129,7 +129,9 @@ class EmbeddingEngineManager:
         delay_ms = settings.BATCHED_EMBEDDING_WAIT_TIME_MS
         for is_query in [False, True]:
             embed_fn = self._create_engine_embed_fn(engine, is_query)
-            self._key_to_delayed_evaluator[(engine_key, is_query)] = DelayedEvaluator(delay_ms, embed_fn)
+            self._key_to_delayed_evaluator[(engine_key, is_query)] = DelayedEvaluator(
+                delay_ms=delay_ms, eval_fn=embed_fn, task_name=f"{engine._model_name} embed"
+            )
 
     def _create_engine_embed_fn(
         self, engine: EmbeddingEngine, is_query: bool

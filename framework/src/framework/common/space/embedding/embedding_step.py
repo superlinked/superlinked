@@ -38,7 +38,7 @@ class EmbeddingStep(Generic[EmbeddingInputT], Step[EmbeddingInputT, Vector]):
         input_: EmbeddingInputT,
         context: ExecutionContext,
     ) -> Vector:
-        return await self._embedding.embed(input_, context)
+        return self._embedding.embed(input_, context)
 
 
 class MultiEmbeddingStep(Generic[EmbeddingInputT], Step[Sequence[EmbeddingInputT], Sequence[Vector]]):

@@ -127,8 +127,7 @@ class InMemorySearch:
             {
                 k: similarity for k, similarity in similarities.items() if not radius or similarity >= (1 - radius)
             }.items(),
-            key=lambda x: x[1],
-            reverse=True,
+            key=lambda x: (-x[1], x[0]),
         )
 
     @staticmethod

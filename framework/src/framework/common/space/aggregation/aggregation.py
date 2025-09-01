@@ -15,7 +15,6 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from functools import reduce
 
 import numpy as np
 from beartype.typing import Generic, Sequence
@@ -23,7 +22,7 @@ from typing_extensions import override
 
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.dag.context import ExecutionContext
-from superlinked.framework.common.data_types import Vector
+from superlinked.framework.common.data_types import NPArray, Vector, VectorItemT
 from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.interface.weighted import Weighted
 from superlinked.framework.common.space.config.aggregation.aggregation_config import (
@@ -68,64 +67,41 @@ class VectorAggregation(Aggregation[Vector]):
         return None
 
     @override
-    def aggregate_weighted(
-        self,
-        weighted_items: Sequence[Weighted[Vector]],
-        context: ExecutionContext,
-    ) -> Vector:
+    def aggregate_weighted(self, weighted_items: Sequence[Weighted[Vector]], context: ExecutionContext) -> Vector:
         weighted_vectors = [
             weighted
             for weighted in weighted_items
             if not weighted.item.is_empty and weighted.weight != constants.DEFAULT_NOT_AFFECTING_WEIGHT
         ]
-        vectors_with_negative_filters_replaced = (
-            weighted.item.replace_negative_filters(constants.DEFAULT_NOT_AFFECTING_EMBEDDING_VALUE) * weighted.weight
-            for weighted in weighted_vectors
-        )
-        aggregated_vector = reduce(lambda a, b: a.aggregate(b), vectors_with_negative_filters_replaced)
-        vectors_without_weights = [weighted.item for weighted in weighted_vectors]
-        return self.__apply_negative_filter(aggregated_vector, vectors_without_weights)
-
-    def __apply_negative_filter(self, aggregated_vector: Vector, vectors: Sequence[Vector]) -> Vector:
-        """
-        Applies the previous negative filter on those indices where
-        there was a negative filter in all aggregated vectors.
-        """
-        common_negative_filter_indices = set.intersection(*(set(vector.negative_filter_indices) for vector in vectors))
-        negative_filter_vector = self.__calculate_negative_filter_vector(
-            vectors, common_negative_filter_indices, aggregated_vector.dimension
-        )
-        return aggregated_vector.apply_negative_filter(negative_filter_vector)
-
-    def __calculate_negative_filter_vector(
-        self, vectors: Sequence[Vector], common_negative_filter_indices: set[int], vector_length: int
-    ) -> Vector:
-        """
-        For each dimension in the intersection of the negative filters
-        the value of all of the vector must be the same. Built on that we create a zero-vector
-        with these negative filter values.
-        """
-        if colliding_negative_filter_indices := [
-            i for i in common_negative_filter_indices if len({vector.value[i] for vector in vectors}) > 1
-        ]:
-            raise InvalidStateException(
-                "Cannot aggregate vectors having different negative filter values in the same positions.",
-                positions=colliding_negative_filter_indices,
+        if not weighted_vectors:
+            return Vector.empty_vector()
+        if len(weighted_vectors) == 1:
+            return weighted_vectors[0].item * weighted_vectors[0].weight
+        result_value = np.zeros_like(weighted_vectors[0].item.value, dtype=VectorItemT)
+        for weighted in weighted_vectors:
+            result_value += (
+                np.where(weighted.item.value_mask, weighted.item.value, constants.DEFAULT_NOT_AFFECTING_EMBEDDING_VALUE)
+                * weighted.weight
             )
-        return Vector(
-            value=[
-                (
-                    0.0
-                    if i not in common_negative_filter_indices
-                    else next(
-                        (vector.value[i] for vector in vectors),
-                        constants.DEFAULT_NOT_AFFECTING_EMBEDDING_VALUE,
+        index_to_negative_filter = self.__calculate_index_to_negative_filter(weighted_vectors, result_value)
+        for index, filter_value in index_to_negative_filter.items():
+            result_value[index] = filter_value
+        return Vector(result_value, set(index_to_negative_filter.keys()))
+
+    def __calculate_index_to_negative_filter(
+        self, weighted_vectors: Sequence[Weighted[Vector]], result_value: NPArray
+    ) -> dict[int, float]:
+        index_to_negative_filter: dict[int, float] = {}
+        for weighted in weighted_vectors:
+            for i in weighted.item.negative_filter_indices:
+                negative_filter = weighted.item.value[i]
+                if i in index_to_negative_filter and index_to_negative_filter[i] != negative_filter:
+                    raise InvalidStateException(
+                        f"Cannot aggregate vectors having different negative filter values at index {i}"
                     )
-                )
-                for i in range(vector_length)
-            ],
-            negative_filter_indices=common_negative_filter_indices,
-        )
+                if result_value[i] == constants.DEFAULT_NOT_AFFECTING_EMBEDDING_VALUE:
+                    index_to_negative_filter[i] = negative_filter
+        return index_to_negative_filter
 
 
 class NumberAggregation(Generic[NumberAggregationInputT], Aggregation[NumberAggregationInputT], ABC):

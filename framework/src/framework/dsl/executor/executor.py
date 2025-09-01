@@ -65,7 +65,3 @@ class Executor(ABC, Generic[SourceT]):
         Returns:
             App: An instance of App.
         """
-
-    def _prohibit_bytes_input(self) -> None:
-        for source in self._sources:
-            source.parser.set_allow_bytes_input(False)

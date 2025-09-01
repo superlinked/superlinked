@@ -14,10 +14,8 @@
 
 from dataclasses import dataclass
 
-from superlinked.framework.common.util.image_util import PILImage
-
 
 @dataclass(frozen=True)
 class ImageData:
-    image: PILImage | None
+    image: bytes | None
     description: str | None

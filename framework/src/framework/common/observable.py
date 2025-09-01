@@ -54,7 +54,7 @@ class TransformerPublisher(Generic[ReceivedMessageT, PublishedMessageT]):
         self._subscribers.remove(subscriber)
 
     @abstractmethod
-    async def transform(self, message: ReceivedMessageT) -> list[PublishedMessageT]:
+    async def transform(self, messages: Sequence[ReceivedMessageT]) -> list[PublishedMessageT]:
         pass
 
     async def _dispatch(self, messages: ReceivedMessageT | Sequence[ReceivedMessageT]) -> None:
@@ -62,21 +62,26 @@ class TransformerPublisher(Generic[ReceivedMessageT, PublishedMessageT]):
             Sequence[ReceivedMessageT],
             ([messages] if not isinstance(messages, Sequence) or isinstance(messages, str) else messages),
         )
-        pre_transform_subscriber_tasks = [
-            pre_transform_subscriber.update(batch)
-            for batch in CollectionUtil.chunk_list(data=messages, chunk_size=self._chunk_size)
-            for pre_transform_subscriber in self._pre_transform_subscribers
-        ]
-        await asyncio.gather(*pre_transform_subscriber_tasks)
-        transform_tasks = [self.transform(message) for message in messages]
-        transform_results = await asyncio.gather(*transform_tasks)
-        transformed_messages = [transformed_message for result in transform_results for transformed_message in result]
-        subscriber_tasks = [
-            subscriber.update(transformed_batch)
-            for transformed_batch in CollectionUtil.chunk_list(data=transformed_messages, chunk_size=self._chunk_size)
-            for subscriber in self._subscribers
-        ]
-        await asyncio.gather(*subscriber_tasks)
+        message_batches = list(CollectionUtil.chunk_list(data=messages, chunk_size=self._chunk_size))
+        await asyncio.gather(
+            *(
+                pre_transform_subscriber.update(batch)
+                for pre_transform_subscriber in self._pre_transform_subscribers
+                for batch in message_batches
+            )
+        )
+        transformed_messages = await self.transform(messages)
+        if transformed_messages:
+            transformed_batches = list(
+                CollectionUtil.chunk_list(data=transformed_messages, chunk_size=self._chunk_size)
+            )
+            await asyncio.gather(
+                *(
+                    subscriber.update(transformed_batch)
+                    for transformed_batch in transformed_batches
+                    for subscriber in self._subscribers
+                )
+            )
 
 
 class Publisher(
@@ -84,5 +89,5 @@ class Publisher(
     Generic[PublishedMessageT],
 ):
     @override
-    async def transform(self, message: PublishedMessageT) -> list[PublishedMessageT]:
-        return [message]
+    async def transform(self, messages: Sequence[PublishedMessageT]) -> list[PublishedMessageT]:
+        return list(messages)

@@ -39,4 +39,4 @@ class TransformVectorToQueryVector(Step[Vector, Vector]):
         input_: Vector,
         context: ExecutionContext,
     ) -> Vector:
-        return await self._embedding._to_query_vector(input_, context)
+        return self._embedding._to_query_vector(input_, context)

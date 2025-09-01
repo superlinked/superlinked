@@ -58,6 +58,7 @@ class Settings(YamlBasedSettings):
     # Batching specific settings
     BATCHED_EMBEDDING_WAIT_TIME_MS: int = 5
     BATCHED_VDB_READ_WAIT_TIME_MS: int = 5
+    BATCHED_BLOB_LOAD_WAIT_TIME_MS: int = 5
     BATCHED_VDB_WRITE_WAIT_TIME_MS: int = 5
     # Embedding specific settings - model
     MODEL_WARMUP: bool = False
@@ -113,7 +114,6 @@ class Settings(YamlBasedSettings):
 
 
 class ImageSettings(YamlBasedSettings):
-    RESIZE_IMAGES: bool = True
     RESIZE_IMAGE_WIDTH: int = 224
     RESIZE_IMAGE_HEIGHT: int = 224
     IMAGE_FORMAT: str = "WebP"

@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import numpy as np
 from beartype.typing import Any, Mapping, Sequence
-from typing_extensions import override
 
 from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.schema.blob_information import BlobInformation
@@ -36,33 +35,21 @@ class Vector:
         negative_filter_indices: set[int] | frozenset[int] | None = None,
         denormalizer: float = 1.0,
     ) -> None:
-        if isinstance(value, np.ndarray):
-            value_to_set = value.astype(VectorItemT, copy=False)
-        else:
-            value_to_set = np.array(list(value), dtype=VectorItemT)
-        self.value: NPArray = value_to_set
-        self.__make_value_immutable()
-        self.__dimension: int = len(self.value)
-        self.__negative_filter_indices = (
-            frozenset(negative_filter_indices) if negative_filter_indices else frozenset({})
-        )
-        self.__validate_negative_filter_indices()
-        self.__denormalizer = denormalizer
-
-    def __make_value_immutable(self) -> None:
-        self.value.setflags(write=False)
-
-    @property
-    def dimension(self) -> int:
-        return self.__dimension
-
-    @property
-    def denormalizer(self) -> float:
-        return self.__denormalizer
+        self.value = self.__init_value(value)
+        self.__negative_filter_indices = self.__init_negative_filter_indices(negative_filter_indices, self.dimension)
+        self._denormalizer = denormalizer
 
     @staticmethod
     def empty_vector() -> Vector:
         return Vector([])
+
+    @staticmethod
+    def init_zero_vector(length: int) -> Vector:
+        return Vector([0] * length)
+
+    @property
+    def dimension(self) -> int:
+        return len(self.value)
 
     @property
     def negative_filter_indices(self) -> frozenset[int]:
@@ -78,75 +65,25 @@ class Vector:
 
     @property
     def value_without_negative_filter(self) -> NPArray:
-        if self.__negative_filter_indices:
-            return self.value[self.non_negative_filter_mask]
-        return self.value
+        if not self.__negative_filter_indices:
+            return self.value
+        return self.value[self.value_mask]
 
     @property
-    def non_negative_filter_mask(self) -> np.ndarray:
+    def value_mask(self) -> np.ndarray[np.bool_]:
         mask = np.ones(self.dimension, dtype=np.bool_)
-        mask[list(self.negative_filter_indices)] = False
+        if len(self.__negative_filter_indices):
+            mask[list(self.__negative_filter_indices)] = False
         return mask
 
     def normalize(self, length: float) -> Vector:
-        if length in [0, 1] or self.is_empty:
+        if length == 0:
             return self
-        normalized = self.shallow_copy_with_new(self.value_without_negative_filter / float(length), set(), 1 / length)
-        return normalized.apply_negative_filter(self)
+        divided_vector = self / length
+        return divided_vector.__shallow_copy_with_new(denormalizer=1 / length)
 
     def denormalize(self) -> Vector:
-        return self.normalize(self.denormalizer)
-
-    def aggregate(self, vector: Vector) -> Vector:
-        if self.is_empty:
-            return vector
-        if vector.is_empty:
-            return self
-        if self.dimension != vector.dimension:
-            raise InvalidStateException(
-                "Cannot aggregate vectors with different dimensions.",
-                dimension1=self.dimension,
-                dimension2=vector.dimension,
-            )
-        return self.shallow_copy_with_new(
-            self.value + vector.value,
-            negative_filter_indices=self.negative_filter_indices.intersection(vector.negative_filter_indices),
-        )
-
-    def __validate_negative_filter_indices(self) -> None:
-        if not self.negative_filter_indices:
-            return
-        if (num_indices := len(self.negative_filter_indices)) > self.dimension:
-            raise InvalidStateException(
-                "Invalid number of negative filter indices.", num_indices=num_indices, vector_dimension=self.dimension
-            )
-        if invalid_indices := [idx for idx in self.negative_filter_indices if idx < 0 or idx >= self.dimension]:
-            raise InvalidStateException(
-                "Invalid negative filter indices.",
-                invalid_indices=invalid_indices,
-                dimension=self.dimension,
-            )
-
-    def apply_negative_filter(self, other: Vector) -> Vector:
-        if self.negative_filter_indices == other.negative_filter_indices:
-            values = [
-                (value if i in other.negative_filter_indices else self.value[i]) for i, value in enumerate(other.value)
-            ]
-        else:
-            value_iterator = iter(self.value)
-            values = [
-                (value if i in other.negative_filter_indices else next(value_iterator))
-                for i, value in enumerate(other.value)
-            ]
-        return self.shallow_copy_with_new(values, other.negative_filter_indices)
-
-    def replace_negative_filters(self, new_negative_filter_value: float) -> Vector:
-        return self.shallow_copy_with_new(
-            [
-                (new_negative_filter_value if i in self.negative_filter_indices else original_value)
-                for i, original_value in enumerate(self.value)
-            ]
-        )
+        return self.normalize(self._denormalizer)
 
     def split(self, lengths: Sequence[int]) -> list[Vector]:
         if sum(lengths) < self.dimension:
@@ -167,27 +104,30 @@ class Vector:
             split_vectors.append(Vector(split_values[i], negative_filter_indices))
         return split_vectors
 
+    def to_list(self) -> list[float]:
+        return list(self.value.astype(float).tolist())
+
     def __mul__(self, other: Any) -> Vector:
-        if self.is_empty:
+        if other == 0:
+            value = np.zeros(
+                self.dimension,
+                dtype=VectorItemT,  # type: ignore[arg-type] # it is valid
+            )
+            return Vector(value, self.negative_filter_indices)
+        if other == 1 or self.is_empty:
             return self
         if not isinstance(other, int | float | np.floating):
             raise InvalidStateException(
                 f"{type(self).__name__} can only be multiplied with int, float or np.floating",
                 invalid_type=type(other).__name__,
             )
-        if other == 1:
-            return self
-        if other == 0:
-            return Vector(
-                np.zeros(
-                    self.dimension,
-                    dtype=VectorItemT,  # type: ignore[arg-type] # it is valid
-                ),
-                self.negative_filter_indices,
-            )
-
-        multiplied_vector = Vector(self.value_without_negative_filter * float(other))
-        return multiplied_vector.apply_negative_filter(self)
+        value = np.multiply(  # type: ignore[attr-defined] # it exists
+            self.value,
+            other,
+            where=self.value_mask,
+            out=self.value.copy(),
+        )
+        return self.__shallow_copy_with_new(value)
 
     def __rmul__(self, other: Any) -> Vector:
         return self * other
@@ -195,22 +135,43 @@ class Vector:
     def __truediv__(self, other: Any) -> Vector:
         if other == 0:
             return NotImplemented
-        return self * (1 / other)
-
-    @override
-    def __eq__(self, other: Any) -> bool:
-        if isinstance(other, Vector):
-            return (
-                np.array_equal(self.value, other.value)
-                and self.negative_filter_indices == other.negative_filter_indices
+        if other == 1 or self.is_empty:
+            return self
+        if not isinstance(other, int | float | np.floating):
+            raise InvalidStateException(
+                f"{type(self).__name__} can only be divided with int, float or np.floating",
+                invalid_type=type(other).__name__,
             )
-        return False
+        value = np.divide(  # type: ignore[call-overload] # it exists
+            self.value,
+            other,
+            where=self.value_mask,
+            out=self.value.copy(),
+        )
+        return self.__shallow_copy_with_new(value)
 
-    @override
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, Vector):
+            return False
+        return (
+            self._denormalizer == other._denormalizer
+            and self.negative_filter_indices == other.negative_filter_indices
+            and self.value.tobytes() == other.value.tobytes()
+        )
+
     def __hash__(self) -> int:
-        return hash((str(self.value), self.negative_filter_indices))
+        return hash((self.value.tobytes(), self.__negative_filter_indices, self._denormalizer))
 
-    def shallow_copy_with_new(
+    def __str__(self) -> str:
+        arr_str = np.array_str(  # type: ignore # numpy stub is missing for mypy-pylance
+            self.value, precision=NP_PRINT_PRECISION, suppress_small=True
+        )
+        return f"{type(self).__name__}({arr_str})"
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
+    def __shallow_copy_with_new(
         self,
         value: list[float] | list[VectorItemT] | list[np.floating] | NPArray | None = None,
         negative_filter_indices: set[int] | frozenset[int] | None = None,
@@ -220,25 +181,31 @@ class Vector:
         negative_filter_indices_to_use = (
             self.negative_filter_indices if negative_filter_indices is None else negative_filter_indices
         )
-        denormalizer_to_use = self.denormalizer if denormalizer is None else denormalizer
+        denormalizer_to_use = self._denormalizer if denormalizer is None else denormalizer
         return Vector(value_to_use, negative_filter_indices_to_use, denormalizer_to_use)
 
-    def to_list(self) -> list[float]:
-        return [float(x) for x in self.value.tolist()]
+    @staticmethod
+    def __init_value(value: Sequence[float] | Sequence[np.floating] | NPArray) -> NPArray:
+        if isinstance(value, np.ndarray):
+            result = value.astype(VectorItemT, copy=False)
+        else:
+            result = np.array(list(value), dtype=VectorItemT)
+        result.setflags(write=False)  # make immutable
+        return result
 
-    def __str__(self) -> str:
-        arr_str = np.array_str(  # type: ignore # numpy stub is missing for mypy-pylance
-            self.value, precision=NP_PRINT_PRECISION, suppress_small=True
-        )
-        return f"{type(self).__name__}({arr_str})"
-
-    @override
-    def __repr__(self) -> str:
-        return self.__str__()
-
-    @classmethod
-    def init_zero_vector(cls, length: int) -> Vector:
-        return Vector([0] * length)
+    @staticmethod
+    def __init_negative_filter_indices(
+        negative_filter_indices: set[int] | frozenset[int] | None, dimension: int
+    ) -> frozenset[int]:
+        if not negative_filter_indices:
+            return frozenset({})
+        if invalid_indices := [idx for idx in negative_filter_indices if idx < 0 or idx >= dimension]:
+            raise InvalidStateException(
+                "Invalid negative filter indices.",
+                invalid_indices=invalid_indices,
+                dimension=dimension,
+            )
+        return frozenset(negative_filter_indices)
 
 
 PythonTypes = float | int | str | Vector | list[float] | list[str] | BlobInformation

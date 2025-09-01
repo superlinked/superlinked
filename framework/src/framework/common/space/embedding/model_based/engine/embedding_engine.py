@@ -18,7 +18,7 @@ from pathlib import Path
 from beartype.typing import Generic, Sequence, TypeVar
 
 from superlinked.framework.common.space.embedding.model_based.embedding_input import (
-    ModelEmbeddingInputT,
+    ModelEmbeddingInput,
 )
 from superlinked.framework.common.space.embedding.model_based.engine.embedding_engine_config import (
     EmbeddingEngineConfig,
@@ -35,7 +35,7 @@ class EmbeddingEngine(Generic[EmbeddingEngineConfigT]):
         self._config = config
 
     @abstractmethod
-    async def embed(self, inputs: Sequence[ModelEmbeddingInputT], is_query_context: bool) -> list[list[float]]: ...
+    async def embed(self, inputs: Sequence[ModelEmbeddingInput], is_query_context: bool) -> list[list[float]]: ...
 
     @abstractmethod
     def is_query_prompt_supported(self) -> bool: ...

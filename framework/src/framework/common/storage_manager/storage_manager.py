@@ -96,11 +96,14 @@ class StorageManager:
         self._vdb_connector = vdb_connector
         self._entity_builder = EntityBuilder()
         self._delayed_read_evaluator = DelayedEvaluator(
-            settings.BATCHED_VDB_READ_WAIT_TIME_MS, self._vdb_connector.read_entities
+            delay_ms=settings.BATCHED_VDB_READ_WAIT_TIME_MS,
+            eval_fn=self._vdb_connector.read_entities,
+            task_name="vdb read",
         )
         self._delayed_write_evaluator = DelayedEvaluator(
-            settings.BATCHED_VDB_WRITE_WAIT_TIME_MS,
-            self._vdb_connector.write_entities,  # type: ignore
+            delay_ms=settings.BATCHED_VDB_WRITE_WAIT_TIME_MS,
+            eval_fn=self._vdb_connector.write_entities,  # type: ignore
+            task_name="vdb write",
         )
 
     async def close_connection(self) -> None:

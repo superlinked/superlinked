@@ -22,7 +22,7 @@ from typing_extensions import override
 
 from superlinked.framework.common.exception import UnexpectedResponseException
 from superlinked.framework.common.space.embedding.model_based.embedding_input import (
-    ModelEmbeddingInputT,
+    ModelEmbeddingInput,
 )
 from superlinked.framework.common.space.embedding.model_based.engine.embedding_engine import (
     EmbeddingEngine,
@@ -30,7 +30,6 @@ from superlinked.framework.common.space.embedding.model_based.engine.embedding_e
 from superlinked.framework.common.space.embedding.model_based.engine.modal_engine_config import (
     ModalEngineConfig,
 )
-from superlinked.framework.common.util.image_util import ImageUtil
 
 logger = structlog.getLogger()
 
@@ -47,22 +46,10 @@ class ModalEngine(EmbeddingEngine[ModalEngineConfig]):
         self._modal_cls.hydrate(client)
 
     @override
-    async def embed(self, inputs: Sequence[ModelEmbeddingInputT], is_query_context: bool) -> list[list[float]]:
-        pre_processed_inputs = self._pre_process_inputs(inputs)
-        embeddings = await self.__send_request(pre_processed_inputs)
-        return embeddings
-
-    @override
-    def is_query_prompt_supported(self) -> bool:
-        return False  # TODO FAI-3674 - needs to be added
-
-    def _pre_process_inputs(self, inputs: Sequence[ModelEmbeddingInputT]) -> list[str | bytes]:
-        return [(input_ if isinstance(input_, str) else ImageUtil.encode_bytes(input_)) for input_ in inputs]
-
-    async def __send_request(self, inputs: Sequence[str | bytes]) -> list[list[float]]:
+    async def embed(self, inputs: Sequence[ModelEmbeddingInput], is_query_context: bool) -> list[list[float]]:
+        batches = [inputs[i : i + self._config.batch_size] for i in range(0, len(inputs), self._config.batch_size)]
         retry_count = 0
         current_delay = self._config.retry_delay
-        batches = [inputs[i : i + self._config.batch_size] for i in range(0, len(inputs), self._config.batch_size)]
         while True:
             try:
                 batch_results = await asyncio.gather(
@@ -83,6 +70,10 @@ class ModalEngine(EmbeddingEngine[ModalEngineConfig]):
                 )
                 await asyncio.sleep(current_delay)
                 current_delay = current_delay * 2
+
+    @override
+    def is_query_prompt_supported(self) -> bool:
+        return False  # TODO FAI-3674 - needs to be added
 
     @classmethod
     @override

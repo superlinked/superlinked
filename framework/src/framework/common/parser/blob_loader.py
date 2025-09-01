@@ -34,7 +34,7 @@ from superlinked.framework.common.exception import (
     UnexpectedResponseException,
 )
 from superlinked.framework.common.schema.blob_information import BlobInformation
-from superlinked.framework.common.settings import image_settings, settings
+from superlinked.framework.common.settings import settings
 from superlinked.framework.common.telemetry.telemetry_registry import telemetry
 from superlinked.framework.common.util.image_util import ImageUtil, PILImage
 
@@ -44,8 +44,7 @@ GCS_URL_IDENTIFIER = "storage.cloud.google.com"
 
 
 class BlobLoader:
-    def __init__(self, allow_bytes: bool, blob_handler_config: BlobHandlerConfig | None = None) -> None:
-        self.allow_bytes = allow_bytes
+    def __init__(self, blob_handler_config: BlobHandlerConfig | None = None) -> None:
         self._scheme_to_load_function: dict[str, Callable[[Sequence[str]], Awaitable[list[BlobInformation]]]] = {
             "file": BlobLoader._load_from_local,
             "": BlobLoader._load_from_local,
@@ -56,21 +55,15 @@ class BlobLoader:
             self._scheme_to_load_function[handler.get_supported_cloud_storage_scheme()] = handler.download
 
     async def load(self, blob_like_inputs: Sequence[str | PILImage | None | Any]) -> list[BlobInformation | None]:
-        logger_to_use = logger.bind(n_blobs=len(blob_like_inputs))
-        logger_to_use.info("started blob loading")
         with telemetry.span(
             "blob.load",
-            attributes={
-                "n_blob_like_inputs": len(blob_like_inputs),
-                "allow_bytes": self.allow_bytes,
-            },
+            attributes={"n_blob_like_inputs": len(blob_like_inputs)},
         ):
             for blob_like_input in blob_like_inputs:
                 self._validate_blob_input(blob_like_input)
             non_none_inputs = [blob_like_input for blob_like_input in blob_like_inputs if blob_like_input is not None]
             loaded_blob_infos = await self._load_parsed_inputs(non_none_inputs)
             results = self._reconstruct_results(blob_like_inputs, loaded_blob_infos)
-        logger_to_use.info("finished blob loading")
         if len(results) != len(blob_like_inputs):
             raise InvalidStateException("Length mismatch: blob_infos length does not match blob_like_inputs length.")
         return results
@@ -106,29 +99,32 @@ class BlobLoader:
             for unique_string, blob_info in zip(unique_strings, blob_infos):
                 for position in string_positions[unique_string]:
                     results[position] = blob_info
-
-        for i, parsed_input in enumerate(parsed_inputs):
-            if isinstance(parsed_input, PILImage):
-                results[i] = BlobInformation(parsed_input, None)
-
-        if image_settings.RESIZE_IMAGES:
-            results = [None if blob_info is None else self.__resize(blob_info) for blob_info in results]
+        index_pil_image_or_blob_info_pairs = [(i, blob) for i, blob in enumerate(results) if blob is not None] + [
+            (i, parsed_input) for i, parsed_input in enumerate(parsed_inputs) if isinstance(parsed_input, PILImage)
+        ]
+        resized_blobs = await asyncio.gather(
+            *[asyncio.to_thread(self.__resize, blob) for _, blob in index_pil_image_or_blob_info_pairs]
+        )
+        for (i, _), resized_blob in zip(index_pil_image_or_blob_info_pairs, resized_blobs):
+            results[i] = resized_blob
         return results
 
     @staticmethod
     async def _load_from_local(paths: Sequence[str]) -> list[BlobInformation]:
         async def read_file(path: str) -> BlobInformation:
-            async with aiofiles.open(path, "rb") as f:
-                content = await f.read()
-            return BlobInformation(ImageUtil.open_image(content), path)
+            try:
+                async with aiofiles.open(path, "rb") as f:
+                    content = await f.read()
+            except (OSError, FileNotFoundError) as e:
+                raise InvalidInputException(f"Failed to open image {path}.") from e
+            return BlobInformation(content, path)
 
         return await asyncio.gather(*[read_file(path) for path in paths])
 
     @staticmethod
     async def _load_from_bytes(blob_like_inputs: Sequence[str]) -> list[BlobInformation]:
-        return [BlobInformation(ImageUtil.open_image(blob_like_input), None) for blob_like_input in blob_like_inputs]
+        return [BlobInformation(base64.b64decode(blob_like_input), None) for blob_like_input in blob_like_inputs]
 
-    @staticmethod
     @staticmethod
     async def _load_from_url(urls: Sequence[str]) -> list[BlobInformation]:
         async def async_fetch(session: aiohttp.ClientSession, url: str) -> BlobInformation:
@@ -137,7 +133,7 @@ class BlobLoader:
                     response.raise_for_status()
                     BlobLoader._validate_response_content(url, response)
                     content = await response.read()
-                    return BlobInformation(ImageUtil.open_image(content), url)
+                    return BlobInformation(content, url)
             except aiohttp.ClientError as exc:
                 raise UnexpectedResponseException(f"Failed to load URL: {url}.") from exc
 
@@ -156,11 +152,16 @@ class BlobLoader:
             )
         raise UnexpectedResponseException(f"Unexpected HTML content for URL: {url}")
 
-    def __resize(self, blob_information: BlobInformation) -> BlobInformation:
-        if blob_information.data is None:
-            raise InvalidStateException("Blob data is None, cannot resize.")
-        resized_image = ImageUtil.open_image(ImageUtil.resize(blob_information.data))
-        return BlobInformation(resized_image, blob_information.path)
+    def __resize(self, image_data: BlobInformation | PILImage) -> BlobInformation:
+        if isinstance(image_data, BlobInformation):
+            if image_data.data is None:
+                raise InvalidStateException("Blob data is None, cannot resize.")
+            image = ImageUtil.open_image(image_data.data)
+            path = image_data.path
+        else:
+            image = image_data
+            path = None
+        return BlobInformation(ImageUtil.resize(image), path)
 
     def __init_loader_to_string_positions(
         self, parsed_inputs: Sequence[str | PILImage]
@@ -176,9 +177,6 @@ class BlobLoader:
 
     def __get_loader(self, blob_like_input: str) -> Callable[[Sequence[str]], Awaitable[list[BlobInformation]]]:
         if self.__is_base64_encoded(blob_like_input):
-            if not self.allow_bytes:
-                logger.error("byte input not enabled", allow_bytes=self.allow_bytes)
-                raise InvalidInputException("Base64 encoded input is not supported in this operation mode.")
             return self._load_from_bytes
 
         scheme = urlparse(blob_like_input).scheme

@@ -34,7 +34,6 @@ from superlinked.framework.common.transform.transform import Step
 from superlinked.framework.common.transform.transformation_factory import (
     TransformationFactory,
 )
-from superlinked.framework.common.util.image_util import PILImage
 from superlinked.framework.online.dag.evaluation_result import EvaluationResult
 from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.online_entity_cache import OnlineEntityCache
@@ -48,7 +47,7 @@ class OnlineImageEmbeddingNode(OnlineNode[ImageEmbeddingNode, Vector], HasLength
     ) -> None:
         super().__init__(node, parents)
         self._embedding_transformation = self._init_embedding_transformation()
-        self._blob_loader = BlobLoader(allow_bytes=True)
+        self._blob_loader = BlobLoader()
         self._description_node = self._get_schema_field_node(self.node.description_node_id)
         self._image_node = self._get_schema_field_node(self.node.image_node_id)
 
@@ -106,7 +105,7 @@ class OnlineImageEmbeddingNode(OnlineNode[ImageEmbeddingNode, Vector], HasLength
 
     async def _get_image_data(self, parsed_schema: ParsedSchema) -> ImageData:
         image, description = await self.__load_input(parsed_schema)
-        loaded_image: PILImage | None = image.data if image and image.data else None
+        loaded_image: bytes | None = image.data if image and image.data else None
         return ImageData(loaded_image, description)
 
     async def __load_input(self, parsed_schema: ParsedSchema) -> tuple[BlobInformation | None, str | None]:

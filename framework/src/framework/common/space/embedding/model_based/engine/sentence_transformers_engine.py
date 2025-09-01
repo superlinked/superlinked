@@ -18,13 +18,13 @@ import warnings
 from pathlib import Path
 
 import structlog
-from beartype.typing import Any, Sequence
+from beartype.typing import Any, Sequence, cast
 from typing_extensions import override
 
 from superlinked.framework.common.exception import NotImplementedException
 from superlinked.framework.common.precision import Precision
 from superlinked.framework.common.space.embedding.model_based.embedding_input import (
-    ModelEmbeddingInputT,
+    ModelEmbeddingInput,
 )
 from superlinked.framework.common.space.embedding.model_based.engine.embedding_engine import (
     EmbeddingEngine,
@@ -37,6 +37,7 @@ from superlinked.framework.common.space.embedding.model_based.model_downloader i
     ModelDownloader,
 )
 from superlinked.framework.common.util.gpu_embedding_util import GpuEmbeddingUtil
+from superlinked.framework.common.util.image_util import ImageUtil, PILImage
 
 with warnings.catch_warnings():
     warnings.filterwarnings(
@@ -62,13 +63,20 @@ class SentenceTransformersEngine(EmbeddingEngine[EmbeddingEngineConfig]):
         self._model = self._initialize_model()
 
     @override
-    async def embed(self, inputs: Sequence[ModelEmbeddingInputT], is_query_context: bool) -> list[list[float]]:
+    async def embed(self, inputs: Sequence[ModelEmbeddingInput], is_query_context: bool) -> list[list[float]]:
         prompt_name = self._calculate_prompt_name(self._model, is_query_context)
+
+        async def parse_input(input_: ModelEmbeddingInput) -> str | PILImage:
+            if isinstance(input_, bytes):
+                return await asyncio.to_thread(ImageUtil.open_image, input_)
+            return cast(str, input_)
+
+        parsed_inputs = await asyncio.gather(*[parse_input(input_) for input_ in inputs])
 
         def sync_encode() -> list[list[float]]:
             return list(
                 self._model.encode(
-                    list(inputs),  # type: ignore[arg-type] # it also accepts Image
+                    list(parsed_inputs),  # type: ignore[arg-type] # it also accepts Image
                     prompt_name=prompt_name,
                     show_progress_bar=False,
                 )

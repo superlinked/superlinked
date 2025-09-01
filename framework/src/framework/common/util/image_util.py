@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import base64
+import binascii
 import io
-import os
 
 import PIL
 import PIL.Image
@@ -39,27 +39,23 @@ class ImageUtil:
 
     @staticmethod
     def open(fp: StrOrBytesPath | IO[bytes]) -> PILImage:
-        return PIL.Image.open(fp)
+        with PIL.Image.open(fp) as img:
+            img.load()
+            return img
 
     @staticmethod
     def open_image(data: bytes | str) -> PILImage:
-        if isinstance(data, str):
-            data = base64.b64decode(data, validate=True)
         try:
+            if isinstance(data, str):
+                data = base64.b64decode(data, validate=True)
             return ImageUtil.open(io.BytesIO(data))
-        except OSError as e:
-            raise InvalidInputException(f"Failed to open image ({str(data)}).") from e
-
-    @staticmethod
-    def open_local_image_file(dir_path: str, file_name: str) -> PILImage:
-        try:
-            return ImageUtil.open(os.path.join(dir_path, file_name))
-        except OSError as e:
-            raise InvalidInputException(f"Failed to open image ({dir_path}/{file_name}).") from e
+        except (OSError, FileNotFoundError, binascii.Error, ValueError) as e:
+            raise InvalidInputException(f"Failed to open image {str(data)}.") from e
 
     @staticmethod
     def resize(image: PILImage) -> bytes:
-        resized_image = image.convert(CONVERSION_MODE).resize(
-            (image_settings.RESIZE_IMAGE_WIDTH, image_settings.RESIZE_IMAGE_HEIGHT)
-        )
-        return ImageUtil.encode_bytes(resized_image, image_settings.IMAGE_FORMAT, image_settings.IMAGE_QUALITY)
+        if image.mode != CONVERSION_MODE:
+            image = image.convert(CONVERSION_MODE)
+        if image.width > image_settings.RESIZE_IMAGE_WIDTH or image.height > image_settings.RESIZE_IMAGE_HEIGHT:
+            image = image.resize((image_settings.RESIZE_IMAGE_WIDTH, image_settings.RESIZE_IMAGE_HEIGHT))
+        return ImageUtil.encode_bytes(image, image_settings.IMAGE_FORMAT, image_settings.IMAGE_QUALITY)

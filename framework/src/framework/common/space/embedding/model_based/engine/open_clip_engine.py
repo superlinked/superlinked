@@ -30,7 +30,7 @@ from superlinked.framework.common.exception import (
 from superlinked.framework.common.precision import Precision
 from superlinked.framework.common.settings import settings
 from superlinked.framework.common.space.embedding.model_based.embedding_input import (
-    ModelEmbeddingInputT,
+    ModelEmbeddingInput,
 )
 from superlinked.framework.common.space.embedding.model_based.engine.embedding_engine import (
     EmbeddingEngine,
@@ -43,7 +43,7 @@ from superlinked.framework.common.space.embedding.model_based.model_downloader i
 )
 from superlinked.framework.common.util.collection_util import CollectionUtil
 from superlinked.framework.common.util.gpu_embedding_util import GpuEmbeddingUtil
-from superlinked.framework.common.util.image_util import PILImage
+from superlinked.framework.common.util.image_util import ImageUtil, PILImage
 
 with warnings.catch_warnings():
     warnings.filterwarnings(
@@ -73,9 +73,11 @@ class OpenCLIPEngine(EmbeddingEngine[EmbeddingEngineConfig]):
         self._tokenizer = get_tokenizer(self._model_name)
 
     @override
-    async def embed(self, inputs: Sequence[ModelEmbeddingInputT], is_query_context: bool) -> list[list[float]]:
+    async def embed(self, inputs: Sequence[ModelEmbeddingInput], is_query_context: bool) -> list[list[float]]:
         text_inputs = [input_ for input_ in inputs if isinstance(input_, str)]
-        image_inputs = [input_ for input_ in inputs if isinstance(input_, PILImage)]
+        image_inputs = await asyncio.gather(
+            *[asyncio.to_thread(ImageUtil.open_image, input_) for input_ in inputs if isinstance(input_, bytes)]
+        )
         text_encodings, image_encodings = await asyncio.gather(
             asyncio.to_thread(self._encode_texts_with_no_grad, text_inputs),
             asyncio.to_thread(self._encode_images_with_no_grad, image_inputs),

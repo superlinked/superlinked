@@ -18,7 +18,7 @@ import asyncio
 from abc import ABC, ABCMeta, abstractmethod
 
 import structlog
-from beartype.typing import Generic, Mapping, Sequence, cast
+from beartype.typing import Generic, Sequence, cast
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.dag.node import NT, Node, NodeDataT
@@ -104,8 +104,9 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
         context: ExecutionContext,
         online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult | None]:
-        parents_results = await self.evaluate_parents([parent], parsed_schemas, context, online_entity_cache)
-        return [parents_result.get(parent) for parents_result in parents_results]
+        parent_results = await parent.evaluate_next(parsed_schemas, context, online_entity_cache)
+        self._validate_parent_results(parent, parent_results)
+        return parent_results
 
     async def evaluate_parents(
         self,
@@ -114,26 +115,21 @@ class OnlineNode(ABC, Generic[NT, NodeDataT], metaclass=ABCMeta):
         context: ExecutionContext,
         online_entity_cache: OnlineEntityCache,
     ) -> list[dict[OnlineNode, EvaluationResult]]:
-        parent_evaluations = await asyncio.gather(
-            *[parent.evaluate_next(parsed_schemas, context, online_entity_cache) for parent in parents]
+        results = await asyncio.gather(
+            *[self.evaluate_parent(parent, parsed_schemas, context, online_entity_cache) for parent in parents]
         )
-        parent_result_map = dict(zip(parents, parent_evaluations))
-        results_by_schema = [
-            {parent: parent_result_map[parent][schema_idx] for parent in parents}
-            for schema_idx in range(len(parsed_schemas))
+        return [
+            {
+                parent: result
+                for parent_i, parent in enumerate(parents)
+                if (result := results[parent_i][schema_i]) is not None
+            }
+            for schema_i in range(len(parsed_schemas))
         ]
-        return [self._validate_parents_result(schema_result) for schema_result in results_by_schema]
 
-    def _validate_parents_result(
-        self, parents_result: Mapping[OnlineNode, EvaluationResult | None]
-    ) -> dict[OnlineNode, EvaluationResult]:
-        parents_with_results = set(parents_result.keys())
-        for non_nullable_parent in self.non_nullable_parents.intersection(parents_with_results):
-            if parents_result[non_nullable_parent] is None:
-                raise InvalidStateException(
-                    f"{type(self).__name__} won't accept None from parent {non_nullable_parent.node_id}."
-                )
-        return {parent: result for parent, result in parents_result.items() if result is not None}
+    def _validate_parent_results(self, parent: OnlineNode, parent_results: Sequence[EvaluationResult | None]) -> None:
+        if parent in self.non_nullable_parents and any(result is None for result in parent_results):
+            raise InvalidStateException(f"{type(self).__name__} won't accept None from parent {parent.node_id}.")
 
     @abstractmethod
     async def evaluate_self(

@@ -251,7 +251,6 @@ class OnlineDagEvaluator:
         results: Sequence[EvaluationResult[Vector] | None],
     ) -> None:
         logger_to_use = logger.bind(schema=index_schema._schema_name)
-        logger_to_use.info("evaluated entities", n_entities=len(results))
         for i, result in enumerate(results):
             logger_to_use.debug(
                 "evaluated entity",

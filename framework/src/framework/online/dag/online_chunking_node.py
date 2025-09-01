@@ -81,6 +81,4 @@ class OnlineChunkingNode(OnlineNode[ChunkingNode, str]):
             self.node.split_chars_keep,
             self.node.split_chars_remove,
         )
-        main = self._get_single_evaluation_result(input_value)
-        chunks = [self._get_single_evaluation_result(chunk_input) for chunk_input in chunk_inputs]
-        return EvaluationResult(main, chunks)
+        return self._wrap_in_evaluation_result(input_value, chunk_inputs)

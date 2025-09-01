@@ -82,7 +82,7 @@ class OnlineSchemaFieldNode(Generic[SFT], OnlineNode[SchemaFieldNode, SFT]):
 
     def _to_result(self, value: SFT | None) -> EvaluationResult[SFT] | None:
         if value is not None:
-            return EvaluationResult(self._get_single_evaluation_result(value))
+            return self._wrap_in_evaluation_result(value)
         if self.node.schema_field.nullable:
             return None
         field_name = f"{self.node.schema_field.schema_obj._schema_name}.{self.node.schema_field.name}"

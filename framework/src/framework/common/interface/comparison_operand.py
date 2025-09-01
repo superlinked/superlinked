@@ -32,21 +32,10 @@ COT = TypeVar("COT", bound="ComparisonOperand")
 
 
 class ComparisonOperand(ABC, Generic[COT]):
+    """Base class for operands in comparison operations."""
+
     def __init__(self, _: type[COT]) -> None:
         super().__init__()
-        self.__built_in_operation_mapping: dict[str, Callable[[ComparisonOperand[COT], object], bool]] = {
-            ComparisonOperationType.EQUAL.value: self._built_in_equal,
-            ComparisonOperationType.NOT_EQUAL.value: self._built_in_not_equal,
-            ComparisonOperationType.GREATER_THAN.value: self._built_in_greater_than,
-            ComparisonOperationType.LESS_THAN.value: self._built_in_less_than,
-            ComparisonOperationType.GREATER_EQUAL.value: self._built_in_greater_equal,
-            ComparisonOperationType.LESS_EQUAL.value: self._built_in_less_equal,
-            ComparisonOperationType.IN.value: self._built_in_in,
-            ComparisonOperationType.NOT_IN.value: self._built_in_not_in,
-            ComparisonOperationType.CONTAINS.value: self._built_in_contains,
-            ComparisonOperationType.NOT_CONTAINS.value: self._built_in_not_contains,
-            ComparisonOperationType.CONTAINS_ALL.value: self._built_in_contains_all,
-        }
 
     def in_(self, __value: object) -> ComparisonOperation[COT]:
         return ComparisonOperation(ComparisonOperationType.IN, self, __value)
@@ -66,7 +55,35 @@ class ComparisonOperand(ABC, Generic[COT]):
     def _get_built_in_operation(
         self, operation_type: ComparisonOperationType
     ) -> Callable[[ComparisonOperand[COT], object], bool]:
-        return self.__built_in_operation_mapping[operation_type.value]
+        """
+        This method is called 135K+ times when ingesting 500 entries and is a critical hot path.
+        Using direct match pattern eliminates all dictionary lookups and enum operations.
+        """
+        match operation_type:
+            case ComparisonOperationType.EQUAL:
+                return self._built_in_equal
+            case ComparisonOperationType.NOT_EQUAL:
+                return self._built_in_not_equal
+            case ComparisonOperationType.GREATER_THAN:
+                return self._built_in_greater_than
+            case ComparisonOperationType.LESS_THAN:
+                return self._built_in_less_than
+            case ComparisonOperationType.GREATER_EQUAL:
+                return self._built_in_greater_equal
+            case ComparisonOperationType.LESS_EQUAL:
+                return self._built_in_less_equal
+            case ComparisonOperationType.IN:
+                return self._built_in_in
+            case ComparisonOperationType.NOT_IN:
+                return self._built_in_not_in
+            case ComparisonOperationType.CONTAINS:
+                return self._built_in_contains
+            case ComparisonOperationType.NOT_CONTAINS:
+                return self._built_in_not_contains
+            case ComparisonOperationType.CONTAINS_ALL:
+                return self._built_in_contains_all
+            case _:
+                raise NotImplementedException(f"Unsupported operation type: {operation_type}")
 
     def __eq__(self, __value: object) -> ComparisonOperation[COT]:  # type: ignore[override]
         return ComparisonOperation(ComparisonOperationType.EQUAL, self, __value)

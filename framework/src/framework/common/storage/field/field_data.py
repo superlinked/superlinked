@@ -45,7 +45,8 @@ class FieldData(Field, Generic[FT]):
             # Assuming list types have only 1 valid type
             valid_type = VALID_TYPE_BY_FIELD_DATA_TYPE[data_type][0]
             generic_type = get_args(valid_type)[0]
-            if not all(isinstance(item, generic_type) for item in value):
+            # TODO FAB-3719 FieldData validation is slow for large float lists
+            if data_type != FieldDataType.FLOAT_LIST and not all(isinstance(item, generic_type) for item in value):
                 raise InvalidInputException(error_msg.format(value=value, data_type=data_type))
 
     @classmethod

@@ -58,7 +58,7 @@ class RestHandler:
 
     async def _ingest_handler(self, input_schema: dict, path: str) -> None:
         source = self.__path_to_source_map[path]
-        await source.put_async([input_schema])
+        await source.put_async(input_schema)
 
     async def _query_handler(
         self, query_descriptor: dict, path: str, query_user_config: QueryUserConfig

@@ -14,8 +14,6 @@
 
 from __future__ import annotations
 
-import asyncio
-
 from beartype.typing import Sequence
 from typing_extensions import override
 
@@ -45,7 +43,7 @@ class OnlineCategoricalSimilarityNode(OnlineNode[CategoricalSimilarityNode, Vect
         parents: list[OnlineNode],
     ) -> None:
         super().__init__(node, parents)
-        self._embedding_transformation = TransformationFactory.create_embedding_transformation(
+        self._embedding_transformation = TransformationFactory.create_multi_embedding_transformation(
             self.node.transformation_config, SingletonEmbeddingEngineManager()
         )
 
@@ -55,7 +53,7 @@ class OnlineCategoricalSimilarityNode(OnlineNode[CategoricalSimilarityNode, Vect
         return self.node.length
 
     @property
-    def embedding_transformation(self) -> Step[list[str], Vector]:
+    def embedding_transformation(self) -> Step[Sequence[list[str]], list[Vector]]:
         return self._embedding_transformation
 
     @override
@@ -65,26 +63,29 @@ class OnlineCategoricalSimilarityNode(OnlineNode[CategoricalSimilarityNode, Vect
         context: ExecutionContext,
         online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult[Vector] | None]:
-        if len(self.parents) == 0:
-            results = await self.load_stored_results_with_default(
-                [(parsed_schema.schema, parsed_schema.id_) for parsed_schema in parsed_schemas],
-                Vector.init_zero_vector(self.node.length),
-                online_entity_cache,
-            )
-        else:
-            parent_results = await self.evaluate_parent(self.parents[0], parsed_schemas, context, online_entity_cache)
-            results = await asyncio.gather(
-                *[self._evaluate_parent_result(parent_result, context) for parent_result in parent_results]
-            )
+        results = await self._calculate_results(parsed_schemas, context, online_entity_cache)
         return [self._wrap_in_evaluation_result(result) for result in results]
 
-    async def _evaluate_parent_result(
-        self,
-        parent_result: EvaluationResult | None,
-        context: ExecutionContext,
-    ) -> Vector:
-        if parent_result is None:
-            return Vector.init_zero_vector(self.length)
-        input_ = parent_result.main.value
-        categories = input_ if isinstance(input_, list) else [input_]
+    async def _calculate_results(
+        self, parsed_schemas: Sequence[ParsedSchema], context: ExecutionContext, online_entity_cache: OnlineEntityCache
+    ) -> list[Vector]:
+        if len(self.parents) == 0:
+            return await self.load_stored_results_with_default(
+                [(parsed_schema.schema, parsed_schema.id_) for parsed_schema in parsed_schemas],
+                self.node.transformation_config.embedding_config.default_vector,
+                online_entity_cache,
+            )
+        return await self._evaluate_multiple(parsed_schemas, context, online_entity_cache)
+
+    async def _evaluate_multiple(
+        self, parsed_schemas: Sequence[ParsedSchema], context: ExecutionContext, online_entity_cache: OnlineEntityCache
+    ) -> list[Vector]:
+        parent_results = await self.evaluate_parent(self.parents[0], parsed_schemas, context, online_entity_cache)
+        categories = [self._parent_result_to_categories(parent_result) for parent_result in parent_results]
         return await self.embedding_transformation.transform(categories, context)
+
+    def _parent_result_to_categories(self, parent_result: EvaluationResult | None) -> list[str]:
+        if parent_result:
+            input_ = parent_result.main.value
+            return input_ if isinstance(input_, list) else [input_]
+        return []

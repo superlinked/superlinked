@@ -19,6 +19,7 @@ from math import isfinite
 
 from beartype.typing import Generic, Mapping, Sequence, cast
 
+from superlinked.framework.common.delayed_evaluator import DelayedEvaluator
 from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.parser.blob_loader import BlobLoader
 from superlinked.framework.common.parser.parsed_schema import (
@@ -29,6 +30,7 @@ from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.schema.event_schema_object import EventSchemaObject
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
 from superlinked.framework.common.schema.schema_object import SFT, Blob, SchemaField
+from superlinked.framework.common.settings import settings
 from superlinked.framework.common.source.types import SourceTypeT
 
 
@@ -66,18 +68,10 @@ class DataParser(ABC, Generic[SourceTypeT]):
         self._id_name = self._get_path(self._schema.id)
         if self._is_event_data_parser:
             self._created_at_name = self._get_path(cast(EventSchemaObject, schema).created_at)
-        self.__allow_bytes_input = True
-
-    @property
-    def blob_loader(self) -> BlobLoader:
-        return BlobLoader(allow_bytes=self.allow_bytes_input)
-
-    @property
-    def allow_bytes_input(self) -> bool:
-        return self.__allow_bytes_input
-
-    def set_allow_bytes_input(self, value: bool) -> None:
-        self.__allow_bytes_input = value
+        blob_loader = BlobLoader()
+        self._delayed_blob_loader = DelayedEvaluator(
+            delay_ms=settings.BATCHED_BLOB_LOAD_WAIT_TIME_MS, eval_fn=blob_loader.load, task_name="blob load"
+        )
 
     @classmethod
     def _is_id_value_valid(cls, value_to_check: str | float | int | None) -> bool:
@@ -104,12 +98,12 @@ class DataParser(ABC, Generic[SourceTypeT]):
         return isinstance(value_to_check, int)
 
     @abstractmethod
-    async def unmarshal(self, data: SourceTypeT) -> list[ParsedSchema]:
+    async def unmarshal(self, data: Sequence[SourceTypeT]) -> list[ParsedSchema]:
         """
         Get the source data and parse it to the desired Schema with the defined mapping.
 
         Args:
-            data (TSourceType): Source data that corresponds to the DataParser's type.
+            data (Sequence[TSourceType]): Source data that corresponds to the DataParser's type.
 
         Returns:
             list[ParsedSchema]: A list of ParsedSchema objects.

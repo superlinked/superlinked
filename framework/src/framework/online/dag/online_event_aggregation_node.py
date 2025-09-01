@@ -150,7 +150,7 @@ class OnlineEventAggregationNode(OnlineNode[EventAggregationNode, Vector], HasLe
         # Return None for empty vectors to prevent storing empty vectors in the database
         if result.is_empty:
             return None
-        return EvaluationResult(self._get_single_evaluation_result(result))
+        return self._wrap_in_evaluation_result(result)
 
     def __get_single_schema(self, parsed_schemas: Sequence[ParsedSchema]) -> IdSchemaObject:
         for parsed_schema in parsed_schemas:

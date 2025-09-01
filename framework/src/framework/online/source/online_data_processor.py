@@ -118,11 +118,6 @@ class OnlineDataProcessor(Subscriber[ParsedSchema]):
                 online_entity_cache.origin_ids,
                 self._index._fields_to_exclude,
             )
-        logger.info(
-            "stored input data",
-            schemas=list({parsed_schema.schema._schema_name for parsed_schema in messages}),
-            n_records=len(messages),
-        )
 
     def _validate_mandatory_fields_are_present(self, message: ParsedSchema) -> None:
         field_names = [field.schema_field.name for field in message.fields if field.value is not None]

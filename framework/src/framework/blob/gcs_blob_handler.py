@@ -28,7 +28,6 @@ from superlinked.framework.common.const import constants
 from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.schema.blob_information import BlobInformation
 from superlinked.framework.common.util.gcs_utils import GCSFileOps
-from superlinked.framework.common.util.image_util import ImageUtil, PILImage
 
 logger = structlog.getLogger()
 
@@ -57,7 +56,7 @@ class GcsBlobHandler(BlobHandler):
             for object_key, downloaded_item in zip(object_keys, downloaded_items)
         ]
 
-    async def _download(self, object_keys: Sequence[str]) -> list[PILImage]:
+    async def _download(self, object_keys: Sequence[str]) -> list[bytes]:
         bucket_object_path_pairs = [self._parse_gcs_path(object_key) for object_key in object_keys]
         bucket_cache = {}
 
@@ -72,7 +71,7 @@ class GcsBlobHandler(BlobHandler):
         ]
         return await asyncio.gather(*download_tasks)
 
-    def download_blob(self, bucket: storage.Bucket, object_full_path: str) -> PILImage:
+    def download_blob(self, bucket: storage.Bucket, object_full_path: str) -> bytes:
         try:
             blob = bucket.blob(object_full_path)
             data = blob.download_as_bytes()
@@ -83,7 +82,7 @@ class GcsBlobHandler(BlobHandler):
                 bucket=bucket.name,
                 size=len(data),
             )
-            return ImageUtil.open_image(data)
+            return data
         except Exception as e:  # pylint: disable=broad-exception-caught
             self._logger.exception(
                 "failed to download",

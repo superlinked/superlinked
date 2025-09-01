@@ -39,8 +39,8 @@ class OnlineSource(Generic[SourceTypeT], TransformerPublisher[SourceTypeT, Parse
         )
 
     @override
-    async def transform(self, message: SourceTypeT) -> list[ParsedSchema]:
-        return await self.parser.unmarshal(message)
+    async def transform(self, messages: Sequence[SourceTypeT]) -> list[ParsedSchema]:
+        return await self.parser.unmarshal(messages)
 
     def put(self, data: SourceTypeT | Sequence[SourceTypeT]) -> None:
         AsyncUtil.run(self.put_async(data))

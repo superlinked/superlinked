@@ -16,12 +16,11 @@ import base64
 from dataclasses import dataclass
 
 from superlinked.framework.common.exception import InvalidInputException
-from superlinked.framework.common.util.image_util import ImageUtil, PILImage
 
 
 @dataclass(frozen=True)
 class BlobInformation:
-    data: PILImage | None = None
+    data: bytes | None = None
     path: str | None = None
 
     def __post_init__(self) -> None:
@@ -34,6 +33,5 @@ class BlobInformation:
         if self.path is not None:
             return_value = self.path
         elif self.data is not None:
-            encoded_image = ImageUtil.encode_bytes(self.data)
-            return_value = base64.b64encode(encoded_image).decode("utf-8")
+            return_value = base64.b64encode(self.data).decode("utf-8")
         return return_value

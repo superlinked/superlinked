@@ -134,7 +134,7 @@ class TransformationFactory:
                     cast(Step[AggregationInputT, Vector], NormalizationStep(base_transformations.normalization)),
                     predicate=FilterPredicate(
                         base_transformations.aggregation.filter_predicate,
-                        Vector.init_zero_vector(transformation_config.embedding_config.default_vector.dimension),
+                        transformation_config.embedding_config.default_vector,
                     ),
                 ),
             )
@@ -172,9 +172,7 @@ class TransformationFactory:
                 embedding_step.combine(normalization_step),
                 predicate=FilterPredicate(
                     filter_=base_transformations.aggregation.filter_predicate,
-                    default_value=Vector.init_zero_vector(
-                        transformation_config.embedding_config.default_vector.dimension
-                    ),
+                    default_value=transformation_config.embedding_config.default_vector,
                 ),
             ),
         )

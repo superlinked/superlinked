@@ -25,7 +25,9 @@ from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.interface.has_length import HasLength
 from superlinked.framework.common.parser.parsed_schema import ParsedSchema
 from superlinked.framework.common.schema.id_schema_object import IdSchemaObject
-from superlinked.framework.online.dag.evaluation_result import EvaluationResult
+from superlinked.framework.online.dag.evaluation_result import (
+    EvaluationResult,
+)
 from superlinked.framework.online.dag.online_node import OnlineNode
 from superlinked.framework.online.online_entity_cache import OnlineEntityCache
 
@@ -66,13 +68,12 @@ class OnlineIndexNode(OnlineNode[IndexNode, Vector], HasLength):
         online_entity_cache: OnlineEntityCache,
     ) -> list[EvaluationResult[Vector] | None]:
         parent: OnlineNode = self.__get_parent_for_parsed_schemas(parsed_schemas)
-        parent_results = cast(
-            list[EvaluationResult], await self.evaluate_parent(parent, parsed_schemas, context, online_entity_cache)
+        parent_results = await self.evaluate_parent(parent, parsed_schemas, context, online_entity_cache)
+        return [self._transform_result(parent_result) for parent_result in parent_results]
+
+    def _transform_result(self, parent_result: EvaluationResult[Vector] | None) -> EvaluationResult[Vector] | None:
+        if parent_result is None:
+            return None
+        return self._wrap_in_evaluation_result(
+            parent_result.main.value, [chunk_result.value for chunk_result in parent_result.chunks]
         )
-        return [
-            EvaluationResult(
-                self._get_single_evaluation_result(parent_result.main.value),
-                [self._get_single_evaluation_result(chunk_result.value) for chunk_result in parent_result.chunks],
-            )
-            for parent_result in parent_results
-        ]
