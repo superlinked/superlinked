@@ -53,18 +53,18 @@ parser = DataFrameParser(
 ```
 
 <Warning>
-  The constructor will raise an `InvalidInputException` if the schema
-  parameter is of an invalid type.
+  The constructor will raise an `InvalidInputException` if the schema parameter
+  is of an invalid type.
 </Warning>
 
 ## Methods
 
-### unmarshal()
+### unmarshal_single()
 
 Parse a pandas DataFrame into schema-compliant data using the defined column mapping.
 
 ```python
-unmarshal(data: pd.DataFrame) -> list[ParsedSchema]
+unmarshal_single(data: pd.DataFrame) -> list[ParsedSchema]
 ```
 
 <ParamField path="data" type="pd.DataFrame" required>
@@ -88,7 +88,7 @@ df = pd.DataFrame({
 })
 
 # Parse DataFrame
-parsed_data = parser.unmarshal(df)
+parsed_data = parser.unmarshal_single(df)
 
 # Each row becomes a ParsedSchema object
 print(f"Parsed {len(parsed_data)} products")
@@ -120,7 +120,7 @@ parser = DataFrameParser(
     }
 )
 
-parsed_products = parser.unmarshal(df)
+parsed_products = parser.unmarshal_single(df)
 ```
 
 ### Data Cleaning and Transformation
@@ -136,7 +136,7 @@ df = pd.DataFrame({
 })
 
 # The parser handles type conversion based on schema
-parsed_data = parser.unmarshal(df)
+parsed_data = parser.unmarshal_single(df)
 ```
 
 ### Batch Processing
@@ -147,7 +147,7 @@ Efficiently process large datasets in batches:
 # Process large DataFrame in chunks
 chunk_size = 1000
 for chunk in pd.read_csv("large_dataset.csv", chunksize=chunk_size):
-    parsed_chunk = parser.unmarshal(chunk)
+    parsed_chunk = parser.unmarshal_single(chunk)
     # Process parsed_chunk...
 ```
 
@@ -193,7 +193,7 @@ parser = DataFrameParser(movie_schema)
 
 # Load and parse data
 movies_df = pd.read_csv("movies.csv")
-parsed_movies = parser.unmarshal(movies_df)
+parsed_movies = parser.unmarshal_single(movies_df)
 
 # Create vector space and index
 text_space = TextSimilaritySpace(text=movie_schema.description)

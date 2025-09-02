@@ -49,27 +49,9 @@ parser = DataParser(
 ```
 
 <Warning>
-  The constructor will raise an `InvalidInputException` if the schema
-  parameter is of an invalid type.
+  The constructor will raise an `InvalidInputException` if the schema parameter
+  is of an invalid type.
 </Warning>
-
-## Properties
-
-### allow_bytes_input
-
-```python
-allow_bytes_input: bool
-```
-
-Controls whether the parser accepts byte input data. Can be configured using the `set_allow_bytes_input()` method.
-
-### blob_loader
-
-```python
-blob_loader: BlobLoader
-```
-
-The blob loader instance used for handling binary data and file operations.
 
 ## Methods
 
@@ -78,10 +60,10 @@ The blob loader instance used for handling binary data and file operations.
 Parse source data into the desired schema format using the defined mapping rules.
 
 ```python
-unmarshal(data: SourceTypeT) -> list[ParsedSchema]
+unmarshal(data: Sequence[SourceTypeT]) -> list[ParsedSchema]
 ```
 
-<ParamField path="data" type="SourceTypeT" required>
+<ParamField path="data" type="Sequence[SourceTypeT]" required>
   Source data that corresponds to the DataParser's expected input type.
 </ParamField>
 
@@ -91,11 +73,11 @@ unmarshal(data: SourceTypeT) -> list[ParsedSchema]
 
 ```python
 # Parse source data
-source_data = {
+source_data = [{
     "movie_title": "The Matrix",
     "release_year": 1999,
     "category": "Sci-Fi"
-}
+}]
 
 parsed_data = parser.unmarshal(source_data)
 ```
@@ -124,18 +106,6 @@ marshal(parsed_schemas: ParsedSchema | list[ParsedSchema]) -> list[SourceTypeT]
 # Convert parsed data back to source format
 original_format = parser.marshal(parsed_data)
 ```
-
-### set_allow_bytes_input()
-
-Configure whether the parser should accept byte input data.
-
-```python
-set_allow_bytes_input(value: bool) -> None
-```
-
-<ParamField path="value" type="bool" required>
-  Whether to allow byte input data processing.
-</ParamField>
 
 ## Inheritance Hierarchy
 

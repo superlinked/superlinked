@@ -35,7 +35,11 @@ Index(
   the spaces will be indexed.
 </ParamField>
 
-<ParamField path="fields_to_exclude" type="SchemaField | list[SchemaField]" default="None">
+<ParamField
+  path="fields_to_exclude"
+  type="SchemaField | list[SchemaField]"
+  default="None"
+>
   Excludes fields from storage and query results.
 </ParamField>
 
@@ -132,28 +136,6 @@ has_schema(schema: SchemaObject) -> bool
 # Check if a schema is part of the index
 if product_index.has_schema(product_schema):
     print("Product schema is indexed")
-```
-
-### has_space()
-
-Check if a given space is present in the index.
-
-```python
-has_space(space: Space) -> bool
-```
-
-<ParamField path="space" type="Space" required>
-  The space object to check for presence in the index.
-</ParamField>
-
-**Returns**: `bool` - True if the space is found, False otherwise.
-
-#### Example
-
-```python
-# Verify a space is included in the index
-if product_index.has_space(text_space):
-    print("Text space is part of this index")
 ```
 
 ## Best Practices

@@ -1,20 +1,18 @@
 ---
 title: "Event Schema"
-description: "Decorator for annotating classes as event schemas that represent events between other schemas"
+description: "Custom decorated event schema class for representing events between other schemas"
 ---
 
-## event_schema
+## EventSchema
 
 ```python
-event_schema(cls: type[T]) -> type[T] | type[EventSchemaObject]
+EventSchema()
 ```
 
-Use this decorator to annotate your class as an event schema that can be used to represent events between other schemas.
+Custom decorated event schema class. Event schemas can be used to reference other schema and to define interactions between schemas.
 
-### Parameters
+### Ancestors (in MRO)
 
-<ParamField path="cls" type="type[T]" required>
-The class to be converted into an event schema.
-</ParamField>
-
-**Returns**: `type[T] | type[EventSchemaObject]` - The decorated class, now enhanced with event schema capabilities.
+- superlinked.framework.common.schema.event_schema_object.EventSchemaObject
+- superlinked.framework.common.schema.id_schema_object.IdSchemaObject
+- abc.ABC

@@ -2,26 +2,30 @@ export const RecipeTable = () => {
   const recipes = [
     {
       title: "🏨 Hotel Search",
-      link: "./hotel-search.md",
+      link: "./hotel-search",
       appUrl: "https://hotel-search-recipe.superlinked.io/",
       keyFeatures: ["Natural Language Queries", "Multi-modal Semantic Search"],
       modalities: ["Text", "Numbers", "Categories"],
       useCase: {
         title: "Multi-Modal Semantic Search",
-        link: "./multi-modal-semantic-search.md"
-      }
+        link: "./multi-modal-semantic-search",
+      },
     },
     {
       title: "🛍️ E-Commerce RecSys",
-      link: "./ecomm-recsys.md",
+      link: "./ecomm-recsys",
       appUrl: "https://recsys-nlq-demo.superlinked.io/",
-      keyFeatures: ["Item-to-item recommendations", "Item-to-user recommendations", "Collaborative filtering"],
+      keyFeatures: [
+        "Item-to-item recommendations",
+        "Item-to-user recommendations",
+        "Collaborative filtering",
+      ],
       modalities: ["Image", "Text", "Numbers", "Categories"],
       useCase: {
         title: "Recommendation System",
-        link: "./recommendation-system.md"
-      }
-    }
+        link: "./recommendation-system",
+      },
+    },
   ];
 
   return (
@@ -84,7 +88,7 @@ export const RecipeTable = () => {
             <a
               href={recipe.link}
               className="inline-flex items-center px-4 py-2 text-sm font-medium text-white rounded-md transition-all duration-200 hover:brightness-110"
-              style={{ backgroundColor: '#FF5722' }}
+              style={{ backgroundColor: "#FF5722" }}
             >
               Read more
             </a>
@@ -93,7 +97,7 @@ export const RecipeTable = () => {
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm font-medium text-zinc-600 dark:text-zinc-400 transition-colors"
-              style={{ color: '#FF5722' }}
+              style={{ color: "#FF5722" }}
             >
               Live app →
             </a>
@@ -102,4 +106,4 @@ export const RecipeTable = () => {
       ))}
     </div>
   );
-}; 
+};

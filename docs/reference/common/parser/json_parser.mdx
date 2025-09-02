@@ -54,8 +54,8 @@ parser = JsonParser(
 ```
 
 <Warning>
-  The constructor will raise an `InvalidInputException` if the schema
-  parameter is of an invalid type.
+  The constructor will raise an `InvalidInputException` if the schema parameter
+  is of an invalid type.
 </Warning>
 
 ## Methods
@@ -65,16 +65,11 @@ parser = JsonParser(
 Parse JSON data into schema-compliant objects using the defined path mapping.
 
 ```python
-unmarshal(data: dict[str, Any] | Sequence[dict[str, Any]]) -> list[ParsedSchema]
+unmarshal(data: Sequence[dict[str, Any]]) -> list[ParsedSchema]
 ```
 
-<ParamField
-  path="data"
-  type="dict[str, Any] | Sequence[dict[str, Any]]"
-  required
->
-  The JSON data to parse. Can be a single JSON object (dict) or a list of JSON
-  objects.
+<ParamField path="data" type="Sequence[dict[str, Any]]" required>
+  The JSON data to parse. A sequence of JSON objects.
 </ParamField>
 
 **Returns**: `list[ParsedSchema]` - A list of ParsedSchema objects, one for each JSON object processed.
@@ -99,8 +94,8 @@ json_data = {
     }
 }
 
-# Parse single JSON object
-parsed_data = parser.unmarshal(json_data)
+# Parse JSON objects (now requires a sequence)
+parsed_data = parser.unmarshal([json_data])
 
 # Parse multiple JSON objects
 json_array = [json_data, another_json_object]

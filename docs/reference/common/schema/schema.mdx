@@ -1,27 +1,22 @@
 ---
-title: "Schema Decorator"
-description: "Annotate classes as schemas to represent structured data in Superlinked's embedding space"
+title: "Schema"
+description: "Base class for creating schemas to represent structured data in Superlinked's embedding space"
 ---
 
-The `@schema` decorator transforms regular Python classes into schema definitions that can be used to represent structured data in Superlinked. Schemas define the entities in the embedding space that you can search by or search for.
-
-## Function Signature
+## Schema
 
 ```python
-@schema
-def schema(cls: type[T]) -> type[T] | type[IdSchemaObject]
+Schema()
 ```
 
-The decorator takes a class definition and converts it into a schema object that Superlinked can use for data processing and vector operations.
+Inherit your schema class from this class to use as a schema that can be used to represent your structured data.
 
-### Parameters
+Schemas translate to entities in the embedding space that you can search by or search for.
 
-<ParamField path="cls" type="type[T]" required>
-  The class to be converted into a schema. The class should define fields with
-  appropriate type annotations that represent the structure of your data.
-</ParamField>
+### Ancestors (in MRO)
 
-**Returns**: `type[T] | type[IdSchemaObject]` - The decorated class, now enhanced with schema capabilities.
+- superlinked.framework.common.schema.id_schema_object.IdSchemaObject
+- abc.ABC
 
 ## Usage
 
@@ -30,10 +25,9 @@ The decorator takes a class definition and converts it into a schema object that
 Define a simple schema for your data structure:
 
 ```python
-from superlinked import schema
+from superlinked import Schema
 
-@schema
-class ProductSchema:
+class ProductSchema(Schema):
     id: str
     name: str
     description: str
@@ -52,9 +46,9 @@ Use more complex type annotations for richer data structures:
 ```python
 from datetime import datetime
 from typing import List, Optional
+from superlinked import Schema
 
-@schema
-class UserSchema:
+class UserSchema(Schema):
     user_id: str
     email: str
     name: str
@@ -71,8 +65,9 @@ user_schema = UserSchema()
 Create schemas for time-series or event data:
 
 ```python
-@schema
-class InteractionSchema:
+from superlinked import Schema
+
+class InteractionSchema(Schema):
     user_id: str
     item_id: str
     interaction_type: str
@@ -171,14 +166,14 @@ Once decorated, your schema gains several important capabilities:
 Define related schemas for complex data models:
 
 ```python
-@schema
-class AuthorSchema:
+from superlinked import Schema
+
+class AuthorSchema(Schema):
     author_id: str
     name: str
     biography: str
 
-@schema
-class BookSchema:
+class BookSchema(Schema):
     book_id: str
     title: str
     author_id: str  # References AuthorSchema
@@ -194,14 +189,15 @@ book_schema = BookSchema()
 Structure schemas for hierarchical or nested data:
 
 ```python
-@schema
-class CategorySchema:
+from superlinked import Schema
+from typing import Optional
+
+class CategorySchema(Schema):
     category_id: str
     name: str
     parent_category_id: Optional[str]
 
-@schema
-class ProductSchema:
+class ProductSchema(Schema):
     product_id: str
     name: str
     category_id: str  # References CategorySchema
