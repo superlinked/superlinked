@@ -93,7 +93,7 @@ print(sl.PandasConverter.to_pandas(result))
 
 If you like what we do, give us a star! ⭐
 
-![](./docs/.gitbook/assets/sl_diagram.png)
+![](./docs/images/sl_diagram.png)
 
 
 ## Hands-on Tutorials
