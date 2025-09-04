@@ -29,6 +29,8 @@ from superlinked.framework.common.space.config.embedding.embedding_config import
     EmbeddingConfig,
 )
 
+LOG_BASE: int = 10
+
 
 class Mode(Enum):
     MAXIMUM = "maximum"
@@ -54,15 +56,9 @@ class LinearScale(Scale):
 
 @dataclass(frozen=True)
 class LogarithmicScale(Scale):
-    base: float = 10
-
-    def __post_init__(self) -> None:
-        if self.base <= 1:
-            raise InvalidInputException("Logarithmic function base must be larger than 1.")
-
     @override
     def _get_embedding_config_parameters(self) -> dict[str, Any]:
-        return {"class_name": type(self).__name__, "base": self.base}
+        return {"class_name": type(self).__name__, "base": LOG_BASE}
 
 
 @dataclass(frozen=True)

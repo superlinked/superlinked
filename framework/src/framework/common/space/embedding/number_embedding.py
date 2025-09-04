@@ -22,6 +22,7 @@ from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.data_types import Vector
 from superlinked.framework.common.exception import InvalidStateException
 from superlinked.framework.common.space.config.embedding.number_embedding_config import (
+    LOG_BASE,
     LogarithmicScale,
     Mode,
     NumberEmbeddingConfig,
@@ -109,12 +110,10 @@ class NumberEmbedding(InvertibleEmbedding[NumberT, NumberEmbeddingConfig]):
         return True
 
     def _transform_to_log_if_logarithmic(self, value: float) -> float:
-        return (
-            math.log(1 + value, self._config.scale.base) if isinstance(self._config.scale, LogarithmicScale) else value
-        )
+        return math.log(1 + value, LOG_BASE) if isinstance(self._config.scale, LogarithmicScale) else value
 
     def _transform_from_log_if_logarithmic(self, value: float) -> float:
         return round(
-            (self._config.scale.base**value - 1 if isinstance(self._config.scale, LogarithmicScale) else value),
+            (LOG_BASE**value - 1 if isinstance(self._config.scale, LogarithmicScale) else value),
             10,
         )
