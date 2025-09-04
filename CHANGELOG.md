@@ -3,6 +3,21 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [37.0.0] - 2025-09-04
+
+### Added
+
+- Add log_scale bool param instead of Scale
+
+### Changed
+
+- Nb logging
+- Only remove base property from LogarithmicScale
+
+### Fixed
+
+- Number embedding notebook scale param
+
 ## [36.4.0] - 2025-09-04
 
 ### Changed
@@ -6237,6 +6252,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove unnecessary call
 - Remove extra field
 
+[37.0.0]: https://github.com/superlinked/superlinked/compare/v36.4.0..v37.0.0
 [36.4.0]: https://github.com/superlinked/superlinked/compare/v36.3.1..v36.4.0
 [36.3.0]: https://github.com/superlinked/superlinked/compare/v36.2.0..v36.3.0
 [36.2.0]: https://github.com/superlinked/superlinked/compare/v36.1.0..v36.2.0
