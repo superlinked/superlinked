@@ -3,6 +3,13 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [36.4.0] - 2025-09-04
+
+### Changed
+
+- Change chmod
+- Extend PYSPARK_SUBMIT_ARGS
+
 ## [36.3.0] - 2025-09-01
 
 ### Added
@@ -6230,6 +6237,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove unnecessary call
 - Remove extra field
 
+[36.4.0]: https://github.com/superlinked/superlinked/compare/v36.3.1..v36.4.0
 [36.3.0]: https://github.com/superlinked/superlinked/compare/v36.2.0..v36.3.0
 [36.2.0]: https://github.com/superlinked/superlinked/compare/v36.1.0..v36.2.0
 [36.1.0]: https://github.com/superlinked/superlinked/compare/v36.0.0..v36.1.0
