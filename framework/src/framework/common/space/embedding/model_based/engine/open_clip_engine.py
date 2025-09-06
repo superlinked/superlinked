@@ -68,7 +68,7 @@ SUPPORTED_PRECISIONS = [Precision.FLOAT16, Precision.FLOAT32]
 
 class OpenCLIPEngine(EmbeddingEngine[EmbeddingEngineConfig]):
     def __init__(self, model_name: str, model_cache_dir: Path | None, config: EmbeddingEngineConfig) -> None:
-        super().__init__(model_name, model_cache_dir, config)
+        super().__init__(self._parse_model_name(model_name), model_cache_dir, config)
         self._embedding_model, self._preprocess_val = self._get_embedding_model()
         self._tokenizer = get_tokenizer(self._model_name)
 
@@ -169,9 +169,14 @@ class OpenCLIPEngine(EmbeddingEngine[EmbeddingEngineConfig]):
             return tensor
         return tensor.to(model_device)
 
+    def _parse_model_name(self, model_name: str) -> str:
+        if model_name.startswith(HF_HUB_PREFIX) or not self.__is_model_name_from_hugging_face(model_name):
+            return model_name
+        return HF_HUB_PREFIX + model_name
+
     @classmethod
     def __is_model_name_from_hugging_face(cls, model_name: str) -> bool:
-        return model_name.startswith(HF_HUB_PREFIX)
+        return "/" in model_name
 
     @classmethod
     @override

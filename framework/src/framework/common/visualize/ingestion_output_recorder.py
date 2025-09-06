@@ -28,4 +28,4 @@ class IngestionOutputRecorder(OutputRecorder[EvaluationResult]):
 
     @override
     def _map_output_to_data_to_be_visualized(self, output: EvaluationResult) -> Any:
-        return output.main.value
+        return output and output.main.value

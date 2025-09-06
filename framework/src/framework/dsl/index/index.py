@@ -212,6 +212,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
         effect_modifier: EffectModifier,
         schemas: set[IdSchemaObject],
     ) -> IndexNode:
+        affected_schemas = set(effect.resolved_affected_schema_reference.schema for effect in effects)
         index_parents = set[Node[Vector]]()
         for schema in schemas:
             parents = [
@@ -221,7 +222,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
             if len(spaces) == 1:
                 index_parents.update(parents)
             else:
-                persist_parent_node_result = bool(effects)
+                persist_parent_node_result = schema in affected_schemas
                 index_parents.add(ConcatenationNode(parents, persist_parent_node_result))
         return IndexNode(index_parents)
 
