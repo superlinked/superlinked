@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.space.recency_space
 Classes
 -------
 
-`RecencySpace(timestamp: superlinked.framework.common.schema.schema_object.Timestamp | None | collections.abc.Sequence[superlinked.framework.common.schema.schema_object.Timestamp | None], time_period_hour_offset: datetime.timedelta = datetime.timedelta(0), period_time_list: list[superlinked.framework.common.dag.period_time.PeriodTime] | superlinked.framework.common.dag.period_time.PeriodTime | None = None, aggregation_mode: superlinked.framework.dsl.space.input_aggregation_mode.InputAggregationMode = InputAggregationMode.INPUT_AVERAGE, negative_filter: float = 0.0)`
+`RecencySpace(timestamp: superlinked.framework.common.schema.schema_object.Timestamp | None | collections.abc.Sequence[superlinked.framework.common.schema.schema_object.Timestamp | None], time_period_hour_offset: datetime.timedelta = datetime.timedelta(0), period_time_list: list[superlinked.framework.common.dag.period_time.PeriodTime] | superlinked.framework.common.dag.period_time.PeriodTime | None = None, aggregation_mode: superlinked.framework.dsl.space.input_aggregation_mode.InputAggregationMode = InputAggregationMode.INPUT_AVERAGE, negative_filter: float = 0.0, salt: str | None = None)`
 :   Recency space encodes timestamp type data measured in seconds and in unix timestamp format.
     Recency space is utilized to encode how recent items are. Use period_time_list
     to mark the time periods of interest.
@@ -20,18 +20,6 @@ Classes
     spaces in the index. For example setting it -1 would offset any text similarity that has weight 1 - effectively
     filtering out all old items however similar they are in terms of their text.
     
-    Attributes:
-        timestamp (SpaceFieldSet): A set of Timestamp objects. The actual data is expected to be unix timestamps
-            in seconds.
-            It is a SchemaFieldObject not regular python ints or floats.
-        time_period_hour_offset (timedelta): Starting period time will be set to this hour.
-            Day will be the next day of context.now(). Defaults to timedelta(hours=0).
-        period_time_list (list[PeriodTime] | None): A list of period time parameters.
-            Weights default to 1. Period time to 14 days.
-        aggregation_mode (InputAggregationMode): The  aggregation mode of the number embedding.
-            Possible values are: maximum, minimum and average. Defaults to InputAggregationMode.INPUT_AVERAGE.
-        negative_filter (float): The recency score of items that are older than the oldest period time. Defaults to 0.0.
-    
     Initialize the RecencySpace.
     
     Args:
@@ -46,6 +34,8 @@ Classes
             Possible values are: maximum, minimum and average. Defaults to InputAggregationMode.INPUT_AVERAGE.
         negative_filter (float): The recency score of items that are older than the oldest period time.
             Defaults to 0.0.
+        salt: (str | None, optional): Enables the creation of identical spaces to allow
+            different weighted event definitions with them.
 
     ### Ancestors (in MRO)
 

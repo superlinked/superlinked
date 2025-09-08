@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.space.image_space
 Classes
 -------
 
-`ImageSpace(image: superlinked.framework.common.schema.schema_object.Blob | superlinked.framework.common.schema.schema_object.DescribedBlob | None | collections.abc.Sequence[superlinked.framework.common.schema.schema_object.Blob | superlinked.framework.common.schema.schema_object.DescribedBlob | None], model: str = 'clip-ViT-B-32', model_cache_dir: pathlib.Path | None = None, model_handler: superlinked.framework.common.space.embedding.model_based.model_handler.ModelHandler = ModelHandler.SENTENCE_TRANSFORMERS, embedding_engine_config: superlinked.framework.common.space.embedding.model_based.engine.embedding_engine_config.EmbeddingEngineConfig | None = None)`
+`ImageSpace(image: superlinked.framework.common.schema.schema_object.Blob | superlinked.framework.common.schema.schema_object.DescribedBlob | None | collections.abc.Sequence[superlinked.framework.common.schema.schema_object.Blob | superlinked.framework.common.schema.schema_object.DescribedBlob | None], model: str = 'clip-ViT-B-32', model_cache_dir: pathlib.Path | None = None, model_handler: superlinked.framework.common.space.embedding.model_based.model_handler.ModelHandler = ModelHandler.SENTENCE_TRANSFORMERS, embedding_engine_config: superlinked.framework.common.space.embedding.model_based.engine.embedding_engine_config.EmbeddingEngineConfig | None = None, salt: str | None = None)`
 :   Initialize the ImageSpace instance for generating vector representations
     from images, supporting models from the SentenceTransformers and OpenCLIP projects.
     
@@ -22,6 +22,8 @@ Classes
             If None, uses the default cache directory. Defaults to None.
         embedding_engine_config (EmbeddingEngineConfig, optional): Configuration for the embedding engine.
             Defaults to EmbeddingEngineConfig().
+        salt: (str | None, optional): Enables the creation of identical spaces to allow
+            different weighted event definitions with them.
     
     Raises:
         InvalidInputException: If the image and description fields are not
