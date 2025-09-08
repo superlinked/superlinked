@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [37.2.0] - 2025-09-08
+
+### Added
+
+- Add salt parameter to enable identical spaces with different weights
+
 ## [37.1.0] - 2025-09-06
 
 ### Fixed
@@ -6258,6 +6264,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove unnecessary call
 - Remove extra field
 
+[37.2.0]: https://github.com/superlinked/superlinked/compare/v37.1.0..v37.2.0
 [37.1.0]: https://github.com/superlinked/superlinked/compare/v37.0.0..v37.1.0
 [37.0.0]: https://github.com/superlinked/superlinked/compare/v36.4.0..v37.0.0
 [36.4.0]: https://github.com/superlinked/superlinked/compare/v36.3.1..v36.4.0
