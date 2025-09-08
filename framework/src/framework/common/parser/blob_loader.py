@@ -48,11 +48,22 @@ class BlobLoader:
         self._scheme_to_load_function: dict[str, Callable[[Sequence[str]], Awaitable[list[BlobInformation]]]] = {
             "file": BlobLoader._load_from_local,
             "": BlobLoader._load_from_local,
-            "http": BlobLoader._load_from_url,
-            "https": BlobLoader._load_from_url,
+            "http": self._load_from_url,
+            "https": self._load_from_url,
         }
         if handler := BlobHandlerFactory.create_blob_handler(blob_handler_config):
             self._scheme_to_load_function[handler.get_supported_cloud_storage_scheme()] = handler.download
+        self._http_session: aiohttp.ClientSession | None = None
+
+    def _get_http_session(self) -> aiohttp.ClientSession:
+        if self._http_session is None or self._http_session.closed:
+            self._http_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=settings.REQUEST_TIMEOUT))
+        return self._http_session
+
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        if self._http_session is not None and not self._http_session.closed:
+            await self._http_session.close()
+            self._http_session = None
 
     async def load(self, blob_like_inputs: Sequence[str | PILImage | None | Any]) -> list[BlobInformation | None]:
         with telemetry.span(
@@ -125,20 +136,15 @@ class BlobLoader:
     async def _load_from_bytes(blob_like_inputs: Sequence[str]) -> list[BlobInformation]:
         return [BlobInformation(base64.b64decode(blob_like_input), None) for blob_like_input in blob_like_inputs]
 
-    @staticmethod
-    async def _load_from_url(urls: Sequence[str]) -> list[BlobInformation]:
-        async def async_fetch(session: aiohttp.ClientSession, url: str) -> BlobInformation:
-            try:
-                async with session.get(url, timeout=aiohttp.ClientTimeout(total=settings.REQUEST_TIMEOUT)) as response:
-                    response.raise_for_status()
-                    BlobLoader._validate_response_content(url, response)
-                    content = await response.read()
-                    return BlobInformation(content, url)
-            except aiohttp.ClientError as exc:
-                raise UnexpectedResponseException(f"Failed to load URL: {url}.") from exc
+    async def _load_from_url(self, urls: Sequence[str]) -> list[BlobInformation]:
+        async def fetch(url: str) -> BlobInformation:
+            async with self._get_http_session().get(url) as response:
+                response.raise_for_status()
+                BlobLoader._validate_response_content(url, response)
+                content = await response.read()
+                return BlobInformation(content, url)
 
-        async with aiohttp.ClientSession() as session:
-            return await asyncio.gather(*[async_fetch(session, url) for url in urls])
+        return await asyncio.gather(*[fetch(url) for url in urls])
 
     @staticmethod
     def _validate_response_content(url: str, response: aiohttp.ClientResponse) -> None:

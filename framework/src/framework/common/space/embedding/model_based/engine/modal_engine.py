@@ -38,24 +38,21 @@ class ModalEngine(EmbeddingEngine[ModalEngineConfig]):
     def __init__(self, model_name: str, model_cache_dir: Path | None, config: ModalEngineConfig) -> None:
         super().__init__(model_name, model_cache_dir, config)
         client = modal.Client.from_credentials(token_id=self._config.token_id, token_secret=self._config.token_secret)
-        self._modal_cls = modal.Cls.from_name(
+        modal_cls = modal.Cls.from_name(
             app_name=self._config.app_name,
             name=self._config.class_name,
             environment_name=self._config.environment_name,
         )
-        self._modal_cls.hydrate(client)
+        modal_cls.hydrate(client)
+        self._embed = modal_cls().embed.remote.aio
 
     @override
     async def embed(self, inputs: Sequence[ModelEmbeddingInput], is_query_context: bool) -> list[list[float]]:
-        batches = [inputs[i : i + self._config.batch_size] for i in range(0, len(inputs), self._config.batch_size)]
         retry_count = 0
         current_delay = self._config.retry_delay
         while True:
             try:
-                batch_results = await asyncio.gather(
-                    *[self._modal_cls().embed.remote.aio(batch, model_name=self._model_name) for batch in batches]
-                )
-                return [embedding for batch_result in batch_results for embedding in batch_result]
+                return await asyncio.gather(*[self._embed(input_, self._model_name) for input_ in inputs])
             except Exception as e:  # pylint: disable=broad-exception-caught
                 retry_count += 1
                 if retry_count >= self._config.max_retries:

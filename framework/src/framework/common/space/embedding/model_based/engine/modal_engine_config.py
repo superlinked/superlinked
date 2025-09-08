@@ -28,7 +28,6 @@ class ModalEngineConfig(EmbeddingEngineConfig):  # pylint: disable=too-many-inst
     app_name: str = "App"
     class_name: str = "Embedder"
     environment_name: str = "main"
-    batch_size: int = 5000
     max_retries: int = 10
     retry_delay: float = 0.2
 
@@ -38,7 +37,6 @@ class ModalEngineConfig(EmbeddingEngineConfig):  # pylint: disable=too-many-inst
             f"app_name={self.app_name}",
             f"class_name={self.class_name}",
             f"environment_name={self.environment_name}",
-            f"batch_size={self.batch_size}",
             f"max_retries={self.max_retries}",
             f"retry_delay={self.retry_delay}",
         ]
