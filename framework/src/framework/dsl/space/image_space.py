@@ -77,6 +77,7 @@ class ImageSpace(Space[Vector, ImageData]):
         model_cache_dir: Path | None = None,
         model_handler: ModelHandler = ModelHandler.SENTENCE_TRANSFORMERS,
         embedding_engine_config: EmbeddingEngineConfig | None = None,
+        salt: str | None = None,
     ) -> None:
         """
         Initialize the ImageSpace instance for generating vector representations
@@ -93,6 +94,8 @@ class ImageSpace(Space[Vector, ImageData]):
                 If None, uses the default cache directory. Defaults to None.
             embedding_engine_config (EmbeddingEngineConfig, optional): Configuration for the embedding engine.
                 Defaults to EmbeddingEngineConfig().
+            salt: (str | None, optional): Enables the creation of identical spaces to allow
+                different weighted event definitions with them.
 
         Raises:
             InvalidInputException: If the image and description fields are not
@@ -104,7 +107,7 @@ class ImageSpace(Space[Vector, ImageData]):
         self.__validate_field_schemas(non_none_image)
         self.__validate_model_handler(model_handler, embedding_engine_config)
         image_fields, description_fields = self._split_images_from_descriptions(non_none_image)
-        super().__init__(image_fields, Blob)
+        super().__init__(image_fields, Blob, salt)
         length = AsyncUtil.run(
             SingletonEmbeddingEngineManager().calculate_length(
                 model_handler, model, model_cache_dir, embedding_engine_config
@@ -121,7 +124,7 @@ class ImageSpace(Space[Vector, ImageData]):
             model, model_cache_dir, model_handler, length, embedding_engine_config
         )
         self.__embedding_node_by_schema = self._init_embedding_node_by_schema(
-            image_fields, description_fields, self._all_fields, self.transformation_config
+            image_fields, description_fields, self._all_fields, self.transformation_config, salt
         )
         self._model = model
 
@@ -213,6 +216,7 @@ class ImageSpace(Space[Vector, ImageData]):
         description_fields: Sequence[String | None],
         all_fields: set[SchemaField],
         transformation_config: TransformationConfig[Vector, ImageData],
+        salt: str | None,
     ) -> dict[IdSchemaObject, EmbeddingNode[Vector, ImageData]]:
         return {
             image_field.schema_obj: ImageEmbeddingNode(
@@ -220,6 +224,7 @@ class ImageSpace(Space[Vector, ImageData]):
                 description_node=SchemaFieldNode(description_field) if description_field is not None else None,
                 transformation_config=transformation_config,
                 fields_for_identification=all_fields,
+                salt=salt,
             )
             for image_field, description_field in zip(image_fields, description_fields)
         }

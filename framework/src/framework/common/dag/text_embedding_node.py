@@ -29,5 +29,6 @@ class TextEmbeddingNode(EmbeddingNode[Vector, str]):
         transformation_config: TransformationConfig[Vector, str],
         fields_for_identification: set[SchemaField],
         schema: IdSchemaObject | None = None,
+        salt: str | None = None,
     ) -> None:
-        super().__init__([parent], transformation_config, fields_for_identification, schema)
+        super().__init__([parent], transformation_config, fields_for_identification, schema, salt)

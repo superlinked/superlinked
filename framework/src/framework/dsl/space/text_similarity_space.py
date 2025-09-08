@@ -74,6 +74,7 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
         model_cache_dir: Path | None = None,
         model_handler: TextModelHandler = TextModelHandler.SENTENCE_TRANSFORMERS,
         embedding_engine_config: EmbeddingEngineConfig | None = None,
+        salt: str | None = None,
     ) -> None:
         """
         Initialize the TextSimilaritySpace.
@@ -90,12 +91,14 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
                 Defaults to ModelHandler.SENTENCE_TRANSFORMERS.
             embedding_engine_config (EmbeddingEngineConfig, optional): Configuration for the embedding engine.
                 Defaults to EmbeddingEngineConfig().
+            salt: (str | None, optional): Enables the creation of identical spaces to allow
+                different weighted event definitions with them.
         """
         if embedding_engine_config is None:
             embedding_engine_config = EmbeddingEngineConfig()
         unchecked_texts: list[ChunkingNode | String] = self._fields_to_non_none_sequence(text)
         text_fields = [self._get_root(unchecked_text) for unchecked_text in unchecked_texts]
-        super().__init__(text_fields, String)
+        super().__init__(text_fields, String, salt)
         self.text = SpaceFieldSet[str](self, set(text_fields))
         self.__validate_model_handler(model_handler, embedding_engine_config)
         self._transformation_config = self._init_transformation_config(
@@ -103,7 +106,7 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
         )
         self._schema_node_map: dict[IdSchemaObject, EmbeddingNode[Vector, str]] = {
             self._get_root(unchecked_text).schema_obj: self._generate_embedding_node(
-                unchecked_text, self._transformation_config
+                unchecked_text, self._transformation_config, salt
             )
             for unchecked_text in unchecked_texts
         }
@@ -127,13 +130,14 @@ class TextSimilaritySpace(Space[Vector, str], HasSpaceFieldSet):
         return self._get_root(text.parents[0])
 
     def _generate_embedding_node(
-        self, text: TextInput, transformation_config: TransformationConfig
+        self, text: TextInput, transformation_config: TransformationConfig, salt: str | None
     ) -> TextEmbeddingNode:
         parent = text if isinstance(text, ChunkingNode) else SchemaFieldNode(text)
         return TextEmbeddingNode(
             parent=parent,
             transformation_config=transformation_config,
             fields_for_identification=self.text.fields,
+            salt=salt,
         )
 
     @property

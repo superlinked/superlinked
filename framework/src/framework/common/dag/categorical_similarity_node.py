@@ -30,10 +30,6 @@ class CategoricalSimilarityNode(EmbeddingNode[Vector, list[str]]):
         transformation_config: TransformationConfig[Vector, list[str]],
         fields_for_identification: set[SchemaField],
         schema: IdSchemaObject | None = None,
+        salt: str | None = None,
     ) -> None:
-        super().__init__(
-            [parent],
-            transformation_config,
-            fields_for_identification,
-            schema,
-        )
+        super().__init__([parent], transformation_config, fields_for_identification, schema, salt)

@@ -66,18 +66,6 @@ class RecencySpace(Space[int, int], HasSpaceFieldSet):  # pylint: disable=too-ma
     You can think of the value of negative_filter as it offsets that amount of similarity stemming from other
     spaces in the index. For example setting it -1 would offset any text similarity that has weight 1 - effectively
     filtering out all old items however similar they are in terms of their text.
-
-    Attributes:
-        timestamp (SpaceFieldSet): A set of Timestamp objects. The actual data is expected to be unix timestamps
-            in seconds.
-            It is a SchemaFieldObject not regular python ints or floats.
-        time_period_hour_offset (timedelta): Starting period time will be set to this hour.
-            Day will be the next day of context.now(). Defaults to timedelta(hours=0).
-        period_time_list (list[PeriodTime] | None): A list of period time parameters.
-            Weights default to 1. Period time to 14 days.
-        aggregation_mode (InputAggregationMode): The  aggregation mode of the number embedding.
-            Possible values are: maximum, minimum and average. Defaults to InputAggregationMode.INPUT_AVERAGE.
-        negative_filter (float): The recency score of items that are older than the oldest period time. Defaults to 0.0.
     """
 
     def __init__(
@@ -87,6 +75,7 @@ class RecencySpace(Space[int, int], HasSpaceFieldSet):  # pylint: disable=too-ma
         period_time_list: list[PeriodTime] | PeriodTime | None = None,
         aggregation_mode: InputAggregationMode = InputAggregationMode.INPUT_AVERAGE,
         negative_filter: float = 0.0,
+        salt: str | None = None,
     ) -> None:
         """
         Initialize the RecencySpace.
@@ -103,9 +92,11 @@ class RecencySpace(Space[int, int], HasSpaceFieldSet):  # pylint: disable=too-ma
                 Possible values are: maximum, minimum and average. Defaults to InputAggregationMode.INPUT_AVERAGE.
             negative_filter (float): The recency score of items that are older than the oldest period time.
                 Defaults to 0.0.
+            salt: (str | None, optional): Enables the creation of identical spaces to allow
+                different weighted event definitions with them.
         """
         non_none_timestamp = self._fields_to_non_none_sequence(timestamp)
-        super().__init__(non_none_timestamp, Timestamp)
+        super().__init__(non_none_timestamp, Timestamp, salt)
         self._aggregation_config_type_by_mode = self.__init_aggregation_config_type_by_mode()
         self.timestamp = SpaceFieldSet[int](self, set(non_none_timestamp))
         recency_periods: list[PeriodTime] = (
@@ -128,6 +119,7 @@ class RecencySpace(Space[int, int], HasSpaceFieldSet):  # pylint: disable=too-ma
                 parent=SchemaFieldNode(field),
                 transformation_config=self._transformation_config,
                 fields_for_identification=self.timestamp.fields,
+                salt=salt,
             )
             for field in self.timestamp.fields
         }

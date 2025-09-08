@@ -32,12 +32,10 @@ class ImageEmbeddingNode(EmbeddingNode[Vector, ImageData]):
         transformation_config: TransformationConfig[Vector, ImageData],
         fields_for_identification: set[SchemaField],
         schema: IdSchemaObject | None = None,
+        salt: str | None = None,
     ) -> None:
         super().__init__(
-            [image_blob_node, description_node],
-            transformation_config,
-            fields_for_identification,
-            schema,
+            [image_blob_node, description_node], transformation_config, fields_for_identification, schema, salt
         )
         self.image_node_id = image_blob_node.node_id if image_blob_node else None
         self.description_node_id = description_node.node_id if description_node else None

@@ -62,11 +62,12 @@ class Space(
     This class defines the interface for a space in the context of the application.
     """
 
-    def __init__(self, fields: Sequence[SchemaField], type_: type | TypeAlias) -> None:
+    def __init__(self, fields: Sequence[SchemaField], type_: type | TypeAlias, salt: str | None) -> None:
         super().__init__()
         TypeValidator.validate_list_item_type(fields, type_, "field_list")
         self.__validate_fields(fields)
         self._field_set = set(fields)
+        self._salt = salt
 
     def __validate_fields(self, field_list: Sequence[SchemaField]) -> None:
         if not self._allow_empty_fields and not field_list:
@@ -135,6 +136,7 @@ class Space(
             isinstance(other, Space)
             and self.transformation_config == other.transformation_config
             and self._field_set == other._field_set
+            and self._salt == other._salt
         )
 
     @override
