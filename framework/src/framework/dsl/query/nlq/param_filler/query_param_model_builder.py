@@ -13,9 +13,10 @@
 # limitations under the License.
 
 
-from beartype.typing import Any, Union
+from beartype.typing import Any, Sequence, Union
 from pydantic import BaseModel, Field, create_model
 
+from superlinked.framework.common.const import constants
 from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.interface.evaluated import Evaluated
 from superlinked.framework.dsl.query.nlq.nlq_clause_collector import NLQClauseCollector
@@ -28,11 +29,14 @@ from superlinked.framework.dsl.query.typed_param import TypedParam
 QUERY_MODEL_NAME = "QueryModel"
 VALIDATORS_ARG_NAME = "__validators__"
 VALIDATOR_NAME = "__validator__"
+VALID_NLQ_TYPES = frozenset([float, int, str, list[float], list[int], list[str]])
 
-VALID_NLQ_TYPES = [float, int, str, list[float], list[int], list[str]]
+_FieldSpecification = tuple[Any, Any]  # (type, field)
+_ParamType = TypedParam | Evaluated[TypedParam]
 
 
 class QueryParamModelBuilder:
+
     @classmethod
     def build(cls, clause_collector: NLQClauseCollector) -> type[BaseModel]:
         field_kwargs: dict[str, Any] = cls._calculate_field_kwargs(clause_collector)
@@ -42,31 +46,56 @@ class QueryParamModelBuilder:
         return model
 
     @classmethod
-    def _calculate_field_kwargs(cls, clause_collector: NLQClauseCollector) -> dict[str, tuple[Any, Any]]:
-        return {
-            QueryClause.get_param(param).name: (
-                cls._calculate_type(param, clause_handler.is_type_mandatory_in_nlq),
-                cls._calculate_field(param),
-            )
-            for clause_handler in clause_collector.clause_handlers
-            for param in clause_handler.clause.params
-        }
+    def _calculate_field_kwargs(cls, clause_collector: NLQClauseCollector) -> dict[str, _FieldSpecification]:
+        weight_param_names = clause_collector.space_weight_param_info.get_weight_param_names()
+        field_specs = {}
+
+        for clause_handler in clause_collector.clause_handlers:
+            for param in clause_handler.clause.params:
+                param_name = QueryClause.get_param(param).name
+                is_weight_param = param_name in weight_param_names
+                field_specs[param_name] = cls._create_field_specification(
+                    param, clause_handler.is_type_mandatory_in_nlq, is_weight_param
+                )
+
+        return field_specs
 
     @classmethod
-    def _calculate_type(cls, param: TypedParam | Evaluated[TypedParam], is_type_mandatory: bool) -> Any:
-        param_types = QueryClause.get_typed_param(param).valid_param_value_types
-        nlq_types = [
+    def _create_field_specification(
+        cls, param: _ParamType, is_type_mandatory: bool, is_weight_param: bool
+    ) -> _FieldSpecification:
+        param_type = cls._determine_param_type(param, is_type_mandatory, is_weight_param)
+        field_instance = cls._create_field_instance(param)
+        return (param_type, field_instance)
+
+    @classmethod
+    def _determine_param_type(cls, param: _ParamType, is_type_mandatory: bool, is_weight_param: bool) -> Any:
+        if is_weight_param:
+            return constants.NLQ_WEIGHT_TYPE
+        supported_types = cls._extract_supported_nlq_types(param)
+        unified_type = cls._merge_types(supported_types)
+        return unified_type if is_type_mandatory else unified_type | None
+
+    @classmethod
+    def _extract_supported_nlq_types(cls, param: _ParamType) -> list[type]:
+        typed_param = QueryClause.get_typed_param(param)
+        param_types = typed_param.valid_param_value_types
+        supported_types = [
             param_type.original_type for param_type in param_types if param_type.original_type in VALID_NLQ_TYPES
         ]
-        if not nlq_types:
-            raise InvalidInputException(
-                f"No NLQ-supported type found for parameter: {QueryClause.get_param(param).name}"
-            )
-        types = Union[tuple(nlq_types)] if len(nlq_types) > 1 else nlq_types[0]
-        return types if is_type_mandatory else types | None
+        if not supported_types:
+            param_name = QueryClause.get_param(param).name
+            raise InvalidInputException(f"No NLQ-supported type found for parameter: {param_name}")
+        return supported_types
 
     @classmethod
-    def _calculate_field(cls, param: TypedParam | Evaluated[TypedParam]) -> Any:
+    def _merge_types(cls, types_list: Sequence[type]) -> Any:
+        if len(types_list) == 1:
+            return types_list[0]
+        return Union[tuple(types_list)]
+
+    @classmethod
+    def _create_field_instance(cls, param: _ParamType) -> Any:
         match param:
             case Evaluated():
                 return param.value

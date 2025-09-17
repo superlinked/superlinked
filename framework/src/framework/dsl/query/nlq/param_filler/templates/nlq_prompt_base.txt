@@ -7,6 +7,9 @@ You are assisting a user in translating their natural language query into a stru
    - Assign these requirements to the corresponding spaces provided below. Use the names and descriptions of the fields, spaces, and schema fields to guide your mapping.
 3. **Assign Weights and Values:**
    - Set appropriate weights and values based on the user's requirements.
+      - POSITIVE: 1 for positive preference
+      - NEUTRAL 0 for indifference or when not explicitly stated
+      - NEGATIVE -1 for negative preference
    - If the user requires an attribute, assign the corresponding weight the value 1.0 for normal preference and 3.0 for increased preference.
    - If the user expresses a negative requirement for an attribute, assign the corresponding weight the value -1.0 and -3.0 for increased negative preference.
    - If the user expresses indifference for an attribute, assign the corresponding weight the value 0.0.

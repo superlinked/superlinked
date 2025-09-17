@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 from attr import dataclass
+from beartype.typing import Literal
 
 
 @dataclass(frozen=True)
@@ -29,6 +31,7 @@ class Constants:
     EFFECT_COUNT_KEY = "effect_count"
     EFFECT_OLDEST_TS_KEY = "effect_oldest_age"
     EFFECT_AVG_TS_KEY = "average_age"
+    NLQ_WEIGHT_TYPE = Literal[-1, 0, 1]
 
 
 constants = Constants()

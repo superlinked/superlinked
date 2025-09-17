@@ -15,24 +15,16 @@
 import os
 import sys
 import threading
-import warnings
 from contextlib import contextmanager
 from dataclasses import dataclass
 
+import instructor  # type: ignore[import-untyped]
 import openai as openAILib
 import structlog
 from beartype.typing import Any, Generator
-from pydantic import BaseModel, PydanticDeprecatedSince20
+from pydantic import BaseModel
 
 from superlinked.framework.common.settings import settings
-
-with warnings.catch_warnings():
-    warnings.filterwarnings(
-        "ignore",
-        category=PydanticDeprecatedSince20,
-    )
-    import instructor
-    from instructor.exceptions import InstructorRetryException
 
 logger = structlog.getLogger()
 
@@ -111,7 +103,7 @@ class OpenAIClient:
                     ],
                     temperature=TEMPERATURE_VALUE,
                 )
-            except InstructorRetryException as e:
+            except instructor.InstructorRetryException as e:  # pylint: disable=no-member
                 logger.warning(
                     f"LLM validation followup failed after {max_retries} retries."
                     " Try increasing SUPERLINKED_NLQ_MAX_RETRIES."

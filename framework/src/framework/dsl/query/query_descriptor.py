@@ -15,7 +15,6 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from functools import reduce
 
 import structlog
 from beartype.typing import Sequence, Type, cast
@@ -36,11 +35,6 @@ from superlinked.framework.common.schema.schema_object import (
 )
 from superlinked.framework.common.util.type_validator import TypeValidator
 from superlinked.framework.dsl.index.index import Index
-from superlinked.framework.dsl.query.clause_params import NLQClauseParams
-from superlinked.framework.dsl.query.nlq.nlq_handler import NLQHandler
-from superlinked.framework.dsl.query.nlq.suggestion.query_suggestion_model import (
-    QuerySuggestionsModel,
-)
 from superlinked.framework.dsl.query.param import (
     IntParamType,
     NumericParamType,
@@ -434,50 +428,6 @@ class QueryDescriptor:  # pylint: disable=too-many-public-methods
             QueryDescriptor: A new query descriptor with the updated configuration.
         """
         return QueryDescriptor(self.index, self.schema, self.clauses, query_user_config=query_user_config)
-
-    @TypeValidator.wrap
-    def nlq_suggestions(self, feedback: str | None = None) -> QuerySuggestionsModel:
-        """
-        Get suggestions for improving the natural language query parameters.
-
-        This method analyzes the current query parameters and provides suggestions for improvement,
-        including parameter naming, clarity, and overall query structure improvements.
-        It requires that a natural language query has been set using with_natural_query().
-
-        Args:
-            feedback (str | None, optional): Additional feedback from the query creator to help
-                generate more targeted suggestions. For example, you might provide context about
-                specific requirements or constraints. Defaults to None.
-
-        Returns:
-            QuerySuggestionsModel: A model containing improvement suggestions and clarifying questions.
-                You can access the suggestions directly via the model's attributes or call
-                .print() for a formatted display of the suggestions.
-
-                Example usage:
-                ```python
-                suggestions = query.nlq_suggestions()
-                suggestions.print()  # Prints formatted suggestions
-                # Or access directly:
-                print(suggestions.improvement_suggestions)
-                print(suggestions.clarifying_questions)
-                ```
-
-        Raises:
-            InvalidInputException: If with_natural_query() has not been called before this method.
-        """
-        nlq_params = reduce(
-            lambda params, clause: clause.get_altered_nql_params(params), self.clauses, NLQClauseParams()
-        )
-        if nlq_params.client_config is None or nlq_params.natural_query is None:
-            raise InvalidInputException("with_natural_query clause must be provided before calling nlq_suggestions")
-        return NLQHandler(nlq_params.client_config).suggest_improvements(
-            self.clauses,
-            self._space_weight_param_info,
-            nlq_params.natural_query,
-            feedback,
-            nlq_params.system_prompt,
-        )
 
     def append_missing_mandatory_clauses(self) -> QueryDescriptor:
         clauses: list[QueryClause] = []
