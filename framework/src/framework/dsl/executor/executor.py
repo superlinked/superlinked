@@ -15,8 +15,7 @@
 
 from abc import ABC, abstractmethod
 
-from beartype.typing import Generic, Sequence
-from typing_extensions import Annotated
+from beartype.typing import Annotated, Generic, Sequence
 
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.util.generic_class_util import GenericClassUtil

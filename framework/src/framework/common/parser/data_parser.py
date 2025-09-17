@@ -155,14 +155,12 @@ class DataParser(ABC, Generic[SourceTypeT]):
         return parsed_field
 
     def __check_parsed_schemas(self, parsed_schemas: Sequence[ParsedSchema]) -> None:
-        if not_valid_schema_base_class_names := set(
+        if not_valid_schema_base_class_names := {
             parsed_schema.schema._base_class_name
             for parsed_schema in parsed_schemas
             if parsed_schema.schema != self._schema
-        ):
+        }:
             raise InvalidInputException(
-                (
-                    f"{type(self).__name__} can only marshal {self._schema._base_class_name}, "
-                    f"got {list(not_valid_schema_base_class_names)}"
-                )
+                f"{type(self).__name__} can only marshal {self._schema._base_class_name}, "
+                f"got {list(not_valid_schema_base_class_names)}"
             )

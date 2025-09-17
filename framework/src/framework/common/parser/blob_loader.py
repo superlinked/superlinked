@@ -16,11 +16,12 @@
 import asyncio
 import base64
 import binascii
+import logging
 from collections import defaultdict
 from urllib.parse import urlparse
 
 import aiofiles
-import aiohttp
+import httpx
 import structlog
 from beartype.typing import Any, Awaitable, Callable, Sequence
 
@@ -34,11 +35,12 @@ from superlinked.framework.common.exception import (
     UnexpectedResponseException,
 )
 from superlinked.framework.common.schema.blob_information import BlobInformation
-from superlinked.framework.common.settings import settings
 from superlinked.framework.common.telemetry.telemetry_registry import telemetry
 from superlinked.framework.common.util.image_util import ImageUtil, PILImage
 
 logger = structlog.getLogger()
+httpx_logger = logging.getLogger("httpx")
+httpx_logger.setLevel(logging.WARNING)
 
 GCS_URL_IDENTIFIER = "storage.cloud.google.com"
 
@@ -53,17 +55,17 @@ class BlobLoader:
         }
         if handler := BlobHandlerFactory.create_blob_handler(blob_handler_config):
             self._scheme_to_load_function[handler.get_supported_cloud_storage_scheme()] = handler.download
-        self._http_session: aiohttp.ClientSession | None = None
+        self._httpx_client: httpx.AsyncClient | None = None
 
-    def _get_http_session(self) -> aiohttp.ClientSession:
-        if self._http_session is None or self._http_session.closed:
-            self._http_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=settings.REQUEST_TIMEOUT))
-        return self._http_session
+    def _get_httpx_client(self) -> httpx.AsyncClient:
+        if self._httpx_client is None or self._httpx_client.is_closed:
+            self._httpx_client = httpx.AsyncClient(http2=True, follow_redirects=True)
+        return self._httpx_client
 
     async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
-        if self._http_session is not None and not self._http_session.closed:
-            await self._http_session.close()
-            self._http_session = None
+        if self._httpx_client is not None and not self._httpx_client.is_closed:
+            await self._httpx_client.aclose()
+            self._httpx_client = None
 
     async def load(self, blob_like_inputs: Sequence[str | PILImage | None | Any]) -> list[BlobInformation | None]:
         with telemetry.span(
@@ -137,17 +139,19 @@ class BlobLoader:
         return [BlobInformation(base64.b64decode(blob_like_input), None) for blob_like_input in blob_like_inputs]
 
     async def _load_from_url(self, urls: Sequence[str]) -> list[BlobInformation]:
+        client = self._get_httpx_client()
+
         async def fetch(url: str) -> BlobInformation:
-            async with self._get_http_session().get(url) as response:
-                response.raise_for_status()
-                BlobLoader._validate_response_content(url, response)
-                content = await response.read()
+            async with client.stream("GET", url) as resp:
+                resp.raise_for_status()
+                self._validate_response_content(url, resp)
+                content = await resp.aread()  # read fully; returns conn to pool
                 return BlobInformation(content, url)
 
         return await asyncio.gather(*[fetch(url) for url in urls])
 
     @staticmethod
-    def _validate_response_content(url: str, response: aiohttp.ClientResponse) -> None:
+    def _validate_response_content(url: str, response: httpx.Response) -> None:
         content_type = response.headers.get("Content-Type", "").lower()
         if "html" not in content_type:
             return

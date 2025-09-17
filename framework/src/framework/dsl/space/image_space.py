@@ -116,7 +116,7 @@ class ImageSpace(Space[Vector, ImageData]):
         self.image = ImageSpaceFieldSet(self, set(image_fields), allowed_param_types=[str, PILImage])
         self.description = ImageDescriptionSpaceFieldSet(
             self,
-            set(description for description in description_fields if description is not None),
+            {description for description in description_fields if description is not None},
             allowed_param_types=[str],
         )
         self._all_fields = self.image.fields | self.description.fields
@@ -141,10 +141,8 @@ class ImageSpace(Space[Vector, ImageData]):
     ) -> None:
         if model_handler == ModelHandler.MODAL and not isinstance(embedding_engine_config, ModalEngineConfig):
             raise InvalidInputException(
-                (
-                    f"When using {ModelHandler.MODAL} as model_handler, embedding_engine_config must "
-                    f"be an instance of ModalEngineConfig, but got {type(embedding_engine_config).__name__}"
-                )
+                f"When using {ModelHandler.MODAL} as model_handler, embedding_engine_config must "
+                f"be an instance of ModalEngineConfig, but got {type(embedding_engine_config).__name__}"
             )
 
     def _split_images_from_descriptions(

@@ -119,10 +119,12 @@ class DelayedEvaluator(Generic[InputT, OutputT]):
     async def _evaluate_with_logging(self, inputs: Sequence[InputT]) -> list[OutputT]:
         start_time = time.perf_counter()
         results = await self._evaluate_fn(inputs)
-        logger.info(
-            f"Processed {self._task_name}",
-            n_items=len(inputs),
-            duration_ms=round((time.perf_counter() - start_time) * 1000),
-            wait_ms=self._delay_ms,
-        )
+        duration_ms = round((time.perf_counter() - start_time) * 1000)
+        if duration_ms > 0:
+            logger.info(
+                f"Processed {self._task_name}",
+                n_items=len(inputs),
+                duration_ms=duration_ms,
+                wait_ms=self._delay_ms,
+            )
         return results

@@ -50,7 +50,7 @@ class CategoricalSimilarityEmbedding(InvertibleEmbedding[list[str], CategoricalS
         if not input_:
             return self._config.default_vector
         n_hot_encoding: NPArray = self._n_hot_encode(input_, context.is_query_context)
-        negative_filter_indices = set(i for i in range(self.length) if i not in self._get_category_indices(input_))
+        negative_filter_indices = {i for i in range(self.length) if i not in self._get_category_indices(input_)}
         return Vector(n_hot_encoding, negative_filter_indices)
 
     @override

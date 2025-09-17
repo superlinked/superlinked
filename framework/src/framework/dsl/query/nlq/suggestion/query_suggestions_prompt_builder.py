@@ -31,7 +31,7 @@ class QuerySuggestionsPromptBuilder:
         feedback: str | None,
         natural_query: str | None,
     ) -> str:
-        with open(NLQ_SUGGESTION_BASE_TXT_PATH, "r", encoding="utf-8") as f:
+        with open(NLQ_SUGGESTION_BASE_TXT_PATH, encoding="utf-8") as f:
             suggestion_prompt = f.read()
         original_prompt = QueryParamPromptBuilder.calculate_instructor_prompt(clause_collector, system_prompt)
         context_parts = [suggestion_prompt]

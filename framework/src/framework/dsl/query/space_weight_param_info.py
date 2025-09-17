@@ -49,10 +49,8 @@ class SpaceWeightParamInfo:
                 [f"{space}: {param_names}" for space, param_names in redundant_global_weight_declarations]
             )
             raise InvalidInputException(
-                (
-                    "Multiple global space weight parameters found for the same space(s). "
-                    f"Each space should have exactly one global weight parameter: {space_param_names_str}"
-                )
+                "Multiple global space weight parameters found for the same space(s). "
+                f"Each space should have exactly one global weight parameter: {space_param_names_str}"
             )
         return {space: param_names[0] for space, param_names in global_param_names_by_space.items()}
 

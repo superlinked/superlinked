@@ -15,8 +15,7 @@
 import datetime
 
 import structlog
-from beartype.typing import Sequence
-from typing_extensions import Annotated
+from beartype.typing import Annotated, Sequence
 
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.dag.concatenation_node import ConcatenationNode
@@ -212,7 +211,7 @@ class Index:  # pylint: disable=too-many-instance-attributes
         effect_modifier: EffectModifier,
         schemas: set[IdSchemaObject],
     ) -> IndexNode:
-        affected_schemas = set(effect.resolved_affected_schema_reference.schema for effect in effects)
+        affected_schemas = {effect.resolved_affected_schema_reference.schema for effect in effects}
         index_parents = set[Node[Vector]]()
         for schema in schemas:
             parents = [

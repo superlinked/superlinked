@@ -53,7 +53,7 @@ class OnlineIndexNode(OnlineNode[IndexNode, Vector], HasLength):
         return active_parents[0]
 
     def __get_parent_for_parsed_schemas(self, parsed_schemas: Sequence[ParsedSchema]) -> OnlineNode:
-        active_parents = set(self.get_parent_for_schema(parsed_schema.schema) for parsed_schema in parsed_schemas)
+        active_parents = {self.get_parent_for_schema(parsed_schema.schema) for parsed_schema in parsed_schemas}
         if len(active_parents) != 1:
             raise InvalidStateException(
                 "Online index node must have exactly 1 parent per schema.", len_active_parents=len(active_parents)

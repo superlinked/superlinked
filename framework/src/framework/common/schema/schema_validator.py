@@ -60,10 +60,8 @@ class SchemaValidator:
             )
         ]:
             raise InvalidInputException(
-                (
-                    f"{'An event' if self.__schema_type == SchemaType.EVENT_SCHEMA else 'A'} "
-                    f"schema cannot have non-SchemaField attributes, got {wrong_annotation_types}"
-                )
+                f"{'An event' if self.__schema_type == SchemaType.EVENT_SCHEMA else 'A'} "
+                f"schema cannot have non-SchemaField attributes, got {wrong_annotation_types}"
             )
 
     def validate_id_field(self, descriptors: Sequence[SchemaFieldDescriptor]) -> None:

@@ -17,8 +17,8 @@ from __future__ import annotations
 from collections import defaultdict
 from enum import Enum, auto
 
-from beartype.typing import Mapping, TypeVar, cast
-from typing_extensions import Self, TypeAlias
+from beartype.typing import Mapping, TypeAlias, TypeVar, cast
+from typing_extensions import Self
 
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.exception import (
@@ -87,11 +87,9 @@ class ExecutionContext:
                 now = self.__data_now()
                 if now is None:
                     raise InvalidStateException(
-                        (
-                            f"Environment's '{CONTEXT_COMMON}.{CONTEXT_COMMON_NOW}' "
-                            "property should always be initialized for query contexts "
-                            f"while using {NowStrategy.CONTEXT_TIME.name} now strategy"
-                        )
+                        f"Environment's '{CONTEXT_COMMON}.{CONTEXT_COMMON_NOW}' "
+                        "property should always be initialized for query contexts "
+                        f"while using {NowStrategy.CONTEXT_TIME.name} now strategy"
                     )
                 return now
             case NowStrategy.SYSTEM_TIME:

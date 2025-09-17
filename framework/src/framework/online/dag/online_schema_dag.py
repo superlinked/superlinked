@@ -69,11 +69,11 @@ class OnlineSchemaDag:
             raise InvalidStateException(f"{class_name} must have exactly one leaf Node.")
         if not isinstance(leaf_nodes[0], OnlineIndexNode):
             raise InvalidStateException(f"{class_name} must have a OnlineIndexNode leaf Node.")
-        root_node_schemas = set(
+        root_node_schemas = {
             cast(SchemaFieldNode, node.node).schema_field.schema_obj
             for node in nodes
             if isinstance(node, OnlineSchemaFieldNode)
-        )
+        }
         if len(root_node_schemas) != 1:
             raise InvalidStateException(f"{class_name}'s nodes must have the same root schema.")
         if schema not in root_node_schemas:

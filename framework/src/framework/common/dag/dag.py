@@ -68,7 +68,7 @@ class Dag:
         self, schema: IdSchemaObject, node_id_schema_map: dict[str, set[IdSchemaObject]]
     ) -> SchemaDag:
         filtered_nodes = {node for node in self.nodes if schema in node_id_schema_map[node.node_id]}
-        projected_parents = set(parent for node in filtered_nodes for parent in node.project_parents_to_schema(schema))
+        projected_parents = {parent for node in filtered_nodes for parent in node.project_parents_to_schema(schema)}
         return SchemaDag(
             schema,
             list(projected_parents.union(filtered_nodes)),

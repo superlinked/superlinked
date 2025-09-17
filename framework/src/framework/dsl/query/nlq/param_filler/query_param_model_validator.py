@@ -109,5 +109,5 @@ class QueryParamModelValidator:
 
     @classmethod
     def _format_allowed_values(cls, allowed_values: set[ParamInputType | None]) -> str:
-        allowed_values_text = ", ".join(sorted((str(v) for v in allowed_values)))
+        allowed_values_text = ", ".join(sorted(str(v) for v in allowed_values))
         return allowed_values_text

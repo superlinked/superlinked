@@ -71,7 +71,7 @@ class EntityDataRequest:
         return [
             EntityDataRequest(
                 entity_id=id_,
-                node_requests=list(set(node_request for request in requests for node_request in request.node_requests)),
+                node_requests=list({node_request for request in requests for node_request in request.node_requests}),
             )
             for id_, requests in id_to_requests.items()
         ]

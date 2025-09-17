@@ -56,10 +56,10 @@ class Settings(YamlBasedSettings):
     # Embedding specific settings
     ENABLE_MPS: bool = False
     # Batching specific settings
-    BATCHED_EMBEDDING_WAIT_TIME_MS: int = 5
-    BATCHED_VDB_READ_WAIT_TIME_MS: int = 5
-    BATCHED_BLOB_LOAD_WAIT_TIME_MS: int = 5
-    BATCHED_VDB_WRITE_WAIT_TIME_MS: int = 5
+    BATCHED_EMBEDDING_WAIT_TIME_MS: int = 0
+    BATCHED_VDB_READ_WAIT_TIME_MS: int = 0
+    BATCHED_BLOB_LOAD_WAIT_TIME_MS: int = 0
+    BATCHED_VDB_WRITE_WAIT_TIME_MS: int = 0
     # Embedding specific settings - model
     MODEL_WARMUP: bool = False
     MODEL_CACHE_DIR: str | None = None
@@ -72,7 +72,6 @@ class Settings(YamlBasedSettings):
     BLOB_HANDLER_MODULE_PATH: str | None = None
     BLOB_HANDLER_CLASS_NAME: str | None = None
     BLOB_HANDLER_CLASS_ARGS: dict[str, Any] | None = None
-    REQUEST_TIMEOUT: int = 600  # 10min
     # Logging specific params
     SUPERLINKED_LOG_LEVEL: int | str | None = None
     SUPERLINKED_LOG_AS_JSON: bool = False

@@ -58,9 +58,9 @@ class OnlineSchemaFieldNode(Generic[SFT], OnlineNode[SchemaFieldNode, SFT]):
         parsed_schema_values: Sequence[SFT | None],
         online_entity_cache: OnlineEntityCache,
     ) -> dict[str, SFT | None]:
-        parsed_schema_ids_without_value = set(
+        parsed_schema_ids_without_value = {
             parsed_schema.id_ for parsed_schema, value in zip(parsed_schemas, parsed_schema_values) if not value
-        )
+        }
         if not self.node.persist_node_result or not parsed_schema_ids_without_value:
             return {}
 
@@ -87,8 +87,6 @@ class OnlineSchemaFieldNode(Generic[SFT], OnlineNode[SchemaFieldNode, SFT]):
             return None
         field_name = f"{self.node.schema_field.schema_obj._schema_name}.{self.node.schema_field.name}"
         raise InvalidInputException(
-            (
-                f"The SchemaField {field_name} was not supplied in the input data. "
-                "If you want to ingest missing data for this field, make it optional."
-            )
+            f"The SchemaField {field_name} was not supplied in the input data. "
+            "If you want to ingest missing data for this field, make it optional."
         )

@@ -18,7 +18,7 @@ from hashlib import md5
 class BlobIdGenerator:
     @staticmethod
     def generate_id(schema_id: str, object_id: str, field_name: str) -> str:
-        input_string = f"{schema_id}:{object_id}:{field_name}".encode("utf-8")
+        input_string = f"{schema_id}:{object_id}:{field_name}".encode()
         return md5(input_string).hexdigest()
 
     @staticmethod
