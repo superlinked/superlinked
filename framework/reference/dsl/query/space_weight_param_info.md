@@ -19,3 +19,8 @@ Classes
 
     `param_names_by_space: Mapping[superlinked.framework.dsl.space.space.Space, Sequence[str]]`
     :
+
+    ### Methods
+
+    `get_weight_param_names(self) ‑> list[str]`
+    :

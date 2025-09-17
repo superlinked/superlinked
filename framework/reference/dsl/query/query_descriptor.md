@@ -80,35 +80,6 @@ Classes
         Returns:
             Self: The query object itself.
 
-    `nlq_suggestions(self, feedback: str | None = None) ‑> superlinked.framework.dsl.query.nlq.suggestion.query_suggestion_model.QuerySuggestionsModel`
-    :   Get suggestions for improving the natural language query parameters.
-        
-        This method analyzes the current query parameters and provides suggestions for improvement,
-        including parameter naming, clarity, and overall query structure improvements.
-        It requires that a natural language query has been set using with_natural_query().
-        
-        Args:
-            feedback (str | None, optional): Additional feedback from the query creator to help
-                generate more targeted suggestions. For example, you might provide context about
-                specific requirements or constraints. Defaults to None.
-        
-        Returns:
-            QuerySuggestionsModel: A model containing improvement suggestions and clarifying questions.
-                You can access the suggestions directly via the model's attributes or call
-                .print() for a formatted display of the suggestions.
-        
-                Example usage:
-                ```python
-                suggestions = query.nlq_suggestions()
-                suggestions.print()  # Prints formatted suggestions
-                # Or access directly:
-                print(suggestions.improvement_suggestions)
-                print(suggestions.clarifying_questions)
-                ```
-        
-        Raises:
-            InvalidInputException: If with_natural_query() has not been called before this method.
-
     `override_now(self, now: int | superlinked.framework.dsl.query.param.Param) ‑> superlinked.framework.dsl.query.query_descriptor.QueryDescriptor`
     :
 
