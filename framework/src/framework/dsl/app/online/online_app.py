@@ -15,8 +15,6 @@
 
 from beartype.typing import Generic, Sequence
 
-from superlinked.framework.blob.blob_handler import BlobHandler
-from superlinked.framework.blob.blob_handler_subscriber import BlobHandlerSubscriber
 from superlinked.framework.common.dag.context import ExecutionContext
 from superlinked.framework.common.settings import ResourceSettings
 from superlinked.framework.common.storage_manager.storage_manager import StorageManager
@@ -60,7 +58,6 @@ class OnlineApp(App[OnlineSourceT], Generic[OnlineSourceT], QueryMixin):
         context: ExecutionContext,
         init_search_indices: bool,
         queue: Queue | None = None,
-        blob_handler: BlobHandler | None = None,
         query_result_converter: QueryResultConverter | None = None,
     ) -> None:
         """
@@ -82,9 +79,6 @@ class OnlineApp(App[OnlineSourceT], Generic[OnlineSourceT], QueryMixin):
         self.__setup_sources()
         if queue is not None:
             self.__register_queue_to_sources(queue)
-
-        if blob_handler is not None:
-            self.__register_blob_handlers(blob_handler)
 
     def __setup_sources(self) -> None:
         """
@@ -112,10 +106,6 @@ class OnlineApp(App[OnlineSourceT], Generic[OnlineSourceT], QueryMixin):
 
     def __filter_index_sources(self, index: Index) -> Sequence[OnlineSourceT]:
         return [source for source in self._sources if index.has_schema(source._schema)]
-
-    def __register_blob_handlers(self, blob_handler: BlobHandler) -> None:
-        for source in self._sources:
-            source.register(BlobHandlerSubscriber(blob_handler))
 
     def __register_queue_to_sources(self, queue: Queue) -> None:
         for source in self._sources:

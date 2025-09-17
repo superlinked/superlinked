@@ -13,17 +13,15 @@
 # limitations under the License.
 
 import asyncio
-from concurrent.futures import Future, ThreadPoolExecutor
-from dataclasses import asdict
+from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlparse
 
 import structlog
-from beartype.typing import Any, Sequence
+from beartype.typing import Sequence
 from google.cloud import storage
 from typing_extensions import override
 
 from superlinked.framework.blob.blob_handler import BlobHandler
-from superlinked.framework.blob.blob_metadata import BlobMetadata
 from superlinked.framework.common.const import constants
 from superlinked.framework.common.exception import InvalidInputException
 from superlinked.framework.common.schema.blob_information import BlobInformation
@@ -42,11 +40,6 @@ class GcsBlobHandler(BlobHandler):
         self._executor = ThreadPoolExecutor()
         self._logger = logger.bind(bucket=self.__bucket_name)
         self._file_ops = GCSFileOps(pool_size=pool_size)
-
-    @override
-    def upload(self, object_key: str, data: bytes, metadata: BlobMetadata | None = None) -> None:
-        future = self._executor.submit(self._upload_sync, object_key, data, metadata)
-        future.add_done_callback(lambda f: self._task_done_callback(f, object_key, data))
 
     @override
     async def download(self, object_keys: Sequence[str]) -> list[BlobInformation]:
@@ -96,27 +89,6 @@ class GcsBlobHandler(BlobHandler):
     @override
     def get_supported_cloud_storage_scheme(self) -> str:
         return SUPPORTED_SCHEME
-
-    def _upload_sync(self, object_key: str, data: bytes, metadata: BlobMetadata | None) -> None:
-        bucket = self._file_ops.storage_client.bucket(self.__bucket_name)
-        blob = bucket.blob(object_key)
-        upload_args: dict[str, Any] = {"data": data}
-        if metadata is not None:
-            upload_args.update({"content_type": metadata.content_type})
-            blob.metadata = asdict(metadata)
-        blob.upload_from_string(**upload_args)
-
-    def _task_done_callback(self, future: Future, object_key: str, data: bytes) -> None:
-        try:
-            future.result()
-            self._logger.debug("uploaded blob", object_key=object_key, size=len(data))
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            self._logger.exception(
-                "upload failed",
-                object_key=object_key,
-                error_type=type(e).__name__,
-                error_details=str(e),
-            )
 
     def _parse_gcs_path(self, path: str) -> tuple[str, str]:
         if not path.startswith(f"{SUPPORTED_SCHEME}://"):

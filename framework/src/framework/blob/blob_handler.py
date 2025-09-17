@@ -23,9 +23,6 @@ from superlinked.framework.common.schema.blob_information import BlobInformation
 
 
 class BlobHandler:
-    @abstractmethod
-    def upload(self, object_key: str, data: bytes, metadata: BlobMetadata | None = None) -> None:
-        pass
 
     @abstractmethod
     async def download(self, object_keys: Sequence[str]) -> list[BlobInformation]:
