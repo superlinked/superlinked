@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.app.online.online_app
 Classes
 -------
 
-`OnlineApp(sources: Sequence[~OnlineSourceT], indices: Sequence[superlinked.framework.dsl.index.index.Index], vector_database: superlinked.framework.dsl.storage.vector_database.VectorDatabase, context: superlinked.framework.common.dag.context.ExecutionContext, init_search_indices: bool, queue: superlinked.framework.queue.interface.queue.Queue | None = None, blob_handler: superlinked.framework.blob.blob_handler.BlobHandler | None = None, query_result_converter: superlinked.framework.dsl.query.query_result_converter.query_result_converter.QueryResultConverter | None = None)`
+`OnlineApp(sources: Sequence[~OnlineSourceT], indices: Sequence[superlinked.framework.dsl.index.index.Index], vector_database: superlinked.framework.dsl.storage.vector_database.VectorDatabase, context: superlinked.framework.common.dag.context.ExecutionContext, init_search_indices: bool, queue: superlinked.framework.queue.interface.queue.Queue | None = None, query_result_converter: superlinked.framework.dsl.query.query_result_converter.query_result_converter.QueryResultConverter | None = None)`
 :   Manages the execution environment for online sources and indices.
     
     This class extends the base App class and incorporates the QueryMixin to handle

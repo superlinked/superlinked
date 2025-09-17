@@ -4,7 +4,7 @@ Module superlinked.framework.dsl.executor.rest.rest_executor
 Classes
 -------
 
-`RestExecutor(sources: Sequence[RestSource | DataLoaderSource], indices: Sequence[Index], queries: Sequence[RestQuery], vector_database: VectorDatabase, endpoint_configuration: RestEndpointConfiguration | None = None, context_data: Mapping[str, Mapping[str, ContextValue]] | None = None, blob_handler_config: BlobHandlerConfig | None = None)`
+`RestExecutor(sources: Sequence[RestSource | DataLoaderSource], indices: Sequence[Index], queries: Sequence[RestQuery], vector_database: VectorDatabase, endpoint_configuration: RestEndpointConfiguration | None = None, context_data: Mapping[str, Mapping[str, ContextValue]] | None = None)`
 :   The RestExecutor is a specialized subclass of the Executor base class designed to handle REST applications.
     It encapsulates all necessary parameters for configuring and running a REST-based application.
     
