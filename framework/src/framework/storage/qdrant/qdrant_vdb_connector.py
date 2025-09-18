@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import re
+from collections.abc import Mapping
 
 from beartype.typing import Any, Sequence, cast
 from qdrant_client import QdrantClient
@@ -76,13 +77,18 @@ ID_PAYLOAD_FIELD = Field(FieldDataType.STRING, ID_PAYLOAD_FIELD_NAME)
 
 
 class QdrantVDBConnector(VDBConnector[VDBKNNSearchConfig]):
-    def __init__(self, connection_params: QdrantConnectionParams, vdb_settings: VDBSettings) -> None:
+    def __init__(
+        self,
+        connection_params: QdrantConnectionParams,
+        vdb_settings: VDBSettings,
+        client_params: Mapping[str, Any] | None = None,
+    ) -> None:
         super().__init__(vdb_settings=vdb_settings)
+
         self._client = QdrantClient(
             url=connection_params.connection_string,
             api_key=connection_params._api_key,
-            timeout=connection_params.timeout,
-            prefer_grpc=connection_params.prefer_grpc,
+            **client_params or {},
         )
         self._encoder = QdrantFieldEncoder(self.vector_precision)
         self.__search_index_manager = QdrantSearchIndexManager(self._client)

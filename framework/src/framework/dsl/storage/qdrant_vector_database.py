@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+from collections.abc import Mapping
+
 from beartype.typing import Any
 
 from superlinked.framework.common.precision import Precision
@@ -40,11 +42,10 @@ class QdrantVectorDatabase(VectorDatabase[QdrantVDBConnector]):
         url: str,
         api_key: str,
         default_query_limit: int = 10,
-        timeout: int | None = None,
         search_algorithm: SearchAlgorithm = SearchAlgorithm.FLAT,
         vector_precision: Precision = Precision.FLOAT16,
-        prefer_grpc: bool | None = None,
-        **extra_params: Any
+        client_params: Mapping[str, Any] | None = None,
+        **extra_params: Any,
     ) -> None:
         """
         Initialize the QdrantVectorDatabase.
@@ -53,18 +54,20 @@ class QdrantVectorDatabase(VectorDatabase[QdrantVDBConnector]):
             url (str): The url of the Qdrant server.
             api_key (str): The api key of the Qdrant cluster.
             default_query_limit (int): Default vector search limit, set to Qdrant's default of 10.
-            timeout (int | None): Timeout in seconds for Qdrant operations. Default is 5 seconds.
             vector_precision (Precision): Precision to use for storing vectors. Defaults to FLOAT16.
-            prefer_grpc (bool | None): Whether to prefer gRPC for Qdrant operations. Default is False.
+            client_params (Mapping[str, Any] | None): Additional parameters for the QdrantClient.
+            These are passed directly to the QdrantClient constructor, so any valid QdrantClient
+            parameter can be used. For example `{"prefer_grpc": True}`. Defaults to None.
             **extra_params (Any): Additional parameters for the Qdrant connection.
         """
         super().__init__()
-        self._connection_params = QdrantConnectionParams(url, api_key, timeout, prefer_grpc, **extra_params)
+        self._connection_params = QdrantConnectionParams(url, api_key, **extra_params)
         self._settings = VDBSettings(
             default_query_limit=default_query_limit,
             search_algorithm=search_algorithm,
             vector_precision=vector_precision,
         )
+        self._client_params = client_params or {}
 
     @property
     def _vdb_connector(self) -> QdrantVDBConnector:
@@ -74,4 +77,4 @@ class QdrantVectorDatabase(VectorDatabase[QdrantVDBConnector]):
         Returns:
             QdrantVDBConnector: The Qdrant vector database connector instance.
         """
-        return QdrantVDBConnector(self._connection_params, self._settings)
+        return QdrantVDBConnector(self._connection_params, self._settings, self._client_params)

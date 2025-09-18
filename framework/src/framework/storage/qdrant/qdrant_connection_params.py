@@ -19,23 +19,16 @@ from superlinked.framework.storage.common.connection_params import ConnectionPar
 
 class QdrantConnectionParams(ConnectionParams):
     def __init__(
-        self, url: str, api_key: str, timeout: int | None = None, prefer_grpc: bool | None = None, **extra_params: Any
+        self,
+        url: str,
+        api_key: str,
+        **extra_params: Any,
     ) -> None:
         super().__init__()
         extra_params_str = self.get_uri_params_string(**extra_params)
         self._connection_string = f"{url}{extra_params_str}"
         self._api_key = api_key
-        self._timeout = timeout
-        self._prefer_grpc = prefer_grpc
 
     @property
     def connection_string(self) -> str:
         return self._connection_string
-
-    @property
-    def timeout(self) -> int | None:
-        return self._timeout
-
-    @property
-    def prefer_grpc(self) -> bool:
-        return bool(self._prefer_grpc)
