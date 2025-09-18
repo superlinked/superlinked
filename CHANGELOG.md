@@ -3,6 +3,13 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [37.4.2] - 2025-09-18
+
+### Changed
+
+- Update Qdrant connection parameters to include client_params and remove deprecated timeout and prefer_grpc
+- Update client_params type hint to use Mapping for better type safety
+
 ## [37.4.1] - 2025-09-17
 
 ### Fixed
@@ -6290,6 +6297,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove unnecessary call
 - Remove extra field
 
+[37.4.2]: https://github.com/superlinked/superlinked/compare/v37.4.1..v37.4.2
 [37.4.1]: https://github.com/superlinked/superlinked/compare/v37.4.0..v37.4.1
 [37.2.3]: https://github.com/superlinked/superlinked/compare/v37.2.2..v37.2.3
 [37.2.1]: https://github.com/superlinked/superlinked/compare/v37.2.0..v37.2.1
