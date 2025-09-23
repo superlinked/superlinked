@@ -8,35 +8,25 @@ Superlinked's framework is organized into two main modules that work together to
 
 ## Framework Architecture
 
-
 ```mermaid
 flowchart TD
     A["Raw Data<br/>(JSON, CSV, DataFrames)"] --> B["Source<br/>(InMemorySource,<br/>RestSource)"]
-    
+
     B --> C["DataFrameParser"]
-    
-  
+
+
     C --> E["Space<br/>(TextSimilaritySpace,<br/>NumberSpace)"]
 
     D["Schema<br/>(Python Class)"] --> F
-    
+
     E --> F["Index<br/>(Combines Multiple<br/>Spaces)"]
-    
+
     F --> G["Query<br/>(Search Logic)"]
-    
+
     G --> H["Executor<br/>(InMemoryExecutor,<br/>RestExecutor)"]
-    
+
     H --> I["QueryResult<br/>(Ranked Results)"]
-    
-    style A fill:#f9f9f9,stroke:#ddd,stroke-width:2px
-    style B fill:#f9f9f9,stroke:#ddd,stroke-width:2px
-    style C fill:#f9f9f9,stroke:#ddd,stroke-width:2px
-    style D fill:#f9f9f9,stroke:#ddd,stroke-width:2px
-    style E fill:#f9f9f9,stroke:#ddd,stroke-width:2px
-    style F fill:#f9f9f9,stroke:#ddd,stroke-width:2px
-    style G fill:#f9f9f9,stroke:#ddd,stroke-width:2px
-    style H fill:#f9f9f9,stroke:#ddd,stroke-width:2px
-    style I fill:#f9f9f9,stroke:#ddd,stroke-width:2px
+
 ```
 
 ### Common Module
