@@ -31,7 +31,7 @@
 </div>
 
 <p align="center">
-  <em>Superlinked is a Python framework for AI Engineers building <b>high-performance search &amp; recommendation applications</b> that combine <b>structured</b> and <b>unstructured</b> data. </em>
+  <em>Build high-performance <b> AI search </b> applications for both humans and agents. </em>
 </p>
 
 ## Quickstart
