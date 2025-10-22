@@ -29,9 +29,9 @@ class VDBWatcher:
         if isinstance(self.__vdb_connector, InMemoryVDB):
             return sys.getsizeof(self.__vdb_connector._vdb)
         if isinstance(self.__vdb_connector, QdrantVDBConnector):
-            snapshot = self.__vdb_connector._client.create_full_snapshot()
+            snapshot = self.__vdb_connector._sync_client.create_full_snapshot()
             name, size = (snapshot.name, snapshot.size) if snapshot is not None else (None, 0)
             if name is not None:
-                self.__vdb_connector._client.delete_full_snapshot(name)
+                self.__vdb_connector._sync_client.delete_full_snapshot(name)
             return size
         raise NotImplementedException("Memory usage check not implemented.", vdb_connector=type(self.__vdb_connector))

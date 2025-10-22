@@ -15,7 +15,7 @@ import re
 from collections.abc import Mapping
 
 from beartype.typing import Any, Sequence, cast
-from qdrant_client import QdrantClient
+from qdrant_client import AsyncQdrantClient, QdrantClient
 from qdrant_client.conversions.common_types import Payload, Record
 from qdrant_client.http.models.models import QueryResponse, ScoredPoint
 from qdrant_client.models import (
@@ -84,20 +84,25 @@ class QdrantVDBConnector(VDBConnector[VDBKNNSearchConfig]):
         client_params: Mapping[str, Any] | None = None,
     ) -> None:
         super().__init__(vdb_settings=vdb_settings)
-
-        self._client = QdrantClient(
+        self._client = AsyncQdrantClient(
+            url=connection_params.connection_string,
+            api_key=connection_params._api_key,
+            **client_params or {},
+        )
+        self._sync_client = QdrantClient(
             url=connection_params.connection_string,
             api_key=connection_params._api_key,
             **client_params or {},
         )
         self._encoder = QdrantFieldEncoder(self.vector_precision)
-        self.__search_index_manager = QdrantSearchIndexManager(self._client)
+        self.__search_index_manager = QdrantSearchIndexManager(self._sync_client)
         self._search = QdrantSearch(self._client, self._encoder)
         self._vector_field_names = list[str]()
 
     @override
     async def close_connection(self) -> None:
-        self._client.close()
+        await self._client.close()
+        self._sync_client.close()
 
     @property
     @override
@@ -130,7 +135,7 @@ class QdrantVDBConnector(VDBConnector[VDBKNNSearchConfig]):
             )
             for ed in entity_data
         ]
-        non_existing_points, existing_points = self._split_points_by_existing(points)
+        non_existing_points, existing_points = await self._split_points_by_existing(points)
         update_operations = list[UpdateOperation]()
         if non_existing_points:
             update_operations.append(UpsertOperation(upsert=PointsList(points=list(non_existing_points))))
@@ -146,7 +151,7 @@ class QdrantVDBConnector(VDBConnector[VDBKNNSearchConfig]):
         ]
         if set_payload_operations:
             update_operations.extend(set_payload_operations)
-        self._client.batch_update_points(self.collection_name, update_operations=update_operations)
+        await self._client.batch_update_points(self.collection_name, update_operations=update_operations)
 
     def _get_point_vector_dict(self, entity_data: EntityData) -> dict[str, QdrantEncodedTypes]:
         return {
@@ -168,10 +173,10 @@ class QdrantVDBConnector(VDBConnector[VDBKNNSearchConfig]):
             if field_data.name not in self._vector_field_names
         }
 
-    def _split_points_by_existing(
+    async def _split_points_by_existing(
         self, points: Sequence[PointStruct]
     ) -> tuple[Sequence[PointStruct], Sequence[PointStruct]]:
-        existing_point_records = self._client.retrieve(
+        existing_point_records = await self._client.retrieve(
             self.collection_name, [point.id for point in points], with_payload=False
         )
         existing_point_ids = [point.id for point in existing_point_records]
@@ -194,7 +199,7 @@ class QdrantVDBConnector(VDBConnector[VDBKNNSearchConfig]):
                 if field_name not in vector_fields
             }
         )
-        points = self._client.retrieve(
+        points = await self._client.retrieve(
             self.collection_name,
             ids=[QdrantVDBConnector._get_qdrant_id(entity.id_) for entity in entities],
             with_vectors=vector_fields or False,

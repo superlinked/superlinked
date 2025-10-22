@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from qdrant_client import QdrantClient
+from qdrant_client import AsyncQdrantClient
 from qdrant_client.conversions.common_types import QueryResponse
 from qdrant_client.models import SearchParams
 from typing_extensions import override
@@ -37,7 +37,7 @@ from superlinked.framework.storage.qdrant.query.qdrant_vdb_knn_search_params imp
 
 
 class QdrantSearch(Search[QdrantVDBKNNSearchParams, QdrantQuery, QueryResponse, VDBKNNSearchConfig]):
-    def __init__(self, client: QdrantClient, encoder: QdrantFieldEncoder) -> None:
+    def __init__(self, client: AsyncQdrantClient, encoder: QdrantFieldEncoder) -> None:
         super().__init__()
         self._client = client
         self._query_builder = QdrantQueryBuilder(encoder)
@@ -53,7 +53,7 @@ class QdrantSearch(Search[QdrantVDBKNNSearchParams, QdrantQuery, QueryResponse, 
         query: QdrantQuery,
     ) -> QueryResponse:
         is_exact_search = index_config.vector_field_descriptor.search_algorithm == SearchAlgorithm.FLAT
-        return self._client.query_points(
+        return await self._client.query_points(
             collection_name=query.collection_name,
             query=query.vector.value,
             using=index_config.vector_field_descriptor.field_name,
