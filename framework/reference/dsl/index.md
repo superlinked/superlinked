@@ -1,6 +1,6 @@
 Module superlinked.framework.dsl
 ================================
-DSL module is a collection of all the components that you can use to define you vector computation.
+DSL module is a collection of all the components that you can use to define your vector computation.
 
 Sub-modules
 -----------
