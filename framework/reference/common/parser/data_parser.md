@@ -37,7 +37,7 @@ Classes
     ### Methods
 
     `marshal(self, parsed_schemas: ParsedSchema | list[ParsedSchema]) ‑> list[~SourceTypeT]`
-    :   Get a previously parsed data and return it to it's input format.
+    :   Get a previously parsed data and return it to its input format.
         
         Args:
             parsed_schemas: Previously parsed data that follows the schema of the `DataParser`.
