@@ -1,14 +1,62 @@
-<!-- ── HERO block ── -->
+<!-- ── DEPRECATION NOTICE ── -->
+
 <div align="center">
 
-<!-- Logo (auto dark/light) -->
+<table>
+<tr>
+<td>
+
+<p align="center">
 <picture>
   <source srcset="https://cdn.prod.website-files.com/65dce6831bf9f730421e2915/66ef0317ed8616151ee1d451_superlinked_logo_white.png"
           media="(prefers-color-scheme: dark)">
-  <img width="320"
+  <img width="280"
        src="https://cdn.prod.website-files.com/65dce6831bf9f730421e2915/65dce6831bf9f730421e2929_superlinked_logo.svg"
        alt="Superlinked logo">
 </picture>
+</p>
+
+<h2 align="center">Superlinked has evolved and this repo is deprecated</h2>
+
+<p align="center">
+Superlinked helped developers build better vector search by encoding metadata alongside unstructured data into rich, multi-modal embeddings, powering recommendations, RAG, and analytics beyond naive semantic search.
+</p>
+
+<p align="center">
+But the biggest pain point in production was always <strong>inference</strong>, running embedding models efficiently at scale. That was the real blocker between a prototype and a production-grade system. So we went all-in on solving it.
+</p>
+
+<p align="center">
+<strong>Superlinked Inference Engine (SIE)</strong> is the result, an Open-source inference server and production cluster for small models
+</p>
+
+<br>
+
+<p align="center">
+  <a href="https://github.com/superlinked/sie">
+    <img src="https://img.shields.io/badge/%E2%9A%A1_Go_to_SIE_%E2%86%92-Superlinked_Inference_Engine-F5C518?style=for-the-badge&logoColor=black" alt="Go to SIE" height="45">
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/superlinked/sie">https://github.com/superlinked/sie</a>
+</p>
+
+<br>
+
+</td>
+</tr>
+</table>
+
+</div>
+
+---
+
+<br>
+
+<!-- ── HERO block ── -->
+<div align="center">
+
 
 <!-- Primary CTA -->
 <p>
@@ -98,7 +146,7 @@ If you like what we do, give us a star! ⭐
 
 ## Hands-on Tutorials
 
-| Level | What you’ll build & learn | Try it now |
+| Level | What you'll build & learn | Try it now |
 |-------|---------------------------|------------|
 | **Start here** | Embed text · images · numbers · categories · time · events. | Text embedding&nbsp;<a href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/text_embedding.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Colab"></a><br>Image embedding&nbsp;<a href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/image_embedding.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Colab"></a><br>Numeric (min-max)&nbsp;<a href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/number_embedding_minmax.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Colab"></a><br>Numeric (similar)&nbsp;<a href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/number_embedding_similar.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Colab"></a><br>Categorical&nbsp;<a href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/categorical_embedding.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Colab"></a><br>Recency embedding&nbsp;<a href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/recency_embedding.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Colab"></a><br>Event effects&nbsp;<a href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/event_effects.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Colab"></a> |
 | **Build & extend** | Combine spaces or add custom / optional schemas. | Combine embeddings&nbsp;<a href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/combine_multiple_embeddings.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Colab"></a><br>Custom space&nbsp;<a href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/custom_space.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Colab"></a><br>Optional fields&nbsp;<a href="https://colab.research.google.com/github/superlinked/superlinked/blob/main/notebook/feature/optional_schema_fields.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Colab"></a> |
